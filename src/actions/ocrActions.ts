@@ -78,10 +78,7 @@ function collectTextCandidates(payload: unknown, depth = 0): string[] {
 
   for (const [key, value] of Object.entries(record)) {
     const loweredKey = key.toLowerCase();
-    if (
-      OCR_TEXT_LIKE_KEYS.includes(loweredKey) &&
-      typeof value === "string"
-    ) {
+    if (OCR_TEXT_LIKE_KEYS.includes(loweredKey) && typeof value === "string") {
       const normalized = normalizeCandidateText(value);
       if (normalized) {
         collected.push(normalized);

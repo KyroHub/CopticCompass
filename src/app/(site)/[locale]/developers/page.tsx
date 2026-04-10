@@ -77,12 +77,14 @@ const developerCopy = {
       {
         href: "/api/chat",
         label: "/api/chat",
-        description: "Shenute AI chat endpoint with provider routing and fallback handling.",
+        description:
+          "Shenute AI chat endpoint with provider routing and fallback handling.",
       },
       {
         href: "/api/ocr",
         label: "/api/ocr",
-        description: "OCR proxy endpoint that forwards image uploads to OCR_SERVICE_URL.",
+        description:
+          "OCR proxy endpoint that forwards image uploads to OCR_SERVICE_URL.",
       },
     ],
     exampleTitle: "Example request",
@@ -114,12 +116,14 @@ const developerCopy = {
       {
         href: "/chat",
         label: "Shenute AI Chat",
-        description: "Reference UI for provider selection plus OCR-backed image and camera messaging.",
+        description:
+          "Reference UI for provider selection plus OCR-backed image and camera messaging.",
       },
       {
         href: "/api/ocr",
         label: "OCR proxy endpoint",
-        description: "Send multipart OCR requests without exposing your upstream OCR service URL.",
+        description:
+          "Send multipart OCR requests without exposing your upstream OCR service URL.",
       },
     ],
     breadcrumbLabel: "Developers",
@@ -166,7 +170,8 @@ curl -X POST "https://kyrilloswannes.com/api/ocr?lang=cop" \
   },
   nl: {
     title: "Ontwikkelaars",
-    seoTitle: "Koptisch Kompas grammatica- en Shenute AI-API's voor ontwikkelaars",
+    seoTitle:
+      "Koptisch Kompas grammatica- en Shenute AI-API's voor ontwikkelaars",
     description:
       "Verken de publieke grammatica-API van Koptisch Kompas plus Shenute AI-chat en OCR-ondersteunde afbeeldingsintegratie voor ontwikkelaars.",
     eyebrow: "Developerplatform",
@@ -224,12 +229,14 @@ curl -X POST "https://kyrilloswannes.com/api/ocr?lang=cop" \
       {
         href: "/api/chat",
         label: "/api/chat",
-        description: "Shenute AI-chatendpoint met provider-routering en fallback-afhandeling.",
+        description:
+          "Shenute AI-chatendpoint met provider-routering en fallback-afhandeling.",
       },
       {
         href: "/api/ocr",
         label: "/api/ocr",
-        description: "OCR-proxyendpoint dat afbeelding-uploads doorstuurt naar OCR_SERVICE_URL.",
+        description:
+          "OCR-proxyendpoint dat afbeelding-uploads doorstuurt naar OCR_SERVICE_URL.",
       },
     ],
     exampleTitle: "Voorbeeldrequest",
@@ -260,12 +267,14 @@ curl -X POST "https://kyrilloswannes.com/api/ocr?lang=cop" \
       {
         href: "/chat",
         label: "Shenute AI-chat",
-        description: "Referentie-UI met providerkeuze en OCR-ondersteunde beeld- en cameraberichten.",
+        description:
+          "Referentie-UI met providerkeuze en OCR-ondersteunde beeld- en cameraberichten.",
       },
       {
         href: "/api/ocr",
         label: "OCR-proxyendpoint",
-        description: "Verstuur multipart OCR-requests zonder je upstream OCR-service-URL te publiceren.",
+        description:
+          "Verstuur multipart OCR-requests zonder je upstream OCR-service-URL te publiceren.",
       },
     ],
     breadcrumbLabel: "Ontwikkelaars",

@@ -191,7 +191,8 @@ function getMessageReasoningDetails(message: UIMessage): unknown {
     typeof candidate.metadata === "object" &&
     "reasoning_details" in candidate.metadata
   ) {
-    return (candidate.metadata as { reasoning_details?: unknown }).reasoning_details;
+    return (candidate.metadata as { reasoning_details?: unknown })
+      .reasoning_details;
   }
 
   if ("reasoning_details" in candidate) {
@@ -388,7 +389,12 @@ ${contextText}
           ...toOpenRouterMessages(messages, chatId),
           ...(latestMessageText
             ? []
-            : [{ role: "user", content: "Please answer the latest user request." }]),
+            : [
+                {
+                  role: "user",
+                  content: "Please answer the latest user request.",
+                },
+              ]),
         ],
         { enableReasoning: true },
       );
@@ -407,7 +413,11 @@ ${contextText}
           : "I could not generate a response from OpenRouter right now.";
 
       if (typeof openRouterMessage?.reasoning_details !== "undefined") {
-        cacheReasoningDetails(chatId, responseText, openRouterMessage.reasoning_details);
+        cacheReasoningDetails(
+          chatId,
+          responseText,
+          openRouterMessage.reasoning_details,
+        );
       }
 
       return createStaticAssistantStream(responseText);
@@ -419,7 +429,12 @@ ${contextText}
         ...toOpenAiMessages(messages),
         ...(latestMessageText
           ? []
-          : [{ role: "user", content: "Please answer the latest user request." }]),
+          : [
+              {
+                role: "user",
+                content: "Please answer the latest user request.",
+              },
+            ]),
       ]);
 
       const assistantText = completion.choices[0]?.message?.content;
@@ -454,7 +469,10 @@ ${contextText}
             },
           });
         } catch (geminiFallbackError) {
-          console.error("Gemini fallback failed after HF 429:", geminiFallbackError);
+          console.error(
+            "Gemini fallback failed after HF 429:",
+            geminiFallbackError,
+          );
         }
       }
 
@@ -466,7 +484,12 @@ ${contextText}
               ...toOpenRouterMessages(messages, chatId),
               ...(latestMessageText
                 ? []
-                : [{ role: "user", content: "Please answer the latest user request." }]),
+                : [
+                    {
+                      role: "user",
+                      content: "Please answer the latest user request.",
+                    },
+                  ]),
             ],
             { enableReasoning: true },
           );
@@ -479,7 +502,11 @@ ${contextText}
               : "I could not generate a response from OpenRouter right now.";
 
           if (typeof openRouterMessage?.reasoning_details !== "undefined") {
-            cacheReasoningDetails(chatId, responseText, openRouterMessage.reasoning_details);
+            cacheReasoningDetails(
+              chatId,
+              responseText,
+              openRouterMessage.reasoning_details,
+            );
           }
 
           return createStaticAssistantStream(responseText);
@@ -503,7 +530,8 @@ ${contextText}
       );
     }
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : "Unknown AI error.";
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown AI error.";
     console.error("AI API Error:", error);
 
     return new Response(JSON.stringify({ error: errorMessage }), {

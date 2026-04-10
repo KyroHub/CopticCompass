@@ -54,7 +54,7 @@ curl -X POST "https://kyrilloswannes.com/api/ocr?lang=cop" \
 # Proxy flow
 # 1) Client sends multipart/form-data to /api/ocr
 # 2) Coptic Compass forwards to OCR_SERVICE_URL
-# 3) Upstream OCR response is returned to the client`; 
+# 3) Upstream OCR response is returned to the client`;
 
 /**
  * Renders the Swagger-backed documentation page for the public grammar API.
@@ -143,8 +143,8 @@ export default function ApiDocsPage() {
           <p className="text-sm leading-7 text-muted">
             Use <code>POST /api/chat</code> with a UI-message payload. Supported
             providers are <code>openrouter</code>, <code>gemini</code>, and
-            <code>hf</code>. When Hugging Face is rate-limited, the API can
-            fall back to configured alternatives.
+            <code>hf</code>. When Hugging Face is rate-limited, the API can fall
+            back to configured alternatives.
           </p>
           <pre className="overflow-x-auto rounded-2xl border border-stone-200/80 bg-stone-950 px-4 py-4 text-sm leading-6 text-stone-100 dark:border-stone-800/80">
             <code>{chatApiExample}</code>

@@ -59,7 +59,10 @@ function getMessageText(message: ChatMessageLike) {
     .trim();
 }
 
-function findPreviousUserMessage(messages: ChatMessageLike[], startIndex: number) {
+function findPreviousUserMessage(
+  messages: ChatMessageLike[],
+  startIndex: number,
+) {
   for (let index = startIndex - 1; index >= 0; index -= 1) {
     const message = messages[index];
     if (message.role !== "user") {
@@ -100,17 +103,18 @@ function getFeedbackStatusClass(status: "error" | "pending" | "success") {
 }
 
 export default function ChatAI() {
-  const [inferenceProvider, setInferenceProvider] = useState<ChatProvider>("openrouter");
+  const [inferenceProvider, setInferenceProvider] =
+    useState<ChatProvider>("openrouter");
   const [inputValue, setInputValue] = useState("");
   const [ocrPending, setOcrPending] = useState(false);
   const [ocrError, setOcrError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [selectedImagePreviewUrl, setSelectedImagePreviewUrl] = useState<string | null>(
-    null,
-  );
-  const [selectedImageSource, setSelectedImageSource] = useState<"upload" | "camera" | null>(
-    null,
-  );
+  const [selectedImagePreviewUrl, setSelectedImagePreviewUrl] = useState<
+    string | null
+  >(null);
+  const [selectedImageSource, setSelectedImageSource] = useState<
+    "upload" | "camera" | null
+  >(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
 
@@ -124,9 +128,8 @@ export default function ChatAI() {
   const [selectedReactionByMessage, setSelectedReactionByMessage] = useState<
     Record<string, ChatReactionSignal>
   >({});
-  const [adminFeedbackDraftByMessage, setAdminFeedbackDraftByMessage] = useState<
-    Record<string, string>
-  >({});
+  const [adminFeedbackDraftByMessage, setAdminFeedbackDraftByMessage] =
+    useState<Record<string, string>>({});
   const [feedbackStateByMessage, setFeedbackStateByMessage] =
     useState<FeedbackStateByMessage>({});
 
@@ -198,7 +201,10 @@ export default function ChatAI() {
   }
 
   async function openCamera() {
-    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+    if (
+      typeof navigator === "undefined" ||
+      !navigator.mediaDevices?.getUserMedia
+    ) {
       setCameraError("Camera is not supported on this device/browser.");
       return;
     }
@@ -306,7 +312,10 @@ export default function ChatAI() {
         const ocrFormData = new FormData();
         ocrFormData.append("file", selectedImage);
         const ocrText = await processOCRImage(ocrFormData);
-        const trimmedOcrText = ocrText.replace(/\s+/g, " ").trim().slice(0, 8000);
+        const trimmedOcrText = ocrText
+          .replace(/\s+/g, " ")
+          .trim()
+          .slice(0, 8000);
 
         composedPrompt = [
           composedPrompt,
@@ -357,7 +366,9 @@ export default function ChatAI() {
     }
 
     const assistantResponse = getMessageText(options.assistantMessage);
-    const prompt = options.promptMessage ? getMessageText(options.promptMessage) : "";
+    const prompt = options.promptMessage
+      ? getMessageText(options.promptMessage)
+      : "";
 
     if (!assistantResponse || !prompt) {
       setFeedbackStateByMessage((current) => ({
@@ -463,7 +474,8 @@ export default function ChatAI() {
     assistantMessage: ChatMessageLike,
     promptMessage: ChatMessageLike | null,
   ) {
-    const draft = adminFeedbackDraftByMessage[assistantMessage.id]?.trim() ?? "";
+    const draft =
+      adminFeedbackDraftByMessage[assistantMessage.id]?.trim() ?? "";
     if (!draft) {
       setFeedbackStateByMessage((current) => ({
         ...current,
@@ -527,7 +539,10 @@ export default function ChatAI() {
             <span className="text-2xl">📚</span>
           </div>
           <h2 className="text-xl font-semibold mb-2">Welcome to Shenute AI</h2>
-          <p className="max-w-sm">I&apos;m your dedicated Coptic language assistant. Ask me about vocabulary, grammar, translation, and history.</p>
+          <p className="max-w-sm">
+            I&apos;m your dedicated Coptic language assistant. Ask me about
+            vocabulary, grammar, translation, and history.
+          </p>
         </div>
       ) : (
         <div className="flex-1 overflow-y-auto w-full p-4 mb-4 space-y-5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-[#0c1222] shadow-inner font-sans">
@@ -543,139 +558,170 @@ export default function ChatAI() {
             const isFeedbackPending = feedbackState?.status === "pending";
 
             return (
-            <div key={m.id} className={`flex gap-3 max-w-[85%] ${m.role === 'user' ? 'ml-auto flex-row-reverse' : 'mr-auto'}`}>
-              <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 mt-1 shadow-sm ${
-                m.role === 'user' ? 'bg-indigo-600 text-white' : 'bg-emerald-600 text-white'
-              }`}>
-                {m.role === 'user' ? 'U' : 'ⲁ'}
-              </div>
-              <div className={`py-3 px-4 rounded-2xl shadow-sm text-[15px] leading-relaxed ${
-                m.role === 'user' 
-                  ? 'bg-blue-600 text-white rounded-tr-sm' 
-                  : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-tl-sm'
-              }`}>
-                {Array.isArray(m.parts)
-                  ? m.parts.filter(isTextMessagePart).map((part, index: number) => {
-                      if (part.type !== "text") {
-                        return null;
-                      }
-                      if (m.role === "assistant") {
-                        return (
-                          <ReactMarkdown
-                            key={index}
-                            remarkPlugins={[remarkGfm]}
-                            components={{
-                              a: ({ ...props }) => (
-                                <a
-                                  {...props}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="underline"
-                                />
-                              ),
-                              code: ({ className, children, ...props }) => (
-                                <code
-                                  className={`rounded bg-slate-200/70 px-1 py-0.5 text-[0.95em] dark:bg-slate-800 ${className || ""}`}
-                                  {...props}
-                                >
-                                  {children}
-                                </code>
-                              ),
-                            }}
-                          >
-                            {part.text}
-                          </ReactMarkdown>
-                        );
-                      }
+              <div
+                key={m.id}
+                className={`flex gap-3 max-w-[85%] ${m.role === "user" ? "ml-auto flex-row-reverse" : "mr-auto"}`}
+              >
+                <div
+                  className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 mt-1 shadow-sm ${
+                    m.role === "user"
+                      ? "bg-indigo-600 text-white"
+                      : "bg-emerald-600 text-white"
+                  }`}
+                >
+                  {m.role === "user" ? "U" : "ⲁ"}
+                </div>
+                <div
+                  className={`py-3 px-4 rounded-2xl shadow-sm text-[15px] leading-relaxed ${
+                    m.role === "user"
+                      ? "bg-blue-600 text-white rounded-tr-sm"
+                      : "bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-tl-sm"
+                  }`}
+                >
+                  {Array.isArray(m.parts) ? (
+                    m.parts
+                      .filter(isTextMessagePart)
+                      .map((part, index: number) => {
+                        if (part.type !== "text") {
+                          return null;
+                        }
+                        if (m.role === "assistant") {
+                          return (
+                            <ReactMarkdown
+                              key={index}
+                              remarkPlugins={[remarkGfm]}
+                              components={{
+                                a: ({ ...props }) => (
+                                  <a
+                                    {...props}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="underline"
+                                  />
+                                ),
+                                code: ({ className, children, ...props }) => (
+                                  <code
+                                    className={`rounded bg-slate-200/70 px-1 py-0.5 text-[0.95em] dark:bg-slate-800 ${className || ""}`}
+                                    {...props}
+                                  >
+                                    {children}
+                                  </code>
+                                ),
+                              }}
+                            >
+                              {part.text}
+                            </ReactMarkdown>
+                          );
+                        }
 
-                      return <p key={index}>{part.text}</p>;
-                    })
-                  : <p>{typeof m.content === "string" ? m.content : ""}</p>}
+                        return <p key={index}>{part.text}</p>;
+                      })
+                  ) : (
+                    <p>{typeof m.content === "string" ? m.content : ""}</p>
+                  )}
 
-                {m.role === "assistant" ? (
-                  <div className="mt-3 space-y-2 border-t border-slate-200 pt-3 text-xs dark:border-slate-700">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          void handleReaction("like", assistantMessage, promptMessage);
-                        }}
-                        disabled={!isAuthenticated || isFeedbackPending}
-                        className={`rounded-md border px-2 py-1 font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${
-                          selectedReaction === "like"
-                            ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
-                            : "border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
-                        }`}
-                      >
-                        Like
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          void handleReaction("dislike", assistantMessage, promptMessage);
-                        }}
-                        disabled={!isAuthenticated || isFeedbackPending}
-                        className={`rounded-md border px-2 py-1 font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${
-                          selectedReaction === "dislike"
-                            ? "border-rose-500 bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300"
-                            : "border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
-                        }`}
-                      >
-                        Dislike
-                      </button>
-                    </div>
-
-                    <details className="rounded-md border border-slate-200 p-2 dark:border-slate-700">
-                      <summary className="cursor-pointer font-semibold text-slate-700 dark:text-slate-200">
-                        Admin note for RAG learning
-                      </summary>
-                      <div className="mt-2 space-y-2">
-                        <textarea
-                          value={adminDraft}
-                          onChange={(event) => {
-                            const value = event.target.value;
-                            setAdminFeedbackDraftByMessage((current) => ({
-                              ...current,
-                              [m.id]: value,
-                            }));
-                          }}
-                          placeholder="Admin only: add written feedback tied to this prompt/response."
-                          rows={3}
-                          disabled={!isAuthenticated || isFeedbackPending}
-                          className="w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-900 dark:border-slate-600 dark:bg-slate-950 dark:text-slate-100"
-                        />
+                  {m.role === "assistant" ? (
+                    <div className="mt-3 space-y-2 border-t border-slate-200 pt-3 text-xs dark:border-slate-700">
+                      <div className="flex flex-wrap items-center gap-2">
                         <button
                           type="button"
                           onClick={() => {
-                            void handleAdminFeedbackSubmit(assistantMessage, promptMessage);
+                            void handleReaction(
+                              "like",
+                              assistantMessage,
+                              promptMessage,
+                            );
                           }}
                           disabled={!isAuthenticated || isFeedbackPending}
-                          className="rounded-md bg-slate-900 px-2 py-1 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-100 dark:text-slate-900"
+                          className={`rounded-md border px-2 py-1 font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${
+                            selectedReaction === "like"
+                              ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                              : "border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+                          }`}
                         >
-                          Submit admin note
+                          Like
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            void handleReaction(
+                              "dislike",
+                              assistantMessage,
+                              promptMessage,
+                            );
+                          }}
+                          disabled={!isAuthenticated || isFeedbackPending}
+                          className={`rounded-md border px-2 py-1 font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${
+                            selectedReaction === "dislike"
+                              ? "border-rose-500 bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300"
+                              : "border-slate-300 text-slate-700 hover:bg-slate-100 dark:border-slate-600 dark:text-slate-200 dark:hover:bg-slate-800"
+                          }`}
+                        >
+                          Dislike
                         </button>
                       </div>
-                    </details>
 
-                    {feedbackState ? (
-                      <p className={getFeedbackStatusClass(feedbackState.status)}>
-                        {feedbackState.message}
-                      </p>
-                    ) : null}
+                      <details className="rounded-md border border-slate-200 p-2 dark:border-slate-700">
+                        <summary className="cursor-pointer font-semibold text-slate-700 dark:text-slate-200">
+                          Admin note for RAG learning
+                        </summary>
+                        <div className="mt-2 space-y-2">
+                          <textarea
+                            value={adminDraft}
+                            onChange={(event) => {
+                              const value = event.target.value;
+                              setAdminFeedbackDraftByMessage((current) => ({
+                                ...current,
+                                [m.id]: value,
+                              }));
+                            }}
+                            placeholder="Admin only: add written feedback tied to this prompt/response."
+                            rows={3}
+                            disabled={!isAuthenticated || isFeedbackPending}
+                            className="w-full rounded-md border border-slate-300 bg-white px-2 py-1 text-xs text-slate-900 dark:border-slate-600 dark:bg-slate-950 dark:text-slate-100"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              void handleAdminFeedbackSubmit(
+                                assistantMessage,
+                                promptMessage,
+                              );
+                            }}
+                            disabled={!isAuthenticated || isFeedbackPending}
+                            className="rounded-md bg-slate-900 px-2 py-1 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60 dark:bg-slate-100 dark:text-slate-900"
+                          >
+                            Submit admin note
+                          </button>
+                        </div>
+                      </details>
 
-                    {!isAuthenticated && isReady ? (
-                      <p className="text-slate-500 dark:text-slate-400">
-                        Sign in to send learning feedback signals.
-                      </p>
-                    ) : null}
-                  </div>
-                ) : null}
+                      {feedbackState ? (
+                        <p
+                          className={getFeedbackStatusClass(
+                            feedbackState.status,
+                          )}
+                        >
+                          {feedbackState.message}
+                        </p>
+                      ) : null}
+
+                      {!isAuthenticated && isReady ? (
+                        <p className="text-slate-500 dark:text-slate-400">
+                          Sign in to send learning feedback signals.
+                        </p>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </div>
               </div>
-            </div>
-          )})}
+            );
+          })}
           {isLoading && (
             <div className="flex items-center gap-3 mr-auto max-w-[85%]">
-              <div className="h-8 w-8 rounded-full bg-emerald-600 flex items-center justify-center text-white text-sm font-bold shadow-sm shrink-0">ⲁ</div>
+              <div className="h-8 w-8 rounded-full bg-emerald-600 flex items-center justify-center text-white text-sm font-bold shadow-sm shrink-0">
+                ⲁ
+              </div>
               <div className="p-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-2xl rounded-tl-sm shadow-sm flex gap-1 items-center">
                 <div className="h-2 w-2 bg-slate-400 rounded-full animate-bounce delay-100"></div>
                 <div className="h-2 w-2 bg-slate-400 rounded-full animate-bounce delay-200"></div>
@@ -751,7 +797,8 @@ export default function ChatAI() {
           <div className="mb-3 rounded-xl border border-slate-200 bg-slate-50 p-3 dark:border-slate-700 dark:bg-slate-900">
             <div className="mb-2 flex items-center justify-between">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-600 dark:text-slate-300">
-                Image attached ({selectedImageSource === "camera" ? "camera" : "upload"})
+                Image attached (
+                {selectedImageSource === "camera" ? "camera" : "upload"})
               </p>
               <button
                 type="button"
@@ -761,7 +808,7 @@ export default function ChatAI() {
                 Remove
               </button>
             </div>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={selectedImagePreviewUrl}
               alt="Selected for OCR"
@@ -806,12 +853,19 @@ export default function ChatAI() {
             placeholder="Ask about a Coptic word, grammar rule, or attached image..."
             disabled={isLoading || ocrPending}
           />
-          <button 
-            type="submit" 
-            disabled={(!inputValue.trim() && !selectedImage) || isLoading || ocrPending}
+          <button
+            type="submit"
+            disabled={
+              (!inputValue.trim() && !selectedImage) || isLoading || ocrPending
+            }
             className="absolute right-3 h-10 w-10 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center transition-colors disabled:opacity-50 disabled:hover:bg-blue-600"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="w-5 h-5"
+            >
               <path d="M3.478 2.404a.75.75 0 0 0-.926.941l2.432 7.905H13.5a.75.75 0 0 1 0 1.5H4.984l-2.432 7.905a.75.75 0 0 0 .926.94 60.519 60.519 0 0 0 18.445-8.986.75.75 0 0 0 0-1.218A60.517 60.517 0 0 0 3.478 2.404Z" />
             </svg>
           </button>

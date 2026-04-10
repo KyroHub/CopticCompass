@@ -10,7 +10,9 @@ export const HF_EMBEDDING_MODEL =
   process.env.HF_EMBEDDING_MODEL ?? "sentence-transformers/all-mpnet-base-v2";
 const HF_CHAT_TIMEOUT_MS = Number(process.env.HF_CHAT_TIMEOUT_MS ?? "45000");
 const HF_CHAT_MAX_RETRIES = Number(process.env.HF_CHAT_MAX_RETRIES ?? "3");
-const HF_CHAT_RETRY_BASE_MS = Number(process.env.HF_CHAT_RETRY_BASE_MS ?? "1500");
+const HF_CHAT_RETRY_BASE_MS = Number(
+  process.env.HF_CHAT_RETRY_BASE_MS ?? "1500",
+);
 const HF_EMBEDDING_TIMEOUT_MS = Number(
   process.env.HF_EMBEDDING_TIMEOUT_MS ?? "120000",
 );
@@ -126,7 +128,10 @@ async function featureExtractionWithRetry(
         },
       );
     } catch (error) {
-      if (attempt >= HF_EMBEDDING_MAX_RETRIES || !shouldRetryNetworkError(error)) {
+      if (
+        attempt >= HF_EMBEDDING_MAX_RETRIES ||
+        !shouldRetryNetworkError(error)
+      ) {
         const message = error instanceof Error ? error.message : String(error);
         throw new Error(
           `HF embedding request failed after ${attempt} attempt(s): ${message}`,
@@ -160,7 +165,9 @@ function meanPoolTokenEmbeddings(tokenEmbeddings: number[][]): number[] {
 
   for (const tokenEmbedding of tokenEmbeddings) {
     if (tokenEmbedding.length !== dims) {
-      throw new Error("HF featureExtraction returned inconsistent token dimensions.");
+      throw new Error(
+        "HF featureExtraction returned inconsistent token dimensions.",
+      );
     }
 
     for (let index = 0; index < dims; index += 1) {
@@ -198,7 +205,9 @@ function normalizeSingleEmbeddingOutput(output: unknown): number[] {
     return meanPoolTokenEmbeddings(output[0] as number[][]);
   }
 
-  throw new Error("HF featureExtraction returned an unsupported embedding shape.");
+  throw new Error(
+    "HF featureExtraction returned an unsupported embedding shape.",
+  );
 }
 
 function normalizeBatchEmbeddingOutput(
@@ -228,7 +237,9 @@ function normalizeBatchEmbeddingOutput(
       (entry) =>
         Array.isArray(entry) &&
         entry.length > 0 &&
-        (entry as unknown[]).every((tokenEmbedding) => isNumberArray(tokenEmbedding)),
+        (entry as unknown[]).every((tokenEmbedding) =>
+          isNumberArray(tokenEmbedding),
+        ),
     )
   ) {
     return (output as number[][][]).map((tokenEmbeddings) =>
@@ -236,12 +247,12 @@ function normalizeBatchEmbeddingOutput(
     );
   }
 
-  throw new Error("HF featureExtraction returned an invalid batch embedding format.");
+  throw new Error(
+    "HF featureExtraction returned an invalid batch embedding format.",
+  );
 }
 
-export async function createHfChatCompletion(
-  messages: HfChatMessage[],
-) {
+export async function createHfChatCompletion(messages: HfChatMessage[]) {
   const { OpenAI } = await import("openai");
 
   const client = new OpenAI({
@@ -279,7 +290,9 @@ export async function generateHFEmbedding(text: string): Promise<number[]> {
   return normalizeSingleEmbeddingOutput(output);
 }
 
-export async function generateHFEmbeddings(texts: string[]): Promise<number[][]> {
+export async function generateHFEmbeddings(
+  texts: string[],
+): Promise<number[][]> {
   if (texts.length === 0) {
     return [];
   }

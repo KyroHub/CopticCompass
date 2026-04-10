@@ -1,9 +1,6 @@
 import { embedMany } from "ai";
 
-import {
-  GEMINI_EMBEDDING_MODEL,
-  getGeminiEmbeddingModel,
-} from "@/lib/gemini";
+import { GEMINI_EMBEDDING_MODEL, getGeminiEmbeddingModel } from "@/lib/gemini";
 import { HF_EMBEDDING_MODEL, generateHFEmbeddings } from "@/lib/hf";
 import {
   OPENROUTER_EMBEDDING_MODEL,
@@ -12,7 +9,9 @@ import {
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 import type { Json } from "@/types/supabase";
 
-const RAG_VECTOR_DIMENSIONS = Number(process.env.RAG_VECTOR_DIMENSIONS ?? "768");
+const RAG_VECTOR_DIMENSIONS = Number(
+  process.env.RAG_VECTOR_DIMENSIONS ?? "768",
+);
 const GEMINI_EMBEDDING_OUTPUT_DIMENSION = Number(
   process.env.GEMINI_EMBEDDING_OUTPUT_DIMENSION ?? "3072",
 );
@@ -66,7 +65,10 @@ function normalizeEmbeddingDimensions(
     return embedding.slice(0, targetDimensions);
   }
 
-  return [...embedding, ...new Array(targetDimensions - embedding.length).fill(0)];
+  return [
+    ...embedding,
+    ...new Array(targetDimensions - embedding.length).fill(0),
+  ];
 }
 
 function getSignalLearningLine(signal: ChatFeedbackSignal) {
@@ -112,7 +114,9 @@ async function generateFeedbackEmbedding(options: {
     const embeddings = await generateOpenRouterEmbeddings([options.text]);
     const embedding = embeddings[0];
     if (!Array.isArray(embedding) || embedding.length === 0) {
-      throw new Error("OpenRouter did not return a usable embedding for feedback.");
+      throw new Error(
+        "OpenRouter did not return a usable embedding for feedback.",
+      );
     }
 
     return {
@@ -125,7 +129,9 @@ async function generateFeedbackEmbedding(options: {
   const embedding = embeddings[0];
 
   if (!Array.isArray(embedding) || embedding.length === 0) {
-    throw new Error("Hugging Face did not return a usable embedding for feedback.");
+    throw new Error(
+      "Hugging Face did not return a usable embedding for feedback.",
+    );
   }
 
   return {
@@ -154,7 +160,11 @@ function buildFeedbackLearningContent(options: {
   ];
 
   if (options.signal === "admin_feedback" && options.feedbackText) {
-    sections.push("", "Admin feedback:", normalizeWhitespace(options.feedbackText));
+    sections.push(
+      "",
+      "Admin feedback:",
+      normalizeWhitespace(options.feedbackText),
+    );
   }
 
   return sections.join("\n");
@@ -190,7 +200,7 @@ export async function ingestChatFeedbackLearningSignal(
       embeddingModel: model,
       feedbackText:
         options.signal === "admin_feedback"
-          ? options.feedbackText ?? null
+          ? (options.feedbackText ?? null)
           : null,
       inferenceProvider: options.inferenceProvider,
       isAdminFeedback: options.signal === "admin_feedback",
@@ -199,7 +209,10 @@ export async function ingestChatFeedbackLearningSignal(
       pageTitle: options.pageContext?.title?.slice(0, 320) ?? null,
       pageUrl: options.pageContext?.url?.slice(0, 500) ?? null,
       promptPreview: normalizeWhitespace(options.prompt).slice(0, 240),
-      responsePreview: normalizeWhitespace(options.assistantResponse).slice(0, 240),
+      responsePreview: normalizeWhitespace(options.assistantResponse).slice(
+        0,
+        240,
+      ),
       signal: options.signal,
       sourceEmbeddingDimensions: embedding.length,
       sourceName: "chat_feedback_signal",
@@ -221,7 +234,9 @@ export async function ingestChatFeedbackLearningSignal(
 
   const { error } = await copticDocumentsTable.insert([row]);
   if (error) {
-    throw new Error(`Failed to ingest chat feedback into RAG: ${error.message}`);
+    throw new Error(
+      `Failed to ingest chat feedback into RAG: ${error.message}`,
+    );
   }
 
   return {

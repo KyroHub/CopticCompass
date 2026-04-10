@@ -22,7 +22,7 @@ export default function OCRPage() {
     try {
       const formData = new FormData();
       formData.append("file", image);
-      
+
       const res = await processOCRImage(formData);
       setResult(res);
     } catch (err: unknown) {
@@ -40,15 +40,15 @@ export default function OCRPage() {
       </p>
 
       <div className="flex flex-col gap-4 border rounded-xl p-6 shadow-sm">
-        <input 
-          type="file" 
-          accept="image/*" 
-          onChange={handleFileChange} 
-          className="file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold" 
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold"
         />
-        <button 
-          onClick={handleUpload} 
-          disabled={!image || loading} 
+        <button
+          onClick={handleUpload}
+          disabled={!image || loading}
           className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
         >
           {loading ? "Processing via OCR Service..." : "Extract Text"}
@@ -63,8 +63,12 @@ export default function OCRPage() {
 
       {result && (
         <div className="mt-8 border rounded-lg p-6 bg-slate-50">
-          <h2 className="text-xl border-b pb-2 mb-4 font-semibold">Extracted Text:</h2>
-          <pre className="whitespace-pre-wrap font-sanscoptic text-lg">{result}</pre>
+          <h2 className="text-xl border-b pb-2 mb-4 font-semibold">
+            Extracted Text:
+          </h2>
+          <pre className="whitespace-pre-wrap font-sanscoptic text-lg">
+            {result}
+          </pre>
         </div>
       )}
     </div>

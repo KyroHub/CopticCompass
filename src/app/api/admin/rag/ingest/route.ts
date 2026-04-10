@@ -50,7 +50,8 @@ export async function POST(request: Request) {
     const formData = await request.formData();
     const providedRequestId = formData.get("ingest_id");
     requestId =
-      typeof providedRequestId === "string" && providedRequestId.trim().length > 0
+      typeof providedRequestId === "string" &&
+      providedRequestId.trim().length > 0
         ? providedRequestId.trim()
         : crypto.randomUUID();
 
@@ -74,9 +75,7 @@ export async function POST(request: Request) {
 
     const enableOcrRaw = formData.get("enable_ocr");
     const enableOcr =
-      enableOcrRaw === "on" ||
-      enableOcrRaw === "true" ||
-      enableOcrRaw === true;
+      enableOcrRaw === "on" || enableOcrRaw === "true" || enableOcrRaw === true;
 
     const embeddingProviderRaw = formData.get("embedding_provider");
     const embeddingProvider =
