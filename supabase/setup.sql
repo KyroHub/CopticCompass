@@ -1,4 +1,5 @@
 create extension if not exists pgcrypto;
+create extension if not exists vector;
 
 create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
@@ -251,6 +252,49 @@ create table if not exists public.entry_reports (
   created_at timestamptz not null default timezone('utc', now())
 );
 
+create table if not exists public.chat_feedback_events (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles (id) on delete cascade,
+  signal text not null check (signal in ('admin_feedback', 'like', 'dislike')),
+  prompt_text text not null check (char_length(prompt_text) between 1 and 12000),
+  assistant_response_text text not null check (
+    char_length(assistant_response_text) between 1 and 24000
+  ),
+  feedback_text text,
+  inference_provider text not null check (
+    inference_provider in ('gemini', 'hf', 'openrouter')
+  ),
+  page_path text,
+  page_title text,
+  page_url text,
+  page_excerpt text,
+  chat_id text,
+  user_message_id text,
+  assistant_message_id text,
+  is_admin_feedback boolean not null default false,
+  created_at timestamptz not null default timezone('utc', now()),
+  check (
+    (
+      signal = 'admin_feedback'
+      and is_admin_feedback = true
+      and feedback_text is not null
+      and char_length(feedback_text) between 1 and 5000
+    )
+    or (
+      signal in ('like', 'dislike')
+      and is_admin_feedback = false
+      and feedback_text is null
+    )
+  )
+);
+
+create table if not exists public.coptic_documents (
+  id bigserial primary key,
+  content text not null,
+  metadata jsonb not null default '{}'::jsonb,
+  embedding vector(768) not null
+);
+
 create index if not exists submissions_user_id_idx
   on public.submissions (user_id);
 
@@ -350,6 +394,27 @@ create index if not exists content_releases_status_created_at_idx
 create index if not exists content_releases_segment_created_at_idx
   on public.content_releases (audience_segment, created_at desc);
 
+create index if not exists coptic_documents_embedding_idx
+  on public.coptic_documents
+  using hnsw (embedding vector_ip_ops);
+
+alter table public.coptic_documents enable row level security;
+
+drop policy if exists "Allow public read access to coptic documents"
+  on public.coptic_documents;
+create policy "Allow public read access to coptic documents"
+  on public.coptic_documents
+  for select
+  using (true);
+
+drop policy if exists "Allow service role to manage documents"
+  on public.coptic_documents;
+create policy "Allow service role to manage documents"
+  on public.coptic_documents
+  for all
+  using (auth.role() = 'service_role')
+  with check (auth.role() = 'service_role');
+
 create index if not exists content_releases_delivery_requested_at_idx
   on public.content_releases (delivery_requested_at desc);
 
@@ -406,6 +471,16 @@ create index if not exists entry_reports_entry_id_idx
 
 create index if not exists entry_reports_status_created_at_idx
   on public.entry_reports (status, created_at desc);
+
+create index if not exists chat_feedback_events_user_created_idx
+  on public.chat_feedback_events (user_id, created_at desc);
+
+create index if not exists chat_feedback_events_signal_created_idx
+  on public.chat_feedback_events (signal, created_at desc);
+
+create index if not exists chat_feedback_events_assistant_message_idx
+  on public.chat_feedback_events (assistant_message_id)
+  where assistant_message_id is not null;
 
 create or replace function public.handle_new_user()
 returns trigger
@@ -510,6 +585,7 @@ alter table public.lesson_bookmarks enable row level security;
 alter table public.lesson_notes enable row level security;
 alter table public.entry_favorites enable row level security;
 alter table public.entry_reports enable row level security;
+alter table public.chat_feedback_events enable row level security;
 
 drop policy if exists "Users can read their own profile" on public.profiles;
 drop policy if exists "Admins can read all profiles" on public.profiles;
@@ -562,6 +638,9 @@ drop policy if exists "Users can read their own entry reports" on public.entry_r
 drop policy if exists "Users can insert their own entry reports" on public.entry_reports;
 drop policy if exists "Admins can read all entry reports" on public.entry_reports;
 drop policy if exists "Admins can update entry reports" on public.entry_reports;
+drop policy if exists "Users can insert their own chat feedback events" on public.chat_feedback_events;
+drop policy if exists "Users can read their own chat feedback events" on public.chat_feedback_events;
+drop policy if exists "Admins can read all chat feedback events" on public.chat_feedback_events;
 drop policy if exists "Avatars are publicly accessible." on storage.objects;
 drop policy if exists "Users can upload their own avatar." on storage.objects;
 drop policy if exists "Users can update their own avatar." on storage.objects;
@@ -883,6 +962,24 @@ for update
 to authenticated
 using (public.is_admin())
 with check (public.is_admin());
+
+create policy "Users can insert their own chat feedback events"
+on public.chat_feedback_events
+for insert
+to authenticated
+with check (auth.uid() = user_id);
+
+create policy "Users can read their own chat feedback events"
+on public.chat_feedback_events
+for select
+to authenticated
+using (auth.uid() = user_id);
+
+create policy "Admins can read all chat feedback events"
+on public.chat_feedback_events
+for select
+to authenticated
+using (public.is_admin());
 
 create policy "Users can read their own avatar objects"
 on storage.objects

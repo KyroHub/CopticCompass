@@ -101,17 +101,104 @@ async function getExactCount(
   label: string,
   query: PromiseLike<{
     count: number | null;
-    error: { message: string } | null;
+    error:
+      | {
+          code?: string;
+          details?: string | null;
+          hint?: string | null;
+          message?: string;
+        }
+      | null;
   }>,
 ) {
   const result = await query;
 
   if (result.error) {
-    console.error(`Error loading admin ${label} count:`, result.error);
+    const errorDetails = {
+      code: result.error.code,
+      details: result.error.details,
+      hint: result.error.hint,
+      message: result.error.message ?? "Unknown query error",
+    };
+
+    console.warn(`Unable to load admin ${label} count; falling back to 0.`, {
+      error: errorDetails,
+    });
     return 0;
   }
 
   return result.count ?? 0;
+}
+
+function hasCountErrorMessage(error: {
+  code?: string;
+  details?: string | null;
+  hint?: string | null;
+  message?: string;
+}) {
+  return Boolean(error.message && error.message.trim().length > 0);
+}
+
+function shouldRetryPendingCountWithoutDeletedAt(error: {
+  code?: string;
+  details?: string | null;
+  hint?: string | null;
+  message?: string;
+}) {
+  if (!hasCountErrorMessage(error)) {
+    return true;
+  }
+
+  const normalizedMessage = error.message!.toLowerCase();
+  return error.code === "42703" || normalizedMessage.includes("deleted_at");
+}
+
+async function getPendingSubmissionCount(supabase: AppSupabaseClient) {
+  const filteredResult = await supabase
+    .from("submissions")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "pending")
+    .is("deleted_at", null);
+
+  if (!filteredResult.error) {
+    return filteredResult.count ?? 0;
+  }
+
+  if (!shouldRetryPendingCountWithoutDeletedAt(filteredResult.error)) {
+    const errorDetails = {
+      code: filteredResult.error.code,
+      details: filteredResult.error.details,
+      hint: filteredResult.error.hint,
+      message: filteredResult.error.message ?? "Unknown query error",
+    };
+
+    console.warn(
+      "Unable to load admin pending submissions count; falling back to 0.",
+      { error: errorDetails },
+    );
+    return 0;
+  }
+
+  const fallbackResult = await supabase
+    .from("submissions")
+    .select("id", { count: "exact", head: true })
+    .eq("status", "pending");
+
+  if (!fallbackResult.error) {
+    return fallbackResult.count ?? 0;
+  }
+
+  const fallbackErrorDetails = {
+    code: fallbackResult.error.code,
+    details: fallbackResult.error.details,
+    hint: fallbackResult.error.hint,
+    message: fallbackResult.error.message ?? "Unknown query error",
+  };
+
+  console.warn("Unable to load admin pending submissions count; falling back to 0.", {
+    error: fallbackErrorDetails,
+  });
+  return 0;
 }
 
 /**
@@ -254,14 +341,7 @@ export async function loadAdminWorkspaceOverview(
         audienceSyncErrorCount,
         failedNotificationCount,
       ] = await Promise.all([
-        getExactCount(
-          "pending submissions",
-          supabase
-            .from("submissions")
-            .select("id", { count: "exact", head: true })
-            .eq("status", "pending")
-            .is("deleted_at", null),
-        ),
+        getPendingSubmissionCount(supabase),
         getExactCount(
           "open contact messages",
           supabase

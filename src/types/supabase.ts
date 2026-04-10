@@ -119,6 +119,92 @@ export type Database = {
         };
         Relationships: [];
       };
+      chat_feedback_events: {
+        Row: {
+          assistant_message_id: string | null;
+          assistant_response_text: string;
+          chat_id: string | null;
+          created_at: string;
+          feedback_text: string | null;
+          id: string;
+          inference_provider: "gemini" | "hf" | "openrouter";
+          is_admin_feedback: boolean;
+          page_excerpt: string | null;
+          page_path: string | null;
+          page_title: string | null;
+          page_url: string | null;
+          prompt_text: string;
+          signal: "admin_feedback" | "dislike" | "like";
+          user_id: string;
+          user_message_id: string | null;
+        };
+        Insert: {
+          assistant_message_id?: string | null;
+          assistant_response_text: string;
+          chat_id?: string | null;
+          created_at?: string;
+          feedback_text?: string | null;
+          id?: string;
+          inference_provider: "gemini" | "hf" | "openrouter";
+          is_admin_feedback?: boolean;
+          page_excerpt?: string | null;
+          page_path?: string | null;
+          page_title?: string | null;
+          page_url?: string | null;
+          prompt_text: string;
+          signal: "admin_feedback" | "dislike" | "like";
+          user_id: string;
+          user_message_id?: string | null;
+        };
+        Update: {
+          assistant_message_id?: string | null;
+          assistant_response_text?: string;
+          chat_id?: string | null;
+          created_at?: string;
+          feedback_text?: string | null;
+          id?: string;
+          inference_provider?: "gemini" | "hf" | "openrouter";
+          is_admin_feedback?: boolean;
+          page_excerpt?: string | null;
+          page_path?: string | null;
+          page_title?: string | null;
+          page_url?: string | null;
+          prompt_text?: string;
+          signal?: "admin_feedback" | "dislike" | "like";
+          user_id?: string;
+          user_message_id?: string | null;
+        };
+        Relationships: [
+          {
+            columns: ["user_id"];
+            foreignKeyName: "chat_feedback_events_user_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "profiles";
+          },
+        ];
+      };
+      coptic_documents: {
+        Row: {
+          content: string;
+          embedding: string | null;
+          id: number;
+          metadata: Json | null;
+        };
+        Insert: {
+          content: string;
+          embedding?: string | null;
+          id?: number;
+          metadata?: Json | null;
+        };
+        Update: {
+          content?: string;
+          embedding?: string | null;
+          id?: number;
+          metadata?: Json | null;
+        };
+        Relationships: [];
+      };
       notification_events: {
         Row: {
           aggregate_id: string;

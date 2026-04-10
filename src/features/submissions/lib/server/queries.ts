@@ -6,6 +6,79 @@ import type { AppSupabaseClient, QueryResult } from "@/lib/supabase/queryTypes";
 
 const ADMIN_SUBMISSION_HISTORY_LIMIT = 50;
 
+type SubmissionsStatus = "pending" | "reviewed";
+
+type SubmissionsQueryError = {
+  code?: string;
+  message?: string;
+} | null;
+
+function hasMeaningfulErrorMessage(error: SubmissionsQueryError) {
+  return Boolean(error?.message && error.message.trim().length > 0);
+}
+
+function shouldRetryWithoutDeletedAt(error: SubmissionsQueryError) {
+  if (!error) {
+    return false;
+  }
+
+  if (!hasMeaningfulErrorMessage(error)) {
+    return true;
+  }
+
+  const normalizedMessage = error.message!.toLowerCase();
+  return error.code === "42703" || normalizedMessage.includes("deleted_at");
+}
+
+function buildStatusQuery(
+  supabase: AppSupabaseClient,
+  status: SubmissionsStatus,
+  limit?: number,
+) {
+  const baseQuery = supabase
+    .from("submissions")
+    .select("*")
+    .eq("status", status)
+    .order("created_at", { ascending: false });
+
+  return typeof limit === "number" ? baseQuery.limit(limit) : baseQuery;
+}
+
+async function loadAdminSubmissionsByStatus(
+  supabase: AppSupabaseClient,
+  status: SubmissionsStatus,
+  limit?: number,
+) {
+  const filteredResult = await buildStatusQuery(supabase, status, limit).is(
+    "deleted_at",
+    null,
+  );
+
+  if (!shouldRetryWithoutDeletedAt(filteredResult.error)) {
+    return filteredResult;
+  }
+
+  return buildStatusQuery(supabase, status, limit);
+}
+
+function buildSubmissionsLoadError(
+  pendingError: SubmissionsQueryError,
+  historyError: SubmissionsQueryError,
+) {
+  if (pendingError && hasMeaningfulErrorMessage(pendingError)) {
+    return { message: pendingError.message!.trim() };
+  }
+
+  if (historyError && hasMeaningfulErrorMessage(historyError)) {
+    return { message: historyError.message!.trim() };
+  }
+
+  return {
+    message:
+      "Could not load submissions. Ensure migrations are applied and retry.",
+  };
+}
+
 /**
  * Loads the current user's non-deleted submissions in reverse chronological
  * order for dashboard and lesson-history views.
@@ -33,19 +106,12 @@ export async function getAdminSubmissions(
 ): Promise<QueryResult<AdminSubmission[]>> {
   const [pendingSubmissionsResult, historySubmissionsResult] =
     await Promise.all([
-      supabase
-        .from("submissions")
-        .select("*")
-        .is("deleted_at", null)
-        .eq("status", "pending")
-        .order("created_at", { ascending: false }),
-      supabase
-        .from("submissions")
-        .select("*")
-        .is("deleted_at", null)
-        .eq("status", "reviewed")
-        .order("created_at", { ascending: false })
-        .limit(ADMIN_SUBMISSION_HISTORY_LIMIT),
+      loadAdminSubmissionsByStatus(supabase, "pending"),
+      loadAdminSubmissionsByStatus(
+        supabase,
+        "reviewed",
+        ADMIN_SUBMISSION_HISTORY_LIMIT,
+      ),
     ]);
 
   if (
@@ -54,16 +120,12 @@ export async function getAdminSubmissions(
     historySubmissionsResult.error ||
     !historySubmissionsResult.data
   ) {
-    let error = { message: "Could not load submissions." };
-    if (pendingSubmissionsResult.error) {
-      error = { message: pendingSubmissionsResult.error.message };
-    } else if (historySubmissionsResult.error) {
-      error = { message: historySubmissionsResult.error.message };
-    }
-
     return {
       data: null,
-      error,
+      error: buildSubmissionsLoadError(
+        pendingSubmissionsResult.error,
+        historySubmissionsResult.error,
+      ),
     };
   }
 

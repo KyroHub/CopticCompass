@@ -78,6 +78,10 @@ export function getContactPath(locale?: Language) {
   return locale ? getLocalizedPath(locale, "/contact") : "/contact";
 }
 
+export function getChatPath() {
+  return "/chat";
+}
+
 export function getAnalyticsPath(locale?: Language) {
   return locale ? getLocalizedPath(locale, "/analytics") : "/analytics";
 }

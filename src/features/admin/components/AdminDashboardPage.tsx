@@ -6,8 +6,9 @@ import {
   AdminContactInboxSection,
   AdminEntryReportsSection,
   AdminNotificationsSection,
-  AdminReviewInboxSummary,
+  AdminRagKnowledgeSection,
   AdminReleasesSection,
+  AdminReviewInboxSummary,
   AdminSubmissionsSection,
   AdminSystemHealthSummary,
   AdminWorkspaceQuickJump,
@@ -78,6 +79,7 @@ export async function AdminDashboardPage({
           <AdminNotificationsSection
             notifications={dashboardData.notifications}
           />
+          <AdminRagKnowledgeSection />
         </div>
       </>
     );
@@ -95,6 +97,7 @@ export async function AdminDashboardPage({
             contactMessages={dashboardData.contactMessages}
           />
           <AdminEntryReportsSection entryReports={dashboardData.entryReports} />
+          <AdminRagKnowledgeSection />
         </div>
       </>
     );

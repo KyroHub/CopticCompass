@@ -16,10 +16,12 @@ import {
   deleteSubmission as deleteSubmissionSubmissionAction,
   submitFeedback as submitFeedbackAction,
 } from "./admin/submissions";
+import { ingestRagPdf as ingestRagPdfAction } from "./admin/rag";
 
 import type {
   ContentReleaseDraftState,
   DeleteContentReleaseState,
+  RagIngestionState,
   SendContentReleaseState,
   SyncAudienceContactsState,
 } from "./admin/states";
@@ -91,4 +93,11 @@ export async function updateContactMessageStatus(
   formData: FormData,
 ): ReturnType<typeof updateContactMessageStatusAction> {
   return updateContactMessageStatusAction(formData);
+}
+
+export async function ingestRagPdf(
+  prevState: RagIngestionState | null,
+  formData: FormData,
+): Promise<RagIngestionState> {
+  return ingestRagPdfAction(prevState, formData);
 }

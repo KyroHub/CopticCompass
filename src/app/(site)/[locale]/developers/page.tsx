@@ -20,13 +20,13 @@ import type { Metadata } from "next";
 const developerCopy = {
   en: {
     title: "Developers",
-    seoTitle: "Coptic Compass Grammar API for Developers",
+    seoTitle: "Coptic Compass Grammar + Shenute AI APIs for Developers",
     description:
-      "Explore the public Coptic Compass grammar API, OpenAPI schema, static JSON exports, and integration notes for developers building on the grammar dataset.",
+      "Explore the public Coptic Compass grammar API plus Shenute AI chat and OCR-backed image integration patterns for developer workflows.",
     eyebrow: "Developer Platform",
-    heroTitle: "Build on the Coptic grammar dataset",
+    heroTitle: "Build on grammar and Shenute AI APIs",
     heroDescription:
-      "The grammar API exposes a read-only, versioned dataset for lessons, concepts, examples, exercises, footnotes, and sources. Start with the developer guide, then move into Swagger or the raw OpenAPI document when you are ready to integrate.",
+      "The grammar API exposes a read-only, versioned dataset for lessons, concepts, examples, exercises, footnotes, and sources, while /api/chat powers Shenute AI interactions with provider selection and OCR-backed image context.",
     primaryCta: "Open API Docs",
     secondaryCta: "View OpenAPI JSON",
     discoveryTitle: "Start here",
@@ -38,6 +38,8 @@ const developerCopy = {
       "Fetch /api/v1/grammar/lessons for the published lesson index.",
       "Load /api/v1/grammar/lessons/[slug] for full lesson payloads.",
       "Use /api/openapi.json when generating clients or importing the schema into tooling.",
+      "Send POST /api/chat requests for Shenute AI responses (default provider: openrouter).",
+      "Send image OCR requests to POST /api/ocr so Coptic Compass forwards them to OCR_SERVICE_URL.",
     ],
     integrationTitle: "Integration notes",
     integrationItems: [
@@ -45,6 +47,10 @@ const developerCopy = {
       "The public dataset only exposes published lessons and their related concepts, examples, exercises, footnotes, and sources.",
       "The lesson filter accepts either a lesson slug or a canonical lesson id.",
       "For browser apps on another origin, a backend proxy is the safest default.",
+      "Shenute AI supports provider values: openrouter, gemini, and hf.",
+      "Image upload and camera capture flows run OCR first and append extracted text under [Image OCR Context] before calling /api/chat.",
+      "Set OCR_SERVICE_URL and optionally OCR_UPLOAD_FIELD when your OCR backend requires a specific multipart field name.",
+      "The /api/ocr endpoint proxies multipart OCR uploads and returns upstream OCR responses to the client.",
     ],
     endpointsTitle: "High-value endpoints",
     endpoints: [
@@ -67,6 +73,16 @@ const developerCopy = {
         href: "/api/openapi.json",
         label: "/api/openapi.json",
         description: "Machine-readable OpenAPI document.",
+      },
+      {
+        href: "/api/chat",
+        label: "/api/chat",
+        description: "Shenute AI chat endpoint with provider routing and fallback handling.",
+      },
+      {
+        href: "/api/ocr",
+        label: "/api/ocr",
+        description: "OCR proxy endpoint that forwards image uploads to OCR_SERVICE_URL.",
       },
     ],
     exampleTitle: "Example request",
@@ -95,6 +111,16 @@ const developerCopy = {
         label: "Grammar hub",
         description: "See the public content the API is exposing.",
       },
+      {
+        href: "/chat",
+        label: "Shenute AI Chat",
+        description: "Reference UI for provider selection plus OCR-backed image and camera messaging.",
+      },
+      {
+        href: "/api/ocr",
+        label: "OCR proxy endpoint",
+        description: "Send multipart OCR requests without exposing your upstream OCR service URL.",
+      },
     ],
     breadcrumbLabel: "Developers",
     code: `const response = await fetch(
@@ -103,16 +129,50 @@ const developerCopy = {
 
 const payload = await response.json();
 const lessonTitles = payload.data.map((lesson) => lesson.title.en);`,
+    chatExampleTitle: "Shenute AI request example",
+    chatExampleCaption:
+      "A minimal POST request to /api/chat using OpenRouter as provider.",
+    chatCode: `const response = await fetch("https://kyrilloswannes.com/api/chat", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    inferenceProvider: "openrouter",
+    messages: [
+      {
+        id: "u1",
+        role: "user",
+        parts: [{ type: "text", text: "Translate this Coptic sentence." }],
+      },
+    ],
+  }),
+});
+
+const streamOrText = await response.text();`,
+    ocrExampleTitle: "OCR integration notes",
+    ocrExampleCaption:
+      "Clients can call /api/ocr, and Coptic Compass forwards to OCR_SERVICE_URL then returns the upstream OCR response.",
+    ocrCode: `# .env.local
+OCR_SERVICE_URL=https://your-ocr-service/upload
+# Optional for strict OCR backends:
+OCR_UPLOAD_FIELD=file
+
+curl -X POST "https://kyrilloswannes.com/api/ocr?lang=cop" \
+  -F "file=@/path/to/coptic-image.jpg"
+
+# Proxy OCR flow
+# 1) client POSTs to /api/ocr
+# 2) server forwards to OCR_SERVICE_URL
+# 3) upstream OCR response is returned to the client`,
   },
   nl: {
     title: "Ontwikkelaars",
-    seoTitle: "Koptisch Kompas grammatica-API voor ontwikkelaars",
+    seoTitle: "Koptisch Kompas grammatica- en Shenute AI-API's voor ontwikkelaars",
     description:
-      "Verken de publieke grammatica-API van Koptisch Kompas, het OpenAPI-schema, statische JSON-exports en integratienotities voor ontwikkelaars.",
+      "Verken de publieke grammatica-API van Koptisch Kompas plus Shenute AI-chat en OCR-ondersteunde afbeeldingsintegratie voor ontwikkelaars.",
     eyebrow: "Developerplatform",
-    heroTitle: "Bouw voort op de grammatica-dataset",
+    heroTitle: "Bouw voort op grammatica- en Shenute AI-API's",
     heroDescription:
-      "De grammatica-API biedt een alleen-lezen, geversioneerde dataset voor lessen, begrippen, voorbeelden, oefeningen, voetnoten en bronnen. Begin met deze gids en ga daarna verder naar Swagger of het ruwe OpenAPI-document zodra je wilt integreren.",
+      "De grammatica-API biedt een alleen-lezen, geversioneerde dataset voor lessen, begrippen, voorbeelden, oefeningen, voetnoten en bronnen, terwijl /api/chat Shenute AI-interacties levert met providerkeuze en OCR-context voor afbeeldingen.",
     primaryCta: "Open API-docs",
     secondaryCta: "Bekijk OpenAPI JSON",
     discoveryTitle: "Begin hier",
@@ -124,6 +184,8 @@ const lessonTitles = payload.data.map((lesson) => lesson.title.en);`,
       "Gebruik /api/v1/grammar/lessons voor de index van gepubliceerde lessen.",
       "Laad /api/v1/grammar/lessons/[slug] voor volledige lespayloads.",
       "Gebruik /api/openapi.json om clients te genereren of het schema in tooling te importeren.",
+      "Verstuur POST /api/chat-requests voor Shenute AI-antwoorden (standaardprovider: openrouter).",
+      "Stuur OCR-afbeeldingsrequests naar POST /api/ocr zodat Coptic Compass ze doorstuurt naar OCR_SERVICE_URL.",
     ],
     integrationTitle: "Integratienotities",
     integrationItems: [
@@ -131,6 +193,10 @@ const lessonTitles = payload.data.map((lesson) => lesson.title.en);`,
       "De publieke dataset bevat alleen gepubliceerde lessen en de bijbehorende begrippen, voorbeelden, oefeningen, voetnoten en bronnen.",
       "De lesson-filter accepteert zowel een slug als een canonieke les-id.",
       "Voor browser-apps op een andere origin is een backendproxy de veiligste standaardoptie.",
+      "Shenute AI ondersteunt providers: openrouter, gemini en hf.",
+      "Bij upload van afbeeldingen of cameracaptures draait OCR eerst; de geëxtraheerde tekst wordt toegevoegd onder [Image OCR Context] vóór de call naar /api/chat.",
+      "Stel OCR_SERVICE_URL in en optioneel OCR_UPLOAD_FIELD als je OCR-backend een vaste multipart veldnaam vereist.",
+      "Het endpoint /api/ocr proxyt multipart OCR-uploads en geeft het upstream OCR-resultaat terug aan de client.",
     ],
     endpointsTitle: "Belangrijke endpoints",
     endpoints: [
@@ -154,6 +220,16 @@ const lessonTitles = payload.data.map((lesson) => lesson.title.en);`,
         href: "/api/openapi.json",
         label: "/api/openapi.json",
         description: "Machineleesbaar OpenAPI-document.",
+      },
+      {
+        href: "/api/chat",
+        label: "/api/chat",
+        description: "Shenute AI-chatendpoint met provider-routering en fallback-afhandeling.",
+      },
+      {
+        href: "/api/ocr",
+        label: "/api/ocr",
+        description: "OCR-proxyendpoint dat afbeelding-uploads doorstuurt naar OCR_SERVICE_URL.",
       },
     ],
     exampleTitle: "Voorbeeldrequest",
@@ -181,6 +257,16 @@ const lessonTitles = payload.data.map((lesson) => lesson.title.en);`,
         label: "Grammatica-overzicht",
         description: "Bekijk de publieke inhoud die de API ontsluit.",
       },
+      {
+        href: "/chat",
+        label: "Shenute AI-chat",
+        description: "Referentie-UI met providerkeuze en OCR-ondersteunde beeld- en cameraberichten.",
+      },
+      {
+        href: "/api/ocr",
+        label: "OCR-proxyendpoint",
+        description: "Verstuur multipart OCR-requests zonder je upstream OCR-service-URL te publiceren.",
+      },
     ],
     breadcrumbLabel: "Ontwikkelaars",
     code: `const response = await fetch(
@@ -189,6 +275,40 @@ const lessonTitles = payload.data.map((lesson) => lesson.title.en);`,
 
 const payload = await response.json();
 const lessonTitles = payload.data.map((lesson) => lesson.title.en);`,
+    chatExampleTitle: "Voorbeeld Shenute AI-request",
+    chatExampleCaption:
+      "Een minimale POST-request naar /api/chat met OpenRouter als provider.",
+    chatCode: `const response = await fetch("https://kyrilloswannes.com/api/chat", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    inferenceProvider: "openrouter",
+    messages: [
+      {
+        id: "u1",
+        role: "user",
+        parts: [{ type: "text", text: "Vertaal deze Koptische zin." }],
+      },
+    ],
+  }),
+});
+
+const streamOfText = await response.text();`,
+    ocrExampleTitle: "OCR-integratienotities",
+    ocrExampleCaption:
+      "Clients kunnen /api/ocr aanroepen; Coptic Compass stuurt door naar OCR_SERVICE_URL en geeft de upstream OCR-response terug.",
+    ocrCode: `# .env.local
+OCR_SERVICE_URL=https://jouw-ocr-service/upload
+# Optioneel voor strikte OCR-backends:
+OCR_UPLOAD_FIELD=file
+
+curl -X POST "https://kyrilloswannes.com/api/ocr?lang=cop" \
+  -F "file=@/pad/naar/koptische-afbeelding.jpg"
+
+# OCR-proxyflow
+# 1) client POST naar /api/ocr
+# 2) server stuurt door naar OCR_SERVICE_URL
+# 3) upstream OCR-response terug naar client`,
   },
 } as const;
 
@@ -381,6 +501,32 @@ export default async function DevelopersPage({
               </Link>
             ))}
           </div>
+        </SurfacePanel>
+      </section>
+
+      <section className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
+        <SurfacePanel rounded="3xl" variant="elevated" className="p-6 md:p-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500 dark:text-stone-400">
+            {copy.chatExampleTitle}
+          </p>
+          <p className="mt-3 text-sm leading-7 text-stone-600 dark:text-stone-300">
+            {copy.chatExampleCaption}
+          </p>
+          <pre className="mt-5 overflow-x-auto rounded-2xl border border-stone-200/80 bg-stone-950 px-4 py-4 text-sm leading-6 text-stone-100 dark:border-stone-800/80">
+            <code>{copy.chatCode}</code>
+          </pre>
+        </SurfacePanel>
+
+        <SurfacePanel rounded="3xl" variant="elevated" className="p-6 md:p-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500 dark:text-stone-400">
+            {copy.ocrExampleTitle}
+          </p>
+          <p className="mt-3 text-sm leading-7 text-stone-600 dark:text-stone-300">
+            {copy.ocrExampleCaption}
+          </p>
+          <pre className="mt-5 overflow-x-auto rounded-2xl border border-stone-200/80 bg-stone-950 px-4 py-4 text-sm leading-6 text-stone-100 dark:border-stone-800/80">
+            <code>{copy.ocrCode}</code>
+          </pre>
         </SurfacePanel>
       </section>
     </PageShell>

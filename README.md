@@ -19,6 +19,7 @@ Coptic Compass is a digital home for Coptic study, bringing together a searchabl
 - A public grammar API with JSON endpoints and OpenAPI documentation for reuse in other tools and teaching workflows.
 - A private student dashboard for profile settings, grammar progress, bookmarks, notes, and exercise submissions.
 - A private instructor workspace with review inboxes, focused submission grading, release drafting, audience sync, and notification health.
+- Shenute AI chat with OCR-assisted image/camera prompts and provider routing across OpenRouter, Gemini, and Hugging Face.
 - English and Dutch interfaces, with legacy non-localized routes redirecting to localized pages.
 
 ## Highlights
@@ -28,6 +29,7 @@ Coptic Compass is a digital home for Coptic study, bringing together a searchabl
 - Grammar lessons that connect terminology, examples, sources, learner progress, and dictionary entries in both a calmer reading layout and an optional desktop study mode.
 - A versioned grammar dataset exported to `public/data/grammar/v1` and shared by the site, API, and developer docs.
 - Private learner and instructor flows built around submissions, feedback, bookmarks, notes, profile management, release communications, and delivery monitoring.
+- OCR proxying and admin RAG ingestion for knowledge indexing into pgvector-backed search context.
 - Developer-facing grammar endpoints and docs for lessons, concepts, examples, exercises, footnotes, sources, and the OpenAPI spec.
 
 ## Interface Preview
@@ -114,6 +116,124 @@ npm run data:grammar:export
 npm run test:e2e:local
 npm run build
 ```
+
+## AI, OCR, and RAG
+
+The repository includes a production-integrated AI workflow called Shenute AI, plus a server-side OCR proxy and admin-facing RAG ingestion tools.
+
+### Chat API (`/api/chat`)
+
+- Endpoint: `POST /api/chat`
+- Default provider: `openrouter`
+- Supported providers: `openrouter`, `gemini`, `hf`
+- Payload style: AI SDK UI messages
+- Runtime behavior:
+  - provider selection from request body (`inferenceProvider`)
+  - retry/fallback for transient failures
+  - fallback path when Hugging Face is rate-limited
+
+### OCR Proxy (`/api/ocr`)
+
+- Endpoint: `POST /api/ocr`
+- Expected input: `multipart/form-data`
+- Proxy flow:
+  - client uploads file to `/api/ocr`
+  - app forwards to `OCR_SERVICE_URL`
+  - upstream body and content-type are returned to client
+- Optional controls:
+  - query `?lang=<code>` (for example `cop`)
+  - `OCR_UPLOAD_FIELD` to match upstream form-field conventions
+
+### Admin RAG Ingestion (`/api/admin/rag/*`)
+
+- Ingestion endpoint: `POST /api/admin/rag/ingest`
+- Status endpoint: `GET /api/admin/rag/status`
+- Logs endpoint: `GET /api/admin/rag/logs`
+- JSON source ingestion: `POST /api/admin/rag/ingest-json-sources`
+- Supported file types: PDF, image, DOCX, text-like formats
+- Processing pipeline:
+  - extract text (native parser + OCR when enabled)
+  - verify/reconcile PDF native extraction vs OCR output
+  - chunk with overlap
+  - generate embeddings via selected provider
+  - normalize embedding dimensions for DB compatibility
+  - insert into `public.coptic_documents`
+
+### Embedding Dimensions
+
+There are two separate dimension concepts:
+
+- Source embedding dimension: what the provider/model returns.
+- Storage vector dimension: what `public.coptic_documents.embedding` expects.
+
+Current model defaults in this project:
+
+| Provider | Model | Source Dimension |
+| --- | --- | --- |
+| Gemini | `gemini-embedding-2-preview` | `3072` (configured output default) |
+| Hugging Face | `sentence-transformers/all-mpnet-base-v2` | `768` |
+| OpenRouter | `nvidia/llama-nemotron-embed-vl-1b-v2:free` | `2048` |
+
+Current DB target:
+
+- `RAG_VECTOR_DIMENSIONS=768`
+
+Implementation notes:
+
+- Ingestion reconciles source dimensions to `RAG_VECTOR_DIMENSIONS` before DB insert.
+- If the DB reports a different expected `vector(N)` size, ingestion can auto-adapt and retry.
+
+## Environment Variable Reference
+
+The complete placeholder set lives in `.env.example`. The list below highlights the most important variables by subsystem.
+
+### Core App and Supabase
+
+- `NEXT_PUBLIC_SITE_URL`
+- `SITE_URL`
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+- `SUPABASE_SERVICE_ROLE_KEY`
+
+### Shenute AI / LLM Routing
+
+- `OPENROUTER_API_KEY`
+- `OPENROUTER_BASE_URL`
+- `OPENROUTER_CHAT_MODEL`
+- `OPENROUTER_EMBEDDING_MODEL`
+- `OPENROUTER_HTTP_REFERER`
+- `OPENROUTER_APP_TITLE`
+- `GEMINI_API_KEY`
+- `GEMINI_CHAT_MODEL` (optional)
+- `GEMINI_EMBEDDING_MODEL` (optional)
+- `GEMINI_EMBEDDING_OUTPUT_DIMENSION` (default `3072`)
+- `HF_TOKEN`
+- `HF_CHAT_MODEL` (optional)
+- `HF_EMBEDDING_MODEL` (optional)
+
+### OCR
+
+- `OCR_SERVICE_URL`
+- `OCR_UPLOAD_FIELD`
+
+### RAG Ingestion Tuning
+
+- `RAG_EMBEDDING_BATCH_SIZE`
+- `RAG_INSERT_BATCH_SIZE`
+- `RAG_OCR_TIMEOUT_MS`
+- `RAG_OCR_MAX_RETRIES`
+- `RAG_DB_INSERT_MAX_RETRIES`
+- `RAG_RETRY_BASE_MS`
+- `RAG_VECTOR_DIMENSIONS`
+
+### Embedding Network Retry Tuning
+
+- `HF_EMBEDDING_TIMEOUT_MS`
+- `HF_EMBEDDING_MAX_RETRIES`
+- `HF_EMBEDDING_RETRY_BASE_MS`
+- `OPENROUTER_EMBEDDING_TIMEOUT_MS`
+- `OPENROUTER_EMBEDDING_MAX_RETRIES`
+- `OPENROUTER_EMBEDDING_RETRY_BASE_MS`
 
 ## Code Organization
 
@@ -224,6 +344,60 @@ Docs and developer pages:
 - `/api/openapi.json`
 - `/en/developers`
 - `/nl/developers`
+
+Additional app API surfaces:
+
+- `/api/chat`
+- `/api/ocr`
+- `/api/admin/rag/status`
+- `/api/admin/rag/logs`
+- `/api/admin/rag/ingest`
+- `/api/admin/rag/ingest-json-sources`
+
+## Troubleshooting
+
+### Admin dashboard shows submission/database errors
+
+Symptoms:
+
+- pending submissions count falls back to `0`
+- submissions section shows setup/database warning
+
+Checks:
+
+- apply latest Supabase migrations (`npm run db:push`)
+- verify `submissions` schema is up to date (including soft-delete support)
+- verify admin account/role and session are valid
+
+### RAG insert fails with vector dimension mismatch
+
+Example:
+
+- `Failed to insert document chunks: expected 768 dimensions, not 2048`
+
+Checks:
+
+- confirm `RAG_VECTOR_DIMENSIONS` matches your DB column (`vector(768)` by default)
+- confirm source model dimension for your selected provider
+- keep one vector table per target dimension in production if you want strict no-reprojection indexing
+
+Current implementation already applies dimension reconciliation before insert and can adapt to DB-reported expectations.
+
+### OCR errors or empty extraction
+
+Checks:
+
+- verify `OCR_SERVICE_URL`
+- set `OCR_UPLOAD_FIELD` if upstream expects non-default form field names
+- test OCR endpoint directly: `POST /api/ocr?lang=cop` with a sample image/PDF
+
+### Local dev server repeatedly exits
+
+Checks:
+
+- ensure Node version matches `.nvmrc` and `package.json` engines (`>=22.13.0 <23`)
+- remove stale lock file (`.next/dev/lock`) and restart
+- run focused lint/type checks for touched files when Turbopack output is noisy
 
 ## Project Status
 
