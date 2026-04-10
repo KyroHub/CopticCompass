@@ -67,7 +67,10 @@ function getMessageText(message: ChatMessageLike) {
     .trim();
 }
 
-function findPreviousUserMessage(messages: ChatMessageLike[], startIndex: number) {
+function findPreviousUserMessage(
+  messages: ChatMessageLike[],
+  startIndex: number,
+) {
   for (let index = startIndex - 1; index >= 0; index -= 1) {
     const message = messages[index];
     if (message.role !== "user") {
@@ -123,9 +126,7 @@ function buildPageContext(pathname: string): PageContextPayload {
   const mainText = document.querySelector("main")?.textContent ?? "";
   const bodyText = document.body?.textContent ?? "";
   const extractedText =
-    mainText.replace(/\s+/g, " ").trim().length > 0
-      ? mainText
-      : bodyText;
+    mainText.replace(/\s+/g, " ").trim().length > 0 ? mainText : bodyText;
   const excerpt = extractedText.replace(/\s+/g, " ").trim().slice(0, 3500);
 
   return {
@@ -140,16 +141,17 @@ export function FloatingAiAssistant() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
-  const [inferenceProvider, setInferenceProvider] = useState<ChatProvider>("openrouter");
+  const [inferenceProvider, setInferenceProvider] =
+    useState<ChatProvider>("openrouter");
   const [ocrPending, setOcrPending] = useState(false);
   const [ocrError, setOcrError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [selectedImagePreviewUrl, setSelectedImagePreviewUrl] = useState<string | null>(
-    null,
-  );
-  const [selectedImageSource, setSelectedImageSource] = useState<"upload" | "camera" | null>(
-    null,
-  );
+  const [selectedImagePreviewUrl, setSelectedImagePreviewUrl] = useState<
+    string | null
+  >(null);
+  const [selectedImageSource, setSelectedImageSource] = useState<
+    "upload" | "camera" | null
+  >(null);
   const [cameraOpen, setCameraOpen] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
 
@@ -163,9 +165,8 @@ export function FloatingAiAssistant() {
   const [selectedReactionByMessage, setSelectedReactionByMessage] = useState<
     Record<string, ChatReactionSignal>
   >({});
-  const [adminFeedbackDraftByMessage, setAdminFeedbackDraftByMessage] = useState<
-    Record<string, string>
-  >({});
+  const [adminFeedbackDraftByMessage, setAdminFeedbackDraftByMessage] =
+    useState<Record<string, string>>({});
   const [feedbackStateByMessage, setFeedbackStateByMessage] =
     useState<FeedbackStateByMessage>({});
 
@@ -238,7 +239,10 @@ export function FloatingAiAssistant() {
   }
 
   async function openCamera() {
-    if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
+    if (
+      typeof navigator === "undefined" ||
+      !navigator.mediaDevices?.getUserMedia
+    ) {
       setCameraError("Camera is not supported on this device/browser.");
       return;
     }
@@ -346,7 +350,10 @@ export function FloatingAiAssistant() {
         const ocrFormData = new FormData();
         ocrFormData.append("file", selectedImage);
         const ocrText = await processOCRImage(ocrFormData);
-        const trimmedOcrText = ocrText.replace(/\s+/g, " ").trim().slice(0, 6000);
+        const trimmedOcrText = ocrText
+          .replace(/\s+/g, " ")
+          .trim()
+          .slice(0, 6000);
 
         composedPrompt = [
           composedPrompt,
@@ -407,7 +414,9 @@ export function FloatingAiAssistant() {
     }
 
     const assistantResponse = getMessageText(options.assistantMessage);
-    const prompt = options.promptMessage ? getMessageText(options.promptMessage) : "";
+    const prompt = options.promptMessage
+      ? getMessageText(options.promptMessage)
+      : "";
 
     if (!assistantResponse || !prompt) {
       setFeedbackStateByMessage((current) => ({
@@ -514,7 +523,8 @@ export function FloatingAiAssistant() {
     assistantMessage: ChatMessageLike,
     promptMessage: ChatMessageLike | null,
   ) {
-    const draft = adminFeedbackDraftByMessage[assistantMessage.id]?.trim() ?? "";
+    const draft =
+      adminFeedbackDraftByMessage[assistantMessage.id]?.trim() ?? "";
     if (!draft) {
       setFeedbackStateByMessage((current) => ({
         ...current,
@@ -591,7 +601,8 @@ export function FloatingAiAssistant() {
           <div className="flex-1 space-y-3 overflow-y-auto bg-stone-50/60 p-3 dark:bg-stone-950/40">
             {messages.length === 0 ? (
               <div className="rounded-xl border border-dashed border-stone-300 bg-white px-3 py-4 text-sm text-stone-600 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300">
-                Ask anything about this page, Coptic grammar, vocabulary, or translation.
+                Ask anything about this page, Coptic grammar, vocabulary, or
+                translation.
               </div>
             ) : (
               messages.map((message, index) => {
@@ -602,7 +613,8 @@ export function FloatingAiAssistant() {
                     : null;
                 const feedbackState = feedbackStateByMessage[message.id];
                 const selectedReaction = selectedReactionByMessage[message.id];
-                const adminDraft = adminFeedbackDraftByMessage[message.id] ?? "";
+                const adminDraft =
+                  adminFeedbackDraftByMessage[message.id] ?? "";
                 const isFeedbackPending = feedbackState?.status === "pending";
 
                 return (
@@ -615,38 +627,44 @@ export function FloatingAiAssistant() {
                     }
                   >
                     {Array.isArray(message.parts)
-                      ? message.parts.filter(isTextMessagePart).map((part, partIndex) => {
-                          if (message.role === "assistant") {
-                            return (
-                              <ReactMarkdown
-                                key={partIndex}
-                                remarkPlugins={[remarkGfm]}
-                                components={{
-                                  a: ({ ...props }) => (
-                                    <a
-                                      {...props}
-                                      target="_blank"
-                                      rel="noreferrer"
-                                      className="underline"
-                                    />
-                                  ),
-                                  code: ({ className, children, ...props }) => (
-                                    <code
-                                      className={`rounded bg-stone-200/70 px-1 py-0.5 text-[0.95em] dark:bg-stone-800 ${className || ""}`}
-                                      {...props}
-                                    >
-                                      {children}
-                                    </code>
-                                  ),
-                                }}
-                              >
-                                {part.text}
-                              </ReactMarkdown>
-                            );
-                          }
+                      ? message.parts
+                          .filter(isTextMessagePart)
+                          .map((part, partIndex) => {
+                            if (message.role === "assistant") {
+                              return (
+                                <ReactMarkdown
+                                  key={partIndex}
+                                  remarkPlugins={[remarkGfm]}
+                                  components={{
+                                    a: ({ ...props }) => (
+                                      <a
+                                        {...props}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="underline"
+                                      />
+                                    ),
+                                    code: ({
+                                      className,
+                                      children,
+                                      ...props
+                                    }) => (
+                                      <code
+                                        className={`rounded bg-stone-200/70 px-1 py-0.5 text-[0.95em] dark:bg-stone-800 ${className || ""}`}
+                                        {...props}
+                                      >
+                                        {children}
+                                      </code>
+                                    ),
+                                  }}
+                                >
+                                  {part.text}
+                                </ReactMarkdown>
+                              );
+                            }
 
-                          return <p key={partIndex}>{part.text}</p>;
-                        })
+                            return <p key={partIndex}>{part.text}</p>;
+                          })
                       : null}
 
                     {message.role === "assistant" ? (
@@ -655,7 +673,11 @@ export function FloatingAiAssistant() {
                           <button
                             type="button"
                             onClick={() => {
-                              void handleReaction("like", assistantMessage, promptMessage);
+                              void handleReaction(
+                                "like",
+                                assistantMessage,
+                                promptMessage,
+                              );
                             }}
                             disabled={!isAuthenticated || isFeedbackPending}
                             className={`rounded border px-2 py-1 font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${
@@ -669,7 +691,11 @@ export function FloatingAiAssistant() {
                           <button
                             type="button"
                             onClick={() => {
-                              void handleReaction("dislike", assistantMessage, promptMessage);
+                              void handleReaction(
+                                "dislike",
+                                assistantMessage,
+                                promptMessage,
+                              );
                             }}
                             disabled={!isAuthenticated || isFeedbackPending}
                             className={`rounded border px-2 py-1 font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${
@@ -704,7 +730,10 @@ export function FloatingAiAssistant() {
                             <button
                               type="button"
                               onClick={() => {
-                                void handleAdminFeedbackSubmit(assistantMessage, promptMessage);
+                                void handleAdminFeedbackSubmit(
+                                  assistantMessage,
+                                  promptMessage,
+                                );
                               }}
                               disabled={!isAuthenticated || isFeedbackPending}
                               className="rounded bg-stone-900 px-2 py-1 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60 dark:bg-stone-100 dark:text-stone-900"
@@ -715,7 +744,11 @@ export function FloatingAiAssistant() {
                         </details>
 
                         {feedbackState ? (
-                          <p className={getFeedbackStatusClass(feedbackState.status)}>
+                          <p
+                            className={getFeedbackStatusClass(
+                              feedbackState.status,
+                            )}
+                          >
                             {feedbackState.message}
                           </p>
                         ) : null}
@@ -739,7 +772,10 @@ export function FloatingAiAssistant() {
             ) : null}
           </div>
 
-          <form onSubmit={handleSubmit} className="border-t border-stone-200 bg-white p-3 dark:border-stone-700 dark:bg-stone-900">
+          <form
+            onSubmit={handleSubmit}
+            className="border-t border-stone-200 bg-white p-3 dark:border-stone-700 dark:bg-stone-900"
+          >
             {error ? (
               <p className="mb-2 rounded-md border border-red-200 bg-red-50 px-2 py-1 text-xs text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-300">
                 {error.message || "Request failed."}
@@ -804,7 +840,8 @@ export function FloatingAiAssistant() {
               <div className="mb-2 rounded-lg border border-stone-200 bg-stone-50 p-2 dark:border-stone-700 dark:bg-stone-800/60">
                 <div className="mb-1 flex items-center justify-between">
                   <p className="text-[11px] text-stone-600 dark:text-stone-300">
-                    Image attached ({selectedImageSource === "camera" ? "camera" : "upload"})
+                    Image attached (
+                    {selectedImageSource === "camera" ? "camera" : "upload"})
                   </p>
                   <button
                     type="button"
@@ -863,7 +900,11 @@ export function FloatingAiAssistant() {
               />
               <button
                 type="submit"
-                disabled={(!inputValue.trim() && !selectedImage) || isLoading || ocrPending}
+                disabled={
+                  (!inputValue.trim() && !selectedImage) ||
+                  isLoading ||
+                  ocrPending
+                }
                 className="rounded-xl bg-sky-600 px-3 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
               >
                 Send

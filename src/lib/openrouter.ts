@@ -34,7 +34,9 @@ const OPENROUTER_EMBEDDING_RETRY_BASE_MS = Number(
 function getRequiredOpenRouterApiKey() {
   const token = process.env.OPENROUTER_API_KEY;
   if (!token) {
-    throw new Error("OPENROUTER_API_KEY is not configured in environment variables.");
+    throw new Error(
+      "OPENROUTER_API_KEY is not configured in environment variables.",
+    );
   }
 
   return token;

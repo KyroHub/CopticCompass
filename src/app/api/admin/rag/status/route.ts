@@ -109,7 +109,8 @@ async function getGrammarJsonStatus(): Promise<StatusItem> {
 
   for (const grammarDirectoryPath of getGrammarDirectoryCandidates()) {
     try {
-      const jsonFileCount = await countJsonFilesRecursively(grammarDirectoryPath);
+      const jsonFileCount =
+        await countJsonFilesRecursively(grammarDirectoryPath);
       foundDirectory = true;
       foundDirectoryLabel = path
         .relative(process.cwd(), grammarDirectoryPath)
@@ -123,12 +124,13 @@ async function getGrammarJsonStatus(): Promise<StatusItem> {
       return {
         healthy: true,
         label: "Grammar JSON RAG",
-        note:
-          `${new Intl.NumberFormat("en-US").format(jsonFileCount)} JSON files available in ${foundDirectoryLabel}`,
+        note: `${new Intl.NumberFormat("en-US").format(jsonFileCount)} JSON files available in ${foundDirectoryLabel}`,
       };
     } catch (error) {
       lastErrorMessage =
-        error instanceof Error ? error.message : "Grammar JSON source is unavailable";
+        error instanceof Error
+          ? error.message
+          : "Grammar JSON source is unavailable";
     }
   }
 
@@ -240,13 +242,13 @@ export async function GET() {
 
     const llmConfigured = Boolean(
       process.env.HF_TOKEN ||
-        process.env.GEMINI_API_KEY ||
-        process.env.OPENROUTER_API_KEY,
+      process.env.GEMINI_API_KEY ||
+      process.env.OPENROUTER_API_KEY,
     );
     const embeddingConfigured = Boolean(
       process.env.HF_TOKEN ||
-        process.env.GEMINI_API_KEY ||
-        process.env.OPENROUTER_API_KEY,
+      process.env.GEMINI_API_KEY ||
+      process.env.OPENROUTER_API_KEY,
     );
 
     let chunkCount = 0;
@@ -269,7 +271,8 @@ export async function GET() {
           chunkCount = count ?? 0;
         }
       } catch (error) {
-        vectorDbNote = error instanceof Error ? error.message : "Unknown DB error";
+        vectorDbNote =
+          error instanceof Error ? error.message : "Unknown DB error";
       }
     }
 
@@ -318,9 +321,7 @@ export async function GET() {
       {
         success: false,
         error:
-          error instanceof Error
-            ? error.message
-            : "Could not load RAG status.",
+          error instanceof Error ? error.message : "Could not load RAG status.",
       },
       { status: 500 },
     );

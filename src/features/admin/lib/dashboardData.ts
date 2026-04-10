@@ -101,14 +101,12 @@ async function getExactCount(
   label: string,
   query: PromiseLike<{
     count: number | null;
-    error:
-      | {
-          code?: string;
-          details?: string | null;
-          hint?: string | null;
-          message?: string;
-        }
-      | null;
+    error: {
+      code?: string;
+      details?: string | null;
+      hint?: string | null;
+      message?: string;
+    } | null;
   }>,
 ) {
   const result = await query;
@@ -195,9 +193,12 @@ async function getPendingSubmissionCount(supabase: AppSupabaseClient) {
     message: fallbackResult.error.message ?? "Unknown query error",
   };
 
-  console.warn("Unable to load admin pending submissions count; falling back to 0.", {
-    error: fallbackErrorDetails,
-  });
+  console.warn(
+    "Unable to load admin pending submissions count; falling back to 0.",
+    {
+      error: fallbackErrorDetails,
+    },
+  );
   return 0;
 }
 

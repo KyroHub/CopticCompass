@@ -1,10 +1,7 @@
 import { embedMany } from "ai";
 import mammoth from "mammoth";
 import pdfParse from "pdf-parse/lib/pdf-parse.js";
-import {
-  GEMINI_EMBEDDING_MODEL,
-  getGeminiEmbeddingModel,
-} from "@/lib/gemini";
+import { GEMINI_EMBEDDING_MODEL, getGeminiEmbeddingModel } from "@/lib/gemini";
 import { HF_EMBEDDING_MODEL, generateHFEmbeddings } from "@/lib/hf";
 import {
   OPENROUTER_EMBEDDING_MODEL,
@@ -25,9 +22,13 @@ const GEMINI_EMBEDDING_OUTPUT_DIMENSION = Number(
 const INSERT_BATCH_SIZE = Number(process.env.RAG_INSERT_BATCH_SIZE ?? "50");
 const OCR_TIMEOUT_MS = Number(process.env.RAG_OCR_TIMEOUT_MS ?? "90000");
 const OCR_MAX_RETRIES = Number(process.env.RAG_OCR_MAX_RETRIES ?? "2");
-const DB_INSERT_MAX_RETRIES = Number(process.env.RAG_DB_INSERT_MAX_RETRIES ?? "3");
+const DB_INSERT_MAX_RETRIES = Number(
+  process.env.RAG_DB_INSERT_MAX_RETRIES ?? "3",
+);
 const RETRY_BASE_MS = Number(process.env.RAG_RETRY_BASE_MS ?? "1500");
-const RAG_VECTOR_DIMENSIONS = Number(process.env.RAG_VECTOR_DIMENSIONS ?? "768");
+const RAG_VECTOR_DIMENSIONS = Number(
+  process.env.RAG_VECTOR_DIMENSIONS ?? "768",
+);
 const OCR_UPLOAD_FIELD_FALLBACKS = [
   "file",
   "image",
@@ -368,10 +369,7 @@ function collectTextCandidates(payload: unknown, depth = 0): string[] {
 
   for (const [key, value] of Object.entries(record)) {
     const loweredKey = key.toLowerCase();
-    if (
-      OCR_TEXT_LIKE_KEYS.includes(loweredKey) &&
-      typeof value === "string"
-    ) {
+    if (OCR_TEXT_LIKE_KEYS.includes(loweredKey) && typeof value === "string") {
       const normalized = normalizeCandidateText(value);
       if (normalized) {
         collected.push(normalized);
@@ -555,7 +553,10 @@ function detectSourceType(file: File): SourceType | null {
     return "pdf";
   }
 
-  if (file.type.startsWith(IMAGE_MIME_PREFIX) || IMAGE_EXTENSIONS.has(extension)) {
+  if (
+    file.type.startsWith(IMAGE_MIME_PREFIX) ||
+    IMAGE_EXTENSIONS.has(extension)
+  ) {
     return "image";
   }
 
@@ -610,22 +611,32 @@ function estimateTokens(charCount: number) {
   return Math.max(1, Math.round(charCount / 4));
 }
 
-function buildChunkStats(chunks: string[], sourceTextChars: number): RagChunkStats {
+function buildChunkStats(
+  chunks: string[],
+  sourceTextChars: number,
+): RagChunkStats {
   const lengths = chunks.map((chunk) => chunk.length);
   const wordCounts = chunks.map((chunk) => countWords(chunk));
   const tokenEstimates = lengths.map((length) => estimateTokens(length));
   const totalChunkChars = lengths.reduce((sum, value) => sum + value, 0);
-  const totalEstimatedTokens = tokenEstimates.reduce((sum, value) => sum + value, 0);
+  const totalEstimatedTokens = tokenEstimates.reduce(
+    (sum, value) => sum + value,
+    0,
+  );
   const totalChunkWords = wordCounts.reduce((sum, value) => sum + value, 0);
   const minChunkChars = lengths.length > 0 ? Math.min(...lengths) : 0;
   const maxChunkChars = lengths.length > 0 ? Math.max(...lengths) : 0;
   const minChunkWords = wordCounts.length > 0 ? Math.min(...wordCounts) : 0;
   const maxChunkWords = wordCounts.length > 0 ? Math.max(...wordCounts) : 0;
-  const minChunkEstimatedTokens = tokenEstimates.length > 0 ? Math.min(...tokenEstimates) : 0;
-  const maxChunkEstimatedTokens = tokenEstimates.length > 0 ? Math.max(...tokenEstimates) : 0;
+  const minChunkEstimatedTokens =
+    tokenEstimates.length > 0 ? Math.min(...tokenEstimates) : 0;
+  const maxChunkEstimatedTokens =
+    tokenEstimates.length > 0 ? Math.max(...tokenEstimates) : 0;
   const overlapOverheadPct =
     sourceTextChars > 0
-      ? Math.round(((totalChunkChars - sourceTextChars) / sourceTextChars) * 1000) / 10
+      ? Math.round(
+          ((totalChunkChars - sourceTextChars) / sourceTextChars) * 1000,
+        ) / 10
       : 0;
 
   return {
@@ -677,7 +688,10 @@ function normalizeEmbeddingDimensions(
     return embedding.slice(0, targetDimensions);
   }
 
-  return [...embedding, ...new Array(targetDimensions - embedding.length).fill(0)];
+  return [
+    ...embedding,
+    ...new Array(targetDimensions - embedding.length).fill(0),
+  ];
 }
 
 function getExpectedVectorDimensionsFromInsertError(message: string) {
@@ -970,7 +984,11 @@ export async function ingestRagFile({
     }
 
     const extractStartMs = Date.now();
-    logIngestion(ingestionId, `Extracting text from ${sourceType} source...`, logs);
+    logIngestion(
+      ingestionId,
+      `Extracting text from ${sourceType} source...`,
+      logs,
+    );
     const { ocrUsed, reconciliation, text } = await extractSourceText(
       file,
       sourceType,
@@ -991,7 +1009,11 @@ export async function ingestRagFile({
     }
 
     if (normalizeWhitespace(text).length < 60) {
-      logIngestion(ingestionId, "Extraction produced insufficient text content.", logs);
+      logIngestion(
+        ingestionId,
+        "Extraction produced insufficient text content.",
+        logs,
+      );
       return {
         success: false,
         error:
@@ -1146,7 +1168,10 @@ export async function ingestRagFile({
           continue;
         }
 
-        if (attempt >= DB_INSERT_MAX_RETRIES || !shouldRetryNetworkError(error)) {
+        if (
+          attempt >= DB_INSERT_MAX_RETRIES ||
+          !shouldRetryNetworkError(error)
+        ) {
           throw new Error(`Failed to insert document chunks: ${error.message}`);
         }
 
@@ -1159,7 +1184,9 @@ export async function ingestRagFile({
       }
 
       if (!inserted) {
-        throw new Error(`Failed to insert document batch ${batchNumber} after retries.`);
+        throw new Error(
+          `Failed to insert document batch ${batchNumber} after retries.`,
+        );
       }
 
       logIngestion(
@@ -1191,7 +1218,9 @@ export async function ingestRagFile({
     };
   } catch (error) {
     const errorMessage =
-      error instanceof Error ? error.message : "Could not ingest this file into the RAG index.";
+      error instanceof Error
+        ? error.message
+        : "Could not ingest this file into the RAG index.";
     logIngestion(ingestionId, `Ingestion failed: ${errorMessage}`, logs);
     markLiveIngestionDone(ingestionId, errorMessage);
 

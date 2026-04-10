@@ -127,7 +127,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const prompt = normalizeMultiline(typeof body.prompt === "string" ? body.prompt : "");
+    const prompt = normalizeMultiline(
+      typeof body.prompt === "string" ? body.prompt : "",
+    );
     const assistantResponse = normalizeMultiline(
       typeof body.assistantResponse === "string" ? body.assistantResponse : "",
     );
@@ -189,24 +191,30 @@ export async function POST(request: Request) {
     const inferenceProvider = toProvider(body.inferenceProvider);
     const chatId = toOptionalBoundedString(body.chatId, 120);
     const userMessageId = toOptionalBoundedString(body.userMessageId, 120);
-    const assistantMessageId = toOptionalBoundedString(body.assistantMessageId, 120);
+    const assistantMessageId = toOptionalBoundedString(
+      body.assistantMessageId,
+      120,
+    );
 
-    const { error: insertError } = await supabase.from("chat_feedback_events").insert({
-      assistant_message_id: assistantMessageId ?? null,
-      assistant_response_text: assistantResponse,
-      chat_id: chatId ?? null,
-      feedback_text: signal === "admin_feedback" ? feedbackText ?? null : null,
-      inference_provider: inferenceProvider,
-      is_admin_feedback: signal === "admin_feedback",
-      page_excerpt: pageContext?.excerpt ?? null,
-      page_path: pageContext?.path ?? null,
-      page_title: pageContext?.title ?? null,
-      page_url: pageContext?.url ?? null,
-      prompt_text: prompt,
-      signal,
-      user_id: user.id,
-      user_message_id: userMessageId ?? null,
-    });
+    const { error: insertError } = await supabase
+      .from("chat_feedback_events")
+      .insert({
+        assistant_message_id: assistantMessageId ?? null,
+        assistant_response_text: assistantResponse,
+        chat_id: chatId ?? null,
+        feedback_text:
+          signal === "admin_feedback" ? (feedbackText ?? null) : null,
+        inference_provider: inferenceProvider,
+        is_admin_feedback: signal === "admin_feedback",
+        page_excerpt: pageContext?.excerpt ?? null,
+        page_path: pageContext?.path ?? null,
+        page_title: pageContext?.title ?? null,
+        page_url: pageContext?.url ?? null,
+        prompt_text: prompt,
+        signal,
+        user_id: user.id,
+        user_message_id: userMessageId ?? null,
+      });
 
     if (insertError) {
       console.error("Failed to persist chat feedback event:", insertError);
@@ -241,7 +249,10 @@ export async function POST(request: Request) {
         ragIngestionError instanceof Error
           ? ragIngestionError.message
           : "Unknown RAG ingestion error.";
-      console.error("Failed to ingest chat feedback into RAG:", ragIngestionError);
+      console.error(
+        "Failed to ingest chat feedback into RAG:",
+        ragIngestionError,
+      );
     }
 
     return NextResponse.json({
@@ -255,7 +266,10 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown chat feedback error.",
+        error:
+          error instanceof Error
+            ? error.message
+            : "Unknown chat feedback error.",
       },
       { status: 500 },
     );

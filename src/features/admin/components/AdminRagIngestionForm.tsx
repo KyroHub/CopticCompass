@@ -135,14 +135,15 @@ function StatusDot({ healthy }: { healthy: boolean }) {
 
 export function AdminRagIngestionForm() {
   const [activeIngestId, setActiveIngestId] = useState<string | null>(null);
-  const [activeBulkIngestId, setActiveBulkIngestId] = useState<string | null>(null);
-  const [bulkJsonState, setBulkJsonState] = useState<BulkJsonIngestionResponse | null>(
+  const [activeBulkIngestId, setActiveBulkIngestId] = useState<string | null>(
     null,
   );
+  const [bulkJsonState, setBulkJsonState] =
+    useState<BulkJsonIngestionResponse | null>(null);
   const [bulkJsonPending, setBulkJsonPending] = useState(false);
-  const [embeddingProvider, setEmbeddingProvider] = useState<"gemini" | "hf" | "openrouter">(
-    "hf",
-  );
+  const [embeddingProvider, setEmbeddingProvider] = useState<
+    "gemini" | "hf" | "openrouter"
+  >("hf");
   const [ragStatus, setRagStatus] = useState<RagStatusResponse | null>(null);
   const [ragStatusError, setRagStatusError] = useState<string | null>(null);
   const [statusLoading, setStatusLoading] = useState(true);
@@ -212,10 +213,13 @@ export function AdminRagIngestionForm() {
               ingestId: target.ingestId,
               prefix: target.prefix ? "1" : "0",
             });
-            const response = await fetch(`/api/admin/rag/logs?${query.toString()}`, {
-              method: "GET",
-              cache: "no-store",
-            });
+            const response = await fetch(
+              `/api/admin/rag/logs?${query.toString()}`,
+              {
+                method: "GET",
+                cache: "no-store",
+              },
+            );
 
             if (!response.ok) {
               return [] as DashboardLogEntry[];
@@ -284,7 +288,9 @@ export function AdminRagIngestionForm() {
         ingestId: crypto.randomUUID(),
         message: "Could not ingest dictionary and grammar JSON files.",
         error:
-          error instanceof Error ? error.message : "Unknown ingestion request error.",
+          error instanceof Error
+            ? error.message
+            : "Unknown ingestion request error.",
       });
     } finally {
       setBulkJsonPending(false);
@@ -393,7 +399,9 @@ export function AdminRagIngestionForm() {
               <span>
                 {ragStatus.statuses.llm.label}
                 {ragStatus.statuses.llm.note ? (
-                  <span className="ml-1 text-xs text-[#86c8d8]">{ragStatus.statuses.llm.note}</span>
+                  <span className="ml-1 text-xs text-[#86c8d8]">
+                    {ragStatus.statuses.llm.note}
+                  </span>
                 ) : null}
               </span>
             </li>
@@ -409,7 +417,9 @@ export function AdminRagIngestionForm() {
               </span>
             </li>
             <li className="flex items-start gap-3">
-              <StatusDot healthy={ragStatus.statuses.dictionaryJsonRag.healthy} />
+              <StatusDot
+                healthy={ragStatus.statuses.dictionaryJsonRag.healthy}
+              />
               <span>
                 {ragStatus.statuses.dictionaryJsonRag.label}
                 {ragStatus.statuses.dictionaryJsonRag.note ? (
@@ -435,7 +445,9 @@ export function AdminRagIngestionForm() {
               <span>
                 {ragStatus.statuses.vectorDb.label}
                 {ragStatus.statuses.vectorDb.note ? (
-                  <span className="ml-1 text-xs text-[#86c8d8]">{ragStatus.statuses.vectorDb.note}</span>
+                  <span className="ml-1 text-xs text-[#86c8d8]">
+                    {ragStatus.statuses.vectorDb.note}
+                  </span>
                 ) : null}
               </span>
             </li>
@@ -443,7 +455,9 @@ export function AdminRagIngestionForm() {
               <StatusDot healthy={ragStatus.statuses.knowledgeBase.healthy} />
               <span>
                 {ragStatus.statuses.knowledgeBase.label}
-                <span className="ml-1 text-[#c99831]">({formatNumber(ragStatus.chunkCount)} chunks)</span>
+                <span className="ml-1 text-[#c99831]">
+                  ({formatNumber(ragStatus.chunkCount)} chunks)
+                </span>
               </span>
             </li>
           </ul>
@@ -513,7 +527,11 @@ export function AdminRagIngestionForm() {
       </label>
 
       <div className="flex flex-wrap items-center gap-3">
-        <button type="submit" disabled={isPending} className="btn-secondary px-6">
+        <button
+          type="submit"
+          disabled={isPending}
+          className="btn-secondary px-6"
+        >
           {isPending ? "Indexing file into RAG..." : "Ingest file into RAG"}
         </button>
         <button
@@ -560,12 +578,15 @@ export function AdminRagIngestionForm() {
           align="left"
         >
           {bulkJsonState.message}
-          {bulkJsonState.ingestId ? ` Request ID: ${bulkJsonState.ingestId}.` : ""}
+          {bulkJsonState.ingestId
+            ? ` Request ID: ${bulkJsonState.ingestId}.`
+            : ""}
           {` Sources: ${formatNumber(bulkJsonState.filesSucceeded)}/${formatNumber(bulkJsonState.filesDiscovered)} succeeded.`}
         </StatusNotice>
       ) : null}
 
-      {bulkJsonState?.results && bulkJsonState.results.some((result) => !result.success) ? (
+      {bulkJsonState?.results &&
+      bulkJsonState.results.some((result) => !result.success) ? (
         <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
           <p className="font-semibold">Failed JSON sources</p>
           <ul className="mt-2 list-disc space-y-1 pl-5">
@@ -598,14 +619,22 @@ export function AdminRagIngestionForm() {
               : "No ingestion logs yet. Run file or JSON ingestion to populate this stream."}
           </p>
         ) : (
-          <div className="max-h-64 space-y-1 overflow-y-auto rounded-lg border border-[#12344f] bg-[#041321] p-3 font-mono text-[11px]" aria-live="polite">
+          <div
+            className="max-h-64 space-y-1 overflow-y-auto rounded-lg border border-[#12344f] bg-[#041321] p-3 font-mono text-[11px]"
+            aria-live="polite"
+          >
             {dashboardLogs.map((log, index) => (
-              <p key={`${log.timestamp}-${index}`} className="leading-relaxed text-[#b8e2e8]">
+              <p
+                key={`${log.timestamp}-${index}`}
+                className="leading-relaxed text-[#b8e2e8]"
+              >
                 {log.line ? (
                   <span>{log.line}</span>
                 ) : (
                   <>
-                    <span className="text-[#48d8e7]">[{formatLogTimestamp(log.timestamp)}]</span>{" "}
+                    <span className="text-[#48d8e7]">
+                      [{formatLogTimestamp(log.timestamp)}]
+                    </span>{" "}
                     {"sourcePath" in log && log.sourcePath ? (
                       <span className="text-[#92d8e2]">{log.sourcePath} </span>
                     ) : null}
@@ -645,33 +674,55 @@ export function AdminRagIngestionForm() {
           <p className="mb-3 font-semibold">Chunk details</p>
           <div className="grid gap-2 sm:grid-cols-2">
             <p>
-              Source text chars (normalized): {formatNumber(state.chunkStats.sourceTextChars)}
+              Source text chars (normalized):{" "}
+              {formatNumber(state.chunkStats.sourceTextChars)}
             </p>
-            <p>Total chunk chars stored: {formatNumber(state.chunkStats.totalChunkChars)}</p>
+            <p>
+              Total chunk chars stored:{" "}
+              {formatNumber(state.chunkStats.totalChunkChars)}
+            </p>
             <p>Total chunks: {formatNumber(state.chunkStats.totalChunks)}</p>
             <p>
-              Target size / overlap: {formatNumber(state.chunkStats.chunkSizeTarget)} / {formatNumber(state.chunkStats.chunkOverlap)}
+              Target size / overlap:{" "}
+              {formatNumber(state.chunkStats.chunkSizeTarget)} /{" "}
+              {formatNumber(state.chunkStats.chunkOverlap)}
             </p>
             <p>
-              Min / Avg / Max chunk chars: {formatNumber(state.chunkStats.minChunkChars)} / {formatNumber(state.chunkStats.avgChunkChars)} / {formatNumber(state.chunkStats.maxChunkChars)}
+              Min / Avg / Max chunk chars:{" "}
+              {formatNumber(state.chunkStats.minChunkChars)} /{" "}
+              {formatNumber(state.chunkStats.avgChunkChars)} /{" "}
+              {formatNumber(state.chunkStats.maxChunkChars)}
             </p>
             <p>
-              Min / Avg / Max chunk words: {formatNumber(state.chunkStats.minChunkWords)} / {formatNumber(state.chunkStats.avgChunkWords)} / {formatNumber(state.chunkStats.maxChunkWords)}
+              Min / Avg / Max chunk words:{" "}
+              {formatNumber(state.chunkStats.minChunkWords)} /{" "}
+              {formatNumber(state.chunkStats.avgChunkWords)} /{" "}
+              {formatNumber(state.chunkStats.maxChunkWords)}
             </p>
             <p>
-              Est. tokens total: {formatNumber(state.chunkStats.totalEstimatedTokens)}
+              Est. tokens total:{" "}
+              {formatNumber(state.chunkStats.totalEstimatedTokens)}
             </p>
             <p>
-              Est. tokens per chunk (min / avg / max): {formatNumber(state.chunkStats.minChunkEstimatedTokens)} / {formatNumber(state.chunkStats.avgChunkEstimatedTokens)} / {formatNumber(state.chunkStats.maxChunkEstimatedTokens)}
+              Est. tokens per chunk (min / avg / max):{" "}
+              {formatNumber(state.chunkStats.minChunkEstimatedTokens)} /{" "}
+              {formatNumber(state.chunkStats.avgChunkEstimatedTokens)} /{" "}
+              {formatNumber(state.chunkStats.maxChunkEstimatedTokens)}
             </p>
             <p>
-              Overlap overhead: {state.chunkStats.overlapOverheadPct > 0 ? "+" : ""}{state.chunkStats.overlapOverheadPct}%
+              Overlap overhead:{" "}
+              {state.chunkStats.overlapOverheadPct > 0 ? "+" : ""}
+              {state.chunkStats.overlapOverheadPct}%
             </p>
             <p>
-              Embedding batches: {formatNumber(state.chunkStats.embeddingBatchesPlanned)} (size {formatNumber(state.chunkStats.embeddingBatchSize)})
+              Embedding batches:{" "}
+              {formatNumber(state.chunkStats.embeddingBatchesPlanned)} (size{" "}
+              {formatNumber(state.chunkStats.embeddingBatchSize)})
             </p>
             <p>
-              Insert batches: {formatNumber(state.chunkStats.insertBatchesPlanned)} (size {formatNumber(state.chunkStats.insertBatchSize)})
+              Insert batches:{" "}
+              {formatNumber(state.chunkStats.insertBatchesPlanned)} (size{" "}
+              {formatNumber(state.chunkStats.insertBatchSize)})
             </p>
           </div>
         </div>

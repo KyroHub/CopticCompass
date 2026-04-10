@@ -168,11 +168,11 @@ There are two separate dimension concepts:
 
 Current model defaults in this project:
 
-| Provider | Model | Source Dimension |
-| --- | --- | --- |
-| Gemini | `gemini-embedding-2-preview` | `3072` (configured output default) |
-| Hugging Face | `sentence-transformers/all-mpnet-base-v2` | `768` |
-| OpenRouter | `nvidia/llama-nemotron-embed-vl-1b-v2:free` | `2048` |
+| Provider     | Model                                       | Source Dimension                   |
+| ------------ | ------------------------------------------- | ---------------------------------- |
+| Gemini       | `gemini-embedding-2-preview`                | `3072` (configured output default) |
+| Hugging Face | `sentence-transformers/all-mpnet-base-v2`   | `768`                              |
+| OpenRouter   | `nvidia/llama-nemotron-embed-vl-1b-v2:free` | `2048`                             |
 
 Current DB target:
 

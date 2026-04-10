@@ -45,7 +45,9 @@ const GRAMMAR_JSON_CANDIDATE_DIRECTORIES = [
   path.join(DATA_ROOT, "grammer"),
 ];
 
-async function collectJsonFilesRecursively(directoryPath: string): Promise<string[]> {
+async function collectJsonFilesRecursively(
+  directoryPath: string,
+): Promise<string[]> {
   const entries = await readdir(directoryPath, { withFileTypes: true });
   const files: string[] = [];
 
@@ -77,7 +79,8 @@ async function collectJsonKnowledgeSourcePaths() {
 
   for (const grammarDirectoryPath of GRAMMAR_JSON_CANDIDATE_DIRECTORIES) {
     try {
-      const grammarFiles = await collectJsonFilesRecursively(grammarDirectoryPath);
+      const grammarFiles =
+        await collectJsonFilesRecursively(grammarDirectoryPath);
       for (const grammarFile of grammarFiles) {
         sources.add(grammarFile);
       }
@@ -90,7 +93,10 @@ async function collectJsonKnowledgeSourcePaths() {
 }
 
 function buildSourceTitle(sourcePath: string) {
-  const relativePath = path.relative(DATA_ROOT, sourcePath).split(path.sep).join("/");
+  const relativePath = path
+    .relative(DATA_ROOT, sourcePath)
+    .split(path.sep)
+    .join("/");
   return `JSON Source: data/${relativePath}`;
 }
 
@@ -144,9 +150,14 @@ export async function POST(request: Request) {
       );
     }
 
-    const requestBody = (await request.json().catch(() => ({}))) as JsonSourceIngestionRequest;
+    const requestBody = (await request
+      .json()
+      .catch(() => ({}))) as JsonSourceIngestionRequest;
     const requestedIngestId = requestBody.ingestId;
-    if (typeof requestedIngestId === "string" && requestedIngestId.trim().length > 0) {
+    if (
+      typeof requestedIngestId === "string" &&
+      requestedIngestId.trim().length > 0
+    ) {
       ingestId = requestedIngestId.trim();
     }
     const embeddingProvider = toProvider(requestBody.embeddingProvider);
@@ -156,7 +167,8 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           success: false,
-          error: "No dictionary or grammar JSON files were found under public/data.",
+          error:
+            "No dictionary or grammar JSON files were found under public/data.",
           ingestId,
         },
         { status: 400 },
@@ -215,7 +227,8 @@ export async function POST(request: Request) {
         results.push({
           success: false,
           sourcePath: buildSourceTitle(sourcePath),
-          error: error instanceof Error ? error.message : "Unknown ingestion error.",
+          error:
+            error instanceof Error ? error.message : "Unknown ingestion error.",
         });
       }
     }

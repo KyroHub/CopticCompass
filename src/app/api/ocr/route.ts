@@ -13,9 +13,11 @@ const OCR_UPLOAD_FIELD_FALLBACKS = [
 
 function getUploadFieldCandidates(incomingFieldName: string) {
   const preferred = process.env.OCR_UPLOAD_FIELD?.trim();
-  const candidates = [preferred, incomingFieldName, ...OCR_UPLOAD_FIELD_FALLBACKS].filter(
-    (value): value is string => Boolean(value && value.length > 0),
-  );
+  const candidates = [
+    preferred,
+    incomingFieldName,
+    ...OCR_UPLOAD_FIELD_FALLBACKS,
+  ].filter((value): value is string => Boolean(value && value.length > 0));
 
   return Array.from(new Set(candidates));
 }
@@ -28,7 +30,11 @@ function isUnexpectedFieldErrorMessage(value: string) {
   );
 }
 
-function buildTargetUrl(requestUrl: string, ocrServiceUrl: string, formData: FormData) {
+function buildTargetUrl(
+  requestUrl: string,
+  ocrServiceUrl: string,
+  formData: FormData,
+) {
   const incomingUrl = new URL(requestUrl);
   const targetUrl = new URL(ocrServiceUrl);
 
@@ -55,7 +61,10 @@ function buildTargetUrl(requestUrl: string, ocrServiceUrl: string, formData: For
   return targetUrl;
 }
 
-function collectForwardableTextFields(formData: FormData, excludedKeys: Set<string>) {
+function collectForwardableTextFields(
+  formData: FormData,
+  excludedKeys: Set<string>,
+) {
   const fields: Array<{ key: string; value: string }> = [];
 
   for (const [key, value] of formData.entries()) {
@@ -153,7 +162,12 @@ export async function POST(request: Request) {
           error: lastFailureMessage,
           upstreamStatus: upstreamResponse.status,
         },
-        { status: upstreamResponse.status >= 400 && upstreamResponse.status < 600 ? upstreamResponse.status : 502 },
+        {
+          status:
+            upstreamResponse.status >= 400 && upstreamResponse.status < 600
+              ? upstreamResponse.status
+              : 502,
+        },
       );
     }
 
