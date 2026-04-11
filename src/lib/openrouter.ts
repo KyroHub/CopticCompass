@@ -13,9 +13,9 @@ type OpenRouterChatCompletionResponse = {
   }>;
 };
 
-export const OPENROUTER_BASE_URL =
+const OPENROUTER_BASE_URL =
   process.env.OPENROUTER_BASE_URL ?? "https://openrouter.ai/api/v1";
-export const OPENROUTER_CHAT_MODEL =
+const OPENROUTER_CHAT_MODEL =
   process.env.OPENROUTER_CHAT_MODEL ?? "openrouter/free";
 export const OPENROUTER_EMBEDDING_MODEL =
   process.env.OPENROUTER_EMBEDDING_MODEL ??

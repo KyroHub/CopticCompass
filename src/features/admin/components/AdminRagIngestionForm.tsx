@@ -1,8 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import type { RagIngestionState } from "@/actions/admin/states";
+import { Badge } from "@/components/Badge";
+import { buttonClassName } from "@/components/Button";
 import { StatusNotice } from "@/components/StatusNotice";
+import { SurfacePanel } from "@/components/SurfacePanel";
 
 function formatNumber(value: number) {
   return new Intl.NumberFormat("en-US").format(value);
@@ -15,6 +19,24 @@ function formatLogTimestamp(value: string) {
   }
 
   return date.toLocaleTimeString();
+}
+
+function getEmbeddingProviderLabel(
+  provider: "gemini" | "hf" | "openrouter" | undefined,
+) {
+  if (provider === "gemini") {
+    return "Gemini";
+  }
+
+  if (provider === "openrouter") {
+    return "OpenRouter";
+  }
+
+  if (provider === "hf") {
+    return "Hugging Face";
+  }
+
+  return null;
 }
 
 type RagStatusItem = {
@@ -311,14 +333,14 @@ export function AdminRagIngestionForm() {
       setActiveIngestId(ingestId);
       formData.set("ingest_id", ingestId);
 
-      const selectedProvider =
-        formData.get("embedding_provider") === "gemini"
-          ? "gemini"
-          : formData.get("embedding_provider") === "openrouter"
-            ? "openrouter"
-            : "hf";
+      let selectedProvider: "gemini" | "openrouter" | "hf" = "hf";
+      if (formData.get("embedding_provider") === "gemini") {
+        selectedProvider = "gemini";
+      } else if (formData.get("embedding_provider") === "openrouter") {
+        selectedProvider = "openrouter";
+      }
       setEmbeddingProvider(selectedProvider);
-      console.info(
+      console.warn(
         `[RAG] Starting ingestion ${ingestId} with provider=${selectedProvider}. Watch server logs for stage timings.`,
       );
 
@@ -352,7 +374,7 @@ export function AdminRagIngestionForm() {
         sourceName: payload.sourceName,
       });
 
-      console.info(
+      console.warn(
         `[RAG] Completed ingestion request ${payload.ingestId ?? "(no id)"} in ${Math.round(performance.now() - startedAt)} ms.`,
       );
       void loadRagStatus();
@@ -372,34 +394,40 @@ export function AdminRagIngestionForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="rounded-xl bg-[#071b2d] p-5 text-[#f5d18a] shadow-sm">
+      <SurfacePanel rounded="4xl" variant="elevated" className="p-5">
         <div className="mb-3 flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#3cc6d6]">
-            Status
-          </p>
+          <Badge tone="accent" size="xs" caps>
+            System Status
+          </Badge>
           <button
             type="button"
             onClick={() => {
               void loadRagStatus();
             }}
-            className="rounded-md border border-[#1f4a63] px-2 py-1 text-[11px] text-[#86c8d8] hover:bg-[#0c2a43]"
+            className={buttonClassName({ size: "sm", variant: "secondary" })}
           >
             Refresh
           </button>
         </div>
 
-        {statusLoading ? (
-          <p className="text-xs text-[#86c8d8]">Checking RAG services...</p>
-        ) : ragStatusError ? (
-          <p className="text-xs text-red-300">{ragStatusError}</p>
-        ) : ragStatus ? (
+        {statusLoading && (
+          <p className="text-xs text-stone-500 dark:text-stone-400">
+            Checking RAG services...
+          </p>
+        )}
+        {!statusLoading && ragStatusError && (
+          <p className="text-xs text-red-500 dark:text-red-300">
+            {ragStatusError}
+          </p>
+        )}
+        {!statusLoading && !ragStatusError && ragStatus && (
           <ul className="space-y-2 text-base">
             <li className="flex items-start gap-3">
               <StatusDot healthy={ragStatus.statuses.llm.healthy} />
-              <span>
+              <span className="text-stone-700 dark:text-stone-200">
                 {ragStatus.statuses.llm.label}
                 {ragStatus.statuses.llm.note ? (
-                  <span className="ml-1 text-xs text-[#86c8d8]">
+                  <span className="ml-1 text-xs text-stone-500 dark:text-stone-400">
                     {ragStatus.statuses.llm.note}
                   </span>
                 ) : null}
@@ -407,10 +435,10 @@ export function AdminRagIngestionForm() {
             </li>
             <li className="flex items-start gap-3">
               <StatusDot healthy={ragStatus.statuses.embeddingModel.healthy} />
-              <span>
+              <span className="text-stone-700 dark:text-stone-200">
                 {ragStatus.statuses.embeddingModel.label}
                 {ragStatus.statuses.embeddingModel.note ? (
-                  <span className="ml-1 text-xs text-[#86c8d8]">
+                  <span className="ml-1 text-xs text-stone-500 dark:text-stone-400">
                     {ragStatus.statuses.embeddingModel.note}
                   </span>
                 ) : null}
@@ -420,10 +448,10 @@ export function AdminRagIngestionForm() {
               <StatusDot
                 healthy={ragStatus.statuses.dictionaryJsonRag.healthy}
               />
-              <span>
+              <span className="text-stone-700 dark:text-stone-200">
                 {ragStatus.statuses.dictionaryJsonRag.label}
                 {ragStatus.statuses.dictionaryJsonRag.note ? (
-                  <span className="ml-1 text-xs text-[#86c8d8]">
+                  <span className="ml-1 text-xs text-stone-500 dark:text-stone-400">
                     {ragStatus.statuses.dictionaryJsonRag.note}
                   </span>
                 ) : null}
@@ -431,10 +459,10 @@ export function AdminRagIngestionForm() {
             </li>
             <li className="flex items-start gap-3">
               <StatusDot healthy={ragStatus.statuses.grammarJsonRag.healthy} />
-              <span>
+              <span className="text-stone-700 dark:text-stone-200">
                 {ragStatus.statuses.grammarJsonRag.label}
                 {ragStatus.statuses.grammarJsonRag.note ? (
-                  <span className="ml-1 text-xs text-[#86c8d8]">
+                  <span className="ml-1 text-xs text-stone-500 dark:text-stone-400">
                     {ragStatus.statuses.grammarJsonRag.note}
                   </span>
                 ) : null}
@@ -442,10 +470,10 @@ export function AdminRagIngestionForm() {
             </li>
             <li className="flex items-start gap-3">
               <StatusDot healthy={ragStatus.statuses.vectorDb.healthy} />
-              <span>
+              <span className="text-stone-700 dark:text-stone-200">
                 {ragStatus.statuses.vectorDb.label}
                 {ragStatus.statuses.vectorDb.note ? (
-                  <span className="ml-1 text-xs text-[#86c8d8]">
+                  <span className="ml-1 text-xs text-stone-500 dark:text-stone-400">
                     {ragStatus.statuses.vectorDb.note}
                   </span>
                 ) : null}
@@ -453,16 +481,16 @@ export function AdminRagIngestionForm() {
             </li>
             <li className="flex items-start gap-3">
               <StatusDot healthy={ragStatus.statuses.knowledgeBase.healthy} />
-              <span>
+              <span className="text-stone-700 dark:text-stone-200">
                 {ragStatus.statuses.knowledgeBase.label}
-                <span className="ml-1 text-[#c99831]">
+                <span className="ml-1 text-sky-600 dark:text-sky-300">
                   ({formatNumber(ragStatus.chunkCount)} chunks)
                 </span>
               </span>
             </li>
           </ul>
-        ) : null}
-      </div>
+        )}
+      </SurfacePanel>
 
       <div className="grid gap-4 md:grid-cols-2">
         <label className="space-y-2">
@@ -510,15 +538,15 @@ export function AdminRagIngestionForm() {
           value={embeddingProvider}
           onChange={(event) => {
             const value = event.target.value;
-            setEmbeddingProvider(
-              value === "gemini"
-                ? "gemini"
-                : value === "openrouter"
-                  ? "openrouter"
-                  : "hf",
-            );
+            let newProvider: "gemini" | "hf" | "openrouter" = "hf";
+            if (value === "gemini") {
+              newProvider = "gemini";
+            } else if (value === "openrouter") {
+              newProvider = "openrouter";
+            }
+            setEmbeddingProvider(newProvider);
           }}
-          className="rounded-xl border border-stone-200 bg-white/80 px-3 py-2 text-sm text-stone-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-300/35 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
+          className="select-base h-11 rounded-xl bg-white/80 text-sm dark:bg-stone-900"
         >
           <option value="hf">Hugging Face</option>
           <option value="gemini">Gemini</option>
@@ -530,7 +558,7 @@ export function AdminRagIngestionForm() {
         <button
           type="submit"
           disabled={isPending}
-          className="btn-secondary px-6"
+          className={buttonClassName({ className: "px-6" })}
         >
           {isPending ? "Indexing file into RAG..." : "Ingest file into RAG"}
         </button>
@@ -540,7 +568,10 @@ export function AdminRagIngestionForm() {
           onClick={() => {
             void handleIngestJsonSources();
           }}
-          className="rounded-xl border border-sky-300 bg-sky-50 px-6 py-2 text-sm font-semibold text-sky-800 shadow-sm transition-colors hover:bg-sky-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-sky-800 dark:bg-sky-900/30 dark:text-sky-200 dark:hover:bg-sky-900/40"
+          className={buttonClassName({
+            className: "px-6",
+            variant: "secondary",
+          })}
         >
           {bulkJsonPending
             ? "Ingesting dictionary + grammar JSON..."
@@ -555,9 +586,9 @@ export function AdminRagIngestionForm() {
       </div>
 
       {isPending && activeIngestId ? (
-        <p className="text-xs text-stone-500 dark:text-stone-400">
-          Live logs: watch server output for RAG:{activeIngestId}
-        </p>
+        <StatusNotice tone="info" align="left">
+          Live logs are streaming for request <code>RAG:{activeIngestId}</code>.
+        </StatusNotice>
       ) : null}
 
       {state?.error ? (
@@ -587,8 +618,18 @@ export function AdminRagIngestionForm() {
 
       {bulkJsonState?.results &&
       bulkJsonState.results.some((result) => !result.success) ? (
-        <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">
-          <p className="font-semibold">Failed JSON sources</p>
+        <SurfacePanel
+          rounded="3xl"
+          variant="subtle"
+          shadow="soft"
+          className="border-amber-300/80 bg-amber-50/80 p-4 text-xs text-amber-950 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
+        >
+          <div className="mb-2 flex items-center gap-2">
+            <Badge tone="surface" size="xs" caps className="border-amber-300/80">
+              Partial Failures
+            </Badge>
+            <p className="font-semibold">Failed JSON sources</p>
+          </div>
           <ul className="mt-2 list-disc space-y-1 pl-5">
             {bulkJsonState.results
               .filter((result) => !result.success)
@@ -599,44 +640,46 @@ export function AdminRagIngestionForm() {
                 </li>
               ))}
           </ul>
-        </div>
+        </SurfacePanel>
       ) : null}
 
-      <div className="rounded-xl bg-[#071b2d] p-5 text-[#a9d7df] shadow-sm">
+      <SurfacePanel rounded="4xl" variant="elevated" className="p-5">
         <div className="mb-3 flex items-center justify-between">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#3cc6d6]">
+          <Badge tone="surface" size="xs" caps>
             Logs
-          </p>
-          <p className="text-[11px] text-[#86c8d8]">
+          </Badge>
+          <p className="text-[11px] text-stone-500 dark:text-stone-400">
             {formatNumber(dashboardLogs.length)} entries
           </p>
         </div>
 
         {dashboardLogs.length === 0 ? (
-          <p className="rounded-lg border border-[#12344f] bg-[#041321] px-3 py-2 text-xs text-[#86c8d8]">
+          <p className="rounded-2xl border border-stone-200 bg-stone-50/80 px-3 py-2 text-xs text-stone-500 dark:border-stone-700 dark:bg-stone-950/40 dark:text-stone-400">
             {isPending || bulkJsonPending
               ? "Ingestion is running. Logs will appear here as batches complete."
               : "No ingestion logs yet. Run file or JSON ingestion to populate this stream."}
           </p>
         ) : (
           <div
-            className="max-h-64 space-y-1 overflow-y-auto rounded-lg border border-[#12344f] bg-[#041321] p-3 font-mono text-[11px]"
+            className="max-h-64 space-y-1 overflow-y-auto rounded-2xl border border-stone-200 bg-stone-50/80 p-3 font-mono text-[11px] dark:border-stone-700 dark:bg-stone-950/40"
             aria-live="polite"
           >
             {dashboardLogs.map((log, index) => (
               <p
                 key={`${log.timestamp}-${index}`}
-                className="leading-relaxed text-[#b8e2e8]"
+                className="leading-relaxed text-stone-600 dark:text-stone-300"
               >
                 {log.line ? (
                   <span>{log.line}</span>
                 ) : (
                   <>
-                    <span className="text-[#48d8e7]">
+                    <span className="text-sky-600 dark:text-sky-300">
                       [{formatLogTimestamp(log.timestamp)}]
                     </span>{" "}
                     {"sourcePath" in log && log.sourcePath ? (
-                      <span className="text-[#92d8e2]">{log.sourcePath} </span>
+                      <span className="text-emerald-700 dark:text-emerald-300">
+                        {log.sourcePath}{" "}
+                      </span>
                     ) : null}
                     <span>{log.message}</span>
                   </>
@@ -645,19 +688,13 @@ export function AdminRagIngestionForm() {
             ))}
           </div>
         )}
-      </div>
+      </SurfacePanel>
 
       {state?.success ? (
         <StatusNotice tone="success" align="left">
           {state.message}
-          {state.embeddingProvider
-            ? ` Provider: ${
-                state.embeddingProvider === "hf"
-                  ? "Hugging Face"
-                  : state.embeddingProvider === "gemini"
-                    ? "Gemini"
-                    : "OpenRouter"
-              }.`
+          {getEmbeddingProviderLabel(state.embeddingProvider)
+            ? ` Provider: ${getEmbeddingProviderLabel(state.embeddingProvider)}.`
             : ""}
           {typeof state.chunksInserted === "number"
             ? ` Chunks: ${state.chunksInserted}.`
@@ -670,8 +707,18 @@ export function AdminRagIngestionForm() {
       ) : null}
 
       {state?.success && state.chunkStats ? (
-        <div className="rounded-xl border border-stone-200 bg-stone-50/80 p-4 text-sm text-stone-700 dark:border-stone-700 dark:bg-stone-900/60 dark:text-stone-200">
-          <p className="mb-3 font-semibold">Chunk details</p>
+        <SurfacePanel
+          rounded="3xl"
+          variant="subtle"
+          shadow="soft"
+          className="p-4 text-sm text-stone-700 dark:text-stone-200"
+        >
+          <div className="mb-3 flex items-center gap-2">
+            <Badge tone="surface" size="xs" caps>
+              Chunk Profile
+            </Badge>
+            <p className="font-semibold">Chunk details</p>
+          </div>
           <div className="grid gap-2 sm:grid-cols-2">
             <p>
               Source text chars (normalized):{" "}
@@ -725,7 +772,7 @@ export function AdminRagIngestionForm() {
               {formatNumber(state.chunkStats.insertBatchSize)})
             </p>
           </div>
-        </div>
+        </SurfacePanel>
       ) : null}
     </form>
   );

@@ -3,8 +3,8 @@ export type HfChatMessage = {
   role: "assistant" | "system" | "user";
 };
 
-export const HF_ROUTER_BASE_URL = "https://router.huggingface.co/v1";
-export const HF_CHAT_MODEL =
+const HF_ROUTER_BASE_URL = "https://router.huggingface.co/v1";
+const HF_CHAT_MODEL =
   process.env.HF_CHAT_MODEL ?? "google/gemma-4-31B-it:novita";
 export const HF_EMBEDDING_MODEL =
   process.env.HF_EMBEDDING_MODEL ?? "sentence-transformers/all-mpnet-base-v2";
@@ -281,13 +281,7 @@ export async function createHfChatCompletion(messages: HfChatMessage[]) {
 
   const message =
     lastError instanceof Error ? lastError.message : "Unknown HF chat error";
-  throw new Error(`HF chat request failed after retries: ${message}`);
-}
-
-export async function generateHFEmbedding(text: string): Promise<number[]> {
-  const output = await featureExtractionWithRetry(text);
-
-  return normalizeSingleEmbeddingOutput(output);
+  throw new Error(`HF chat completion failed after retries: ${message}`);
 }
 
 export async function generateHFEmbeddings(

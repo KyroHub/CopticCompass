@@ -22,8 +22,8 @@ export const grammarMessages = defineMessages({
     "exercise.authUnavailable":
       "Login-based exercise submission is temporarily unavailable.",
     "exercise.loginPrompt":
-      "Log in to type your answers and receive personalized feedback.",
-    "exercise.loginCta": "Log In to Practice",
+      "Sign in to type your answers and receive personalized feedback.",
+    "exercise.loginCta": "Sign In to Practice",
     "exercise.submittedTitle": "Translations Submitted!",
     "exercise.submittedBody":
       "Your answers have been securely saved. Kyrillos will review them shortly.",
@@ -51,8 +51,8 @@ export const grammarMessages = defineMessages({
     "exercise.authUnavailable":
       "Het indienen van oefeningen via login is tijdelijk niet beschikbaar.",
     "exercise.loginPrompt":
-      "Log in om je antwoorden te typen en persoonlijke feedback te ontvangen.",
-    "exercise.loginCta": "Log in om te oefenen",
+      "Inloggen om je antwoorden te typen en persoonlijke feedback te ontvangen.",
+    "exercise.loginCta": "Inloggen om te oefenen",
     "exercise.submittedTitle": "Vertalingen verzonden!",
     "exercise.submittedBody":
       "Je antwoorden zijn veilig opgeslagen. Kyrillos zal ze binnenkort nakijken.",

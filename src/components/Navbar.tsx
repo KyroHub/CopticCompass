@@ -32,10 +32,10 @@ const NavbarAuthLink = dynamic(
     loading: () => (
       <Link
         href="/login"
-        data-label="Log In"
+        data-label="Sign In"
         className="group inline-grid h-10 items-center justify-items-center rounded-full px-4 text-sm tracking-[0.02em] text-stone-600 transition-all duration-200 dark:text-stone-400"
       >
-        <span className="col-start-1 row-start-1 font-medium">Log In</span>
+        <span className="col-start-1 row-start-1 font-medium">Sign In</span>
       </Link>
     ),
   },
@@ -109,7 +109,7 @@ export function Navbar() {
               dashboardHref={dashboardHref}
               dashboardLabel={t("nav.dashboard")}
               loginHref={loginHref}
-              loginLabel={t("nav.login") || "Log In"}
+              loginLabel={t("nav.login") || "Sign In"}
               pathname={pathname}
               variant="desktop"
             />
@@ -168,7 +168,7 @@ export function Navbar() {
               dashboardHref={dashboardHref}
               dashboardLabel={t("nav.dashboard")}
               loginHref={loginHref}
-              loginLabel={t("nav.login") || "Log In"}
+              loginLabel={t("nav.login") || "Sign In"}
               onNavigate={() => setIsMobileMenuOpen(false)}
               pathname={pathname}
               variant="mobile"

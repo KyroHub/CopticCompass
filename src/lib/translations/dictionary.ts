@@ -54,7 +54,7 @@ export const dictionaryMessages = defineMessages({
       "Share this entry, save it for later, or send a quick note when something needs attention.",
     "entry.actions.authUnavailable": "Entry actions are unavailable right now.",
     "entry.actions.loginPrompt":
-      "Log in or sign up to save entries and report issues.",
+      "Sign in or sign up to save entries and report issues.",
     "entry.actions.share": "Share",
     "entry.actions.shareClose": "Hide share options",
     "entry.actions.shareTitle": "Share this entry",
@@ -194,7 +194,7 @@ export const dictionaryMessages = defineMessages({
     "entry.actions.authUnavailable":
       "Lemma-acties zijn momenteel niet beschikbaar.",
     "entry.actions.loginPrompt":
-      "Log in of maak een account aan om lemma's op te slaan en te melden.",
+      "Inloggen of een account aanmaken om lemma's op te slaan en te melden.",
     "entry.actions.share": "Delen",
     "entry.actions.shareClose": "Deelopties sluiten",
     "entry.actions.shareTitle": "Deel dit lemma",

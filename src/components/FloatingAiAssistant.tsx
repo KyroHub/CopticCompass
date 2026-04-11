@@ -3,11 +3,15 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import { processOCRImage } from "@/actions/ocrActions";
+import {
+  AuthGateInlinePrompt,
+  AuthGateNotice,
+} from "@/components/AuthGateNotice";
 import { useOptionalAuthGate } from "@/lib/supabase/useOptionalAuthGate";
 
 type ChatProvider = "gemini" | "hf" | "openrouter";
@@ -188,7 +192,179 @@ export function FloatingAiAssistant() {
   });
 
   const isLoading = status !== "ready";
+  const isChatAccessBlocked = isReady && !isAuthenticated;
   const typedMessages = messages as ChatMessageLike[];
+  let conversationContent: ReactNode;
+
+  if (isChatAccessBlocked) {
+    conversationContent = (
+      <div className="flex h-full items-center">
+        <AuthGateNotice
+          align="left"
+          className="w-full"
+          size="comfortable"
+          title="Sign in required"
+        >
+          Sign in to use Shenute AI on this page, ask follow-up questions, and
+          send OCR-backed prompts.
+        </AuthGateNotice>
+      </div>
+    );
+  } else if (messages.length === 0) {
+    conversationContent = (
+      <div className="rounded-xl border border-dashed border-stone-300 bg-white px-3 py-4 text-sm text-stone-600 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300">
+        Ask anything about this page, Coptic grammar, vocabulary, or
+        translation.
+      </div>
+    );
+  } else {
+    conversationContent = messages.map((message, index) => {
+      const assistantMessage = message as ChatMessageLike;
+      const promptMessage =
+        message.role === "assistant"
+          ? findPreviousUserMessage(typedMessages, index)
+          : null;
+      const feedbackState = feedbackStateByMessage[message.id];
+      const selectedReaction = selectedReactionByMessage[message.id];
+      const adminDraft = adminFeedbackDraftByMessage[message.id] ?? "";
+      const isFeedbackPending = feedbackState?.status === "pending";
+
+      return (
+        <article
+          key={message.id}
+          className={
+            message.role === "user"
+              ? "ml-8 rounded-2xl rounded-tr-sm bg-sky-600 px-3 py-2 text-sm text-white"
+              : "mr-8 rounded-2xl rounded-tl-sm border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
+          }
+        >
+          {Array.isArray(message.parts)
+            ? message.parts
+                .filter(isTextMessagePart)
+                .map((part, partIndex) => {
+                  if (message.role === "assistant") {
+                    return (
+                      <ReactMarkdown
+                        key={partIndex}
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          a: ({ ...props }) => (
+                            <a
+                              {...props}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="underline"
+                            />
+                          ),
+                          code: ({ className, children, ...props }) => (
+                            <code
+                              className={`rounded bg-stone-200/70 px-1 py-0.5 text-[0.95em] dark:bg-stone-800 ${className || ""}`}
+                              {...props}
+                            >
+                              {children}
+                            </code>
+                          ),
+                        }}
+                      >
+                        {part.text}
+                      </ReactMarkdown>
+                    );
+                  }
+
+                  return <p key={partIndex}>{part.text}</p>;
+                })
+            : null}
+
+          {message.role === "assistant" ? (
+            <div className="mt-2 space-y-2 border-t border-stone-200 pt-2 text-[11px] dark:border-stone-700">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    void handleReaction("like", assistantMessage, promptMessage);
+                  }}
+                  disabled={!isAuthenticated || isFeedbackPending}
+                  className={`rounded border px-2 py-1 font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${
+                    selectedReaction === "like"
+                      ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
+                      : "border-stone-300 text-stone-700 hover:bg-stone-100 dark:border-stone-600 dark:text-stone-200 dark:hover:bg-stone-800"
+                  }`}
+                >
+                  Like
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void handleReaction(
+                      "dislike",
+                      assistantMessage,
+                      promptMessage,
+                    );
+                  }}
+                  disabled={!isAuthenticated || isFeedbackPending}
+                  className={`rounded border px-2 py-1 font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${
+                    selectedReaction === "dislike"
+                      ? "border-rose-500 bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300"
+                      : "border-stone-300 text-stone-700 hover:bg-stone-100 dark:border-stone-600 dark:text-stone-200 dark:hover:bg-stone-800"
+                  }`}
+                >
+                  Dislike
+                </button>
+              </div>
+
+              <details className="rounded border border-stone-200 p-2 dark:border-stone-700">
+                <summary className="cursor-pointer font-semibold text-stone-700 dark:text-stone-200">
+                  Admin note for RAG learning
+                </summary>
+                <div className="mt-2 space-y-2">
+                  <textarea
+                    value={adminDraft}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      setAdminFeedbackDraftByMessage((current) => ({
+                        ...current,
+                        [message.id]: value,
+                      }));
+                    }}
+                    placeholder="Admin only: add written feedback tied to this prompt/response."
+                    rows={3}
+                    disabled={!isAuthenticated || isFeedbackPending}
+                    className="w-full rounded border border-stone-300 bg-white px-2 py-1 text-[11px] text-stone-900 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      void handleAdminFeedbackSubmit(
+                        assistantMessage,
+                        promptMessage,
+                      );
+                    }}
+                    disabled={!isAuthenticated || isFeedbackPending}
+                    className="rounded bg-stone-900 px-2 py-1 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60 dark:bg-stone-100 dark:text-stone-900"
+                  >
+                    Submit admin note
+                  </button>
+                </div>
+              </details>
+
+              {feedbackState ? (
+                <p className={getFeedbackStatusClass(feedbackState.status)}>
+                  {feedbackState.message}
+                </p>
+              ) : null}
+
+              {!isAuthenticated && isReady ? (
+                <AuthGateInlinePrompt
+                  className="text-[11px]"
+                  message="Sign in to send learning feedback signals"
+                />
+              ) : null}
+            </div>
+          ) : null}
+        </article>
+      );
+    });
+  }
 
   function clearSelectedImage() {
     setSelectedImage(null);
@@ -335,6 +511,11 @@ export function FloatingAiAssistant() {
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (isChatAccessBlocked) {
+      return;
+    }
+
     const trimmed = inputValue.trim();
     if ((!trimmed && !selectedImage) || isLoading || ocrPending) {
       return;
@@ -584,12 +765,12 @@ export function FloatingAiAssistant() {
             <label className="text-[11px] text-stone-500 dark:text-stone-400">
               <span className="mr-1">Provider</span>
               <select
-                className="rounded-md border border-stone-300 bg-white px-1.5 py-0.5 text-[11px] dark:border-stone-600 dark:bg-stone-800"
+                className="compact-select-base min-h-0 rounded-md border-stone-300 bg-white py-0.5 text-[11px] dark:border-stone-600 dark:bg-stone-800"
                 value={inferenceProvider}
                 onChange={(event) => {
                   setInferenceProvider(toChatProvider(event.target.value));
                 }}
-                disabled={isLoading}
+                disabled={isLoading || isChatAccessBlocked}
               >
                 <option value="hf">Hugging Face</option>
                 <option value="gemini">Gemini</option>
@@ -599,171 +780,7 @@ export function FloatingAiAssistant() {
           </div>
 
           <div className="flex-1 space-y-3 overflow-y-auto bg-stone-50/60 p-3 dark:bg-stone-950/40">
-            {messages.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-stone-300 bg-white px-3 py-4 text-sm text-stone-600 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300">
-                Ask anything about this page, Coptic grammar, vocabulary, or
-                translation.
-              </div>
-            ) : (
-              messages.map((message, index) => {
-                const assistantMessage = message as ChatMessageLike;
-                const promptMessage =
-                  message.role === "assistant"
-                    ? findPreviousUserMessage(typedMessages, index)
-                    : null;
-                const feedbackState = feedbackStateByMessage[message.id];
-                const selectedReaction = selectedReactionByMessage[message.id];
-                const adminDraft =
-                  adminFeedbackDraftByMessage[message.id] ?? "";
-                const isFeedbackPending = feedbackState?.status === "pending";
-
-                return (
-                  <article
-                    key={message.id}
-                    className={
-                      message.role === "user"
-                        ? "ml-8 rounded-2xl rounded-tr-sm bg-sky-600 px-3 py-2 text-sm text-white"
-                        : "mr-8 rounded-2xl rounded-tl-sm border border-stone-200 bg-white px-3 py-2 text-sm text-stone-800 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
-                    }
-                  >
-                    {Array.isArray(message.parts)
-                      ? message.parts
-                          .filter(isTextMessagePart)
-                          .map((part, partIndex) => {
-                            if (message.role === "assistant") {
-                              return (
-                                <ReactMarkdown
-                                  key={partIndex}
-                                  remarkPlugins={[remarkGfm]}
-                                  components={{
-                                    a: ({ ...props }) => (
-                                      <a
-                                        {...props}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className="underline"
-                                      />
-                                    ),
-                                    code: ({
-                                      className,
-                                      children,
-                                      ...props
-                                    }) => (
-                                      <code
-                                        className={`rounded bg-stone-200/70 px-1 py-0.5 text-[0.95em] dark:bg-stone-800 ${className || ""}`}
-                                        {...props}
-                                      >
-                                        {children}
-                                      </code>
-                                    ),
-                                  }}
-                                >
-                                  {part.text}
-                                </ReactMarkdown>
-                              );
-                            }
-
-                            return <p key={partIndex}>{part.text}</p>;
-                          })
-                      : null}
-
-                    {message.role === "assistant" ? (
-                      <div className="mt-2 space-y-2 border-t border-stone-200 pt-2 text-[11px] dark:border-stone-700">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => {
-                              void handleReaction(
-                                "like",
-                                assistantMessage,
-                                promptMessage,
-                              );
-                            }}
-                            disabled={!isAuthenticated || isFeedbackPending}
-                            className={`rounded border px-2 py-1 font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${
-                              selectedReaction === "like"
-                                ? "border-emerald-500 bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300"
-                                : "border-stone-300 text-stone-700 hover:bg-stone-100 dark:border-stone-600 dark:text-stone-200 dark:hover:bg-stone-800"
-                            }`}
-                          >
-                            Like
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              void handleReaction(
-                                "dislike",
-                                assistantMessage,
-                                promptMessage,
-                              );
-                            }}
-                            disabled={!isAuthenticated || isFeedbackPending}
-                            className={`rounded border px-2 py-1 font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${
-                              selectedReaction === "dislike"
-                                ? "border-rose-500 bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300"
-                                : "border-stone-300 text-stone-700 hover:bg-stone-100 dark:border-stone-600 dark:text-stone-200 dark:hover:bg-stone-800"
-                            }`}
-                          >
-                            Dislike
-                          </button>
-                        </div>
-
-                        <details className="rounded border border-stone-200 p-2 dark:border-stone-700">
-                          <summary className="cursor-pointer font-semibold text-stone-700 dark:text-stone-200">
-                            Admin note for RAG learning
-                          </summary>
-                          <div className="mt-2 space-y-2">
-                            <textarea
-                              value={adminDraft}
-                              onChange={(event) => {
-                                const value = event.target.value;
-                                setAdminFeedbackDraftByMessage((current) => ({
-                                  ...current,
-                                  [message.id]: value,
-                                }));
-                              }}
-                              placeholder="Admin only: add written feedback tied to this prompt/response."
-                              rows={3}
-                              disabled={!isAuthenticated || isFeedbackPending}
-                              className="w-full rounded border border-stone-300 bg-white px-2 py-1 text-[11px] text-stone-900 dark:border-stone-600 dark:bg-stone-950 dark:text-stone-100"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => {
-                                void handleAdminFeedbackSubmit(
-                                  assistantMessage,
-                                  promptMessage,
-                                );
-                              }}
-                              disabled={!isAuthenticated || isFeedbackPending}
-                              className="rounded bg-stone-900 px-2 py-1 font-semibold text-white disabled:cursor-not-allowed disabled:opacity-60 dark:bg-stone-100 dark:text-stone-900"
-                            >
-                              Submit admin note
-                            </button>
-                          </div>
-                        </details>
-
-                        {feedbackState ? (
-                          <p
-                            className={getFeedbackStatusClass(
-                              feedbackState.status,
-                            )}
-                          >
-                            {feedbackState.message}
-                          </p>
-                        ) : null}
-
-                        {!isAuthenticated && isReady ? (
-                          <p className="text-stone-500 dark:text-stone-400">
-                            Sign in to send learning feedback signals.
-                          </p>
-                        ) : null}
-                      </div>
-                    ) : null}
-                  </article>
-                );
-              })
-            )}
+            {conversationContent}
 
             {isLoading ? (
               <div className="mr-8 rounded-2xl rounded-tl-sm border border-stone-200 bg-white px-3 py-2 text-sm text-stone-500 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-300">
@@ -866,7 +883,7 @@ export function FloatingAiAssistant() {
                 onClick={() => {
                   fileInputRef.current?.click();
                 }}
-                disabled={isLoading || ocrPending}
+                disabled={isLoading || ocrPending || isChatAccessBlocked}
                 className="rounded-md border border-stone-300 bg-white px-2 py-1 text-xs font-semibold text-stone-700 disabled:opacity-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200"
               >
                 Add Image
@@ -876,7 +893,9 @@ export function FloatingAiAssistant() {
                 onClick={() => {
                   void openCamera();
                 }}
-                disabled={isLoading || ocrPending || cameraOpen}
+                disabled={
+                  isLoading || ocrPending || cameraOpen || isChatAccessBlocked
+                }
                 className="rounded-md border border-stone-300 bg-white px-2 py-1 text-xs font-semibold text-stone-700 disabled:opacity-50 dark:border-stone-600 dark:bg-stone-800 dark:text-stone-200"
               >
                 Camera
@@ -896,14 +915,15 @@ export function FloatingAiAssistant() {
                 }}
                 placeholder="Ask about this page or attached image..."
                 className="w-full rounded-xl border border-stone-300 bg-white px-3 py-2 text-sm text-stone-900 focus:border-sky-500 focus:outline-none dark:border-stone-600 dark:bg-stone-800 dark:text-stone-100"
-                disabled={isLoading || ocrPending}
+                disabled={isLoading || ocrPending || isChatAccessBlocked}
               />
               <button
                 type="submit"
                 disabled={
                   (!inputValue.trim() && !selectedImage) ||
                   isLoading ||
-                  ocrPending
+                  ocrPending ||
+                  isChatAccessBlocked
                 }
                 className="rounded-xl bg-sky-600 px-3 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
               >

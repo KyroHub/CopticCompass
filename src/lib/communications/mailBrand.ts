@@ -6,7 +6,7 @@ import type { Language } from "@/types/i18n";
  */
 export const mailBrand = {
   brandName: "Coptic Compass",
-  descriptor: "Coptic Dictionary, Grammar, and Publications",
+  descriptor: "Coptic Dictionary, Grammar, Publications, and Shenute AI",
   fromDisplayName: "Coptic Compass",
   founderLine: "by Kyrillos Wannes",
   liveUrl: "https://kyrilloswannes.com",
@@ -19,14 +19,14 @@ function getMailFooterCopy(language: Language) {
   if (language === "nl") {
     return {
       browseLabel: "Verder lezen op Coptic Compass",
-      descriptor: "Koptisch woordenboek, grammatica en publicaties.",
+      descriptor: "Koptisch woordenboek, grammatica, publicaties en Shenute AI.",
       signoff: "Met vriendelijke groet,",
     };
   }
 
   return {
     browseLabel: "Continue reading on Coptic Compass",
-    descriptor: "Coptic dictionary, grammar, and publications.",
+    descriptor: "Coptic dictionary, grammar, publications, and Shenute AI.",
     signoff: "Kind regards,",
   };
 }

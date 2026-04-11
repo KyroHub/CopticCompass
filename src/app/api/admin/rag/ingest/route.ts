@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { ingestRagFile } from "@/features/admin/lib/ragIngestion";
 import { getProfileRole } from "@/features/profile/lib/server/queries";
 import { revalidateAdminPaths } from "@/lib/server/revalidation";
@@ -77,14 +78,14 @@ export async function POST(request: Request) {
     const enableOcr = enableOcrRaw === "on" || enableOcrRaw === "true";
 
     const embeddingProviderRaw = formData.get("embedding_provider");
-    const embeddingProvider =
-      embeddingProviderRaw === "gemini"
-        ? "gemini"
-        : embeddingProviderRaw === "openrouter"
-          ? "openrouter"
-          : "hf";
+    let embeddingProvider: "gemini" | "hf" | "openrouter" = "hf";
+    if (embeddingProviderRaw === "gemini") {
+      embeddingProvider = "gemini";
+    } else if (embeddingProviderRaw === "openrouter") {
+      embeddingProvider = "openrouter";
+    }
 
-    console.info(
+    console.warn(
       `[RAG:${requestId}] API request received for ${fileValue.name} with provider=${embeddingProvider}.`,
     );
 

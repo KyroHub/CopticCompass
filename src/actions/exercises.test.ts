@@ -184,7 +184,7 @@ describe("exercise submission action", () => {
       submitExercise(null, createExerciseFormData()),
     ).resolves.toEqual({
       success: false,
-      error: "Unauthorized. Please log in first.",
+      error: "Unauthorized. Please sign in first.",
     });
   });
 

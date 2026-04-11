@@ -46,7 +46,7 @@ function renderGenericCard(locale: string) {
   return renderSiteOpenGraphCard({
     descriptor:
       language === "nl"
-        ? "Koptisch woordenboek, grammatica en publicaties"
+        ? "Koptisch woordenboek, grammatica, publicaties en Shenute AI"
         : siteConfig.descriptor,
     eyebrow:
       language === "nl"

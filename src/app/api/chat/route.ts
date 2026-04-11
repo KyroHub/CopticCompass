@@ -5,6 +5,7 @@ import {
   streamText,
   type UIMessage,
 } from "ai";
+
 import { getGeminiModel } from "@/lib/gemini";
 import { createHfChatCompletion, type HfChatMessage } from "@/lib/hf";
 import {
@@ -141,8 +142,9 @@ function hasOpenRouterConfigured() {
 }
 
 function extractMessageText(message: UIMessage): string {
-  if ("content" in message && typeof (message as any).content === "string") {
-    return (message as any).content;
+  const candidate = message as { content?: unknown };
+  if ("content" in candidate && typeof candidate.content === "string") {
+    return candidate.content;
   }
 
   if (!Array.isArray(message.parts)) {

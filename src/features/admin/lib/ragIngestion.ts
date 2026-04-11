@@ -1,6 +1,7 @@
 import { embedMany } from "ai";
 import mammoth from "mammoth";
 import pdfParse from "pdf-parse/lib/pdf-parse.js";
+
 import { GEMINI_EMBEDDING_MODEL, getGeminiEmbeddingModel } from "@/lib/gemini";
 import { HF_EMBEDDING_MODEL, generateHFEmbeddings } from "@/lib/hf";
 import {
@@ -94,7 +95,7 @@ const TEXT_EXTENSIONS = new Set([
   "sql",
 ]);
 
-export type RagIngestionResult = {
+type RagIngestionResult = {
   chunkStats?: RagChunkStats;
   chunksInserted?: number;
   error?: string;
@@ -112,7 +113,7 @@ export type RagIngestionLogEntry = {
   timestamp: string;
 };
 
-export type RagChunkStats = {
+type RagChunkStats = {
   avgChunkEstimatedTokens: number;
   avgChunkChars: number;
   avgChunkWords: number;
@@ -136,9 +137,9 @@ export type RagChunkStats = {
 };
 
 type SourceType = "pdf" | "image" | "docx" | "text";
-export type RagEmbeddingProvider = "gemini" | "hf" | "openrouter";
+type RagEmbeddingProvider = "gemini" | "hf" | "openrouter";
 
-export type IngestRagFileOptions = {
+type IngestRagFileOptions = {
   embeddingProvider?: RagEmbeddingProvider;
   enableOcr: boolean;
   file: File;
@@ -270,7 +271,7 @@ function logIngestion(
   appendLiveIngestionLog(ingestId, entry);
   const line = `[RAG:${ingestId}] ${message}`;
   logs?.push(entry);
-  console.info(line);
+  console.warn(line);
 }
 
 function delay(ms: number) {
@@ -280,12 +281,12 @@ function delay(ms: number) {
 }
 
 function shouldRetryNetworkError(error: unknown): boolean {
-  const message =
-    error instanceof Error
-      ? `${error.message} ${(error as { cause?: unknown }).cause ?? ""}`
-      : typeof error === "object" && error !== null
-        ? `${(error as { message?: unknown }).message ?? ""} ${(error as { code?: unknown }).code ?? ""}`
-        : String(error);
+  let message = String(error);
+  if (error instanceof Error) {
+    message = `${error.message} ${(error as { cause?: unknown }).cause ?? ""}`;
+  } else if (typeof error === "object" && error !== null) {
+    message = `${(error as { message?: unknown }).message ?? ""} ${(error as { code?: unknown }).code ?? ""}`;
+  }
 
   const normalized = message.toLowerCase();
   return (
@@ -347,7 +348,7 @@ function normalizeCandidateText(input: string) {
 }
 
 function collectTextCandidates(payload: unknown, depth = 0): string[] {
-  if (depth > 6 || payload == null) {
+  if (depth > 6 || payload === null || payload === undefined) {
     return [];
   }
 
@@ -1076,12 +1077,12 @@ export async function ingestRagFile({
     const serviceRoleClient = createServiceRoleClient();
     const uploadedAt = new Date().toISOString();
 
-    const embeddingModelName =
-      embeddingProvider === "gemini"
-        ? GEMINI_EMBEDDING_MODEL
-        : embeddingProvider === "openrouter"
-          ? OPENROUTER_EMBEDDING_MODEL
-          : HF_EMBEDDING_MODEL;
+    let embeddingModelName = HF_EMBEDDING_MODEL;
+    if (embeddingProvider === "gemini") {
+      embeddingModelName = GEMINI_EMBEDDING_MODEL;
+    } else if (embeddingProvider === "openrouter") {
+      embeddingModelName = OPENROUTER_EMBEDDING_MODEL;
+    }
 
     function buildRows(targetDimensions: number): CopticDocumentsInsertRow[] {
       const normalizedEmbeddings = embeddings.map((embedding) =>

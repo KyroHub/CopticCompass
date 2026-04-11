@@ -33,17 +33,17 @@ function buildSiteDescription(entryCount: number) {
     ? ` It currently includes ${entryCount.toLocaleString()} searchable entries.`
     : "";
 
-  return `Coptic Compass is a digital home for Coptic study, bringing together a searchable dictionary, grammar lessons, publications, and research tools.${searchableEntries}`;
+  return `Coptic Compass is a digital home for Coptic study, bringing together a searchable dictionary, grammar lessons, publications, Shenute AI, and research tools.${searchableEntries}`;
 }
 
 export const siteConfig = {
   brandName: "Coptic Compass",
-  descriptor: "Coptic Dictionary, Grammar, and Publications",
+  descriptor: "Coptic Dictionary, Grammar, Publications, and Shenute AI",
   founderLine: `by ${siteAuthor.name}`,
-  founderCreditLine: `Built by ${siteAuthor.name}`,
+  founderCreditLine: "Built by Copts for Copts",
   name: "Coptic Compass",
-  title: "Coptic Compass | Coptic Dictionary, Grammar, and Publications",
-  shortDescription: "A digital home for Coptic study.",
+  title: "Coptic Compass | Coptic Dictionary, Grammar, Publications, and Shenute AI",
+  shortDescription: "A digital home for Coptic study and Shenute AI.",
   description: buildSiteDescription(dictionaryEntryCount),
   liveUrl: "https://kyrilloswannes.com",
   repoUrl: "https://github.com/KyroHub/CopticCompass",

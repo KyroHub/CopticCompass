@@ -22,6 +22,20 @@ const OCR_TEXT_LIKE_KEYS = [
   "message",
 ];
 
+type OcrAttemptResult =
+  | {
+      kind: "retry";
+      message: string;
+    }
+  | {
+      kind: "success";
+      text: string;
+    }
+  | {
+      kind: "fatal";
+      message: string;
+    };
+
 function getOcrUploadFieldCandidates() {
   const preferred = process.env.OCR_UPLOAD_FIELD?.trim();
   const candidates = [preferred, ...OCR_UPLOAD_FIELD_FALLBACKS].filter(
@@ -55,41 +69,55 @@ function normalizeCandidateText(input: string) {
   return stripHtml(input).replace(/\s+/g, " ").trim();
 }
 
+function normalizeStringCandidate(value: string) {
+  const normalized = normalizeCandidateText(value);
+  return normalized ? [normalized] : [];
+}
+
+function collectTextCandidatesFromArray(payload: unknown[], depth: number) {
+  return payload.flatMap((entry) => collectTextCandidates(entry, depth));
+}
+
+function collectTextCandidatesFromRecord(
+  payload: Record<string, unknown>,
+  depth: number,
+) {
+  const collected: string[] = [];
+
+  for (const [key, value] of Object.entries(payload)) {
+    const loweredKey = key.toLowerCase();
+    if (OCR_TEXT_LIKE_KEYS.includes(loweredKey) && typeof value === "string") {
+      collected.push(...normalizeStringCandidate(value));
+      continue;
+    }
+
+    collected.push(...collectTextCandidates(value, depth));
+  }
+
+  return collected;
+}
+
 function collectTextCandidates(payload: unknown, depth = 0): string[] {
-  if (depth > 6 || payload == null) {
+  if (depth > 6 || payload === null || payload === undefined) {
     return [];
   }
 
   if (typeof payload === "string") {
-    const normalized = normalizeCandidateText(payload);
-    return normalized ? [normalized] : [];
+    return normalizeStringCandidate(payload);
   }
 
   if (Array.isArray(payload)) {
-    return payload.flatMap((entry) => collectTextCandidates(entry, depth + 1));
+    return collectTextCandidatesFromArray(payload, depth + 1);
   }
 
   if (typeof payload !== "object") {
     return [];
   }
 
-  const record = payload as Record<string, unknown>;
-  const collected: string[] = [];
-
-  for (const [key, value] of Object.entries(record)) {
-    const loweredKey = key.toLowerCase();
-    if (OCR_TEXT_LIKE_KEYS.includes(loweredKey) && typeof value === "string") {
-      const normalized = normalizeCandidateText(value);
-      if (normalized) {
-        collected.push(normalized);
-      }
-      continue;
-    }
-
-    collected.push(...collectTextCandidates(value, depth + 1));
-  }
-
-  return collected;
+  return collectTextCandidatesFromRecord(
+    payload as Record<string, unknown>,
+    depth + 1,
+  );
 }
 
 function extractOcrText(payload: unknown): string {
@@ -97,13 +125,17 @@ function extractOcrText(payload: unknown): string {
   return candidates.find((candidate) => candidate.length > 0) ?? "";
 }
 
-export async function processOCRImage(formData: FormData) {
+function getUploadedOcrFile(formData: FormData) {
   const file = formData.get("file");
 
   if (!file || !(file instanceof File)) {
     throw new Error("No valid file uploaded.");
   }
 
+  return file;
+}
+
+function createOcrTargetUrl() {
   const ocrServiceUrl = process.env.OCR_SERVICE_URL;
   if (!ocrServiceUrl) {
     throw new Error("OCR_SERVICE_URL is not configured.");
@@ -111,43 +143,75 @@ export async function processOCRImage(formData: FormData) {
 
   const targetUrl = new URL(ocrServiceUrl);
   targetUrl.searchParams.set("lang", "cop");
+  return targetUrl.toString();
+}
 
+async function extractOcrResponseText(response: Response) {
+  const contentType = response.headers.get("content-type") ?? "";
+  if (contentType.includes("application/json")) {
+    return extractOcrText(await response.json());
+  }
+
+  return extractOcrText(await response.text());
+}
+
+async function attemptOcrUpload(options: {
+  file: File;
+  targetUrl: string;
+  uploadField: string;
+}): Promise<OcrAttemptResult> {
+  const ocrFormData = new FormData();
+  ocrFormData.append(options.uploadField, options.file, options.file.name);
+
+  const response = await fetch(options.targetUrl, {
+    method: "POST",
+    body: ocrFormData,
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    const message = `OCR service failed: ${response.status} - ${errorText}`;
+
+    if (isUnexpectedFieldErrorMessage(errorText)) {
+      return { kind: "retry", message };
+    }
+
+    return { kind: "fatal", message };
+  }
+
+  return {
+    kind: "success",
+    text: await extractOcrResponseText(response),
+  };
+}
+
+export async function processOCRImage(formData: FormData): Promise<string> {
+  const file = getUploadedOcrFile(formData);
+  const targetUrl = createOcrTargetUrl();
   const uploadFieldCandidates = getOcrUploadFieldCandidates();
   let lastFailureMessage = "OCR request failed.";
   let sawSuccessfulResponse = false;
 
   for (const uploadField of uploadFieldCandidates) {
-    const ocrFormData = new FormData();
-    ocrFormData.append(uploadField, file, file.name);
-
-    const response = await fetch(targetUrl.toString(), {
-      method: "POST",
-      body: ocrFormData,
+    const attempt = await attemptOcrUpload({
+      file,
+      targetUrl,
+      uploadField,
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      lastFailureMessage = `OCR service failed: ${response.status} - ${errorText}`;
-
-      if (isUnexpectedFieldErrorMessage(errorText)) {
-        continue;
-      }
-
-      throw new Error(lastFailureMessage);
-    }
-
-    sawSuccessfulResponse = true;
-
-    const contentType = response.headers.get("content-type") ?? "";
-    const resultText = contentType.includes("application/json")
-      ? extractOcrText(await response.json())
-      : extractOcrText(await response.text());
-
-    if (!resultText) {
+    if (attempt.kind === "retry") {
+      lastFailureMessage = attempt.message;
       continue;
     }
 
-    return resultText;
+    if (attempt.kind === "fatal") {
+      throw new Error(attempt.message);
+    }
+
+    sawSuccessfulResponse = true;
+    if (attempt.text) {
+      return attempt.text;
+    }
   }
 
   if (sawSuccessfulResponse) {

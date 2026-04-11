@@ -74,7 +74,7 @@ export const loginMessages = defineMessages({
   nl: {
     "login.title": "Welkom bij Koptisch Kompas",
     "login.subtitle":
-      "Log in om oefeningen op te slaan, feedback te ontvangen en je Koptische studie voort te zetten.",
+      "Inloggen om oefeningen op te slaan, feedback te ontvangen en je Koptische studie voort te zetten.",
     "login.email": "E-mailadres",
     "login.emailPlaceholder": "jij@email.com",
     "login.password": "Wachtwoord",

@@ -205,6 +205,22 @@
     @apply h-auto min-h-10 w-full cursor-pointer rounded-xl border border-stone-200 bg-white/80 px-3 py-2 text-sm font-medium text-stone-900 shadow-sm outline-none transition-[border-color,box-shadow,background-color,color] focus:border-sky-400/60 focus:ring-2 focus:ring-sky-500/30 dark:border-stone-800 dark:bg-stone-950/70 dark:text-stone-100;
   }
 
+  .select-base,
+  .compact-select-base {
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%23787071' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-position: right 1.05rem center;
+    background-repeat: no-repeat;
+    background-size: 0.8rem;
+    padding-right: 3.05rem;
+  }
+
+  .dark .select-base,
+  .dark .compact-select-base {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none'%3E%3Cpath d='M5 7.5L10 12.5L15 7.5' stroke='%23d6d3d1' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  }
+
   .textarea-base {
     @apply min-h-[10rem] w-full rounded-2xl border border-stone-200 bg-white/80 px-4 py-3 text-base leading-7 text-stone-900 shadow-sm outline-none transition-[border-color,box-shadow,background-color,color] placeholder:text-stone-400 focus:border-sky-400/60 focus:ring-2 focus:ring-sky-500/30 dark:border-stone-800 dark:bg-stone-950/70 dark:text-stone-100 dark:placeholder:text-stone-500;
   }

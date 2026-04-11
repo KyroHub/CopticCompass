@@ -9,8 +9,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 
+import { AuthGateNotice } from "@/components/AuthGateNotice";
 import { Badge } from "@/components/Badge";
-import { StatusNotice } from "@/components/StatusNotice";
 import type { GrammarLessonLearnerSummary } from "@/features/grammar/lib/grammarLearnerState";
 import { cx } from "@/lib/classes";
 import { getDashboardPath } from "@/lib/locale";
@@ -91,19 +91,16 @@ export function GrammarLessonLearnerPanel({
 
   if (status === "signed-out") {
     return (
-      <StatusNotice
-        tone="info"
+      <AuthGateNotice
+        actionClassName="px-5"
+        actionLabel={language === "nl" ? "Inloggen" : "Sign in"}
         size="comfortable"
-        actions={
-          <Link href="/login" className="btn-primary px-5">
-            {language === "nl" ? "Aanmelden" : "Sign in"}
-          </Link>
-        }
+        tone="info"
       >
         {language === "nl"
           ? "Meld je aan om je voortgang, bladwijzers en lesnotities op te slaan."
           : "Sign in to save your progress, bookmarks, and lesson notes."}
-      </StatusNotice>
+      </AuthGateNotice>
     );
   }
 

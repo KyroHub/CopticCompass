@@ -5,11 +5,11 @@ import { defineMessages } from "@/lib/translations/defineMessages";
  */
 export const homeMessages = defineMessages({
   en: {
-    "home.eyebrow": "Coptic Dictionary, Grammar, and Publications",
+    "home.eyebrow": "Coptic Dictionary, Grammar, Publications, and Shenute AI",
     "home.title": "Coptic Compass",
     "home.subtitle":
-      "A digital home for Coptic study, with a searchable dictionary, structured grammar lessons, and publications for learners and researchers.",
-    "home.credit": "Built by Kyrillos Wannes",
+      "A digital home for Coptic study, with a searchable dictionary, structured grammar lessons, publications, and Shenute AI for guided study and manuscript context.",
+    "home.credit": "Built by Copts for Copts",
     "home.publications": "Publications",
     "home.publications.desc":
       "Books, reference works, and research materials for students and scholars of Coptic.",
@@ -29,11 +29,11 @@ export const homeMessages = defineMessages({
     "home.grammar.cta": "Begin studying",
   },
   nl: {
-    "home.eyebrow": "Koptisch woordenboek, grammatica en publicaties",
+    "home.eyebrow": "Koptisch woordenboek, grammatica, publicaties en Shenute AI",
     "home.title": "Koptisch Kompas",
     "home.subtitle":
-      "Een digitaal thuis voor de studie van het Koptisch, met een doorzoekbaar woordenboek, gestructureerde grammaticalessen en publicaties voor studenten en onderzoekers.",
-    "home.credit": "Ontwikkeld door Kyrillos Wannes",
+      "Een digitaal thuis voor de studie van het Koptisch, met een doorzoekbaar woordenboek, gestructureerde grammaticalessen, publicaties en Shenute AI voor begeleide studie en manuscriptcontext.",
+    "home.credit": "Gebouwd door Kopten voor Kopten",
     "home.publications": "Publicaties",
     "home.publications.desc":
       "Boeken, naslagwerken en onderzoeksmaterialen voor studenten en onderzoekers van het Koptisch.",

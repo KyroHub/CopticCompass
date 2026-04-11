@@ -58,7 +58,6 @@
     "@vercel/speed-insights": "^2.0.0",
     "ai": "^6.0.158",
     "browser-image-compression": "^2.0.2",
-    "core-util-is": "^1.0.3",
     "html-to-image": "^1.11.13",
     "jspdf": "^4.2.1",
     "lucide-react": "^0.577.0",
@@ -74,8 +73,7 @@
     "recharts": "^3.8.0",
     "remark-gfm": "^4.0.1",
     "resend": "^6.9.4",
-    "swagger-ui-dist": "^5.32.1",
-    "vercel": "^50.42.0"
+    "swagger-ui-dist": "^5.32.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.58.2",
@@ -92,6 +90,7 @@
     "supabase": "^2.84.7",
     "tailwindcss": "^4",
     "typescript": "^5",
+    "vite": "^6.4.2",
     "vitest": "^4.1.0"
   }
 }

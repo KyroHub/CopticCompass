@@ -459,7 +459,7 @@ export async function submitExercise(
 
       const authContext = await getAuthenticatedServerContext();
       if (!authContext) {
-        return { success: false, error: "Unauthorized. Please log in first." };
+        return { success: false, error: "Unauthorized. Please sign in first." };
       }
 
       const { supabase, user } = authContext;

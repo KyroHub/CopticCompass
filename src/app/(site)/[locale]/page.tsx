@@ -10,13 +10,13 @@ import type { Metadata } from "next";
 function buildHomeDescription(locale: "en" | "nl") {
   if (locale === "nl") {
     return siteConfig.dictionaryEntryCount
-      ? `Verken Coptic Compass: een digitaal thuis voor de studie van het Koptisch met ${siteConfig.dictionaryEntryCount.toLocaleString()} doorzoekbare woordenboeklemma's, grammaticalessen, publicaties en leertools.`
-      : "Verken Coptic Compass: een digitaal thuis voor de studie van het Koptisch met een doorzoekbaar woordenboek, grammaticalessen, publicaties en leertools.";
+      ? `Verken Coptic Compass: een digitaal thuis voor de studie van het Koptisch met ${siteConfig.dictionaryEntryCount.toLocaleString()} doorzoekbare woordenboeklemma's, grammaticalessen, publicaties, Shenute AI en leertools.`
+      : "Verken Coptic Compass: een digitaal thuis voor de studie van het Koptisch met een doorzoekbaar woordenboek, grammaticalessen, publicaties, Shenute AI en leertools.";
   }
 
   return siteConfig.dictionaryEntryCount
-    ? `Explore Coptic Compass, a digital home for Coptic study with ${siteConfig.dictionaryEntryCount.toLocaleString()} searchable dictionary entries, grammar lessons, publications, and learning tools.`
-    : "Explore Coptic Compass, a digital home for Coptic study with a searchable dictionary, grammar lessons, publications, and learning tools.";
+    ? `Explore Coptic Compass, a digital home for Coptic study with ${siteConfig.dictionaryEntryCount.toLocaleString()} searchable dictionary entries, grammar lessons, publications, Shenute AI, and learning tools.`
+    : "Explore Coptic Compass, a digital home for Coptic study with a searchable dictionary, grammar lessons, publications, Shenute AI, and learning tools.";
 }
 
 export async function generateMetadata({
@@ -30,8 +30,8 @@ export async function generateMetadata({
   return createLocalizedPageMetadata({
     title:
       resolvedLocale === "nl"
-        ? "Koptisch Woordenboek, Grammatica en Publicaties"
-        : "Coptic Dictionary, Grammar, and Publications",
+        ? "Koptisch Woordenboek, Grammatica, Publicaties en Shenute AI"
+        : "Coptic Dictionary, Grammar, Publications, and Shenute AI",
     description: buildHomeDescription(resolvedLocale),
     path: "/",
     locale: resolvedLocale,

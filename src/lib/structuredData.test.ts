@@ -37,7 +37,7 @@ describe("structured dictionary data", () => {
     expect(data).toMatchObject({
       "@type": "WebSite",
       name: "Coptic Compass",
-      alternateName: "Coptic Dictionary, Grammar, and Publications",
+      alternateName: "Coptic Dictionary, Grammar, Publications, and Shenute AI",
       url: "https://kyrilloswannes.com/nl",
       inLanguage: ["en", "nl", "cop"],
       potentialAction: {

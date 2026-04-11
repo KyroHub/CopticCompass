@@ -1,6 +1,8 @@
 "use client";
 
 import { Lock } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   useEffect,
   useId,
@@ -11,7 +13,9 @@ import {
 } from "react";
 
 import { FloatingTooltip } from "@/components/FloatingTooltip";
+import { useLanguage } from "@/components/LanguageProvider";
 import { cx } from "@/lib/classes";
+import { getLoginPath } from "@/lib/supabase/config";
 
 type AuthGatedActionButtonProps = Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -53,9 +57,12 @@ export function AuthGatedActionButton({
   );
   const [isHoveringLockedButton, setIsHoveringLockedButton] = useState(false);
   const [uncontrolledLockedOpen, setUncontrolledLockedOpen] = useState(false);
+  const pathname = usePathname();
+  const { t } = useLanguage();
 
   const isLockedMessageVisible =
     lockedOpen === undefined ? uncontrolledLockedOpen : lockedOpen;
+  const loginHref = getLoginPath(pathname ?? undefined);
 
   const setLockedOpen = (visible: boolean) => {
     if (lockedOpen === undefined) {
@@ -182,13 +189,21 @@ export function AuthGatedActionButton({
         <FloatingTooltip
           anchorRef={buttonRef}
           className={cx(
-            "pointer-events-none w-64 max-w-[calc(100vw-2rem)] rounded-2xl border border-stone-700 bg-stone-900/95 px-3 py-2 text-center text-xs leading-5 text-white shadow-lg",
+            "w-64 max-w-[calc(100vw-2rem)] rounded-2xl border border-stone-700 bg-stone-900/95 px-3 py-3 text-center text-xs leading-5 text-white shadow-lg",
             tooltipClassName,
           )}
           id={tooltipId}
           isOpen={tooltipVisible}
         >
-          {lockedMessage}
+          <div className="space-y-3">
+            <p>{lockedMessage}</p>
+            <Link
+              href={loginHref}
+              className="inline-flex h-9 items-center justify-center rounded-lg bg-white px-3 text-xs font-semibold text-stone-900 transition-colors hover:bg-stone-100"
+            >
+              {t("nav.login")}
+            </Link>
+          </div>
         </FloatingTooltip>
       </div>
     );

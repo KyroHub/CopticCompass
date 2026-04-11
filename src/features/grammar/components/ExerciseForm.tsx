@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState, useEffect, useActionState } from "react";
 
 import { submitExercise } from "@/actions/exercises";
+import { AuthGateNotice } from "@/components/AuthGateNotice";
 import { useLanguage } from "@/components/LanguageProvider";
 import { StatusNotice } from "@/components/StatusNotice";
 import { getDashboardPath } from "@/lib/locale";
@@ -141,18 +142,15 @@ export function ExerciseForm({
 
   if (!user) {
     return (
-      <StatusNotice
-        tone="info"
-        size="comfortable"
+      <AuthGateNotice
+        actionClassName="px-6"
+        actionLabel={t("exercise.loginCta")}
         className="mt-6"
-        actions={
-          <Link href="/login" className="btn-primary px-6">
-            {t("exercise.loginCta")}
-          </Link>
-        }
+        size="comfortable"
+        tone="info"
       >
         {t("exercise.loginPrompt")}
-      </StatusNotice>
+      </AuthGateNotice>
     );
   }
 

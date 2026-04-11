@@ -1,11 +1,11 @@
-# Coptic Compass | Coptic Dictionary, Grammar, and Publications
+# Coptic Compass | Coptic Dictionary, Grammar, Publications, and Shenute AI
 
 ![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
 ![API](https://img.shields.io/badge/Public_Grammar_API-Live-0ea5e9)
 
-Coptic Compass is a digital home for Coptic study, bringing together a searchable dictionary, published grammar lessons, academic publications, a public grammar API, and private learning workspaces for students and instructors. The platform is built by Kyrillos Wannes.
+Coptic Compass is a digital home for Coptic study, bringing together a searchable dictionary, published grammar lessons, academic publications, Shenute AI, a public grammar API, and private learning workspaces for students and instructors. The platform is built by Copts for Copts.
 
 > Live site: [kyrilloswannes.com](https://kyrilloswannes.com)
 >

@@ -81,8 +81,8 @@ export function getOpenGraphSectionFooter(
 ) {
   if (section === "site") {
     return locale === "nl"
-      ? "Woordenboek • Grammatica • Publicaties"
-      : "Dictionary • Grammar • Publications";
+      ? "Woordenboek • Grammatica • Publicaties • Shenute AI"
+      : "Dictionary • Grammar • Publications • Shenute AI";
   }
 
   const brandLabel = getOpenGraphBrandLabel(locale);

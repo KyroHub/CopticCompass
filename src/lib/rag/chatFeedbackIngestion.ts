@@ -26,7 +26,7 @@ export type ChatFeedbackPageContext = {
   url?: string;
 };
 
-export type IngestChatFeedbackSignalOptions = {
+type IngestChatFeedbackSignalOptions = {
   assistantMessageId?: string;
   assistantResponse: string;
   chatId?: string;
@@ -44,6 +44,8 @@ type CopticDocumentsInsertRow = {
   embedding: string;
   metadata: Json;
 };
+
+type JsonObject = { [key: string]: Json | undefined };
 
 function normalizeWhitespace(value: string) {
   return value.replace(/\s+/g, " ").trim();
@@ -170,7 +172,104 @@ function buildFeedbackLearningContent(options: {
   return sections.join("\n");
 }
 
-// eslint-disable-next-line complexity
+function truncateOptionalText(value: string | undefined, maxLength: number) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  return value.slice(0, maxLength);
+}
+
+function getAdminFeedbackText(
+  signal: ChatFeedbackSignal,
+  feedbackText?: string,
+) {
+  if (signal !== "admin_feedback") {
+    return null;
+  }
+
+  return feedbackText ?? null;
+}
+
+function buildFeedbackMetadata(options: {
+  embedding: number[];
+  feedbackText?: string;
+  model: string;
+  pageContext?: ChatFeedbackPageContext;
+  prompt: string;
+  signal: ChatFeedbackSignal;
+  sourceEmbeddingDimensions: number;
+  uploadedAt: string;
+  userId: string;
+}): JsonObject {
+  const isAdminFeedback = options.signal === "admin_feedback";
+
+  return {
+    createdAt: options.uploadedAt,
+    embeddingDimensions: options.embedding.length,
+    embeddingModel: options.model,
+    feedbackText: getAdminFeedbackText(options.signal, options.feedbackText),
+    isAdminFeedback,
+    pageExcerpt: truncateOptionalText(options.pageContext?.excerpt, 1200),
+    pagePath: truncateOptionalText(options.pageContext?.path, 240),
+    pageTitle: truncateOptionalText(options.pageContext?.title, 320),
+    pageUrl: truncateOptionalText(options.pageContext?.url, 500),
+    promptPreview: normalizeWhitespace(options.prompt).slice(0, 240),
+    signal: options.signal,
+    sourceEmbeddingDimensions: options.sourceEmbeddingDimensions,
+    uploadedAt: options.uploadedAt,
+    uploadedBy: options.userId,
+  };
+}
+
+function buildFeedbackDocumentRow(options: {
+  assistantMessageId?: string;
+  assistantResponse: string;
+  chatId?: string;
+  content: string;
+  embedding: number[];
+  feedbackText?: string;
+  inferenceProvider: ChatFeedbackEmbeddingProvider;
+  model: string;
+  pageContext?: ChatFeedbackPageContext;
+  prompt: string;
+  signal: ChatFeedbackSignal;
+  sourceEmbeddingDimensions: number;
+  uploadedAt: string;
+  userId: string;
+  userMessageId?: string;
+}): CopticDocumentsInsertRow {
+  const metadata: JsonObject = {
+    ...buildFeedbackMetadata({
+      embedding: options.embedding,
+      feedbackText: options.feedbackText,
+      model: options.model,
+      pageContext: options.pageContext,
+      prompt: options.prompt,
+      signal: options.signal,
+      sourceEmbeddingDimensions: options.sourceEmbeddingDimensions,
+      uploadedAt: options.uploadedAt,
+      userId: options.userId,
+    }),
+    assistantMessageId: options.assistantMessageId ?? null,
+    chatId: options.chatId ?? null,
+    inferenceProvider: options.inferenceProvider,
+    responsePreview: normalizeWhitespace(options.assistantResponse).slice(
+      0,
+      240,
+    ),
+    sourceName: "chat_feedback_signal",
+    sourceType: "chat_feedback_signal",
+    userMessageId: options.userMessageId ?? null,
+  };
+
+  return {
+    content: options.content,
+    embedding: createVectorLiteral(options.embedding),
+    metadata,
+  };
+}
+
 export async function ingestChatFeedbackLearningSignal(
   options: IngestChatFeedbackSignalOptions,
 ) {
@@ -189,39 +288,23 @@ export async function ingestChatFeedbackLearningSignal(
 
   const targetEmbedding = normalizeEmbeddingDimensions(embedding);
 
-  const row: CopticDocumentsInsertRow = {
+  const row = buildFeedbackDocumentRow({
+    assistantMessageId: options.assistantMessageId,
+    assistantResponse: options.assistantResponse,
+    chatId: options.chatId,
     content,
-    embedding: createVectorLiteral(targetEmbedding),
-    metadata: {
-      assistantMessageId: options.assistantMessageId ?? null,
-      chatId: options.chatId ?? null,
-      createdAt: uploadedAt,
-      embeddingDimensions: targetEmbedding.length,
-      embeddingModel: model,
-      feedbackText:
-        options.signal === "admin_feedback"
-          ? (options.feedbackText ?? null)
-          : null,
-      inferenceProvider: options.inferenceProvider,
-      isAdminFeedback: options.signal === "admin_feedback",
-      pageExcerpt: options.pageContext?.excerpt?.slice(0, 1200) ?? null,
-      pagePath: options.pageContext?.path?.slice(0, 240) ?? null,
-      pageTitle: options.pageContext?.title?.slice(0, 320) ?? null,
-      pageUrl: options.pageContext?.url?.slice(0, 500) ?? null,
-      promptPreview: normalizeWhitespace(options.prompt).slice(0, 240),
-      responsePreview: normalizeWhitespace(options.assistantResponse).slice(
-        0,
-        240,
-      ),
-      signal: options.signal,
-      sourceEmbeddingDimensions: embedding.length,
-      sourceName: "chat_feedback_signal",
-      sourceType: "chat_feedback_signal",
-      uploadedAt,
-      uploadedBy: options.userId,
-      userMessageId: options.userMessageId ?? null,
-    },
-  };
+    embedding: targetEmbedding,
+    feedbackText: options.feedbackText,
+    inferenceProvider: options.inferenceProvider,
+    model,
+    pageContext: options.pageContext,
+    prompt: options.prompt,
+    signal: options.signal,
+    sourceEmbeddingDimensions: embedding.length,
+    uploadedAt,
+    userId: options.userId,
+    userMessageId: options.userMessageId,
+  });
 
   const serviceRoleClient = createServiceRoleClient();
   const copticDocumentsTable = serviceRoleClient.from(
