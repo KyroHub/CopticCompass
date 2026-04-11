@@ -8,7 +8,7 @@ import { getAuthenticatedUser } from "@/lib/supabase/authQueries";
 import { hasSupabaseRuntimeEnv } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 
-export const maxDuration = 600;
+export const maxDuration = 300;
 export const runtime = "nodejs";
 
 type JsonSourceIngestionFileResult = {

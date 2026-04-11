@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
 
+import type { AudienceContactSyncStateRow } from "@/features/communications/lib/communications";
+import type { AdminContentRelease } from "@/features/communications/lib/releases";
+import type { ContactMessageRow } from "@/features/contact/lib/contact";
+import type { EntryReportWithEntry } from "@/features/dictionary/lib/entryActions";
+import type { AdminSubmission } from "@/features/submissions/types";
+
 import {
   buildAdminWorkspaceOverview,
   buildAdminAudienceMetrics,
@@ -10,6 +16,21 @@ import {
   countPendingSubmissions,
 } from "./dashboardData";
 
+function createSyncState(
+  overrides: Partial<AudienceContactSyncStateRow>,
+): AudienceContactSyncStateRow {
+  return {
+    audience_contact_id: "contact-1",
+    created_at: "2025-01-01T00:00:00.000Z",
+    last_error: null,
+    last_synced_at: null,
+    provider: "resend",
+    provider_contact_id: null,
+    updated_at: "2025-01-01T00:00:00.000Z",
+    ...overrides,
+  };
+}
+
 describe("admin dashboard data helpers", () => {
   it("builds audience metrics from subscription and sync state data", () => {
     expect(
@@ -18,19 +39,18 @@ describe("admin dashboard data helpers", () => {
           books_opt_in: true,
           general_updates_opt_in: false,
           lessons_opt_in: true,
-          syncState: {
-            last_error: null,
+          syncState: createSyncState({
             last_synced_at: "2025-01-01T00:00:00.000Z",
-          },
+          }),
         },
         {
           books_opt_in: false,
           general_updates_opt_in: true,
           lessons_opt_in: false,
-          syncState: {
+          syncState: createSyncState({
             last_error: "boom",
             last_synced_at: null,
-          },
+          }),
         },
         {
           books_opt_in: false,
@@ -127,11 +147,17 @@ describe("admin dashboard data helpers", () => {
         },
         contactMessages: {
           error: null,
-          items: [{ status: "new" }, { status: "answered" }],
+          items: [
+            { status: "new" },
+            { status: "answered" },
+          ] as unknown as ContactMessageRow[],
         },
         contentReleases: {
           error: null,
-          items: [{ status: "approved" }, { status: "draft" }],
+          items: [
+            { status: "approved" },
+            { status: "draft" },
+          ] as unknown as AdminContentRelease[],
           lessonReleaseCandidates: [],
           publicationReleaseCandidates: [],
         },
@@ -142,7 +168,7 @@ describe("admin dashboard data helpers", () => {
               entry: null,
               report: { status: "open" },
             },
-          ],
+          ] as unknown as EntryReportWithEntry[],
         },
         notifications: {
           error: null,
@@ -155,7 +181,10 @@ describe("admin dashboard data helpers", () => {
         },
         submissions: {
           error: null,
-          items: [{ status: "pending" }, { status: "reviewed" }],
+          items: [
+            { status: "pending" },
+            { status: "reviewed" },
+          ] as unknown as AdminSubmission[],
         },
       }),
     ).toEqual({

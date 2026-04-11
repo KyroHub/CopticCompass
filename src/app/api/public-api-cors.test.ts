@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 import { NextRequest } from "next/server";
 import { describe, expect, it } from "vitest";
 
@@ -6,8 +8,11 @@ type RouteHandlerModule = {
   OPTIONS?: (...args: unknown[]) => Response | Promise<Response>;
 };
 
+const discoveredPublicApiRouteModules: Record<string, RouteHandlerModule> =
+  import.meta.glob<RouteHandlerModule>("./**/route.ts*", { eager: true });
+
 const publicApiRouteModules = Object.entries(
-  import.meta.glob<RouteHandlerModule>("./**/route.ts*", { eager: true }),
+  discoveredPublicApiRouteModules,
 ).filter(
   ([path]) =>
     path === "./openapi.json/route.ts" || path.startsWith("./v1/grammar/"),

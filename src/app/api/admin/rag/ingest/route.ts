@@ -6,7 +6,7 @@ import { getAuthenticatedUser } from "@/lib/supabase/authQueries";
 import { hasSupabaseRuntimeEnv } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
 
-export const maxDuration = 600;
+export const maxDuration = 300;
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
@@ -74,8 +74,7 @@ export async function POST(request: Request) {
         : fileValue.name;
 
     const enableOcrRaw = formData.get("enable_ocr");
-    const enableOcr =
-      enableOcrRaw === "on" || enableOcrRaw === "true" || enableOcrRaw === true;
+    const enableOcr = enableOcrRaw === "on" || enableOcrRaw === "true";
 
     const embeddingProviderRaw = formData.get("embedding_provider");
     const embeddingProvider =

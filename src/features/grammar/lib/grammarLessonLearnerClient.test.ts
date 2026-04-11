@@ -49,24 +49,18 @@ describe("grammar lesson learner client helpers", () => {
     const rows = [
       {
         completed_at: "2025-01-01T00:00:00.000Z",
-        created_at: "2025-01-01T00:00:00.000Z",
-        id: "row-1",
         lesson_id: "lesson-1",
         lesson_slug: "lesson-1",
         section_id: "section-1",
         section_slug: "section-1",
-        updated_at: "2025-01-01T00:00:00.000Z",
         user_id: "user-1",
       },
       {
         completed_at: "2025-01-01T00:00:00.000Z",
-        created_at: "2025-01-01T00:00:00.000Z",
-        id: "row-2",
         lesson_id: "lesson-1",
         lesson_slug: "lesson-1",
         section_id: "section-2",
         section_slug: "section-2",
-        updated_at: "2025-01-01T00:00:00.000Z",
         user_id: "user-1",
       },
     ];
@@ -74,26 +68,20 @@ describe("grammar lesson learner client helpers", () => {
     expect(
       upsertSectionProgressRow(rows, {
         completed_at: "2025-02-01T00:00:00.000Z",
-        created_at: "2025-02-01T00:00:00.000Z",
-        id: "row-3",
         lesson_id: "lesson-1",
         lesson_slug: "lesson-1",
         section_id: "section-2",
         section_slug: "section-2",
-        updated_at: "2025-02-01T00:00:00.000Z",
         user_id: "user-1",
       }),
     ).toEqual([
       rows[0],
       {
         completed_at: "2025-02-01T00:00:00.000Z",
-        created_at: "2025-02-01T00:00:00.000Z",
-        id: "row-3",
         lesson_id: "lesson-1",
         lesson_slug: "lesson-1",
         section_id: "section-2",
         section_slug: "section-2",
-        updated_at: "2025-02-01T00:00:00.000Z",
         user_id: "user-1",
       },
     ]);
@@ -105,24 +93,18 @@ describe("grammar lesson learner client helpers", () => {
         [
           {
             completed_at: "2025-01-01T00:00:00.000Z",
-            created_at: "2025-01-01T00:00:00.000Z",
-            id: "row-1",
             lesson_id: "lesson-1",
             lesson_slug: "lesson-1",
             section_id: "section-1",
             section_slug: "section-1",
-            updated_at: "2025-01-01T00:00:00.000Z",
             user_id: "user-1",
           },
           {
             completed_at: "2025-01-01T00:00:00.000Z",
-            created_at: "2025-01-01T00:00:00.000Z",
-            id: "row-2",
             lesson_id: "lesson-1",
             lesson_slug: "lesson-1",
             section_id: "section-2",
             section_slug: "section-2",
-            updated_at: "2025-01-01T00:00:00.000Z",
             user_id: "user-1",
           },
         ],
@@ -131,13 +113,10 @@ describe("grammar lesson learner client helpers", () => {
     ).toEqual([
       {
         completed_at: "2025-01-01T00:00:00.000Z",
-        created_at: "2025-01-01T00:00:00.000Z",
-        id: "row-2",
         lesson_id: "lesson-1",
         lesson_slug: "lesson-1",
         section_id: "section-2",
         section_slug: "section-2",
-        updated_at: "2025-01-01T00:00:00.000Z",
         user_id: "user-1",
       },
     ]);

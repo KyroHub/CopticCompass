@@ -11,6 +11,9 @@ import {
   createOpenRouterChatCompletion,
   type OpenRouterChatMessage,
 } from "@/lib/openrouter";
+import { getAuthenticatedUser } from "@/lib/supabase/authQueries";
+import { hasSupabaseRuntimeEnv } from "@/lib/supabase/config";
+import { createClient } from "@/lib/supabase/server";
 
 export const maxDuration = 30;
 export const runtime = "nodejs";
@@ -138,8 +141,8 @@ function hasOpenRouterConfigured() {
 }
 
 function extractMessageText(message: UIMessage): string {
-  if (typeof message.content === "string") {
-    return message.content;
+  if ("content" in message && typeof (message as any).content === "string") {
+    return (message as any).content;
   }
 
   if (!Array.isArray(message.parts)) {
@@ -255,7 +258,7 @@ function toInferenceProvider(value: unknown): InferenceProvider {
     return "openrouter";
   }
 
-  return "openrouter";
+  return "gemini";
 }
 
 function createStaticAssistantStream(responseText: string) {
@@ -315,6 +318,31 @@ function toPageContext(value: unknown): PageContext {
 
 export async function POST(req: Request) {
   try {
+    if (!hasSupabaseRuntimeEnv()) {
+      return new Response(
+        JSON.stringify({
+          error: "Shenute AI chat is unavailable right now.",
+        }),
+        {
+          status: 503,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    const supabase = await createClient();
+    const authenticatedUser = await getAuthenticatedUser(supabase);
+
+    if (!authenticatedUser) {
+      return new Response(
+        JSON.stringify({ error: "Sign in required to use Shenute AI chat." }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+
     const payload: {
       id?: unknown;
       inferenceProvider?: unknown;
@@ -385,13 +413,13 @@ ${contextText}
     if (inferenceProvider === "openrouter") {
       const completion = await createOpenRouterChatCompletion(
         [
-          { role: "system", content: systemPrompt },
+          { role: "system" as const, content: systemPrompt },
           ...toOpenRouterMessages(messages, chatId),
           ...(latestMessageText
             ? []
             : [
                 {
-                  role: "user",
+                  role: "user" as const,
                   content: "Please answer the latest user request.",
                 },
               ]),
@@ -399,7 +427,7 @@ ${contextText}
         { enableReasoning: true },
       );
 
-      const openRouterMessage = completion.choices[0]?.message as
+      const openRouterMessage = completion?.choices?.[0]?.message as
         | {
             content?: string | null;
             reasoning_details?: unknown;
@@ -425,13 +453,13 @@ ${contextText}
 
     try {
       const completion = await createHfChatCompletion([
-        { role: "system", content: systemPrompt },
+        { role: "system" as const, content: systemPrompt },
         ...toOpenAiMessages(messages),
         ...(latestMessageText
           ? []
           : [
               {
-                role: "user",
+                role: "user" as const,
                 content: "Please answer the latest user request.",
               },
             ]),
@@ -480,13 +508,13 @@ ${contextText}
         try {
           const fallbackCompletion = await createOpenRouterChatCompletion(
             [
-              { role: "system", content: systemPrompt },
+              { role: "system" as const, content: systemPrompt },
               ...toOpenRouterMessages(messages, chatId),
               ...(latestMessageText
                 ? []
                 : [
                     {
-                      role: "user",
+                      role: "user" as const,
                       content: "Please answer the latest user request.",
                     },
                   ]),
