@@ -29,7 +29,8 @@ export const homeMessages = defineMessages({
     "home.grammar.cta": "Begin studying",
   },
   nl: {
-    "home.eyebrow": "Koptisch woordenboek, grammatica, publicaties en Shenute AI",
+    "home.eyebrow":
+      "Koptisch woordenboek, grammatica, publicaties en Shenute AI",
     "home.title": "Koptisch Kompas",
     "home.subtitle":
       "Een digitaal thuis voor de studie van het Koptisch, met een doorzoekbaar woordenboek, gestructureerde grammaticalessen, publicaties en Shenute AI voor begeleide studie en manuscriptcontext.",

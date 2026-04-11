@@ -19,7 +19,8 @@ function getMailFooterCopy(language: Language) {
   if (language === "nl") {
     return {
       browseLabel: "Verder lezen op Coptic Compass",
-      descriptor: "Koptisch woordenboek, grammatica, publicaties en Shenute AI.",
+      descriptor:
+        "Koptisch woordenboek, grammatica, publicaties en Shenute AI.",
       signoff: "Met vriendelijke groet,",
     };
   }

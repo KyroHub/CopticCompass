@@ -148,7 +148,8 @@ export default function OCRPage() {
               </div>
               {image ? (
                 <div className="rounded-2xl border border-stone-200 bg-stone-50/80 px-4 py-3 text-sm text-stone-600 dark:border-stone-700 dark:bg-stone-950/40 dark:text-stone-300">
-                  Selected file: <span className="font-semibold">{image.name}</span>
+                  Selected file:{" "}
+                  <span className="font-semibold">{image.name}</span>
                 </div>
               ) : null}
             </div>
@@ -167,7 +168,8 @@ export default function OCRPage() {
                 Extracted Text
               </h2>
               <p className="text-sm text-stone-500 dark:text-stone-400">
-                Review the OCR output before reusing it in chat or research notes.
+                Review the OCR output before reusing it in chat or research
+                notes.
               </p>
             </div>
           </div>

@@ -42,7 +42,8 @@ export const siteConfig = {
   founderLine: `by ${siteAuthor.name}`,
   founderCreditLine: "Built by Copts for Copts",
   name: "Coptic Compass",
-  title: "Coptic Compass | Coptic Dictionary, Grammar, Publications, and Shenute AI",
+  title:
+    "Coptic Compass | Coptic Dictionary, Grammar, Publications, and Shenute AI",
   shortDescription: "A digital home for Coptic study and Shenute AI.",
   description: buildSiteDescription(dictionaryEntryCount),
   liveUrl: "https://kyrilloswannes.com",

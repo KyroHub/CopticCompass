@@ -625,7 +625,12 @@ export function AdminRagIngestionForm() {
           className="border-amber-300/80 bg-amber-50/80 p-4 text-xs text-amber-950 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
         >
           <div className="mb-2 flex items-center gap-2">
-            <Badge tone="surface" size="xs" caps className="border-amber-300/80">
+            <Badge
+              tone="surface"
+              size="xs"
+              caps
+              className="border-amber-300/80"
+            >
               Partial Failures
             </Badge>
             <p className="font-semibold">Failed JSON sources</p>

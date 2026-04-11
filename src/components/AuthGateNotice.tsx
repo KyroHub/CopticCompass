@@ -94,12 +94,7 @@ export function AuthGateInlinePrompt({
   const loginHref = getLoginPath(redirectTo ?? pathname ?? undefined);
 
   return (
-    <p
-      className={cx(
-        "text-stone-500 dark:text-stone-400",
-        className,
-      )}
-    >
+    <p className={cx("text-stone-500 dark:text-stone-400", className)}>
       {message}{" "}
       <Link
         href={loginHref}

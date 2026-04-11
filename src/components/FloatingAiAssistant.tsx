@@ -239,40 +239,38 @@ export function FloatingAiAssistant() {
           }
         >
           {Array.isArray(message.parts)
-            ? message.parts
-                .filter(isTextMessagePart)
-                .map((part, partIndex) => {
-                  if (message.role === "assistant") {
-                    return (
-                      <ReactMarkdown
-                        key={partIndex}
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          a: ({ ...props }) => (
-                            <a
-                              {...props}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="underline"
-                            />
-                          ),
-                          code: ({ className, children, ...props }) => (
-                            <code
-                              className={`rounded bg-stone-200/70 px-1 py-0.5 text-[0.95em] dark:bg-stone-800 ${className || ""}`}
-                              {...props}
-                            >
-                              {children}
-                            </code>
-                          ),
-                        }}
-                      >
-                        {part.text}
-                      </ReactMarkdown>
-                    );
-                  }
+            ? message.parts.filter(isTextMessagePart).map((part, partIndex) => {
+                if (message.role === "assistant") {
+                  return (
+                    <ReactMarkdown
+                      key={partIndex}
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        a: ({ ...props }) => (
+                          <a
+                            {...props}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="underline"
+                          />
+                        ),
+                        code: ({ className, children, ...props }) => (
+                          <code
+                            className={`rounded bg-stone-200/70 px-1 py-0.5 text-[0.95em] dark:bg-stone-800 ${className || ""}`}
+                            {...props}
+                          >
+                            {children}
+                          </code>
+                        ),
+                      }}
+                    >
+                      {part.text}
+                    </ReactMarkdown>
+                  );
+                }
 
-                  return <p key={partIndex}>{part.text}</p>;
-                })
+                return <p key={partIndex}>{part.text}</p>;
+              })
             : null}
 
           {message.role === "assistant" ? (
@@ -281,7 +279,11 @@ export function FloatingAiAssistant() {
                 <button
                   type="button"
                   onClick={() => {
-                    void handleReaction("like", assistantMessage, promptMessage);
+                    void handleReaction(
+                      "like",
+                      assistantMessage,
+                      promptMessage,
+                    );
                   }}
                   disabled={!isAuthenticated || isFeedbackPending}
                   className={`rounded border px-2 py-1 font-semibold disabled:cursor-not-allowed disabled:opacity-60 ${
