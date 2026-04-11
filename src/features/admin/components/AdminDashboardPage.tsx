@@ -107,15 +107,13 @@ export async function AdminDashboardPage({
     <PageShell
       className="min-h-screen px-6 py-16"
       contentClassName="min-h-[80vh] animate-in fade-in slide-in-from-bottom-8 duration-700"
-      width="workspace"
+      width="standard"
       accents={[
         pageShellAccents.heroEmeraldArc,
         pageShellAccents.topRightSkyOrbInset,
       ]}
     >
       <PageHeader
-        eyebrow="Instructor Workspace"
-        eyebrowVariant="badge"
         title="Instructor Terminal"
         description="Review submitted exercises, score translations, and send feedback."
         align="left"

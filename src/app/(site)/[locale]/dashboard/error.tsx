@@ -27,7 +27,6 @@ export default function Error({
 
   return (
     <RouteErrorState
-      eyebrow={copy.shellBadge}
       title={copy.error.title}
       description={copy.error.description}
       details={copy.error.details}

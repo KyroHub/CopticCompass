@@ -10,7 +10,6 @@ const DASHBOARD_COPY = {
     metaTitle: "Student Dashboard",
     metaDescription:
       "Private student workspace for lessons, submissions, and progress.",
-    shellBadge: "Student Workspace",
     pageTitle: "Student Dashboard",
     pageDescription: "Manage your grammar exercises and view feedback.",
     signOut: "Sign Out",
@@ -159,7 +158,6 @@ const DASHBOARD_COPY = {
   nl: {
     metaTitle: "Leerdashboard",
     metaDescription: "Privéleeromgeving voor lessen, inzendingen en voortgang.",
-    shellBadge: "Leeromgeving",
     pageTitle: "Leerdashboard",
     pageDescription: "Beheer je grammaticaoefeningen en bekijk feedback.",
     signOut: "Uitloggen",

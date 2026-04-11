@@ -17,7 +17,6 @@ function LoadingBlock({ className }: { className: string }) {
 export default function Loading() {
   return (
     <RouteLoadingState
-      eyebrow="Student Workspace"
       title="Preparing your dashboard"
       description="Loading your profile, lesson progress, and recent exercise feedback."
       tone="brand"

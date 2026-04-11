@@ -4,10 +4,12 @@ import { useEffect, useRef, useState } from "react";
 import { Cell, Legend, Pie, PieChart, Tooltip } from "recharts";
 
 import { SurfacePanel } from "@/components/SurfacePanel";
+import { antinoou } from "@/lib/fonts";
 
 import type { CSSProperties, ReactNode } from "react";
 
 const CHART_LEGEND_STYLE = {
+  fontFamily: `${antinoou.style.fontFamily}, serif`,
   fontSize: "12px",
   paddingTop: "20px",
 } satisfies CSSProperties;
@@ -82,7 +84,10 @@ export function AnalyticsPieChartCard({
         {isThemeReady && hasMeasuredChartSize ? (
           <PieChart width={chartSize.width} height={chartSize.height}>
             <Tooltip
-              contentStyle={tooltipContentStyle}
+              contentStyle={{
+                ...tooltipContentStyle,
+                fontFamily: `${antinoou.style.fontFamily}, serif`,
+              }}
               itemStyle={tooltipItemStyle}
             />
             <Legend wrapperStyle={CHART_LEGEND_STYLE} />

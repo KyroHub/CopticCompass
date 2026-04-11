@@ -17,7 +17,6 @@ function LoadingBlock({ className }: { className: string }) {
 export default function Loading() {
   return (
     <RouteLoadingState
-      eyebrow="Instructor Workspace"
       title="Preparing the review queue"
       description="Loading exercise submissions, ratings, and instructor tools."
       tone="analytics"

@@ -21,7 +21,6 @@ export default function Error({
 
   return (
     <RouteErrorState
-      eyebrow="Student Workspace"
       title="We couldn't load your dashboard"
       description="Your private workspace hit a temporary problem while loading."
       details="Progress, profile, or submission data could not be prepared for this request. Try again, and if it keeps happening, return to the grammar hub and retry from there."

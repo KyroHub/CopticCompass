@@ -141,10 +141,6 @@
     @apply mx-auto w-full max-w-5xl;
   }
 
-  .page-content-workspace {
-    @apply mx-auto w-full max-w-[90rem];
-  }
-
   .page-header {
     @apply mx-auto mb-12 max-w-3xl space-y-3 text-center md:mb-16;
   }

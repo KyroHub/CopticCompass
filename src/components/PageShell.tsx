@@ -3,7 +3,7 @@ import { cx } from "@/lib/classes";
 import type { ReactNode } from "react";
 
 type PageAccent = string;
-export type PageShellWidth = "narrow" | "standard" | "workspace";
+export type PageShellWidth = "narrow" | "standard";
 
 type PageShellProps = {
   children: ReactNode;
@@ -46,7 +46,6 @@ export const pageShellAccents = {
 const WIDTH_CLASSES: Record<PageShellWidth, string> = {
   narrow: "page-content-narrow",
   standard: "page-content-standard",
-  workspace: "page-content-workspace",
 };
 
 export function PageShell({

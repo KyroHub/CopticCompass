@@ -24,7 +24,6 @@ export default function Loading() {
 
   return (
     <RouteLoadingState
-      eyebrow={copy.shellBadge}
       title={copy.loading.title}
       description={copy.loading.description}
       tone="brand"

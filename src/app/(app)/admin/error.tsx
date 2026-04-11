@@ -21,7 +21,6 @@ export default function Error({
 
   return (
     <RouteErrorState
-      eyebrow="Instructor Workspace"
       title="We couldn't load the instructor queue"
       description="The review workspace ran into a temporary issue while preparing submissions."
       details="Submission data or review controls were interrupted before the page finished rendering. Try again first, and if the issue persists, return to the student dashboard while we investigate."

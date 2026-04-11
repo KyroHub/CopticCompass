@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 
 import { logout } from "@/actions/auth";
-import { Badge } from "@/components/Badge";
 import { BreadcrumbTrail } from "@/components/BreadcrumbTrail";
 import { PageHeader } from "@/components/PageHeader";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
@@ -62,9 +61,6 @@ export async function DashboardPageContent({
 
         <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
           <div>
-            <Badge tone="accent" size="xs" caps className="mb-4">
-              {copy.shellBadge}
-            </Badge>
             <PageHeader
               title={copy.pageTitle}
               description={copy.pageDescription}

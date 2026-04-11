@@ -625,9 +625,6 @@ export default function ChatAI() {
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-3">
-          <Badge tone="coptic" size="xs" caps>
-            Scholar Chat
-          </Badge>
           <PageHeader
             title="Shenute AI"
             description="Ask about Coptic vocabulary, grammar, translation, and manuscript context without leaving the shared app workspace."
