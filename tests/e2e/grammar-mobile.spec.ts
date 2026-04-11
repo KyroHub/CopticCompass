@@ -93,6 +93,6 @@ test("mobile locked lesson actions reveal the login prompt on tap", async ({
 
   await downloadButton.click();
   await expect(
-    page.getByText("Log in or sign up to download lessons as PDF"),
+    page.getByText("Sign in or sign up to download lessons as PDF"),
   ).toBeVisible();
 });
