@@ -235,6 +235,21 @@ The complete placeholder set lives in `.env.example`. The list below highlights 
 - `OPENROUTER_EMBEDDING_MAX_RETRIES`
 - `OPENROUTER_EMBEDDING_RETRY_BASE_MS`
 
+## CI/CD (GitHub Actions + Vercel)
+
+The CI workflow in [.github/workflows/ci.yml](./.github/workflows/ci.yml) now includes Vercel deployment jobs:
+
+- PRs to `main` (same-repo PRs) deploy a preview after checks pass.
+- Pushes to `main` deploy production after checks pass.
+
+Set these repository secrets in GitHub before enabling deployment:
+
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
+
+If these secrets are missing, the deploy jobs are skipped and CI checks still run.
+
 ## Code Organization
 
 - Localized public pages live under `src/app/(site)/[locale]`.

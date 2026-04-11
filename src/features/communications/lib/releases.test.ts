@@ -38,12 +38,12 @@ describe("content release helpers", () => {
       items: [],
       status: "queued",
       updated_at: "2026-03-28T10:00:00.000Z",
-    } as Parameters<typeof compareContentReleasePriority>[0];
+    } as unknown as Parameters<typeof compareContentReleasePriority>[0];
     const right = {
       items: [],
       status: "sent",
       updated_at: "2026-03-28T12:00:00.000Z",
-    } as Parameters<typeof compareContentReleasePriority>[1];
+    } as unknown as Parameters<typeof compareContentReleasePriority>[1];
 
     expect(compareContentReleasePriority(left, right)).toBeLessThan(0);
   });

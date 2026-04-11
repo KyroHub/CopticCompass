@@ -7,6 +7,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -54,3 +55,105 @@ jobs:
 
       - name: Run E2E smoke tests
         run: npm run test:e2e
+
+  deploy-preview:
+    if: >-
+      github.event_name == 'pull_request' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      !github.event.pull_request.draft
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.13.0
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check Vercel secrets
+        id: vercel-secrets
+        shell: bash
+        run: |
+          if [ -n "${VERCEL_TOKEN}" ] && [ -n "${VERCEL_ORG_ID}" ] && [ -n "${VERCEL_PROJECT_ID}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Vercel deploy skipped: missing VERCEL_TOKEN, VERCEL_ORG_ID, or VERCEL_PROJECT_ID."
+          fi
+
+      - name: Install Vercel CLI
+        if: steps.vercel-secrets.outputs.ready == 'true'
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel preview environment
+        if: steps.vercel-secrets.outputs.ready == 'true'
+        run: vercel pull --yes --environment=preview --token="${{ env.VERCEL_TOKEN }}"
+
+      - name: Build Vercel preview deployment
+        if: steps.vercel-secrets.outputs.ready == 'true'
+        run: vercel build --token="${{ env.VERCEL_TOKEN }}"
+
+      - name: Deploy Vercel preview
+        if: steps.vercel-secrets.outputs.ready == 'true'
+        run: vercel deploy --prebuilt --token="${{ env.VERCEL_TOKEN }}"
+
+  deploy-production:
+    if: >-
+      github.event_name == 'push'
+    needs: test-and-build
+    runs-on: ubuntu-latest
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.13.0
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check Vercel secrets
+        id: vercel-secrets
+        shell: bash
+        run: |
+          if [ -n "${VERCEL_TOKEN}" ] && [ -n "${VERCEL_ORG_ID}" ] && [ -n "${VERCEL_PROJECT_ID}" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "Vercel deploy skipped: missing VERCEL_TOKEN, VERCEL_ORG_ID, or VERCEL_PROJECT_ID."
+          fi
+
+      - name: Install Vercel CLI
+        if: steps.vercel-secrets.outputs.ready == 'true'
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel production environment
+        if: steps.vercel-secrets.outputs.ready == 'true'
+        run: vercel pull --yes --environment=production --token="${{ env.VERCEL_TOKEN }}"
+
+      - name: Build Vercel production deployment
+        if: steps.vercel-secrets.outputs.ready == 'true'
+        run: vercel build --prod --token="${{ env.VERCEL_TOKEN }}"
+
+      - name: Deploy Vercel production
+        if: steps.vercel-secrets.outputs.ready == 'true'
+        run: vercel deploy --prebuilt --prod --token="${{ env.VERCEL_TOKEN }}"

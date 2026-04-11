@@ -87,7 +87,52 @@ function toChatProvider(value: string): ChatProvider {
     return "hf";
   }
 
-  return "openrouter";
+  return "gemini";
+}
+
+function getErrorStatusCode(error: unknown): number | undefined {
+  if (!error || typeof error !== "object") {
+    return undefined;
+  }
+
+  const candidate = error as { cause?: unknown; status?: unknown };
+  if (typeof candidate.status === "number") {
+    return candidate.status;
+  }
+
+  if (candidate.cause && typeof candidate.cause === "object") {
+    const cause = candidate.cause as { status?: unknown };
+    if (typeof cause.status === "number") {
+      return cause.status;
+    }
+  }
+
+  return undefined;
+}
+
+function getChatErrorMessage(error: unknown) {
+  const status = getErrorStatusCode(error);
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  const normalizedMessage = message.toLowerCase();
+
+  if (
+    status === 429 ||
+    normalizedMessage.includes("429") ||
+    normalizedMessage.includes("rate limit")
+  ) {
+    return "Rate limit reached. Please try again later.";
+  }
+
+  if (
+    status === 401 ||
+    normalizedMessage.includes("401") ||
+    normalizedMessage.includes("unauthorized") ||
+    normalizedMessage.includes("sign in")
+  ) {
+    return "Sign in required to use Shenute AI chat.";
+  }
+
+  return message || "AI request failed.";
 }
 
 function getFeedbackStatusClass(status: "error" | "pending" | "success") {
@@ -104,10 +149,11 @@ function getFeedbackStatusClass(status: "error" | "pending" | "success") {
 
 export default function ChatAI() {
   const [inferenceProvider, setInferenceProvider] =
-    useState<ChatProvider>("openrouter");
+    useState<ChatProvider>("gemini");
   const [inputValue, setInputValue] = useState("");
   const [ocrPending, setOcrPending] = useState(false);
   const [ocrError, setOcrError] = useState<string | null>(null);
+  const [chatAccessError, setChatAccessError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [selectedImagePreviewUrl, setSelectedImagePreviewUrl] = useState<
     string | null
@@ -149,6 +195,7 @@ export default function ChatAI() {
   });
 
   const isLoading = status !== "ready";
+  const isChatAccessBlocked = isReady && !isAuthenticated;
   const typedMessages = messages as ChatMessageLike[];
 
   function clearSelectedImage() {
@@ -297,6 +344,13 @@ export default function ChatAI() {
 
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isChatAccessBlocked) {
+      setChatAccessError("Sign in required to use Shenute AI chat.");
+      return;
+    }
+
+    setChatAccessError(null);
 
     if ((!inputValue.trim() && !selectedImage) || isLoading || ocrPending) {
       return;
@@ -523,7 +577,7 @@ export default function ChatAI() {
               onChange={(event) => {
                 setInferenceProvider(toChatProvider(event.target.value));
               }}
-              disabled={isLoading}
+              disabled={isLoading || isChatAccessBlocked}
             >
               <option value="hf">Hugging Face</option>
               <option value="gemini">Gemini</option>
@@ -532,6 +586,12 @@ export default function ChatAI() {
           </label>
         </div>
       </div>
+
+      {isChatAccessBlocked ? (
+        <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          Shenute AI chat now requires sign-in. Please sign in to continue.
+        </div>
+      ) : null}
 
       {messages.length === 0 ? (
         <div className="flex flex-col items-center justify-center flex-grow text-center text-slate-500 mb-6">
@@ -617,7 +677,11 @@ export default function ChatAI() {
                         return <p key={index}>{part.text}</p>;
                       })
                   ) : (
-                    <p>{typeof m.content === "string" ? m.content : ""}</p>
+                    <p>
+                      {"content" in m && typeof (m as any).content === "string"
+                        ? (m as any).content
+                        : ""}
+                    </p>
                   )}
 
                   {m.role === "assistant" ? (
@@ -733,9 +797,14 @@ export default function ChatAI() {
       )}
 
       <form onSubmit={handleFormSubmit} className="px-4">
+        {chatAccessError ? (
+          <div className="mb-3 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
+            {chatAccessError}
+          </div>
+        ) : null}
         {error ? (
           <div className="mb-3 rounded-md border border-red-300 bg-red-50 px-3 py-2 text-sm text-red-700">
-            {error.message || "AI request failed."}
+            {getChatErrorMessage(error)}
           </div>
         ) : null}
         {ocrError ? (
@@ -823,7 +892,7 @@ export default function ChatAI() {
             onClick={() => {
               fileInputRef.current?.click();
             }}
-            disabled={isLoading || ocrPending}
+            disabled={isLoading || ocrPending || isChatAccessBlocked}
             className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             Add Image
@@ -833,7 +902,9 @@ export default function ChatAI() {
             onClick={() => {
               void openCamera();
             }}
-            disabled={isLoading || ocrPending || cameraOpen}
+            disabled={
+              isLoading || ocrPending || cameraOpen || isChatAccessBlocked
+            }
             className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200 dark:hover:bg-slate-800"
           >
             Use Camera
@@ -849,14 +920,22 @@ export default function ChatAI() {
           <input
             className="w-full p-4 pr-16 bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-xl shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all outline-none"
             value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
+            onChange={(e) => {
+              setInputValue(e.target.value);
+              if (chatAccessError) {
+                setChatAccessError(null);
+              }
+            }}
             placeholder="Ask about a Coptic word, grammar rule, or attached image..."
-            disabled={isLoading || ocrPending}
+            disabled={isLoading || ocrPending || isChatAccessBlocked}
           />
           <button
             type="submit"
             disabled={
-              (!inputValue.trim() && !selectedImage) || isLoading || ocrPending
+              (!inputValue.trim() && !selectedImage) ||
+              isLoading ||
+              ocrPending ||
+              isChatAccessBlocked
             }
             className="absolute right-3 h-10 w-10 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center justify-center transition-colors disabled:opacity-50 disabled:hover:bg-blue-600"
           >
