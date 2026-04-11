@@ -1,9 +1,8 @@
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { connection } from "next/server";
 
 import "@/app/globals.css";
 import { AppFrame } from "@/components/AppFrame";
+import { ObservabilityScripts } from "@/components/ObservabilityScripts";
 import { antinoou } from "@/lib/fonts";
 import { createRootLayoutMetadata } from "@/lib/metadata";
 import { getCspNonce } from "@/lib/server/csp";
@@ -47,8 +46,7 @@ export default async function AppLayout({
         <AppFrame initialLanguage={language} nonce={nonce}>
           {children}
         </AppFrame>
-        <Analytics />
-        <SpeedInsights />
+        <ObservabilityScripts />
       </body>
     </html>
   );

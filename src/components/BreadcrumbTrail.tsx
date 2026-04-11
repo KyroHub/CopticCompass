@@ -45,6 +45,7 @@ export function BreadcrumbTrail({ items, className }: BreadcrumbTrailProps) {
               {item.href && !isCurrentPage ? (
                 <Link
                   href={item.href}
+                  prefetch={false}
                   className={cx(
                     "transition-colors hover:text-stone-900 dark:hover:text-stone-200",
                     item.labelClassName,

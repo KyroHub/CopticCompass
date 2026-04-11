@@ -114,6 +114,10 @@ export const dictionaryMessages = defineMessages({
     "analytics.filterEtymologyEgy": "Egyptian Only",
     "analytics.filterEtymologyGr": "Greek Only",
     "analytics.title": "Dictionary Analytics",
+    "analytics.visualBreakdowns": "Visual Breakdowns",
+    "analytics.mobileChartsDescription":
+      "Interactive charts load on demand on smaller screens so the page stays fast and responsive during the initial visit.",
+    "analytics.loadCharts": "Load Charts",
     "analytics.totalRoots": "Total Roots",
     "analytics.meaningUnknown": "Meaning Unknown",
     "analytics.meaningUncertain": "Meaning Uncertain",
@@ -250,6 +254,10 @@ export const dictionaryMessages = defineMessages({
     "analytics.filterEtymologyEgy": "Alleen Egyptisch",
     "analytics.filterEtymologyGr": "Alleen Grieks",
     "analytics.title": "Woordenboekstatistieken",
+    "analytics.visualBreakdowns": "Visuele overzichten",
+    "analytics.mobileChartsDescription":
+      "Interactieve grafieken laden op aanvraag op kleinere schermen, zodat de pagina snel en soepel blijft bij het eerste bezoek.",
+    "analytics.loadCharts": "Grafieken laden",
     "analytics.totalRoots": "Totaal aantal roots",
     "analytics.meaningUnknown": "Betekenis onbekend",
     "analytics.meaningUncertain": "Betekenis onzeker",

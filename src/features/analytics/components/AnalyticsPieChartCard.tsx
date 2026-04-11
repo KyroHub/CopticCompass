@@ -1,11 +1,11 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import {
   Cell,
   Legend,
   Pie,
   PieChart,
-  ResponsiveContainer,
   Tooltip,
 } from "recharts";
 
@@ -28,11 +28,9 @@ type AnalyticsPieChartCardProps = {
   title: ReactNode;
   tooltipContentStyle: CSSProperties;
   tooltipItemStyle: CSSProperties;
-  animationBegin?: number;
 };
 
 export function AnalyticsPieChartCard({
-  animationBegin = 0,
   chartCellStroke,
   data,
   footer,
@@ -43,6 +41,36 @@ export function AnalyticsPieChartCard({
   tooltipContentStyle,
   tooltipItemStyle,
 }: AnalyticsPieChartCardProps) {
+  const chartContainerRef = useRef<HTMLDivElement | null>(null);
+  const [chartSize, setChartSize] = useState({ height: 0, width: 0 });
+
+  useEffect(() => {
+    const chartContainer = chartContainerRef.current;
+    if (!chartContainer) {
+      return;
+    }
+
+    const updateChartSize = () => {
+      setChartSize({
+        height: chartContainer.clientHeight,
+        width: chartContainer.clientWidth,
+      });
+    };
+
+    updateChartSize();
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateChartSize();
+    });
+    resizeObserver.observe(chartContainer);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  const hasMeasuredChartSize =
+    chartSize.width > 0 && chartSize.height > 0;
   const chartPlaceholder = (
     <div className="h-full w-full rounded-2xl bg-stone-100/70 dark:bg-stone-900/40" />
   );
@@ -57,39 +85,36 @@ export function AnalyticsPieChartCard({
         {title}
       </h2>
 
-      <div className="mb-6 h-[300px] w-full">
-        {isThemeReady ? (
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Tooltip
-                contentStyle={tooltipContentStyle}
-                itemStyle={tooltipItemStyle}
-              />
-              <Legend wrapperStyle={CHART_LEGEND_STYLE} />
-              <Pie
-                data={data}
-                cx="50%"
-                cy="50%"
-                innerRadius={70}
-                outerRadius={100}
-                paddingAngle={3}
-                dataKey="value"
-                animationBegin={animationBegin}
-                animationDuration={1200}
-                onClick={onSliceClick}
-                className="cursor-pointer"
-              >
-                {data.map((_, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={palette[index % palette.length]}
-                    stroke={chartCellStroke}
-                    className="transition-opacity hover:opacity-80"
-                  />
-                ))}
-              </Pie>
-            </PieChart>
-          </ResponsiveContainer>
+      <div ref={chartContainerRef} className="mb-6 h-[300px] min-w-0 w-full">
+        {isThemeReady && hasMeasuredChartSize ? (
+          <PieChart width={chartSize.width} height={chartSize.height}>
+            <Tooltip
+              contentStyle={tooltipContentStyle}
+              itemStyle={tooltipItemStyle}
+            />
+            <Legend wrapperStyle={CHART_LEGEND_STYLE} />
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              innerRadius={70}
+              outerRadius={100}
+              paddingAngle={3}
+              dataKey="value"
+              isAnimationActive={false}
+              onClick={onSliceClick}
+              className="cursor-pointer"
+            >
+              {data.map((_, index) => (
+                <Cell
+                  key={`cell-${index}`}
+                  fill={palette[index % palette.length]}
+                  stroke={chartCellStroke}
+                  className="transition-opacity hover:opacity-80"
+                />
+              ))}
+            </Pie>
+          </PieChart>
         ) : (
           chartPlaceholder
         )}

@@ -42,9 +42,13 @@ export function DictionarySearchBar({
         </div>
 
         <input
+          id="dictionary-search-input"
+          name="query"
           ref={searchInputRef}
           type="text"
           dir="ltr"
+          aria-label={t("dict.searchPlaceholder")}
+          enterKeyHint="search"
           placeholder={t("dict.searchPlaceholder")}
           value={query}
           onChange={(event) => {

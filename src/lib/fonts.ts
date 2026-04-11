@@ -18,4 +18,5 @@ export const antinoou = localFont({
   ],
   variable: "--font-coptic",
   display: "swap",
+  preload: false,
 });

@@ -1,3 +1,5 @@
+import { useId } from "react";
+
 import { FormLabel } from "@/components/FormField";
 import { cx } from "@/lib/classes";
 
@@ -15,17 +17,23 @@ export function CompactSelect({
   id,
   label,
   labelClassName,
+  name,
   wrapperClassName,
   ...props
 }: CompactSelectProps) {
+  const generatedId = useId();
+  const resolvedId = id ?? `compact-select-${generatedId}`;
+  const resolvedName = name ?? resolvedId;
+
   return (
     <div className={cx("flex items-center gap-2", wrapperClassName)}>
-      <FormLabel htmlFor={id} tone="muted" className={labelClassName}>
+      <FormLabel htmlFor={resolvedId} tone="muted" className={labelClassName}>
         {label}
       </FormLabel>
       <select
         {...props}
-        id={id}
+        id={resolvedId}
+        name={resolvedName}
         className={cx("compact-select-base", className)}
       >
         {children}

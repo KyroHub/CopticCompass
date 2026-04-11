@@ -1,8 +1,6 @@
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-
 import "@/app/globals.css";
 import { AppFrame } from "@/components/AppFrame";
+import { ObservabilityScripts } from "@/components/ObservabilityScripts";
 import { antinoou } from "@/lib/fonts";
 import { PUBLIC_LOCALES } from "@/lib/locale";
 import { createRootLayoutMetadata } from "@/lib/metadata";
@@ -40,8 +38,7 @@ export default async function SiteLayout({
         <AppFrame initialLanguage={locale} localeRouting>
           {children}
         </AppFrame>
-        <Analytics />
-        <SpeedInsights />
+        <ObservabilityScripts />
       </body>
     </html>
   );

@@ -1,3 +1,5 @@
+import { useId } from "react";
+
 import { cx } from "@/lib/classes";
 
 import type { InputHTMLAttributes, ReactNode } from "react";
@@ -27,9 +29,13 @@ export function CheckboxField({
   wrapperClassName,
   ...props
 }: CheckboxFieldProps) {
+  const generatedId = useId();
+  const resolvedId = id ?? `checkbox-${generatedId}`;
+  const resolvedName = name ?? resolvedId;
+
   return (
     <label
-      htmlFor={id}
+      htmlFor={resolvedId}
       className={cx(
         "checkbox-row",
         disabled && "cursor-not-allowed opacity-70",
@@ -38,12 +44,12 @@ export function CheckboxField({
     >
       <input
         {...props}
-        id={id}
+        id={resolvedId}
         checked={checked}
         className={cx("checkbox-base", className)}
         defaultChecked={defaultChecked}
         disabled={disabled}
-        name={name}
+        name={resolvedName}
         onChange={onChange}
         type="checkbox"
         value={value}

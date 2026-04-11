@@ -74,7 +74,7 @@ export function Navbar() {
                 className="object-contain drop-shadow"
               />
             </div>
-            <span className="whitespace-nowrap font-coptic text-xl font-bold text-transparent bg-gradient-to-r from-stone-800 to-stone-500 bg-clip-text transition-colors dark:from-stone-100 dark:to-stone-400">
+            <span className="whitespace-nowrap text-xl font-bold text-transparent bg-gradient-to-r from-stone-800 to-stone-500 bg-clip-text transition-colors dark:from-stone-100 dark:to-stone-400">
               {brandLabel}
             </span>
           </Link>

@@ -1,8 +1,9 @@
 "use client";
 
 import { ArrowLeft, Filter } from "lucide-react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { BreadcrumbTrail } from "@/components/BreadcrumbTrail";
 import { buttonClassName } from "@/components/Button";
@@ -10,7 +11,10 @@ import { CompactSelect } from "@/components/CompactSelect";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PageHeader } from "@/components/PageHeader";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
-import { SurfacePanel } from "@/components/SurfacePanel";
+import {
+  SurfacePanel,
+  surfacePanelClassName,
+} from "@/components/SurfacePanel";
 import {
   type AnalyticsSnapshotMap,
   type EtymologyFilter,
@@ -21,7 +25,6 @@ import {
   type AnalyticsDrilldownPage,
   type AnalyticsDrilldown,
 } from "@/features/analytics/lib/analyticsDrilldown";
-import { useAnalyticsThemeColors } from "@/features/analytics/lib/useAnalyticsThemeColors";
 import { DictionaryResultsSection } from "@/features/dictionary/components/DictionaryResultsSection";
 import {
   type AnalyticsDialect,
@@ -33,10 +36,20 @@ import { cx } from "@/lib/classes";
 import type { TranslationKey } from "@/lib/i18n";
 import { getDictionaryPath, getLocalizedHomePath } from "@/lib/locale";
 
-import { AnalyticsPieChartCard } from "./AnalyticsPieChartCard";
 import { AnalyticsSlideOver } from "./AnalyticsSlideOver";
 
 const ANALYTICS_DRILLDOWN_PAGE_SIZE = 50;
+
+const AnalyticsChartsSection = dynamic(
+  () =>
+    import("./AnalyticsChartsSection").then((module) => ({
+      default: module.AnalyticsChartsSection,
+    })),
+  {
+    ssr: false,
+    loading: () => <AnalyticsChartsPlaceholder />,
+  },
+);
 
 type AnalyticsStatCardProps = {
   accentClassName: string;
@@ -46,6 +59,13 @@ type AnalyticsStatCardProps = {
   onClick?: () => void;
 };
 
+type AnalyticsChartsCalloutProps = {
+  description: string;
+  loadLabel: string;
+  onLoadCharts: () => void;
+  title: string;
+};
+
 function AnalyticsStatCard({
   accentClassName,
   title,
@@ -53,28 +73,111 @@ function AnalyticsStatCard({
   valueClassName = "text-5xl font-bold text-stone-800 dark:text-stone-200",
   onClick,
 }: AnalyticsStatCardProps) {
-  return (
-    <SurfacePanel
-      rounded="3xl"
-      variant="subtle"
-      shadow="soft"
-      className={cx(
-        "relative overflow-hidden p-6",
-        onClick &&
-          "cursor-pointer transition-transform hover:scale-[1.02] active:scale-[0.98]",
-      )}
-      onClick={onClick}
-    >
+  const cardContent = (
+    <>
       <div
         className={cx(
           "absolute -right-4 -top-4 h-24 w-24 rounded-full blur-2xl",
           accentClassName,
         )}
       />
-      <h3 className="mb-1 text-sm font-semibold uppercase tracking-widest text-stone-500 dark:text-stone-400">
+      <h2 className="mb-1 text-sm font-semibold uppercase tracking-widest text-stone-500 dark:text-stone-400">
         {title}
-      </h3>
+      </h2>
       <p className={valueClassName}>{value}</p>
+    </>
+  );
+
+  if (!onClick) {
+    return (
+      <SurfacePanel
+        rounded="3xl"
+        variant="subtle"
+        shadow="soft"
+        className="relative overflow-hidden p-6"
+      >
+        {cardContent}
+      </SurfacePanel>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      className={surfacePanelClassName({
+        className: cx(
+          "relative overflow-hidden p-6 text-left",
+          "cursor-pointer transition-transform hover:scale-[1.02] active:scale-[0.98]",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-500/40",
+        ),
+        rounded: "3xl",
+        shadow: "soft",
+        variant: "subtle",
+      })}
+      onClick={onClick}
+    >
+      {cardContent}
+    </button>
+  );
+}
+
+function AnalyticsChartsPlaceholder() {
+  return (
+    <>
+      <div className="grid lg:grid-cols-2 gap-8 items-start mb-8">
+        <AnalyticsChartSkeletonCard />
+        <AnalyticsChartSkeletonCard />
+      </div>
+      <div className="grid lg:grid-cols-2 gap-8 items-start mb-8">
+        <AnalyticsChartSkeletonCard />
+        <AnalyticsChartSkeletonCard />
+      </div>
+      <div className="grid lg:grid-cols-2 gap-8 items-start">
+        <AnalyticsChartSkeletonCard />
+        <AnalyticsChartSkeletonCard />
+      </div>
+    </>
+  );
+}
+
+function AnalyticsChartSkeletonCard() {
+  return (
+    <SurfacePanel
+      rounded="3xl"
+      shadow="soft"
+      className="flex h-full flex-col p-6"
+    >
+      <div className="mb-6 h-8 w-48 rounded-full bg-stone-200/80 dark:bg-stone-800/80" />
+      <div className="h-[300px] w-full rounded-2xl bg-stone-100/80 dark:bg-stone-900/50" />
+    </SurfacePanel>
+  );
+}
+
+function AnalyticsChartsCallout({
+  description,
+  loadLabel,
+  onLoadCharts,
+  title,
+}: AnalyticsChartsCalloutProps) {
+  return (
+    <SurfacePanel rounded="3xl" shadow="soft" className="p-6">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div className="space-y-2">
+          <h2 className="text-2xl font-bold text-stone-800 dark:text-stone-200">
+            {title}
+          </h2>
+          <p className="max-w-2xl text-sm leading-6 text-stone-600 dark:text-stone-400">
+            {description}
+          </p>
+        </div>
+        <button
+          type="button"
+          className={buttonClassName({ variant: "primary" })}
+          onClick={onLoadCharts}
+        >
+          {loadLabel}
+        </button>
+      </div>
     </SurfacePanel>
   );
 }
@@ -149,12 +252,68 @@ export default function AnalyticsPageClient({
   const [hasMoreSlideOverResults, setHasMoreSlideOverResults] = useState(false);
   const [isSlideOverLoading, setSlideOverLoading] = useState(false);
   const [isSlideOverLoadingMore, setSlideOverLoadingMore] = useState(false);
+  const [requiresChartInteraction, setRequiresChartInteraction] = useState(false);
+  const [shouldRenderCharts, setShouldRenderCharts] = useState(false);
   const activeDrilldownKeyRef = useRef("");
+  const chartsSectionRef = useRef<HTMLDivElement | null>(null);
 
   const { language, t } = useLanguage();
   const stats =
     snapshots[selectedDialect]?.[selectedEtymology] ?? snapshots.ALL.ALL;
-  const { colors, isThemeReady } = useAnalyticsThemeColors();
+
+  useEffect(() => {
+    const mobileMediaQuery = window.matchMedia("(max-width: 767px)");
+
+    const syncChartLoadingMode = () => {
+      setRequiresChartInteraction(mobileMediaQuery.matches);
+    };
+
+    syncChartLoadingMode();
+    mobileMediaQuery.addEventListener("change", syncChartLoadingMode);
+
+    return () => {
+      mobileMediaQuery.removeEventListener("change", syncChartLoadingMode);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (requiresChartInteraction || shouldRenderCharts) {
+      return;
+    }
+
+    const chartsSection = chartsSectionRef.current;
+    if (!chartsSection) {
+      return;
+    }
+
+    if (typeof IntersectionObserver === "undefined") {
+      const timeoutId = window.setTimeout(() => {
+        setShouldRenderCharts(true);
+      }, 200);
+
+      return () => {
+        window.clearTimeout(timeoutId);
+      };
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setShouldRenderCharts(true);
+          observer.disconnect();
+        }
+      },
+      {
+        rootMargin: "240px 0px",
+      }
+    );
+
+    observer.observe(chartsSection);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [requiresChartInteraction, shouldRenderCharts]);
 
   useEffect(() => {
     if (!slideOverFilter) {
@@ -327,61 +486,26 @@ export default function AnalyticsPageClient({
     );
   };
 
-  const posChartData = useMemo(
-    () =>
-      stats.posChartData.map((datum) => ({
-        ...datum,
-        originalName: datum.name,
-        name:
-          t(`dict.${datum.name.toLowerCase()}` as TranslationKey) ?? datum.name,
-      })),
-    [stats.posChartData, t],
-  );
-  const genderChartData = useMemo(
-    () =>
-      stats.genderChartData.map((datum) => ({
-        ...datum,
-        originalName: datum.name,
-        name: datum.name,
-      })),
-    [stats.genderChartData],
-  );
-  const etymologyChartData = useMemo(
-    () =>
-      stats.etymologyChartData.map((datum) => ({
-        ...datum,
-        originalName: datum.name,
-        name: t(datum.name as TranslationKey),
-      })),
-    [stats.etymologyChartData, t],
-  );
-  const derivationChartData = useMemo(
-    () =>
-      stats.derivationalMorphologyData.map((datum) => ({
-        ...datum,
-        originalName: datum.name,
-        name: t(datum.name as TranslationKey),
-      })),
-    [stats.derivationalMorphologyData, t],
-  );
-  const verbChartData = useMemo(
-    () =>
-      stats.verbCompletenessData.map((datum) => ({
-        ...datum,
-        originalName: datum.name,
-        name: t(datum.name as TranslationKey),
-      })),
-    [stats.verbCompletenessData, t],
-  );
-  const relationChartData = useMemo(
-    () =>
-      stats.relationTypeData.map((datum) => ({
-        ...datum,
-        originalName: datum.name,
-        name: t(datum.name as TranslationKey),
-      })),
-    [stats.relationTypeData, t],
-  );
+  let chartsContent = <AnalyticsChartsPlaceholder />;
+
+  if (requiresChartInteraction) {
+    chartsContent = (
+      <AnalyticsChartsCallout
+        description={t(
+          "analytics.mobileChartsDescription" as TranslationKey,
+        )}
+        loadLabel={t("analytics.loadCharts" as TranslationKey)}
+        onLoadCharts={() => setShouldRenderCharts(true)}
+        title={t("analytics.visualBreakdowns" as TranslationKey)}
+      />
+    );
+  }
+
+  if (shouldRenderCharts) {
+    chartsContent = (
+      <AnalyticsChartsSection onChartClick={handleChartClick} stats={stats} />
+    );
+  }
 
   return (
     <PageShell
@@ -413,6 +537,7 @@ export default function AnalyticsPageClient({
           <div className="flex items-center gap-3">
             <Link
               href={getDictionaryPath(language)}
+              prefetch={false}
               className={buttonClassName({ variant: "secondary" })}
             >
               <ArrowLeft className="h-4 w-4" />
@@ -430,7 +555,9 @@ export default function AnalyticsPageClient({
                 <Filter className="h-4 w-4" />
               </span>
               <CompactSelect
+                id="analytics-dialect-filter"
                 label={t("analytics.filter")}
+                name="dialect"
                 value={selectedDialect}
                 onChange={(e) =>
                   setSelectedDialect(e.target.value as AnalyticsDialect)
@@ -451,7 +578,9 @@ export default function AnalyticsPageClient({
               className="flex items-center space-x-3 rounded-2xl p-3 px-4 dark:border-stone-700"
             >
               <CompactSelect
+                id="analytics-etymology-filter"
                 label={t("analytics.filterEtymology" as TranslationKey)}
+                name="etymology"
                 value={selectedEtymology}
                 onChange={(e) =>
                   setSelectedEtymology(e.target.value as EtymologyFilter)
@@ -496,101 +625,8 @@ export default function AnalyticsPageClient({
         />
       </div>
 
-      <div className="grid lg:grid-cols-2 gap-8 items-start mb-8">
-        <AnalyticsPieChartCard
-          title={t("analytics.posBreakdown")}
-          data={posChartData}
-          palette={colors.palettes.pos}
-          chartCellStroke={colors.chartCellStroke}
-          isThemeReady={isThemeReady}
-          tooltipContentStyle={colors.tooltipContentStyle}
-          tooltipItemStyle={colors.tooltipItemStyle}
-          onSliceClick={(data) => handleChartClick(data, "pos")}
-        />
-
-        <AnalyticsPieChartCard
-          title={
-            <>
-              {t("analytics.nounGenders")}{" "}
-              <span className="text-lg font-normal text-stone-500">
-                ({stats.totalNouns} {t("analytics.total")})
-              </span>
-            </>
-          }
-          footer={
-            <div className="mt-auto rounded-2xl border border-stone-200 bg-stone-50 px-4 py-3 shadow-sm dark:border-stone-800/50 dark:bg-stone-950/40">
-              <li className="mb-2 flex list-none items-center justify-between text-sm text-[rgb(var(--accent-strong))]">
-                <span>{t("analytics.verbalNouns")}</span>
-                <span className="font-bold">{stats.verbalNouns}</span>
-              </li>
-              <div className="my-2 h-px w-full bg-stone-300 dark:bg-stone-800"></div>
-              <div className="flex justify-between font-bold text-stone-700 dark:text-stone-300">
-                <span>{t("analytics.totalMasculine")}</span>
-                <span>{stats.totalMasculine}</span>
-              </div>
-            </div>
-          }
-          data={genderChartData}
-          palette={colors.palettes.gender}
-          chartCellStroke={colors.chartCellStroke}
-          isThemeReady={isThemeReady}
-          tooltipContentStyle={colors.tooltipContentStyle}
-          tooltipItemStyle={colors.tooltipItemStyle}
-          animationBegin={200}
-          onSliceClick={(data) => handleChartClick(data, "gender")}
-        />
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-8 items-start mb-8">
-        <AnalyticsPieChartCard
-          title={t("analytics.etymology" as TranslationKey)}
-          data={etymologyChartData}
-          palette={colors.palettes.etymology}
-          chartCellStroke={colors.chartCellStroke}
-          isThemeReady={isThemeReady}
-          tooltipContentStyle={colors.tooltipContentStyle}
-          tooltipItemStyle={colors.tooltipItemStyle}
-          animationBegin={300}
-          onSliceClick={(data) => handleChartClick(data, "etymology")}
-        />
-
-        <AnalyticsPieChartCard
-          title={t("analytics.derivation" as TranslationKey)}
-          data={derivationChartData}
-          palette={colors.palettes.derivation}
-          chartCellStroke={colors.chartCellStroke}
-          isThemeReady={isThemeReady}
-          tooltipContentStyle={colors.tooltipContentStyle}
-          tooltipItemStyle={colors.tooltipItemStyle}
-          animationBegin={400}
-          onSliceClick={(data) => handleChartClick(data, "derivation")}
-        />
-      </div>
-
-      <div className="grid lg:grid-cols-2 gap-8 items-start">
-        <AnalyticsPieChartCard
-          title={t("analytics.verbCompleteness" as TranslationKey)}
-          data={verbChartData}
-          palette={colors.palettes.verb}
-          chartCellStroke={colors.chartCellStroke}
-          isThemeReady={isThemeReady}
-          tooltipContentStyle={colors.tooltipContentStyle}
-          tooltipItemStyle={colors.tooltipItemStyle}
-          animationBegin={500}
-          onSliceClick={(data) => handleChartClick(data, "verb")}
-        />
-
-        <AnalyticsPieChartCard
-          title={t("analytics.relations" as TranslationKey)}
-          data={relationChartData}
-          palette={colors.palettes.relations}
-          chartCellStroke={colors.chartCellStroke}
-          isThemeReady={isThemeReady}
-          tooltipContentStyle={colors.tooltipContentStyle}
-          tooltipItemStyle={colors.tooltipItemStyle}
-          animationBegin={600}
-          onSliceClick={(data) => handleChartClick(data, "relations")}
-        />
+      <div ref={chartsSectionRef}>
+        {chartsContent}
       </div>
 
       <AnalyticsSlideOver

@@ -1,3 +1,8 @@
+import {
+  VERCEL_SCRIPT_ORIGIN,
+  isVercelObservabilityEnabled,
+} from "./vercelMonitoring";
+
 type SecurityHeader = {
   key: string;
   value: string;
@@ -56,11 +61,18 @@ function buildScriptSourceDirective(options: {
   nonce: string | null;
 }) {
   const scriptNonceSource = options.nonce ? `'nonce-${options.nonce}'` : null;
+  const vercelScriptOrigin = isVercelObservabilityEnabled({
+    nodeEnv: process.env.NODE_ENV,
+    vercelEnv: process.env.VERCEL_ENV,
+  })
+    ? VERCEL_SCRIPT_ORIGIN
+    : null;
 
   return `script-src ${buildSourceList(
     "'self'",
     scriptNonceSource ?? "'unsafe-inline'",
     scriptNonceSource ? "'strict-dynamic'" : null,
+    vercelScriptOrigin,
     options.isProduction ? null : "'unsafe-eval'",
   )}`;
 }
