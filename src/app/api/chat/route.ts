@@ -7,7 +7,7 @@ import {
 } from "ai";
 
 import { getGeminiModel } from "@/lib/gemini";
-import { createHfChatCompletion, type HfChatMessage } from "@/lib/hf";
+import { createHfChatCompletion, generateHFEmbeddings, type HfChatMessage } from "@/lib/hf";
 import {
   createOpenRouterChatCompletion,
   type OpenRouterChatMessage,
@@ -372,8 +372,37 @@ export async function POST(req: Request) {
 
     let contextText = "";
     try {
-      // TODO: wire vector lookup against coptic_documents when retrieval query is finalized.
-      contextText = "Vector search is deferred pending exact query mechanisms.";
+      if (latestMessageText && latestMessageText.length > 5) {
+        // Embed the query using the standard Hugging Face pipeline
+        const embeddings = await generateHFEmbeddings([latestMessageText]);
+        const queryEmbedding = embeddings[0];
+
+        if (queryEmbedding) {
+          const supabase = await createClient();
+
+          const { data, error } = await supabase.rpc("match_coptic_documents", {
+            query_embedding: `[${queryEmbedding.join(",")}]`,
+            match_threshold: 0.45,
+            match_count: 5,
+          });
+
+          if (error) {
+            console.error("Vector RPC execution failed:", error);
+          } else if (data && data.length > 0) {
+            const contextChunks = data.map((doc) => {
+              const metadata = doc.metadata as Record<string, unknown> | null | undefined;
+              return `[Source: ${metadata?.sourceName || "Unknown"} | Relevance ${Math.round(
+                (doc.similarity || 0) * 100,
+              )}%]\n${doc.content}`;
+            });
+            contextText =
+              "The following reference material was found in the Coptic Library database:\n\n" +
+              contextChunks.join("\n\n---\n\n");
+          } else {
+            contextText = "No highly relevant context was found in the database.";
+          }
+        }
+      }
     } catch (error) {
       console.error("Vector search failed:", error);
     }

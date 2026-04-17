@@ -871,6 +871,19 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: boolean;
       };
+      match_coptic_documents: {
+        Args: {
+          query_embedding: string;
+          match_threshold: number;
+          match_count: number;
+        };
+        Returns: {
+          id: number;
+          content: string;
+          metadata: Json | null;
+          similarity: number;
+        }[];
+      };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

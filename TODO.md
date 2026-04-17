@@ -8,7 +8,7 @@
 ## Accuracy & Quality Improvements
 
 - [ ] **Evaluate LLM Models:** Test different LLM versions and models to find ones that produce fewer hallucinations for our specific content.
-- [ ] **Refine Knowledge Base (RAG):** Experiment with different methods of chunking, storing, and retrieving the knowledge base to improve the accuracy of the context provided to the LLM.
+- [x] **Refine Knowledge Base (RAG):** Experiment with different methods of chunking, storing, and retrieving the knowledge base to improve the accuracy of the context provided to the LLM.
 
 ## Deployment
 
