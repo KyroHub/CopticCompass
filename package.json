@@ -42,7 +42,8 @@
     "test": "vitest run",
     "test:e2e": "playwright test",
     "test:e2e:local": "npm run build && npm run test:e2e",
-    "knip": "knip"
+    "knip": "knip",
+    "prepare": "husky"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.61",
@@ -84,7 +85,9 @@
     "eslint": "^9",
     "eslint-config-next": "16.1.7",
     "eslint-plugin-import": "^2.31.0",
+    "husky": "^9.1.7",
     "knip": "^5.88.1",
+    "lint-staged": "^16.4.0",
     "postcss": "^8.4.49",
     "prettier": "^3.5.3",
     "supabase": "^2.84.7",
@@ -92,5 +95,14 @@
     "typescript": "^5",
     "vite": "^6.4.2",
     "vitest": "^4.1.0"
+  },
+  "lint-staged": {
+    "*.{js,ts,jsx,tsx}": [
+      "eslint --max-warnings=0",
+      "prettier --write"
+    ],
+    "*.{json,md,css}": [
+      "prettier --write"
+    ]
   }
 }
