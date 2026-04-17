@@ -7,7 +7,11 @@ import {
 } from "ai";
 
 import { getGeminiModel } from "@/lib/gemini";
-import { createHfChatCompletion, generateHFEmbeddings, type HfChatMessage } from "@/lib/hf";
+import {
+  createHfChatCompletion,
+  generateHFEmbeddings,
+  type HfChatMessage,
+} from "@/lib/hf";
 import {
   createOpenRouterChatCompletion,
   type OpenRouterChatMessage,
@@ -390,16 +394,18 @@ export async function POST(req: Request) {
             console.error("Vector RPC execution failed:", error);
           } else if (data && data.length > 0) {
             const contextChunks = data.map((doc) => {
-              const metadata = doc.metadata as Record<string, unknown> | null | undefined;
+              const metadata = doc.metadata as
+                | Record<string, unknown>
+                | null
+                | undefined;
               return `[Source: ${metadata?.sourceName || "Unknown"} | Relevance ${Math.round(
                 (doc.similarity || 0) * 100,
               )}%]\n${doc.content}`;
             });
-            contextText =
-              "The following reference material was found in the Coptic Library database:\n\n" +
-              contextChunks.join("\n\n---\n\n");
+            contextText = `The following reference material was found in the Coptic Library database:\n\n${contextChunks.join("\n\n---\n\n")}`;
           } else {
-            contextText = "No highly relevant context was found in the database.";
+            contextText =
+              "No highly relevant context was found in the database.";
           }
         }
       }
