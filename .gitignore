@@ -50,3 +50,35 @@ knip.out.json
 lint.json
 fix_*.mjs
 fix_*.js
+
+# IDE / Editor
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Tooling Caches & Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.eslintcache
+.stylelintcache
+.prettiercache
+.husky/_
+
+# Build Artifact backups
+*.bak
+*.tmp
