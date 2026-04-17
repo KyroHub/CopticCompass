@@ -969,6 +969,62 @@ export async function ingestRagFile({
   );
 
   try {
+    const serviceRoleClient = createServiceRoleClient();
+    let isUpdate = false;
+
+    /**
+     * Checks for recent duplicates and sweeps existing chunks.
+     * Prevents accidental double-clicks from duplicating chunks, while allowing
+     * intentional updates to seamlessly wipe and replace old document versions.
+     */
+    logIngestion(
+      ingestionId,
+      `Checking for existing records for "${sourceTitle}"...`,
+      logs,
+    );
+
+    // Check if the file was ingested recently (safeguard for accidental double-clicks)
+    const { data: existingDocs } = await serviceRoleClient
+      .from("coptic_documents")
+      .select("metadata")
+      .eq("metadata->>sourceName", sourceTitle)
+      .limit(1);
+
+    if (existingDocs && existingDocs.length > 0) {
+      isUpdate = true;
+      const uploadedAtStr = (
+        existingDocs[0].metadata as Record<string, unknown>
+      )?.uploadedAt;
+      if (typeof uploadedAtStr === "string") {
+        const uploadedAtMs = new Date(uploadedAtStr).getTime();
+        // If uploaded in the last 15 minutes, block to prevent double-click mistakes
+        if (Date.now() - uploadedAtMs < 15 * 60 * 1000) {
+          throw new Error(
+            `This file was recently ingested at ${new Date(uploadedAtMs).toLocaleTimeString()}. Please wait a few minutes before updating it again.`,
+          );
+        }
+      }
+
+      logIngestion(
+        ingestionId,
+        `Sweeping previous records for "${sourceTitle}" to prepare for update...`,
+        logs,
+      );
+      const { error: sweepError } = await serviceRoleClient
+        .from("coptic_documents")
+        .delete()
+        .eq("metadata->>sourceName", sourceTitle);
+
+      if (
+        sweepError &&
+        !isMissingCopticDocumentsTable(sweepError as { message: string })
+      ) {
+        throw new Error(
+          `Failed to sweep previous version of this document: ${sweepError.message}`,
+        );
+      }
+    }
+
     const sourceType = detectSourceType(file);
     if (!sourceType) {
       logIngestion(
@@ -1074,7 +1130,6 @@ export async function ingestRagFile({
 
     const sourceDimensions = embeddings[0]?.length ?? 0;
 
-    const serviceRoleClient = createServiceRoleClient();
     const uploadedAt = new Date().toISOString();
 
     let embeddingModelName = HF_EMBEDDING_MODEL;
@@ -1212,7 +1267,7 @@ export async function ingestRagFile({
       chunkStats,
       chunksInserted: rows.length,
       logs,
-      message: `Ingested ${rows.length} chunks from ${sourceTitle} in ${Math.round(totalMs / 100) / 10}s.`,
+      message: `${isUpdate ? "Re-ingested and updated" : "Ingested"} ${rows.length} chunks from ${sourceTitle} in ${Math.round(totalMs / 100) / 10}s.`,
       ocrUsed,
       sourceName: sourceTitle,
       sourceType,
