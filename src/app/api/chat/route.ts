@@ -6,20 +6,21 @@ import {
   generateText,
   type UIMessage,
 } from "ai";
+
+import {
+  searchCopticDocuments,
+  searchVocabularyByKeywords,
+} from "@/actions/vectorSearch";
 import { getGeminiModel } from "@/lib/gemini";
 import { createHfChatCompletion, type HfChatMessage } from "@/lib/hf";
 import {
   createOpenRouterChatCompletion,
   type OpenRouterChatMessage,
 } from "@/lib/openrouter";
-import { createThothChatCompletion } from "../../../lib/thoth";
 import { getAuthenticatedUser } from "@/lib/supabase/authQueries";
 import { hasSupabaseRuntimeEnv } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
-import {
-  searchCopticDocuments,
-  searchVocabularyByKeywords,
-} from "@/actions/vectorSearch";
+import { createThothChatCompletion } from "@/lib/thoth";
 
 export const maxDuration = 30;
 export const runtime = "nodejs";
@@ -100,6 +101,11 @@ type PageContext = {
   url?: string;
 };
 
+type ContextDoc = {
+  content: string;
+  metadata?: Record<string, unknown> | null;
+};
+
 function getErrorStatusCode(error: unknown): number | undefined {
   if (!error || typeof error !== "object") {
     return undefined;
@@ -147,8 +153,9 @@ function hasOpenRouterConfigured() {
 }
 
 function extractMessageText(message: UIMessage): string {
-  if ("content" in message && typeof (message as any).content === "string") {
-    return (message as any).content;
+  const candidate = message as { content?: unknown };
+  if (typeof candidate.content === "string") {
+    return candidate.content;
   }
 
   if (!Array.isArray(message.parts)) {
@@ -265,26 +272,6 @@ function buildThothQuery(systemPrompt: string, messages: UIMessage[]): string {
     history.length > 0 ? history : "No prior history provided.",
     "[TASK] Reply to the latest user request using the instructions and context above.",
   ].join("\n\n");
-}
-
-function toInferenceProvider(value: unknown): InferenceProvider {
-  if (value === "gemini") {
-    return "gemini";
-  }
-
-  if (value === "hf") {
-    return "hf";
-  }
-
-  if (value === "openrouter") {
-    return "openrouter";
-  }
-
-  if (value === "thoth") {
-    return "thoth";
-  }
-
-  return "thoth";
 }
 
 function toOptionalInferenceProvider(
@@ -460,7 +447,7 @@ Respond ONLY with a valid JSON object matching this schema, no markdown blocks:
 
           if (parsed.germanTranslation) {
             translatedPrompt = `${latestMessageText}\n${parsed.germanTranslation}`;
-            console.log(
+            console.warn(
               `[RAG DEBUG] Translated prompt for vector search:`,
               parsed.germanTranslation,
             );
@@ -478,20 +465,20 @@ Respond ONLY with a valid JSON object matching this schema, no markdown blocks:
               .filter(Boolean);
           }
 
-          console.log(`[RAG DEBUG] Extracted keywords:`, extractedKeywords);
-          console.log(`[RAG DEBUG] Extracted concepts:`, extractedConcepts);
+          console.warn(`[RAG DEBUG] Extracted keywords:`, extractedKeywords);
+          console.warn(`[RAG DEBUG] Extracted concepts:`, extractedConcepts);
         } catch (e) {
           console.error("Keyword/Translation extraction failed:", e);
         }
 
-        let contextChunks: any[] = [];
+        const contextChunks: ContextDoc[] = [];
 
         // Step 2: Fetch by exact/partial string metadata match FIRST
         if (extractedKeywords.length > 0) {
           const keywordDocs =
             await searchVocabularyByKeywords(extractedKeywords);
           if (keywordDocs && keywordDocs.length > 0) {
-            console.log(
+            console.warn(
               `[RAG DEBUG] Found ${keywordDocs.length} dictionary entries via metadata/keyword match.`,
             );
             contextChunks.push(...keywordDocs);
@@ -508,7 +495,7 @@ Respond ONLY with a valid JSON object matching this schema, no markdown blocks:
             ragInferenceProvider,
           );
           if (grammarDocs && grammarDocs.length > 0) {
-            console.log(
+            console.warn(
               `[RAG DEBUG] Found ${grammarDocs.length} grammar chunks via concept search.`,
             );
             contextChunks.push(...grammarDocs);
@@ -522,7 +509,7 @@ Respond ONLY with a valid JSON object matching this schema, no markdown blocks:
           {},
           ragInferenceProvider,
         );
-        console.log(
+        console.warn(
           `[RAG DEBUG] Retrieved ${vectorDocs?.length || 0} documents from vector search using ${inferenceProvider}.`,
         );
         if (vectorDocs && vectorDocs.length > 0) {
@@ -532,24 +519,35 @@ Respond ONLY with a valid JSON object matching this schema, no markdown blocks:
         // Combine chunks and deduplicate
         const uniqueContents = new Set();
         const finalDocs = contextChunks.filter((doc) => {
-          if (uniqueContents.has(doc.content)) return false;
+          if (uniqueContents.has(doc.content)) {
+            return false;
+          }
           uniqueContents.add(doc.content);
           return true;
         });
 
         if (finalDocs.length > 0) {
           contextText = finalDocs
-            .map(
-              (doc: { content: string; metadata?: any }) =>
-                `Source (${doc.metadata?.sourceName || "Unknown"} -> ${doc.metadata?.dialect || "Any dialect"}):\n${doc.content}`,
-            )
+            .map((doc) => {
+              const sourceName =
+                doc.metadata && typeof doc.metadata.sourceName === "string"
+                  ? doc.metadata.sourceName
+                  : "Unknown";
+              const dialect =
+                doc.metadata && typeof doc.metadata.dialect === "string"
+                  ? doc.metadata.dialect
+                  : "Any dialect";
+
+              return `Source (${sourceName} -> ${dialect}):\n${doc.content}`;
+            })
             .join("\n\n");
 
           // Hard limit text character size to roughly ~6,250 tokens (25000 chars)
           if (contextText.length > 25000) {
-            contextText =
-              contextText.slice(0, 25000) +
-              "\n...[Context Truncated to fit token limits]";
+            contextText = `${contextText.slice(
+              0,
+              25000,
+            )}\n...[Context Truncated to fit token limits]`;
           }
         } else {
           console.warn(

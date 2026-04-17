@@ -1,14 +1,16 @@
-import { NextResponse } from "next/server";
 import { access, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
+
+import { NextResponse } from "next/server";
+
 import { getProfileRole } from "@/features/profile/lib/server/queries";
 import { getAuthenticatedUser } from "@/lib/supabase/authQueries";
 import {
   hasSupabaseRuntimeEnv,
   hasSupabaseServiceRoleEnv,
 } from "@/lib/supabase/config";
-import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 
 export const runtime = "nodejs";
 
@@ -79,11 +81,12 @@ async function getDictionaryJsonStatus(): Promise<StatusItem> {
     const fileContent = await readFile(dictionaryPath, "utf-8");
     const parsed = JSON.parse(fileContent);
 
-    const entryCount = Array.isArray(parsed)
-      ? parsed.length
-      : typeof parsed === "object" && parsed !== null
-        ? Object.keys(parsed).length
-        : 0;
+    let entryCount = 0;
+    if (Array.isArray(parsed)) {
+      entryCount = parsed.length;
+    } else if (typeof parsed === "object" && parsed !== null) {
+      entryCount = Object.keys(parsed).length;
+    }
 
     return {
       healthy: true,
@@ -277,6 +280,10 @@ export async function GET() {
     }
 
     const knowledgeBaseHealthy = vectorDbHealthy && chunkCount > 0;
+    const knowledgeBaseNote =
+      chunkCount > 0
+        ? `${new Intl.NumberFormat("en-US").format(chunkCount)} chunks indexed`
+        : "No chunks indexed yet";
     const [dictionaryJsonRag, grammarJsonRag] = await Promise.all([
       getDictionaryJsonStatus(),
       getGrammarJsonStatus(),
@@ -309,10 +316,7 @@ export async function GET() {
         knowledgeBase: {
           healthy: knowledgeBaseHealthy,
           label: "Knowledge base",
-          note:
-            chunkCount > 0
-              ? `${new Intl.NumberFormat("en-US").format(chunkCount)} chunks indexed`
-              : "No chunks indexed yet",
+          note: knowledgeBaseNote,
         },
       },
     } satisfies RagStatusResponse);

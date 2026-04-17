@@ -7,6 +7,7 @@ import {
   generateOpenRouterEmbeddings,
 } from "@/lib/openrouter";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
+import { createThothChatCompletion } from "@/lib/thoth";
 import type { Json } from "@/types/supabase";
 
 const RAG_VECTOR_DIMENSIONS = Number(
@@ -14,6 +15,11 @@ const RAG_VECTOR_DIMENSIONS = Number(
 );
 const GEMINI_EMBEDDING_OUTPUT_DIMENSION = Number(
   process.env.GEMINI_EMBEDDING_OUTPUT_DIMENSION ?? "3072",
+);
+const CHAT_FEEDBACK_THOTH_REFINEMENT_ENABLED =
+  process.env.CHAT_FEEDBACK_THOTH_REFINEMENT_ENABLED !== "false";
+const CHAT_FEEDBACK_THOTH_INPUT_LIMIT = Number(
+  process.env.CHAT_FEEDBACK_THOTH_INPUT_LIMIT ?? "4000",
 );
 
 export type ChatFeedbackSignal = "admin_feedback" | "dislike" | "like";
@@ -83,6 +89,83 @@ function getSignalLearningLine(signal: ChatFeedbackSignal) {
   return "Admin signal: curated written feedback provided.";
 }
 
+function hasThothFeedbackRefinementAvailable() {
+  return (
+    CHAT_FEEDBACK_THOTH_REFINEMENT_ENABLED && Boolean(process.env.THOTH_API_KEY)
+  );
+}
+
+function buildThothAdminFeedbackRefinementQuery(options: {
+  assistantResponse: string;
+  feedbackText: string;
+  prompt: string;
+}) {
+  return `You are THOTH AI refining admin feedback for a Coptic tutoring assistant quality-improvement pipeline.
+
+Task:
+- Rewrite the admin note so it is concise, actionable, and specific.
+- Keep factual intent identical to the original note.
+- Preserve mentions of Coptic terms, dialect details, or correction targets.
+- Output plain text only with no markdown and no preface.
+
+User prompt:
+${options.prompt}
+
+Assistant response:
+${options.assistantResponse}
+
+Original admin note:
+${options.feedbackText}`;
+}
+
+async function maybeRefineAdminFeedbackWithThoth(options: {
+  assistantResponse: string;
+  feedbackText?: string;
+  prompt: string;
+  signal: ChatFeedbackSignal;
+  userId: string;
+}) {
+  if (options.signal !== "admin_feedback" || !options.feedbackText) {
+    return null;
+  }
+
+  if (!hasThothFeedbackRefinementAvailable()) {
+    return null;
+  }
+
+  const trimmedFeedbackText = options.feedbackText
+    .slice(0, CHAT_FEEDBACK_THOTH_INPUT_LIMIT)
+    .trim();
+
+  if (trimmedFeedbackText.length === 0) {
+    return null;
+  }
+
+  try {
+    const completion = await createThothChatCompletion({
+      query: buildThothAdminFeedbackRefinementQuery({
+        assistantResponse: options.assistantResponse,
+        feedbackText: trimmedFeedbackText,
+        prompt: options.prompt,
+      }),
+      user: `chat-feedback-admin-refine:${options.userId}`,
+    });
+
+    const refinedFeedbackText =
+      typeof completion.answer === "string"
+        ? normalizeWhitespace(completion.answer)
+        : "";
+
+    if (!refinedFeedbackText) {
+      return null;
+    }
+
+    return refinedFeedbackText.slice(0, 5000);
+  } catch {
+    return null;
+  }
+}
+
 async function generateFeedbackEmbedding(options: {
   provider: ChatFeedbackEmbeddingProvider;
   text: string;
@@ -143,6 +226,7 @@ async function generateFeedbackEmbedding(options: {
 function buildFeedbackLearningContent(options: {
   assistantResponse: string;
   feedbackText?: string;
+  isThothRefinedFeedback?: boolean;
   prompt: string;
   signal: ChatFeedbackSignal;
 }) {
@@ -162,7 +246,9 @@ function buildFeedbackLearningContent(options: {
   if (options.signal === "admin_feedback" && options.feedbackText) {
     sections.push(
       "",
-      "Admin feedback:",
+      options.isThothRefinedFeedback
+        ? "Admin feedback (THOTH refined):"
+        : "Admin feedback:",
       normalizeWhitespace(options.feedbackText),
     );
   }
@@ -170,14 +256,24 @@ function buildFeedbackLearningContent(options: {
   return sections.join("\n");
 }
 
-// eslint-disable-next-line complexity
+// eslint-disable-next-line complexity, max-lines-per-function
 export async function ingestChatFeedbackLearningSignal(
   options: IngestChatFeedbackSignalOptions,
 ) {
   const uploadedAt = new Date().toISOString();
-  const content = buildFeedbackLearningContent({
+  const thothRefinedFeedbackText = await maybeRefineAdminFeedbackWithThoth({
     assistantResponse: options.assistantResponse,
     feedbackText: options.feedbackText,
+    prompt: options.prompt,
+    signal: options.signal,
+    userId: options.userId,
+  });
+  const feedbackTextForLearning =
+    thothRefinedFeedbackText ?? options.feedbackText;
+  const content = buildFeedbackLearningContent({
+    assistantResponse: options.assistantResponse,
+    feedbackText: feedbackTextForLearning,
+    isThothRefinedFeedback: Boolean(thothRefinedFeedbackText),
     prompt: options.prompt,
     signal: options.signal,
   });
@@ -194,13 +290,24 @@ export async function ingestChatFeedbackLearningSignal(
     embedding: createVectorLiteral(targetEmbedding),
     metadata: {
       assistantMessageId: options.assistantMessageId ?? null,
+      adminFeedbackOriginal:
+        options.signal === "admin_feedback"
+          ? (options.feedbackText ?? null)
+          : null,
+      adminFeedbackRefined:
+        options.signal === "admin_feedback"
+          ? (feedbackTextForLearning ?? null)
+          : null,
+      adminFeedbackRefinementProvider: thothRefinedFeedbackText
+        ? "thoth"
+        : null,
       chatId: options.chatId ?? null,
       createdAt: uploadedAt,
       embeddingDimensions: targetEmbedding.length,
       embeddingModel: model,
       feedbackText:
         options.signal === "admin_feedback"
-          ? (options.feedbackText ?? null)
+          ? (feedbackTextForLearning ?? null)
           : null,
       inferenceProvider: options.inferenceProvider,
       isAdminFeedback: options.signal === "admin_feedback",

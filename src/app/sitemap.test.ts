@@ -36,6 +36,7 @@ describe("sitemap route", () => {
         "https://kyrilloswannes.com/en/dictionary",
         "https://kyrilloswannes.com/nl/grammar",
         "https://kyrilloswannes.com/en/developers",
+        "https://kyrilloswannes.com/en/contributors",
         "https://kyrilloswannes.com/nl/analytics",
         "https://kyrilloswannes.com/en/contact",
         "https://kyrilloswannes.com/api-docs",

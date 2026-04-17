@@ -2,7 +2,7 @@ import { embedMany, generateText } from "ai";
 import mammoth from "mammoth";
 import pdfParse from "pdf-parse/lib/pdf-parse.js";
 import { pdf } from "pdf-to-img";
-import { createThothChatCompletion } from "@/lib/thoth";
+
 import {
   GEMINI_EMBEDDING_MODEL,
   getGeminiEmbeddingModel,
@@ -14,6 +14,7 @@ import {
   generateOpenRouterEmbeddings,
 } from "@/lib/openrouter";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
+import { createThothChatCompletion } from "@/lib/thoth";
 import type { Json } from "@/types/supabase";
 
 const CHUNK_SIZE = 1600;
@@ -314,7 +315,7 @@ function logIngestion(
   appendLiveIngestionLog(ingestId, entry);
   const line = `[RAG:${ingestId}] ${message}`;
   logs?.push(entry);
-  console.info(line);
+  console.warn(line);
 }
 
 function delay(ms: number) {
@@ -324,12 +325,16 @@ function delay(ms: number) {
 }
 
 function shouldRetryNetworkError(error: unknown): boolean {
-  const message =
-    error instanceof Error
-      ? `${error.message} ${(error as { cause?: unknown }).cause ?? ""}`
-      : typeof error === "object" && error !== null
-        ? `${(error as { message?: unknown }).message ?? ""} ${(error as { code?: unknown }).code ?? ""}`
-        : String(error);
+  let message: string;
+
+  if (error instanceof Error) {
+    message = `${error.message} ${(error as { cause?: unknown }).cause ?? ""}`;
+  } else if (typeof error === "object" && error !== null) {
+    const objectError = error as { code?: unknown; message?: unknown };
+    message = `${objectError.message ?? ""} ${objectError.code ?? ""}`;
+  } else {
+    message = String(error);
+  }
 
   const normalized = message.toLowerCase();
   return (
@@ -391,7 +396,7 @@ function normalizeCandidateText(input: string) {
 }
 
 function collectTextCandidates(payload: unknown, depth = 0): string[] {
-  if (depth > 6 || payload == null) {
+  if (depth > 6 || payload === null || typeof payload === "undefined") {
     return [];
   }
 
@@ -1127,9 +1132,15 @@ async function splitIntoChunks(
           // Extract cleanly if we found meaningful fields
           if (word || definition) {
             let parsedContent = `Coptic Word: ${word}.`;
-            if (pos) parsedContent += ` Part of Speech: ${pos}.`;
-            if (definition) parsedContent += ` Definition: ${definition}.`;
-            if (grammar) parsedContent += ` Grammar/Notes: ${grammar}.`;
+            if (pos) {
+              parsedContent += ` Part of Speech: ${pos}.`;
+            }
+            if (definition) {
+              parsedContent += ` Definition: ${definition}.`;
+            }
+            if (grammar) {
+              parsedContent += ` Grammar/Notes: ${grammar}.`;
+            }
 
             return {
               content: parsedContent.trim(),
@@ -1141,16 +1152,15 @@ async function splitIntoChunks(
                 grammar,
               },
             };
-          } else {
-            // Fallback for unstructured TEI <entry>
-            return {
-              content: match[0]
-                .replace(/<[^>]+>/g, " ")
-                .replace(/\s+/g, " ")
-                .trim(),
-              metadata: { type: "vocabulary_xml" },
-            };
           }
+          // Fallback for unstructured TEI <entry>
+          return {
+            content: match[0]
+              .replace(/<[^>]+>/g, " ")
+              .replace(/\s+/g, " ")
+              .trim(),
+            metadata: { type: "vocabulary_xml" },
+          };
         })
         .filter((chunk) => chunk.content.length > 10);
 
@@ -1222,7 +1232,9 @@ ${sampleText}`,
 
   // Use simple semantic splitting for non-JSON/XML text (Markdown/TXT/PDF)
   const segments = splitIntoSemanticSegments(text);
-  if (segments.length === 0) return [];
+  if (segments.length === 0) {
+    return [];
+  }
 
   const chunks: string[] = [];
   let currentChunk = "";
@@ -1243,7 +1255,9 @@ ${sampleText}`,
         overlapSeed.length > 0 ? `${overlapSeed} ${segment}` : segment;
     }
   }
-  if (currentChunk) chunks.push(currentChunk);
+  if (currentChunk) {
+    chunks.push(currentChunk);
+  }
 
   const fallbackChunks =
     chunks.length > 0
@@ -1324,7 +1338,7 @@ ${chunkText.slice(0, THOTH_CHUNK_INPUT_LIMIT)}`,
         content: chunkText,
         metadata: { type: "document" },
       });
-    } catch (err) {
+    } catch {
       console.warn(
         "[RAG Ingestion] LLM chunk classification failed, falling back to raw chunk string.",
       );
@@ -1779,7 +1793,7 @@ async function extractSourceText(
     let extractedText = "";
     try {
       extractedText = await extractPdfText(file);
-    } catch (e) {
+    } catch {
       // Ignore native PDF parse errors when forced to OCR
     }
 
@@ -1861,11 +1875,15 @@ async function runOcrOnPdf(file: File): Promise<string> {
   let i = 0;
   for await (const imageBuffer of document) {
     try {
-      const imageFile = new File([imageBuffer as any], `page-${i + 1}.png`, {
-        type: "image/png",
-      });
+      const imageFile = new File(
+        [imageBuffer as BlobPart],
+        `page-${i + 1}.png`,
+        {
+          type: "image/png",
+        },
+      );
       const pageText = await runOcr(imageFile);
-      fullOcrText += pageText + "\n\n";
+      fullOcrText += `${pageText}\n\n`;
     } catch (err) {
       console.warn(
         `[RAG Ingestion] OCR failed on PDF page ${i + 1}. Attempting to continue...`,
@@ -2115,12 +2133,12 @@ export async function ingestRagFile({
     const serviceRoleClient = createServiceRoleClient();
     const uploadedAt = new Date().toISOString();
 
-    const embeddingModelName =
-      embeddingProvider === "gemini"
-        ? GEMINI_EMBEDDING_MODEL
-        : embeddingProvider === "openrouter"
-          ? OPENROUTER_EMBEDDING_MODEL
-          : HF_EMBEDDING_MODEL;
+    let embeddingModelName = HF_EMBEDDING_MODEL;
+    if (embeddingProvider === "gemini") {
+      embeddingModelName = GEMINI_EMBEDDING_MODEL;
+    } else if (embeddingProvider === "openrouter") {
+      embeddingModelName = OPENROUTER_EMBEDDING_MODEL;
+    }
 
     function buildRows(targetDimensions: number): CopticDocumentsInsertRow[] {
       const normalizedEmbeddings = embeddings.map((embedding) =>

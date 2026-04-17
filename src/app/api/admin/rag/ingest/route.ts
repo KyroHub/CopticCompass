@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { ingestRagFile } from "@/features/admin/lib/ragIngestion";
 import { getProfileRole } from "@/features/profile/lib/server/queries";
 import { revalidateAdminPaths } from "@/lib/server/revalidation";
@@ -8,6 +9,20 @@ import { createClient } from "@/lib/supabase/server";
 
 export const maxDuration = 300;
 export const runtime = "nodejs";
+
+function toEmbeddingProvider(
+  value: FormDataEntryValue | null,
+): "gemini" | "hf" | "openrouter" {
+  if (value === "gemini") {
+    return "gemini";
+  }
+
+  if (value === "openrouter") {
+    return "openrouter";
+  }
+
+  return "hf";
+}
 
 export async function POST(request: Request) {
   let requestId = crypto.randomUUID();
@@ -79,15 +94,11 @@ export async function POST(request: Request) {
     const forceOcrRaw = formData.get("force_ocr");
     const forceOcr = forceOcrRaw === "on" || forceOcrRaw === "true";
 
-    const embeddingProviderRaw = formData.get("embedding_provider");
-    const embeddingProvider =
-      embeddingProviderRaw === "gemini"
-        ? "gemini"
-        : embeddingProviderRaw === "openrouter"
-          ? "openrouter"
-          : "hf";
+    const embeddingProvider = toEmbeddingProvider(
+      formData.get("embedding_provider"),
+    );
 
-    console.info(
+    console.warn(
       `[RAG:${requestId}] API request received for ${fileValue.name} with provider=${embeddingProvider}.`,
     );
 

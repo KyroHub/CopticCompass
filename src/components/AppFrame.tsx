@@ -1,5 +1,5 @@
-import { Footer } from "@/components/Footer";
 import { FloatingAiAssistant } from "@/components/FloatingAiAssistant";
+import { Footer } from "@/components/Footer";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import { Navbar } from "@/components/Navbar";
 import { ThemeProvider } from "@/components/ThemeProvider";

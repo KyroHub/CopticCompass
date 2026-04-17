@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import type { RagIngestionState } from "@/actions/admin/states";
 import { StatusNotice } from "@/components/StatusNotice";
 
@@ -15,6 +16,34 @@ function formatLogTimestamp(value: string) {
   }
 
   return date.toLocaleTimeString();
+}
+
+function toEmbeddingProvider(
+  value: FormDataEntryValue | string | null,
+): "gemini" | "hf" | "openrouter" {
+  if (value === "gemini") {
+    return "gemini";
+  }
+
+  if (value === "openrouter") {
+    return "openrouter";
+  }
+
+  return "hf";
+}
+
+function getEmbeddingProviderLabel(
+  provider: "gemini" | "hf" | "openrouter" | undefined,
+) {
+  if (provider === "gemini") {
+    return "Gemini";
+  }
+
+  if (provider === "openrouter") {
+    return "OpenRouter";
+  }
+
+  return "Hugging Face";
 }
 
 type RagStatusItem = {
@@ -311,14 +340,11 @@ export function AdminRagIngestionForm() {
       setActiveIngestId(ingestId);
       formData.set("ingest_id", ingestId);
 
-      const selectedProvider =
-        formData.get("embedding_provider") === "gemini"
-          ? "gemini"
-          : formData.get("embedding_provider") === "openrouter"
-            ? "openrouter"
-            : "hf";
+      const selectedProvider = toEmbeddingProvider(
+        formData.get("embedding_provider"),
+      );
       setEmbeddingProvider(selectedProvider);
-      console.info(
+      console.warn(
         `[RAG] Starting ingestion ${ingestId} with provider=${selectedProvider}. Watch server logs for stage timings.`,
       );
 
@@ -352,7 +378,7 @@ export function AdminRagIngestionForm() {
         sourceName: payload.sourceName,
       });
 
-      console.info(
+      console.warn(
         `[RAG] Completed ingestion request ${payload.ingestId ?? "(no id)"} in ${Math.round(performance.now() - startedAt)} ms.`,
       );
       void loadRagStatus();
@@ -390,9 +416,13 @@ export function AdminRagIngestionForm() {
 
         {statusLoading ? (
           <p className="text-xs text-[#86c8d8]">Checking RAG services...</p>
-        ) : ragStatusError ? (
+        ) : null}
+
+        {!statusLoading && ragStatusError ? (
           <p className="text-xs text-red-300">{ragStatusError}</p>
-        ) : ragStatus ? (
+        ) : null}
+
+        {!statusLoading && !ragStatusError && ragStatus ? (
           <ul className="space-y-2 text-base">
             <li className="flex items-start gap-3">
               <StatusDot healthy={ragStatus.statuses.llm.healthy} />
@@ -518,14 +548,7 @@ export function AdminRagIngestionForm() {
           name="embedding_provider"
           value={embeddingProvider}
           onChange={(event) => {
-            const value = event.target.value;
-            setEmbeddingProvider(
-              value === "gemini"
-                ? "gemini"
-                : value === "openrouter"
-                  ? "openrouter"
-                  : "hf",
-            );
+            setEmbeddingProvider(toEmbeddingProvider(event.target.value));
           }}
           className="rounded-xl border border-stone-200 bg-white/80 px-3 py-2 text-sm text-stone-900 shadow-sm focus:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-300/35 dark:border-stone-700 dark:bg-stone-900 dark:text-stone-100"
         >
@@ -660,13 +683,7 @@ export function AdminRagIngestionForm() {
         <StatusNotice tone="success" align="left">
           {state.message}
           {state.embeddingProvider
-            ? ` Provider: ${
-                state.embeddingProvider === "hf"
-                  ? "Hugging Face"
-                  : state.embeddingProvider === "gemini"
-                    ? "Gemini"
-                    : "OpenRouter"
-              }.`
+            ? ` Provider: ${getEmbeddingProviderLabel(state.embeddingProvider)}.`
             : ""}
           {typeof state.chunksInserted === "number"
             ? ` Chunks: ${state.chunksInserted}.`

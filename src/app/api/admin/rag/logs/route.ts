@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+
 import { getRagIngestionLogs } from "@/features/admin/lib/ragIngestion";
 import { getProfileRole } from "@/features/profile/lib/server/queries";
 import { getAuthenticatedUser } from "@/lib/supabase/authQueries";

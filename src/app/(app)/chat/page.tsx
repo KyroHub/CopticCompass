@@ -760,9 +760,12 @@ export default function ChatAI() {
                       })
                   ) : (
                     <p>
-                      {"content" in m && typeof (m as any).content === "string"
-                        ? (m as any).content
-                        : ""}
+                      {(() => {
+                        const candidate = m as { content?: unknown };
+                        return typeof candidate.content === "string"
+                          ? candidate.content
+                          : "";
+                      })()}
                     </p>
                   )}
 

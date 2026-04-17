@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import { processOCRImage } from "@/actions/ocrActions";
 
 export default function OCRPage() {
@@ -10,11 +11,15 @@ export default function OCRPage() {
   const [error, setError] = useState<string>("");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) setImage(e.target.files[0]);
+    if (e.target.files?.[0]) {
+      setImage(e.target.files[0]);
+    }
   };
 
   const handleUpload = async () => {
-    if (!image) return;
+    if (!image) {
+      return;
+    }
     setLoading(true);
     setError("");
     setResult("");

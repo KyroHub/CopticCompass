@@ -55,8 +55,9 @@ function normalizeCandidateText(input: string) {
   return stripHtml(input).replace(/\s+/g, " ").trim();
 }
 
+// eslint-disable-next-line complexity
 function collectTextCandidates(payload: unknown, depth = 0): string[] {
-  if (depth > 6 || payload == null) {
+  if (depth > 6 || payload === null || typeof payload === "undefined") {
     return [];
   }
 
@@ -97,7 +98,8 @@ function extractOcrText(payload: unknown): string {
   return candidates.find((candidate) => candidate.length > 0) ?? "";
 }
 
-export async function processOCRImage(formData: FormData) {
+// eslint-disable-next-line complexity
+export async function processOCRImage(formData: FormData): Promise<string> {
   const file = formData.get("file");
 
   if (!file || !(file instanceof File)) {
