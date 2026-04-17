@@ -45,7 +45,7 @@ const contributorsCopy = {
     contributors: [
       {
         name: "George Joseph Basilious Tawadrous",
-        role: "Contributor",
+        role: "AI Engineer and Developer",
         description:
           "Supports the project with engineering collaboration and practical product feedback for Coptic learning workflows.",
         contacts: [
@@ -72,7 +72,7 @@ const contributorsCopy = {
       },
       {
         name: "Kyrillos Wannes",
-        role: "Founder and Lead Developer",
+        role: "Developer and Coptologist",
         description:
           "Builds and maintains Coptic Compass, including the dictionary, grammar platform, and Shenute AI integrations.",
         contacts: [
@@ -108,7 +108,7 @@ const contributorsCopy = {
     contributors: [
       {
         name: "George Joseph Basilious Tawadrous",
-        role: "Contributor",
+        role: "AI Engineer en ontwikkelaar",
         description:
           "Ondersteunt het project met technische samenwerking en praktische productfeedback voor Koptische leerworkflows.",
         contacts: [
@@ -135,7 +135,7 @@ const contributorsCopy = {
       },
       {
         name: "Kyrillos Wannes",
-        role: "Oprichter en hoofdontwikkelaar",
+        role: "Ontwikkelaar en coptoloog",
         description:
           "Bouwt en onderhoudt Coptic Compass, inclusief het woordenboek, het grammaticaplatform en Shenute AI-integraties.",
         contacts: [
