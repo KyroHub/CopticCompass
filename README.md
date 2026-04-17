@@ -19,7 +19,7 @@ Coptic Compass is a digital home for Coptic study, bringing together a searchabl
 - A public grammar API with JSON endpoints and OpenAPI documentation for reuse in other tools and teaching workflows.
 - A private student dashboard for profile settings, grammar progress, bookmarks, notes, and exercise submissions.
 - A private instructor workspace with review inboxes, focused submission grading, release drafting, audience sync, and notification health.
-- Shenute AI chat with OCR-assisted image/camera prompts and provider routing across OpenRouter, Gemini, and Hugging Face.
+- Shenute AI chat with OCR-assisted image/camera prompts and provider routing across THOTH AI, OpenRouter, Gemini, and Hugging Face.
 - English and Dutch interfaces, with legacy non-localized routes redirecting to localized pages.
 
 ## Highlights
@@ -124,13 +124,46 @@ The repository includes a production-integrated AI workflow called Shenute AI, p
 ### Chat API (`/api/chat`)
 
 - Endpoint: `POST /api/chat`
-- Default provider: `openrouter`
-- Supported providers: `openrouter`, `gemini`, `hf`
+- Default provider: `thoth`
+- Supported providers: `thoth`, `openrouter`, `gemini`, `hf`
 - Payload style: AI SDK UI messages
 - Runtime behavior:
   - provider selection from request body (`inferenceProvider`)
   - retry/fallback for transient failures
   - fallback path when Hugging Face is rate-limited
+
+### THOTH AI Credits
+
+THOTH AI is credited to:
+
+- Dr. So Miyagawa
+- Associate Professor of Linguistics and Egyptology
+- University of Tsukuba
+
+Dr. So Miyagawa is an associate professor of linguistics and Egyptology at the University of Tsukuba, specializing in the Ancient Egyptian-Coptic language. Following doctoral research at the University of Gottingen's Seminar for Egyptology and Coptic Studies, his work integrates computational linguistic methods with traditional philological approaches.
+
+His research focuses on ancient and medieval Nile Valley languages, including Ancient Egyptian-Coptic, Old Nubian, Greek, Arabic, and Meroitic, as well as endangered languages in and around the Japanese Archipelago.
+
+- Contact: miyagawa.so.kb@u.tsukuba.ac.jp
+
+Technical Specifications:
+
+- Platform: Dify
+- Base LLM: Claude 4.5 Sonnet (upgraded from 3.5)
+- Architecture: RAG (Retrieval Augmented Generation)
+- Natural Language Processing and OCR capabilities
+
+Knowledge Base:
+
+- Comprehensive Coptic Lexicon v1.2 (2020)
+- Burns, D., Feder, F., John, K., Kupreyev, M., et al.
+- Freie Universitat Berlin
+- A Concise Dictionary of Middle Egyptian (1962)
+- Raymond Oliver Faulkner
+- Griffith Institute, Oxford
+- Custom instruction prompts (500 plus lines)
+
+Reference: https://somiyagawa.github.io/THOTH.AI/
 
 ### OCR Proxy (`/api/ocr`)
 

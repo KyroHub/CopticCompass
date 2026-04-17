@@ -6,7 +6,7 @@
   "author": "Kyrillos Wannes",
   "license": "MIT",
   "engines": {
-    "node": ">=22.13.0 <23"
+    "node": "22.13.x"
   },
   "repository": {
     "type": "git",
@@ -35,7 +35,11 @@
     "db:push:dry-run": "supabase db push --linked --dry-run",
     "db:push": "supabase db push --linked",
     "db:drift:check": "supabase db diff --linked --schema public",
-    "data:grammar:export": "node --experimental-default-type=module --experimental-strip-types scripts/exportGrammar.mts",
+    "distill:extract": "node --experimental-strip-types scripts/distillExtractChunks.mts",
+    "distill:teacher": "node --experimental-strip-types scripts/distillGenerateTeacherData.mts",
+    "distill:build": "node --experimental-strip-types scripts/distillBuildDatasets.mts",
+    "distill:pipeline": "npm run distill:extract && npm run distill:teacher && npm run distill:build",
+    "data:grammar:export": "node --experimental-strip-types scripts/exportGrammar.mts",
     "lint": "eslint --max-warnings=0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
@@ -58,6 +62,7 @@
     "@vercel/speed-insights": "^2.0.0",
     "ai": "^6.0.158",
     "browser-image-compression": "^2.0.2",
+    "canvas": "^3.2.3",
     "core-util-is": "^1.0.3",
     "html-to-image": "^1.11.13",
     "jspdf": "^4.2.1",
@@ -67,6 +72,8 @@
     "next-themes": "^0.4.6",
     "openai": "^6.34.0",
     "pdf-parse": "^1.1.1",
+    "pdf-to-img": "^6.0.0",
+    "pdfjs-dist": "^5.6.205",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "react-icons": "^5.6.0",

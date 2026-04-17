@@ -9,7 +9,7 @@ import remarkGfm from "remark-gfm";
 import { processOCRImage } from "@/actions/ocrActions";
 import { useOptionalAuthGate } from "@/lib/supabase/useOptionalAuthGate";
 
-type ChatProvider = "gemini" | "hf" | "openrouter";
+type ChatProvider = "gemini" | "hf" | "openrouter" | "thoth";
 
 type TextMessagePart = {
   text: string;
@@ -87,7 +87,11 @@ function toChatProvider(value: string): ChatProvider {
     return "hf";
   }
 
-  return "gemini";
+  if (value === "thoth") {
+    return "thoth";
+  }
+
+  return "thoth";
 }
 
 function getErrorStatusCode(error: unknown): number | undefined {
@@ -149,7 +153,7 @@ function getFeedbackStatusClass(status: "error" | "pending" | "success") {
 
 export default function ChatAI() {
   const [inferenceProvider, setInferenceProvider] =
-    useState<ChatProvider>("gemini");
+    useState<ChatProvider>("thoth");
   const [inputValue, setInputValue] = useState("");
   const [ocrPending, setOcrPending] = useState(false);
   const [ocrError, setOcrError] = useState<string | null>(null);
@@ -183,11 +187,8 @@ export default function ChatAI() {
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
-        body: {
-          inferenceProvider,
-        },
       }),
-    [inferenceProvider],
+    [],
   );
 
   const { messages, sendMessage, status, error } = useChat({
@@ -397,7 +398,14 @@ export default function ChatAI() {
       return;
     }
 
-    sendMessage({ text: composedPrompt });
+    sendMessage(
+      { text: composedPrompt },
+      {
+        body: {
+          inferenceProvider,
+        },
+      },
+    );
     setInputValue("");
     clearSelectedImage();
   };
@@ -579,13 +587,85 @@ export default function ChatAI() {
               }}
               disabled={isLoading || isChatAccessBlocked}
             >
-              <option value="hf">Hugging Face</option>
-              <option value="gemini">Gemini</option>
-              <option value="openrouter">OpenRouter</option>
+              <option value="hf">Shenute AI Learner (HF)</option>
+              <option value="gemini">Shenute AI Learner (Gemini)</option>
+              <option value="openrouter">Shenute AI Learner (OpenRouter)</option>
+              <option value="thoth">Shenute AI Expert</option>
             </select>
           </label>
         </div>
       </div>
+
+      <details className="mx-4 mb-4 rounded-md border border-slate-200 bg-white p-3 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+        <summary className="cursor-pointer text-sm font-semibold text-slate-800 dark:text-slate-100">
+          THOTH AI Credits and Technical Specifications
+        </summary>
+        <div className="mt-3 space-y-3 leading-relaxed">
+          <div>
+            <p className="font-semibold">Credits</p>
+            <p>Dr. So Miyagawa</p>
+            <p>Associate Professor of Linguistics and Egyptology</p>
+            <p>University of Tsukuba</p>
+            <p>
+              Dr. So Miyagawa is an associate professor of linguistics and
+              Egyptology at the University of Tsukuba, specializing in the
+              Ancient Egyptian-Coptic language. Following doctoral research at
+              the University of Gottingen&apos;s Seminar for Egyptology and
+              Coptic Studies, his work integrates computational linguistic
+              methods with traditional philological approaches.
+            </p>
+            <p>
+              His research focuses on ancient and medieval Nile Valley
+              languages, including Ancient Egyptian-Coptic, Old Nubian, Greek,
+              Arabic, and Meroitic, as well as endangered languages in and
+              around the Japanese Archipelago.
+            </p>
+            <p>
+              Contact: {" "}
+              <a
+                className="underline"
+                href="mailto:miyagawa.so.kb@u.tsukuba.ac.jp"
+              >
+                miyagawa.so.kb@u.tsukuba.ac.jp
+              </a>
+            </p>
+          </div>
+
+          <div>
+            <p className="font-semibold">Base Technology</p>
+            <ul className="list-disc pl-4">
+              <li>Platform: Dify</li>
+              <li>Base LLM: Claude 4.5 Sonnet (upgraded from 3.5)</li>
+              <li>Architecture: RAG (Retrieval Augmented Generation)</li>
+              <li>Natural Language Processing and OCR capabilities</li>
+            </ul>
+          </div>
+
+          <div>
+            <p className="font-semibold">Knowledge Base</p>
+            <ul className="list-disc pl-4">
+              <li>Comprehensive Coptic Lexicon v1.2 (2020)</li>
+              <li>Burns, D., Feder, F., John, K., Kupreyev, M., et al.</li>
+              <li>Freie Universitat Berlin</li>
+              <li>A Concise Dictionary of Middle Egyptian (1962)</li>
+              <li>Raymond Oliver Faulkner</li>
+              <li>Griffith Institute, Oxford</li>
+              <li>Custom instruction prompts (500 plus lines)</li>
+            </ul>
+          </div>
+
+          <p>
+            <a
+              className="underline"
+              href="https://somiyagawa.github.io/THOTH.AI/"
+              rel="noreferrer"
+              target="_blank"
+            >
+              https://somiyagawa.github.io/THOTH.AI/
+            </a>
+          </p>
+        </div>
+      </details>
 
       {isChatAccessBlocked ? (
         <div className="mb-4 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">

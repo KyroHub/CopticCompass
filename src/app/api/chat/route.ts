@@ -3,6 +3,7 @@ import {
   createUIMessageStream,
   createUIMessageStreamResponse,
   streamText,
+  generateText,
   type UIMessage,
 } from "ai";
 import { getGeminiModel } from "@/lib/gemini";
@@ -11,14 +12,16 @@ import {
   createOpenRouterChatCompletion,
   type OpenRouterChatMessage,
 } from "@/lib/openrouter";
+import { createThothChatCompletion } from "../../../lib/thoth";
 import { getAuthenticatedUser } from "@/lib/supabase/authQueries";
 import { hasSupabaseRuntimeEnv } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
+import { searchCopticDocuments, searchVocabularyByKeywords } from "@/actions/vectorSearch";
 
 export const maxDuration = 30;
 export const runtime = "nodejs";
 
-type InferenceProvider = "gemini" | "hf" | "openrouter";
+type InferenceProvider = "gemini" | "hf" | "openrouter" | "thoth";
 
 type OpenRouterReasoningCacheEntry = {
   updatedAt: number;
@@ -245,6 +248,22 @@ function toOpenRouterMessages(
   return openRouterMessages;
 }
 
+function buildThothQuery(systemPrompt: string, messages: UIMessage[]): string {
+  const history = toOpenAiMessages(messages)
+    .slice(-10)
+    .map((message) => `${message.role.toUpperCase()}: ${message.content}`)
+    .join("\n\n");
+
+  return [
+    "Follow the instructions below exactly.",
+    "[SYSTEM INSTRUCTIONS]",
+    systemPrompt,
+    "[CONVERSATION HISTORY]",
+    history.length > 0 ? history : "No prior history provided.",
+    "[TASK] Reply to the latest user request using the instructions and context above.",
+  ].join("\n\n");
+}
+
 function toInferenceProvider(value: unknown): InferenceProvider {
   if (value === "gemini") {
     return "gemini";
@@ -258,7 +277,43 @@ function toInferenceProvider(value: unknown): InferenceProvider {
     return "openrouter";
   }
 
-  return "gemini";
+  if (value === "thoth") {
+    return "thoth";
+  }
+
+  return "thoth";
+}
+
+function toOptionalInferenceProvider(
+  value: unknown,
+): InferenceProvider | undefined {
+  if (value === "gemini") {
+    return "gemini";
+  }
+
+  if (value === "hf") {
+    return "hf";
+  }
+
+  if (value === "openrouter") {
+    return "openrouter";
+  }
+
+  if (value === "thoth") {
+    return "thoth";
+  }
+
+  return undefined;
+}
+
+function toRagInferenceProvider(
+  value: InferenceProvider,
+): "gemini" | "hf" | "openrouter" {
+  if (value === "thoth") {
+    return "openrouter";
+  }
+
+  return value;
 }
 
 function createStaticAssistantStream(responseText: string) {
@@ -358,7 +413,12 @@ export async function POST(req: Request) {
       });
     }
 
-    const inferenceProvider = toInferenceProvider(payload.inferenceProvider);
+    const queryProvider = toOptionalInferenceProvider(
+      new URL(req.url).searchParams.get("provider"),
+    );
+    const bodyProvider = toOptionalInferenceProvider(payload.inferenceProvider);
+    const inferenceProvider = bodyProvider ?? queryProvider ?? "thoth";
+    const ragInferenceProvider = toRagInferenceProvider(inferenceProvider);
     const chatId =
       typeof payload.id === "string" && payload.id.trim().length > 0
         ? payload.id.trim()
@@ -369,16 +429,121 @@ export async function POST(req: Request) {
     const latestMessageText = extractMessageText(latestMessage);
 
     let contextText = "";
-    try {
-      // TODO: wire vector lookup against coptic_documents when retrieval query is finalized.
-      contextText = "Vector search is deferred pending exact query mechanisms.";
-    } catch (error) {
-      console.error("Vector search failed:", error);
+    if (inferenceProvider !== "thoth" && latestMessageText) {
+      try {
+        // Step 1: Translate the prompt into German (for the Lexicon), extract keywords, and analyze grammar
+        let extractedKeywords: string[] = [];
+        let extractedConcepts: string[] = [];
+        let translatedPrompt = latestMessageText;
+
+        try {
+          const kwResponse = await generateText({
+            model: getGeminiModel(),
+            prompt: `You are assisting a RAG pipeline. The user query is: "${latestMessageText}".
+Our Coptic Lexicon is in German, and our general dictionary is in English.
+1. Translate the user's query into German.
+2. Extract ALL meaningful keywords (nouns, verbs, adjectives, adverbs) to maximize dictionary lookup hits. Include at least 5-15 keywords if the prompt allows, in BOTH English AND German.
+3. Analyze the grammatical structure of the user's query (e.g., tenses, moods, cases, clauses) and list 1-3 core English grammatical concepts required to build or understand this sentence.
+Respond ONLY with a valid JSON object matching this schema, no markdown blocks:
+{"germanTranslation": "...", "keywords": ["englishKw1", "germanKw1", "englishKw2", "germanKw2"], "grammaticalConcepts": ["past perfect", "definite article", "direct object"]}
+`,
+          });
+          
+          const rawResponse = kwResponse.text.replace(/```json/i, "").replace(/```/g, "").trim();
+          const parsed = JSON.parse(rawResponse);
+          
+          if (parsed.germanTranslation) {
+             translatedPrompt = `${latestMessageText}\n${parsed.germanTranslation}`;
+             console.log(`[RAG DEBUG] Translated prompt for vector search:`, parsed.germanTranslation);
+          }
+          
+          if (Array.isArray(parsed.keywords)) {
+             extractedKeywords = parsed.keywords.map((k: string) => k.trim().toLowerCase()).filter(Boolean);
+          }
+
+          if (Array.isArray(parsed.grammaticalConcepts)) {
+             extractedConcepts = parsed.grammaticalConcepts.map((k: string) => k.trim()).filter(Boolean);
+          }
+
+          console.log(`[RAG DEBUG] Extracted keywords:`, extractedKeywords);
+          console.log(`[RAG DEBUG] Extracted concepts:`, extractedConcepts);
+        } catch (e) {
+          console.error("Keyword/Translation extraction failed:", e);
+        }
+
+        let contextChunks: any[] = [];
+
+        // Step 2: Fetch by exact/partial string metadata match FIRST
+        if (extractedKeywords.length > 0) {
+          const keywordDocs = await searchVocabularyByKeywords(extractedKeywords);
+          if (keywordDocs && keywordDocs.length > 0) {
+            console.log(`[RAG DEBUG] Found ${keywordDocs.length} dictionary entries via metadata/keyword match.`);
+            contextChunks.push(...keywordDocs);
+          }
+        }
+
+        // Step 2.5: Fetch grammar lessons by semantic concept match
+        if (extractedConcepts.length > 0) {
+          const grammarQuery = extractedConcepts.join(" ");
+          const grammarDocs = await searchCopticDocuments(
+            grammarQuery,
+            3, // Pull the top 3 most relevant grammatical lessons
+            { type: "grammar" },
+            ragInferenceProvider
+          );
+          if (grammarDocs && grammarDocs.length > 0) {
+            console.log(`[RAG DEBUG] Found ${grammarDocs.length} grammar chunks via concept search.`);
+            contextChunks.push(...grammarDocs);
+          }
+        }
+
+        // Step 3: Run vector search as fallback/enrichment using BOTH English and German text
+        const vectorDocs = await searchCopticDocuments(
+          translatedPrompt,
+          8, // Get top 8 most relevant chunks overall to leave room for dictionary/other context
+          {},
+          ragInferenceProvider
+        );
+        console.log(`[RAG DEBUG] Retrieved ${vectorDocs?.length || 0} documents from vector search using ${inferenceProvider}.`);
+        if (vectorDocs && vectorDocs.length > 0) {
+          contextChunks.push(...vectorDocs);
+        }
+
+        // Combine chunks and deduplicate
+        const uniqueContents = new Set();
+        const finalDocs = contextChunks.filter(doc => {
+            if (uniqueContents.has(doc.content)) return false;
+            uniqueContents.add(doc.content);
+            return true;
+        });
+
+        if (finalDocs.length > 0) {
+          contextText = finalDocs
+            .map(
+              (doc: { content: string; metadata?: any }) =>
+                `Source (${doc.metadata?.sourceName || "Unknown"} -> ${doc.metadata?.dialect || "Any dialect"}):\n${doc.content}`,
+            )
+            .join("\n\n");
+            
+          // Hard limit text character size to roughly ~6,250 tokens (25000 chars)
+          if (contextText.length > 25000) {
+             contextText = contextText.slice(0, 25000) + "\n...[Context Truncated to fit token limits]";
+          }
+        } else {
+          console.warn("[RAG DEBUG] Vector and keyword search returned 0 results.");
+        }
+      } catch (error) {
+        console.error("Vector search failed:", error);
+      }
     }
 
-    const systemPrompt = `You are "Shenute AI", an expert scholar in the Coptic language (Sahidic/Bohairic dialects).
-You are an intelligent assistant designed to help users learn, translate, and understand Coptic.
-You have access to the Comprehensive Coptic Lexicon.
+    const shenuteSystemPrompt = `You are "Shenute AI Learner", a student assistant specialized in the Coptic language (Sahidic/Bohairic dialects).
+  You are a distilled learner model guided by Shenute AI Expert quality standards.
+  You help users learn, translate, and understand Coptic with high precision.
+You have access to the Comprehensive Coptic Lexicon via the provided context.
+
+CRITICAL INSTRUCTION: You must base your Coptic translations and vocabulary answers STRICTLY on the "Context relevant to the user's query" provided below. 
+If the context does not contain the specific Coptic words or grammar needed to accurately answer the user's request, you MUST admit that you do not know or that the words are not in your current database. DO NOT hallucinate, guess, or invent Coptic words, spellings, or transliterations.
 
   The user is currently viewing this page on the website:
   - Path: ${pageContext.path ?? "unknown"}
@@ -391,6 +556,22 @@ You have access to the Comprehensive Coptic Lexicon.
 Context relevant to the user's query:
 ${contextText}
 `;
+
+  const thothSystemPrompt = `You are "Shenute AI Expert", the teacher model for Coptic language mastery (Sahidic/Bohairic dialects).
+You deliver authoritative answers for Coptic vocabulary, grammar, translation, and etymology.
+You are the expert teacher that the Shenute AI Learner is distilled from.
+
+The user is currently viewing this page on the website:
+- Path: ${pageContext.path ?? "unknown"}
+- Title: ${pageContext.title ?? "unknown"}
+- URL: ${pageContext.url ?? "unknown"}
+
+Visible text excerpt from the opened page:
+${pageContext.excerpt && pageContext.excerpt.length > 0 ? pageContext.excerpt : "No page excerpt provided."}
+`;
+
+  const systemPrompt =
+    inferenceProvider === "thoth" ? thothSystemPrompt : shenuteSystemPrompt;
 
     if (inferenceProvider === "gemini") {
       const result = streamText({
@@ -447,6 +628,21 @@ ${contextText}
           openRouterMessage.reasoning_details,
         );
       }
+
+      return createStaticAssistantStream(responseText);
+    }
+
+    if (inferenceProvider === "thoth") {
+      const completion = await createThothChatCompletion({
+        query: buildThothQuery(systemPrompt, messages),
+        user: authenticatedUser.id,
+      });
+
+      const responseText =
+        typeof completion.answer === "string" &&
+        completion.answer.trim().length > 0
+          ? completion.answer
+          : "I could not generate a response from Shenute AI Expert right now.";
 
       return createStaticAssistantStream(responseText);
     }

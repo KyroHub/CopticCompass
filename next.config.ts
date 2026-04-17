@@ -29,6 +29,7 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/(.*)": ["public/data/**/*"],
   },
+  serverExternalPackages: ["pdf-img-convert"],
 };
 
 export default nextConfig;

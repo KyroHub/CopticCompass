@@ -43,6 +43,10 @@ function toProvider(value: unknown): ChatFeedbackEmbeddingProvider {
     return "openrouter";
   }
 
+  if (value === "thoth") {
+    return "openrouter";
+  }
+
   return "openrouter";
 }
 

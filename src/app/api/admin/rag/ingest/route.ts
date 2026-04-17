@@ -76,6 +76,9 @@ export async function POST(request: Request) {
     const enableOcrRaw = formData.get("enable_ocr");
     const enableOcr = enableOcrRaw === "on" || enableOcrRaw === "true";
 
+    const forceOcrRaw = formData.get("force_ocr");
+    const forceOcr = forceOcrRaw === "on" || forceOcrRaw === "true";
+
     const embeddingProviderRaw = formData.get("embedding_provider");
     const embeddingProvider =
       embeddingProviderRaw === "gemini"
@@ -91,6 +94,7 @@ export async function POST(request: Request) {
     const result = await ingestRagFile({
       embeddingProvider,
       enableOcr,
+      forceOcr,
       file: fileValue,
       ingestId: requestId,
       sourceTitle,

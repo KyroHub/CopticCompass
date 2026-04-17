@@ -501,6 +501,15 @@ export function AdminRagIngestionForm() {
         Run OCR when PDF text extraction is weak
       </label>
 
+      <label className="inline-flex items-center gap-2 text-sm text-stone-700 dark:text-stone-300">
+        <input
+          name="force_ocr"
+          type="checkbox"
+          className="h-4 w-4 rounded border-stone-300 text-sky-600 focus:ring-sky-400"
+        />
+        Force OCR for PDF extraction (bypass native PDF text)
+      </label>
+
       <label className="flex flex-col gap-2 text-sm text-stone-700 dark:text-stone-300 md:max-w-xs">
         <span className="font-semibold text-stone-700 dark:text-stone-200">
           Embedding provider

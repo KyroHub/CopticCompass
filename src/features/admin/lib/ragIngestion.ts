@@ -1,7 +1,9 @@
-import { embedMany } from "ai";
+import { embedMany, generateText } from "ai";
 import mammoth from "mammoth";
 import pdfParse from "pdf-parse/lib/pdf-parse.js";
-import { GEMINI_EMBEDDING_MODEL, getGeminiEmbeddingModel } from "@/lib/gemini";
+import { pdf } from "pdf-to-img";
+import { createThothChatCompletion } from "@/lib/thoth";
+import { GEMINI_EMBEDDING_MODEL, getGeminiEmbeddingModel, getGeminiModel } from "@/lib/gemini";
 import { HF_EMBEDDING_MODEL, generateHFEmbeddings } from "@/lib/hf";
 import {
   OPENROUTER_EMBEDDING_MODEL,
@@ -49,6 +51,18 @@ const OCR_TEXT_LIKE_KEYS = [
   "data",
   "message",
 ];
+const RAG_THOTH_ENABLED = process.env.RAG_THOTH_ENABLED !== "false";
+const RAG_THOTH_PROOFCHECK_REQUIRED =
+  process.env.RAG_THOTH_PROOFCHECK_REQUIRED !== "false";
+const THOTH_CHUNK_INPUT_LIMIT = Number(
+  process.env.RAG_THOTH_CHUNK_INPUT_LIMIT ?? "3000",
+);
+const THOTH_JSON_SAMPLE_LIMIT = Number(
+  process.env.RAG_THOTH_JSON_SAMPLE_LIMIT ?? "35000",
+);
+const THOTH_RECONCILE_TEXT_LIMIT = Number(
+  process.env.RAG_THOTH_RECONCILE_TEXT_LIMIT ?? "12000",
+);
 
 const IMAGE_MIME_PREFIX = "image/";
 const PDF_MIME = "application/pdf";
@@ -141,6 +155,7 @@ export type RagEmbeddingProvider = "gemini" | "hf" | "openrouter";
 export type IngestRagFileOptions = {
   embeddingProvider?: RagEmbeddingProvider;
   enableOcr: boolean;
+  forceOcr?: boolean;
   file: File;
   ingestId?: string;
   sourceTitle: string;
@@ -169,8 +184,33 @@ type PdfReconciliationSummary = {
     | "pdf_only"
     | "prefer_ocr"
     | "prefer_pdf"
+    | "thoth_reconcile"
     | "verified_match"
     | "verified_merge";
+};
+
+type ChunkCategory = "document" | "grammar" | "vocabulary";
+
+type ChunkEnrichmentResult = {
+  category: ChunkCategory;
+  metadata: Record<string, unknown>;
+  rephrasedContent: string;
+  retrievalKeywords: string[];
+  retrievalSummary?: string;
+};
+
+type ThothPdfReconciliationResult = {
+  confidence?: number;
+  reconciledText?: string;
+  strategy?: "merge" | "ocr" | "pdf";
+};
+
+type ThothProofcheckResult = {
+  metadataPatch?: Record<string, unknown>;
+  qualityScore?: number;
+  retrievalKeywords?: string[];
+  retrievalSummary?: string;
+  rewrittenContent?: string;
 };
 
 type GlobalWithRagLogStore = typeof globalThis & {
@@ -387,6 +427,470 @@ function normalizeWhitespace(value: string) {
   return value.replace(/\s+/g, " ").trim();
 }
 
+function hasThothAvailable() {
+  return RAG_THOTH_ENABLED && Boolean(process.env.THOTH_API_KEY);
+}
+
+function buildThothIngestionUserId(userId: string, ingestId: string, tag: string) {
+  return `ingest:${userId}:${ingestId}:${tag}`.slice(0, 200);
+}
+
+function tryParseJsonFromModelAnswer(answer: string): unknown {
+  const trimmed = answer.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  const candidates: string[] = [trimmed];
+  const fencedMatches = [...trimmed.matchAll(/```(?:json)?\s*([\s\S]*?)```/gi)];
+  for (const match of fencedMatches) {
+    if (match[1]) {
+      candidates.push(match[1].trim());
+    }
+  }
+
+  const firstArray = trimmed.indexOf("[");
+  const lastArray = trimmed.lastIndexOf("]");
+  if (firstArray >= 0 && lastArray > firstArray) {
+    candidates.push(trimmed.slice(firstArray, lastArray + 1));
+  }
+
+  const firstObject = trimmed.indexOf("{");
+  const lastObject = trimmed.lastIndexOf("}");
+  if (firstObject >= 0 && lastObject > firstObject) {
+    candidates.push(trimmed.slice(firstObject, lastObject + 1));
+  }
+
+  for (const candidate of candidates) {
+    try {
+      return JSON.parse(candidate);
+    } catch {
+      // Keep trying other candidates.
+    }
+  }
+
+  return null;
+}
+
+async function runThothStructuredTask(options: {
+  ingestId: string;
+  prompt: string;
+  taskTag: string;
+  userId: string;
+}) {
+  if (!hasThothAvailable()) {
+    return null;
+  }
+
+  try {
+    const completion = await createThothChatCompletion({
+      query: options.prompt,
+      user: buildThothIngestionUserId(
+        options.userId,
+        options.ingestId,
+        options.taskTag,
+      ),
+    });
+
+    if (!completion.answer) {
+      return null;
+    }
+
+    return tryParseJsonFromModelAnswer(completion.answer);
+  } catch (error) {
+    console.warn(
+      `[RAG Ingestion] THOTH ${options.taskTag} task failed. Falling back to Gemini heuristics.`,
+      error,
+    );
+    return null;
+  }
+}
+
+function toStringArray(value: unknown, maxItems = 24) {
+  if (!Array.isArray(value)) {
+    return [] as string[];
+  }
+
+  const unique = new Set<string>();
+  for (const entry of value) {
+    if (typeof entry !== "string") {
+      continue;
+    }
+
+    const normalized = normalizeWhitespace(entry).slice(0, 120);
+    if (!normalized) {
+      continue;
+    }
+
+    unique.add(normalized);
+    if (unique.size >= maxItems) {
+      break;
+    }
+  }
+
+  return Array.from(unique);
+}
+
+function toChunkCategory(value: unknown): ChunkCategory {
+  if (value === "grammar") {
+    return "grammar";
+  }
+
+  if (value === "vocabulary") {
+    return "vocabulary";
+  }
+
+  return "document";
+}
+
+function normalizeChunkEnrichment(value: unknown): ChunkEnrichmentResult | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const candidate = value as {
+    category?: unknown;
+    metadata?: unknown;
+    rephrasedContent?: unknown;
+    retrievalKeywords?: unknown;
+    retrievalSummary?: unknown;
+  };
+
+  const rephrasedContent =
+    typeof candidate.rephrasedContent === "string"
+      ? normalizeWhitespace(candidate.rephrasedContent)
+      : "";
+
+  if (!rephrasedContent) {
+    return null;
+  }
+
+  const metadata =
+    candidate.metadata && typeof candidate.metadata === "object"
+      ? (candidate.metadata as Record<string, unknown>)
+      : {};
+
+  const retrievalSummary =
+    typeof candidate.retrievalSummary === "string"
+      ? normalizeWhitespace(candidate.retrievalSummary).slice(0, 280)
+      : undefined;
+
+  return {
+    category: toChunkCategory(candidate.category),
+    metadata,
+    rephrasedContent,
+    retrievalKeywords: toStringArray(candidate.retrievalKeywords),
+    retrievalSummary,
+  };
+}
+
+function normalizeStructuredChunkArray(value: unknown): RagChunkWithMetadata[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const normalized: RagChunkWithMetadata[] = [];
+
+  for (const entry of value) {
+    if (!entry || typeof entry !== "object") {
+      continue;
+    }
+
+    const candidate = entry as {
+      content?: unknown;
+      metadata?: unknown;
+      retrievalKeywords?: unknown;
+      retrievalSummary?: unknown;
+    };
+
+    const content =
+      typeof candidate.content === "string"
+        ? normalizeWhitespace(candidate.content)
+        : "";
+    if (!content) {
+      continue;
+    }
+
+    const metadata =
+      candidate.metadata && typeof candidate.metadata === "object"
+        ? (candidate.metadata as Record<string, unknown>)
+        : {};
+
+    normalized.push({
+      content,
+      metadata: {
+        ...metadata,
+        retrieval_keywords: toStringArray(candidate.retrievalKeywords),
+        retrieval_summary:
+          typeof candidate.retrievalSummary === "string"
+            ? normalizeWhitespace(candidate.retrievalSummary).slice(0, 280)
+            : null,
+        type:
+          typeof metadata.type === "string"
+            ? metadata.type
+            : "llm_generated_schema",
+      },
+    });
+  }
+
+  return normalized;
+}
+
+function buildEnrichedChunkPayload(
+  originalChunkText: string,
+  enrichment: ChunkEnrichmentResult,
+  provider: "gemini" | "thoth" = "thoth",
+) {
+  const retrievalSignals: string[] = [];
+  if (enrichment.retrievalKeywords.length > 0) {
+    retrievalSignals.push(
+      `Retrieval keywords: ${enrichment.retrievalKeywords.join(", ")}`,
+    );
+  }
+
+  if (enrichment.retrievalSummary) {
+    retrievalSignals.push(`Retrieval summary: ${enrichment.retrievalSummary}`);
+  }
+
+  const enrichedContent = [
+    enrichment.rephrasedContent,
+    ...retrievalSignals,
+  ].join("\n\n");
+
+  return {
+    content:
+      normalizeWhitespace(enrichedContent).length > 0
+        ? enrichedContent
+        : originalChunkText,
+    metadata: {
+      ...enrichment.metadata,
+      enrichment_provider: provider,
+      retrieval_keywords: enrichment.retrievalKeywords,
+      retrieval_summary: enrichment.retrievalSummary ?? null,
+      type: enrichment.category,
+    } satisfies Record<string, unknown>,
+  };
+}
+
+async function enrichChunkWithThoth(options: {
+  chunkText: string;
+  ingestId: string;
+  sourceFileName: string;
+  userId: string;
+}) {
+  const prompt = `You are THOTH AI optimizing Coptic RAG ingestion.
+Analyze the text chunk below and produce retrieval-optimized structured output.
+
+Return only valid JSON with this schema:
+{
+  "category": "grammar" | "vocabulary" | "document",
+  "rephrasedContent": "clean standalone text for embeddings",
+  "retrievalKeywords": ["keyword1", "keyword2"],
+  "retrievalSummary": "one sentence helping semantic retrieval",
+  "metadata": {
+    "topics": ["..."],
+    "languages": ["Coptic", "English", "German"],
+    "dialect": "Sahidic | Bohairic | Fayyumic | Akhmimic | Unknown",
+    "grammatical_structures": ["..."],
+    "parts_of_speech": ["..."],
+    "has_coptic_examples": true,
+    "linguistic_domain": "syntax | morphology | phonology | lexicography | general"
+  }
+}
+
+File name: ${options.sourceFileName}
+Chunk text:
+${options.chunkText.slice(0, THOTH_CHUNK_INPUT_LIMIT)}`;
+
+  const parsed = await runThothStructuredTask({
+    ingestId: options.ingestId,
+    prompt,
+    taskTag: "chunk-enrichment",
+    userId: options.userId,
+  });
+
+  return normalizeChunkEnrichment(parsed);
+}
+
+async function applyThothEnrichmentToChunks(options: {
+  chunks: RagChunkWithMetadata[];
+  fileName: string;
+  ingestId?: string;
+  userId?: string;
+}) {
+  if (!options.ingestId || !options.userId || !hasThothAvailable()) {
+    return options.chunks;
+  }
+
+  const enrichedChunks: RagChunkWithMetadata[] = [];
+
+  for (let index = 0; index < options.chunks.length; index += 1) {
+    const chunk = options.chunks[index];
+    const enrichment = await enrichChunkWithThoth({
+      chunkText: chunk.content,
+      ingestId: options.ingestId,
+      sourceFileName: options.fileName,
+      userId: options.userId,
+    });
+
+    if (!enrichment) {
+      enrichedChunks.push(chunk);
+      continue;
+    }
+
+    const merged = buildEnrichedChunkPayload(chunk.content, enrichment);
+    enrichedChunks.push({
+      content: merged.content,
+      metadata: {
+        ...chunk.metadata,
+        ...merged.metadata,
+      },
+    });
+  }
+
+  return enrichedChunks;
+}
+
+function normalizeThothProofcheckResult(value: unknown) {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const candidate = value as ThothProofcheckResult;
+  const rewrittenContent =
+    typeof candidate.rewrittenContent === "string"
+      ? normalizeWhitespace(candidate.rewrittenContent)
+      : "";
+
+  if (!rewrittenContent) {
+    return null;
+  }
+
+  const metadataPatch =
+    candidate.metadataPatch && typeof candidate.metadataPatch === "object"
+      ? candidate.metadataPatch
+      : {};
+
+  const qualityScore =
+    typeof candidate.qualityScore === "number" &&
+    Number.isFinite(candidate.qualityScore)
+      ? Math.max(0, Math.min(1, candidate.qualityScore))
+      : undefined;
+
+  const retrievalSummary =
+    typeof candidate.retrievalSummary === "string"
+      ? normalizeWhitespace(candidate.retrievalSummary).slice(0, 280)
+      : undefined;
+
+  return {
+    metadataPatch,
+    qualityScore,
+    retrievalKeywords: toStringArray(candidate.retrievalKeywords),
+    retrievalSummary,
+    rewrittenContent,
+  };
+}
+
+async function proofcheckChunksWithThoth(options: {
+  chunks: RagChunkWithMetadata[];
+  fileName: string;
+  ingestId: string;
+  logs: RagIngestionLogEntry[];
+  userId: string;
+}) {
+  if (!hasThothAvailable()) {
+    if (RAG_THOTH_PROOFCHECK_REQUIRED) {
+      throw new Error(
+        "THOTH proofcheck is required before ingestion, but THOTH API is unavailable. Configure THOTH_API_KEY or set RAG_THOTH_PROOFCHECK_REQUIRED=false.",
+      );
+    }
+
+    logIngestion(
+      options.ingestId,
+      "THOTH proofcheck skipped because THOTH is unavailable and strict mode is disabled.",
+      options.logs,
+    );
+    return options.chunks;
+  }
+
+  const proofcheckedChunks: RagChunkWithMetadata[] = [];
+  let proofcheckedCount = 0;
+
+  for (let index = 0; index < options.chunks.length; index += 1) {
+    const chunk = options.chunks[index];
+    const prompt = `You are THOTH AI performing mandatory final proof-check before a chunk is inserted into the Coptic knowledge base.
+Rewrite the chunk for maximum retrieval quality while preserving factual meaning.
+Correct OCR artifacts, normalize wording, improve clarity, and keep key Coptic/English/German terminology.
+
+Return only valid JSON with this schema:
+{
+  "rewrittenContent": "final rewritten chunk for best retrieval",
+  "retrievalKeywords": ["keyword1", "keyword2"],
+  "retrievalSummary": "one sentence retrieval intent",
+  "qualityScore": 0.0,
+  "metadataPatch": {
+    "type": "grammar | vocabulary | document",
+    "dialect": "Sahidic | Bohairic | Fayyumic | Akhmimic | Unknown",
+    "topics": ["..."],
+    "languages": ["Coptic", "English", "German"]
+  }
+}
+
+File name: ${options.fileName}
+Existing metadata: ${JSON.stringify(chunk.metadata).slice(0, 1200)}
+Chunk text:
+${chunk.content.slice(0, THOTH_CHUNK_INPUT_LIMIT)}`;
+
+    const parsed = await runThothStructuredTask({
+      ingestId: options.ingestId,
+      prompt,
+      taskTag: "proofcheck",
+      userId: options.userId,
+    });
+    const proofchecked = normalizeThothProofcheckResult(parsed);
+
+    if (!proofchecked) {
+      if (RAG_THOTH_PROOFCHECK_REQUIRED) {
+        throw new Error(
+          `THOTH proofcheck failed for chunk ${index + 1}/${options.chunks.length}. Aborting ingestion to avoid unverified chunks.`,
+        );
+      }
+
+      proofcheckedChunks.push(chunk);
+      continue;
+    }
+
+    proofcheckedCount += 1;
+    proofcheckedChunks.push({
+      content: proofchecked.rewrittenContent,
+      metadata: {
+        ...chunk.metadata,
+        ...proofchecked.metadataPatch,
+        enrichment_provider: "thoth",
+        proofcheck_provider: "thoth",
+        proofcheck_quality_score: proofchecked.qualityScore ?? null,
+        retrieval_keywords:
+          proofchecked.retrievalKeywords.length > 0
+            ? proofchecked.retrievalKeywords
+            : (chunk.metadata.retrieval_keywords ?? []),
+        retrieval_summary:
+          proofchecked.retrievalSummary ??
+          (typeof chunk.metadata.retrieval_summary === "string"
+            ? chunk.metadata.retrieval_summary
+            : null),
+      },
+    });
+  }
+
+  logIngestion(
+    options.ingestId,
+    `THOTH proofcheck completed: ${proofcheckedCount}/${options.chunks.length} chunks rewritten and verified.`,
+    options.logs,
+  );
+
+  return proofcheckedChunks;
+}
+
 function tokenizeForComparison(value: string) {
   return normalizeWhitespace(value)
     .toLowerCase()
@@ -445,10 +949,367 @@ function mergeUniqueSegments(primaryText: string, secondaryText: string) {
   return merged.join("\n\n");
 }
 
-function reconcilePdfExtractedAndOcrText(
+/* Lines omitted... */
+
+export type RagChunkWithMetadata = {
+  content: string;
+  metadata: Record<string, unknown>;
+};
+
+async function splitIntoChunks(
+  text: string,
+  fileName: string = "",
+  options?: {
+    ingestId?: string;
+    userId?: string;
+  },
+  chunkSize = CHUNK_SIZE,
+  overlap = CHUNK_OVERLAP,
+): Promise<RagChunkWithMetadata[]> {
+  const normalizedFileName = fileName.toLowerCase();
+  const ingestId = options?.ingestId;
+  const userId = options?.userId;
+
+  if (normalizedFileName.endsWith(".json")) {
+    try {
+      const parsed = JSON.parse(text);
+      if (Array.isArray(parsed)) {
+        const parsedChunks = parsed.map((entryRaw: unknown) => {
+          const entry = entryRaw as {
+            dialects?: unknown;
+            english_meanings?: unknown;
+            headword?: unknown;
+            pos?: unknown;
+          };
+
+          // Dictionary format
+          if (typeof entry.headword === "string" && typeof entry.pos === "string") {
+            const dialects =
+              entry.dialects && typeof entry.dialects === "object"
+                ? (entry.dialects as Record<string, unknown>)
+                : {};
+
+            const copticDialects = Object.entries(dialects)
+              .map(([dialectName, dialectValue]) => {
+                if (!dialectValue || typeof dialectValue !== "object") {
+                  return "";
+                }
+
+                const absolute = (dialectValue as { absolute?: unknown }).absolute;
+                return typeof absolute === "string"
+                  ? `${dialectName}: ${absolute}`
+                  : "";
+              })
+              .filter((dialect) => dialect.length > 0)
+              .join(", ");
+
+            const meanings = Array.isArray(entry.english_meanings)
+              ? entry.english_meanings
+                  .filter((value): value is string => typeof value === "string")
+                  .join(", ")
+              : "";
+
+            return {
+              content: `Coptic Word Headword: ${entry.headword}. Part of Speech: ${entry.pos}. Dialects: ${copticDialects}. English Meanings: ${meanings}.`,
+              metadata: {
+                type: "vocabulary",
+                word: entry.headword,
+                translation: meanings,
+                partOfSpeech: entry.pos,
+              },
+            };
+          }
+
+          return { content: JSON.stringify(entry), metadata: { type: "json_data" } };
+        });
+
+        return applyThothEnrichmentToChunks({
+          chunks: parsedChunks,
+          fileName,
+          ingestId,
+          userId,
+        });
+      } else if (parsed && parsed.data && Array.isArray(parsed.data)) {
+        // Grammar concepts format (e.g. grammar/v1/concepts.json)
+        const grammarChunks = parsed.data.map((itemRaw: unknown) => {
+          const item = itemRaw as {
+            definition?: unknown;
+            title?: unknown;
+          };
+
+          if (item.title && item.definition) {
+            const titleSource =
+              item.title && typeof item.title === "object"
+                ? (item.title as { en?: unknown }).en
+                : item.title;
+            const definitionSource =
+              item.definition && typeof item.definition === "object"
+                ? (item.definition as { en?: unknown }).en
+                : item.definition;
+
+            const title =
+              typeof titleSource === "string"
+                ? titleSource
+                : JSON.stringify(item.title);
+            const definition =
+              typeof definitionSource === "string"
+                ? definitionSource
+                : JSON.stringify(item.definition);
+
+            return {
+              content: `Grammar Concept: ${title}. Definition: ${definition}.`,
+              metadata: {
+                type: "grammar",
+                lesson: title,
+              },
+            };
+          }
+
+          return { content: JSON.stringify(item), metadata: { type: "json_data" } };
+        });
+
+        return applyThothEnrichmentToChunks({
+          chunks: grammarChunks,
+          fileName,
+          ingestId,
+          userId,
+        });
+      }
+    } catch {
+      // Not an array of JSON objects or grammar JSON, fall through to text splitting
+    }
+  }
+
+  if (normalizedFileName.endsWith(".xml")) {
+    const entryRegex = /<entry[^>]*>([\s\S]*?)<\/entry>/gi;
+    const matches = [...text.matchAll(entryRegex)];
+    if (matches.length > 0) {
+      const xmlChunks = matches
+        .map((match) => {
+          const entryXml = match[1] || "";
+          
+          const orthMatch = entryXml.match(/<orth[^>]*>([\s\S]*?)<\/orth>/i);
+          const posMatch = entryXml.match(/<pos[^>]*>([\s\S]*?)<\/pos>/i);
+          const defMatch = entryXml.match(/<quote[^>]*>([\s\S]*?)<\/quote>/i) || entryXml.match(/<def[^>]*>([\s\S]*?)<\/def>/i);
+          const gramMatch = entryXml.match(/<gramGrp[^>]*>([\s\S]*?)<\/gramGrp>/i);
+
+          const word = orthMatch ? stripHtml(orthMatch[1]) : "";
+          const pos = posMatch ? stripHtml(posMatch[1]) : "";
+          const definition = defMatch ? stripHtml(defMatch[1]) : "";
+          const grammar = gramMatch ? stripHtml(gramMatch[1]).replace(/\s+/g, ' ') : "";
+
+          // Extract cleanly if we found meaningful fields
+          if (word || definition) {
+            let parsedContent = `Coptic Word: ${word}.`;
+            if (pos) parsedContent += ` Part of Speech: ${pos}.`;
+            if (definition) parsedContent += ` Definition: ${definition}.`;
+            if (grammar) parsedContent += ` Grammar/Notes: ${grammar}.`;
+             
+            return {
+              content: parsedContent.trim(),
+              metadata: { 
+                type: "vocabulary_xml",
+                word,
+                partOfSpeech: pos,
+                definition,
+                grammar
+              },
+            };
+          } else {
+             // Fallback for unstructured TEI <entry>
+             return {
+                content: match[0].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
+                metadata: { type: "vocabulary_xml" }
+             };
+          }
+        })
+        .filter((chunk) => chunk.content.length > 10);
+
+      return applyThothEnrichmentToChunks({
+        chunks: xmlChunks,
+        fileName,
+        ingestId,
+        userId,
+      });
+    }
+  }
+
+  const isJson = normalizedFileName.endsWith(".json");
+  const isXml = normalizedFileName.endsWith(".xml");
+
+  // If it's a new/unrecognized JSON or XML file, use the LLM to generate a schema and extract data dynamically.
+  if (isJson || isXml) {
+    try {
+      const sampleText = text.slice(0, THOTH_JSON_SAMPLE_LIMIT);
+
+      const thothParsed = await runThothStructuredTask({
+        ingestId: ingestId ?? "local",
+        prompt: `You are THOTH AI enriching a Coptic RAG ingestion pipeline.
+Extract records from this ${isJson ? "JSON" : "XML"} source and return only valid JSON Array.
+Schema for each element:
+{
+  "content": "standalone retrieval-optimized text",
+  "metadata": { "type": "...", "topic": "...", "dialect": "..." },
+  "retrievalKeywords": ["..."],
+  "retrievalSummary": "..."
+}
+Data sample:
+${sampleText}`,
+        taskTag: "schema-extract",
+        userId: userId ?? "system",
+      });
+
+      const thothChunks = normalizeStructuredChunkArray(thothParsed);
+      if (thothChunks.length > 0) {
+        return thothChunks;
+      }
+
+      const result = await generateText({
+        model: getGeminiModel(),
+        prompt: `Analyze this ${isJson ? "JSON" : "XML"} data. It contains semi-structured records.
+Extract the records and normalize them into an array of structured JSON objects.
+Generate a predictable schema for the metadata based on the fields you discover.
+For each record, provide:
+1. "content": A clean text paragraph summarizing the record (for vector embeddings).
+2. "metadata": A JSON object containing the distinct fields found (e.g. title, meaning, author, type, category).
+Output ONLY a valid JSON Array. Do not wrap with \`\`\`json.
+Data:
+${sampleText}`,
+      });
+
+      const dynamicallyParsed = tryParseJsonFromModelAnswer(result.text);
+      const normalized = normalizeStructuredChunkArray(dynamicallyParsed);
+
+      if (normalized.length > 0) {
+        return normalized;
+      }
+    } catch (llmError) {
+      console.warn("[RAG Ingestion] LLM fallback parsing for new schema failed. Falling back to semantic chunking.", llmError);
+    }
+  }
+
+  // Use simple semantic splitting for non-JSON/XML text (Markdown/TXT/PDF)
+  const segments = splitIntoSemanticSegments(text);
+  if (segments.length === 0) return [];
+
+  const chunks: string[] = [];
+  let currentChunk = "";
+
+  for (const segment of segments) {
+    if (currentChunk.length + segment.length < chunkSize) {
+      currentChunk += (currentChunk ? " " : "") + segment;
+    } else {
+      if (currentChunk) {
+        chunks.push(currentChunk);
+      }
+
+      const overlapSeed =
+        overlap > 0 && currentChunk.length > overlap
+          ? currentChunk.slice(-overlap)
+          : "";
+      currentChunk =
+        overlapSeed.length > 0 ? `${overlapSeed} ${segment}` : segment;
+    }
+  }
+  if (currentChunk) chunks.push(currentChunk);
+
+  const fallbackChunks =
+    chunks.length > 0 ? chunks : [normalizeWhitespace(text).slice(0, chunkSize)];
+
+  const processedChunks: RagChunkWithMetadata[] = [];
+  
+  // Use THOTH first to classify/rephrase chunks for retrieval, then fall back to Gemini.
+  for (const chunkText of fallbackChunks) {
+     if (ingestId && userId) {
+       const thothEnrichment = await enrichChunkWithThoth({
+         chunkText,
+         ingestId,
+         sourceFileName: fileName,
+         userId,
+       });
+
+       if (thothEnrichment) {
+         const thothChunk = buildEnrichedChunkPayload(
+           chunkText,
+           thothEnrichment,
+           "thoth",
+         );
+
+         processedChunks.push({
+           content: thothChunk.content,
+           metadata: thothChunk.metadata,
+         });
+         continue;
+       }
+     }
+
+     try {
+       const result = await generateText({
+         model: getGeminiModel(),
+         prompt: `You are an expert in Coptic linguistics. Analyze the following text extracted from a document. 
+Identify if this text primarily contains Grammar rules, Vocabulary/Dictionary entries, or just general text.
+Rephrase, translate, or structure the content so it is highly optimized for an AI RAG vector search. If it contains vocabulary, format it distinctly with translations. If it contains grammar, explain the rule clearly and distinctly.
+Output ONLY a valid JSON object matching this schema (do NOT wrap in \`\`\`json):
+{
+  "category": "grammar" | "vocabulary" | "document",
+  "rephrasedContent": "The clean, standalone rephrased text describing the rule, words, or document...",
+  "retrievalKeywords": ["keyword1", "keyword2"],
+  "retrievalSummary": "one sentence helping semantic retrieval",
+  "metadata": { 
+    "topics": ["..."], 
+    "keywords": ["..."],
+    "languages": ["Coptic", "English", "German", ...],
+    "dialect": "Sahidic | Bohairic | Fayyumic | Akhmimic | Unknown",
+    "entities": ["..."],
+    "complexity": "beginner" | "intermediate" | "advanced",
+    "grammatical_structures": ["verb conjugation", "relative clause", ...],
+    "parts_of_speech": ["noun", "verb", "preposition", ...],
+    "has_coptic_examples": true,
+    "linguistic_domain": "syntax" | "morphology" | "phonology" | "lexicography" | "general"
+  }
+}
+Text to analyze:
+${chunkText.slice(0, THOTH_CHUNK_INPUT_LIMIT)}`
+       });
+       
+       const parsed = normalizeChunkEnrichment(
+         tryParseJsonFromModelAnswer(result.text),
+       );
+
+       if (parsed) {
+         const geminiChunk = buildEnrichedChunkPayload(
+           chunkText,
+           parsed,
+           "gemini",
+         );
+         processedChunks.push(geminiChunk);
+         continue;
+       }
+
+       processedChunks.push({
+         content: chunkText,
+         metadata: { type: "document" },
+       });
+     } catch (err) {
+       console.warn("[RAG Ingestion] LLM chunk classification failed, falling back to raw chunk string.");
+       processedChunks.push({
+         content: chunkText,
+         metadata: { type: "document" }
+       });
+     }
+  }
+
+  return processedChunks.filter((chunk) => chunk.content.length > 10);
+}
+
+async function reconcilePdfExtractedAndOcrText(
   extractedText: string,
   ocrText: string,
-): { summary: PdfReconciliationSummary; text: string } {
+  options?: {
+    ingestId?: string;
+    userId?: string;
+  },
+): Promise<{ summary: PdfReconciliationSummary; text: string }> {
   const normalizedExtracted = normalizeWhitespace(extractedText);
   const normalizedOcr = normalizeWhitespace(ocrText);
 
@@ -492,6 +1353,55 @@ function reconcilePdfExtractedAndOcrText(
     normalizedExtracted,
     normalizedOcr,
   );
+
+  if (
+    similarity < 0.85 &&
+    options?.ingestId &&
+    options?.userId &&
+    hasThothAvailable()
+  ) {
+    const thothParsed = (await runThothStructuredTask({
+      ingestId: options.ingestId,
+      prompt: `You are THOTH AI reconciling OCR and native PDF extraction for Coptic language sources.
+Return only valid JSON with schema:
+{
+  "strategy": "merge" | "ocr" | "pdf",
+  "confidence": 0.0,
+  "reconciledText": "single cleaned text"
+}
+
+Native PDF text:
+${normalizedExtracted.slice(0, THOTH_RECONCILE_TEXT_LIMIT)}
+
+OCR text:
+${normalizedOcr.slice(0, THOTH_RECONCILE_TEXT_LIMIT)}`,
+      taskTag: "pdf-ocr-reconcile",
+      userId: options.userId,
+    })) as ThothPdfReconciliationResult | null;
+
+    const thothText =
+      thothParsed && typeof thothParsed.reconciledText === "string"
+        ? normalizeWhitespace(thothParsed.reconciledText)
+        : "";
+
+    if (thothText.length > 0) {
+      const boundedConfidence =
+        typeof thothParsed?.confidence === "number" &&
+        Number.isFinite(thothParsed.confidence)
+          ? Math.max(0, Math.min(1, thothParsed.confidence))
+          : similarity;
+
+      return {
+        summary: {
+          extractedChars: normalizedExtracted.length,
+          ocrChars: normalizedOcr.length,
+          similarity: boundedConfidence,
+          strategy: "thoth_reconcile",
+        },
+        text: thothText,
+      };
+    }
+  }
 
   if (similarity >= 0.85) {
     const preferredText =
@@ -571,32 +1481,7 @@ function detectSourceType(file: File): SourceType | null {
   return null;
 }
 
-function splitIntoChunks(
-  text: string,
-  chunkSize = CHUNK_SIZE,
-  overlap = CHUNK_OVERLAP,
-) {
-  const normalized = normalizeWhitespace(text);
-  if (!normalized) {
-    return [] as string[];
-  }
-
-  const chunks: string[] = [];
-  let start = 0;
-
-  while (start < normalized.length) {
-    const end = Math.min(start + chunkSize, normalized.length);
-    chunks.push(normalized.slice(start, end));
-
-    if (end >= normalized.length) {
-      break;
-    }
-
-    start = Math.max(0, end - overlap);
-  }
-
-  return chunks;
-}
+// Removed old splitIntoChunks definition
 
 function countWords(value: string) {
   const normalized = normalizeWhitespace(value);
@@ -612,11 +1497,11 @@ function estimateTokens(charCount: number) {
 }
 
 function buildChunkStats(
-  chunks: string[],
+  chunks: RagChunkWithMetadata[],
   sourceTextChars: number,
 ): RagChunkStats {
-  const lengths = chunks.map((chunk) => chunk.length);
-  const wordCounts = chunks.map((chunk) => countWords(chunk));
+  const lengths = chunks.map((chunk) => chunk.content.length);
+  const wordCounts = chunks.map((chunk) => countWords(chunk.content));
   const tokenEstimates = lengths.map((length) => estimateTokens(length));
   const totalChunkChars = lengths.reduce((sum, value) => sum + value, 0);
   const totalEstimatedTokens = tokenEstimates.reduce(
@@ -820,6 +1705,11 @@ async function extractSourceText(
   file: File,
   sourceType: SourceType,
   enableOcr: boolean,
+  forceOcr: boolean = false,
+  context?: {
+    ingestId?: string;
+    userId?: string;
+  },
 ): Promise<{
   ocrUsed: boolean;
   reconciliation?: PdfReconciliationSummary;
@@ -838,6 +1728,45 @@ async function extractSourceText(
     return { ocrUsed: false, text: await extractTextFile(file) };
   }
 
+  if (forceOcr) {
+    let ocrText = "";
+    try {
+      ocrText = sourceType === "pdf" ? await runOcrOnPdf(file) : await runOcr(file);
+    } catch (e) {
+      console.warn("[RAG Ingestion] Force OCR failed. Falling back to native PDF extraction.", e);
+    }
+    
+    let extractedText = "";
+    try {
+      extractedText = await extractPdfText(file);
+    } catch (e) {
+      // Ignore native PDF parse errors when forced to OCR
+    }
+
+    if (ocrText && extractedText) {
+      const reconciled = await reconcilePdfExtractedAndOcrText(
+        extractedText,
+        ocrText,
+        context,
+      );
+      return {
+        ocrUsed: true,
+        reconciliation: reconciled.summary,
+        text: reconciled.text,
+      };
+    }
+
+    if (ocrText) {
+      return { ocrUsed: true, text: normalizeWhitespace(ocrText) };
+    }
+    
+    if (extractedText) {
+       return { ocrUsed: false, text: normalizeWhitespace(extractedText) };
+    }
+    
+    throw new Error("Both OCR and native PDF extraction failed for this document.");
+  }
+
   const extractedText = await extractPdfText(file);
 
   if (!enableOcr) {
@@ -845,107 +1774,141 @@ async function extractSourceText(
   }
 
   try {
-    const ocrText = await runOcr(file);
+    const ocrText = sourceType === "pdf" ? await runOcrOnPdf(file) : await runOcr(file);
     if (!ocrText) {
       return { ocrUsed: false, text: extractedText };
     }
 
-    const reconciled = reconcilePdfExtractedAndOcrText(extractedText, ocrText);
+    const reconciled = await reconcilePdfExtractedAndOcrText(
+      extractedText,
+      ocrText,
+      context,
+    );
     return {
       ocrUsed: true,
       reconciliation: reconciled.summary,
       text: reconciled.text,
     };
   } catch (error) {
+    console.warn("[RAG Ingestion] OCR failed. Falling back completely to extracted text.", error);
     if (normalizeWhitespace(extractedText).length >= OCR_MIN_TEXT_LENGTH) {
       return { ocrUsed: false, text: extractedText };
     }
 
-    throw error;
+    // If we have literally barely any text, we just return what we have instead of crashing the pipeline.
+    if (normalizeWhitespace(extractedText).length > 0) {
+      return { ocrUsed: false, text: extractedText };
+    }
+    
+    throw new Error(`OCR processing failed and PDF extraction yielded no text. Original error: ${error instanceof Error ? error.message : String(error)}`);
   }
 }
 
+async function runOcrOnPdf(file: File): Promise<string> {
+  const arrayBuffer = await file.arrayBuffer();
+  // Pass Buffer to pdf-to-img
+  const document = await pdf(Buffer.from(arrayBuffer), { scale: 2.0 });
+
+  let fullOcrText = "";
+  let i = 0;
+  for await (const imageBuffer of document) {
+     try {
+       const imageFile = new File([imageBuffer as any], `page-${i + 1}.png`, { type: "image/png" });
+       const pageText = await runOcr(imageFile);
+       fullOcrText += pageText + "\n\n";
+     } catch (err) {
+       console.warn(`[RAG Ingestion] OCR failed on PDF page ${i + 1}. Attempting to continue...`, err);
+     }
+     i++;
+  }
+
+  return fullOcrText.trim();
+}
+
 async function generateEmbeddings(
-  chunks: string[],
+  chunks: RagChunkWithMetadata[],
   embeddingProvider: RagEmbeddingProvider,
   ingestId: string,
   logs: RagIngestionLogEntry[],
-) {
+): Promise<number[][]> {
   const embeddings: number[][] = [];
 
   if (embeddingProvider === "gemini") {
-    for (let start = 0; start < chunks.length; start += EMBEDDING_BATCH_SIZE) {
-      const batch = chunks.slice(start, start + EMBEDDING_BATCH_SIZE);
-      const batchStartMs = Date.now();
-      logIngestion(
-        ingestId,
-        `Embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} (Gemini) with ${batch.length} chunks...`,
-        logs,
-      );
+      for (let start = 0; start < chunks.length; start += EMBEDDING_BATCH_SIZE) {
+        const batch = chunks.slice(start, start + EMBEDDING_BATCH_SIZE);
+        const batchContent = batch.map(c => c.content);
+        const batchStartMs = Date.now();
+        logIngestion(
+          ingestId,
+          `Embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} (Gemini) with ${batch.length} chunks...`,
+          logs,
+        );
 
-      const { embeddings: batchEmbeddings } = await embedMany({
-        model: getGeminiEmbeddingModel(),
-        values: batch,
-        providerOptions: {
-          google: {
-            outputDimensionality: GEMINI_EMBEDDING_OUTPUT_DIMENSION,
-            taskType: "RETRIEVAL_DOCUMENT",
+        const { embeddings: batchEmbeddings } = await embedMany({
+          model: getGeminiEmbeddingModel(),
+          values: batchContent,
+          providerOptions: {
+            google: {
+              outputDimensionality: GEMINI_EMBEDDING_OUTPUT_DIMENSION,
+              taskType: "RETRIEVAL_DOCUMENT",
+            },
           },
-        },
-      });
+        });
 
-      embeddings.push(...batchEmbeddings);
-      logIngestion(
-        ingestId,
-        `Completed Gemini embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} in ${Date.now() - batchStartMs} ms.`,
-        logs,
-      );
+        embeddings.push(...batchEmbeddings);
+        logIngestion(
+          ingestId,
+          `Completed Gemini embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} in ${Date.now() - batchStartMs} ms.`,
+          logs,
+        );
+      }
+
+      return embeddings;
     }
 
-    return embeddings;
-  }
+    if (embeddingProvider === "openrouter") {
+      for (let start = 0; start < chunks.length; start += EMBEDDING_BATCH_SIZE) {
+        const batch = chunks.slice(start, start + EMBEDDING_BATCH_SIZE);
+        const batchContent = batch.map(c => c.content);
+        const batchStartMs = Date.now();
+        logIngestion(
+          ingestId,
+          `Embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} (OpenRouter) with ${batch.length} chunks...`,
+          logs,
+        );
 
-  if (embeddingProvider === "openrouter") {
+        const batchEmbeddings = await generateOpenRouterEmbeddings(batchContent);
+        embeddings.push(...batchEmbeddings);
+
+        logIngestion(
+          ingestId,
+          `Completed OpenRouter embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} in ${Date.now() - batchStartMs} ms.`,
+          logs,
+        );
+      }
+
+      return embeddings;
+    }
+
     for (let start = 0; start < chunks.length; start += EMBEDDING_BATCH_SIZE) {
       const batch = chunks.slice(start, start + EMBEDDING_BATCH_SIZE);
+      const batchContent = batch.map(c => c.content);
       const batchStartMs = Date.now();
       logIngestion(
         ingestId,
-        `Embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} (OpenRouter) with ${batch.length} chunks...`,
+        `Embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} (Hugging Face) with ${batch.length} chunks...`,
         logs,
       );
 
-      const batchEmbeddings = await generateOpenRouterEmbeddings(batch);
+      const batchEmbeddings = await generateHFEmbeddings(batchContent);
       embeddings.push(...batchEmbeddings);
 
       logIngestion(
         ingestId,
-        `Completed OpenRouter embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} in ${Date.now() - batchStartMs} ms.`,
+        `Completed HF embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} in ${Date.now() - batchStartMs} ms.`,
         logs,
       );
     }
-
-    return embeddings;
-  }
-
-  for (let start = 0; start < chunks.length; start += EMBEDDING_BATCH_SIZE) {
-    const batch = chunks.slice(start, start + EMBEDDING_BATCH_SIZE);
-    const batchStartMs = Date.now();
-    logIngestion(
-      ingestId,
-      `Embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} (Hugging Face) with ${batch.length} chunks...`,
-      logs,
-    );
-
-    const batchEmbeddings = await generateHFEmbeddings(batch);
-    embeddings.push(...batchEmbeddings);
-
-    logIngestion(
-      ingestId,
-      `Completed HF embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} in ${Date.now() - batchStartMs} ms.`,
-      logs,
-    );
-  }
 
   return embeddings;
 }
@@ -953,6 +1916,7 @@ async function generateEmbeddings(
 export async function ingestRagFile({
   embeddingProvider = "hf",
   enableOcr,
+  forceOcr = false,
   file,
   ingestId,
   sourceTitle,
@@ -963,7 +1927,7 @@ export async function ingestRagFile({
   const logs: RagIngestionLogEntry[] = [];
   logIngestion(
     ingestionId,
-    `Started ingestion for ${file.name} with provider=${embeddingProvider}, OCR=${enableOcr}.`,
+    `Started ingestion for ${file.name} with provider=${embeddingProvider}, OCR=${enableOcr}, forceOcr=${forceOcr}.`,
     logs,
   );
 
@@ -993,6 +1957,11 @@ export async function ingestRagFile({
       file,
       sourceType,
       enableOcr,
+      forceOcr,
+      {
+        ingestId: ingestionId,
+        userId,
+      },
     );
     logIngestion(
       ingestionId,
@@ -1023,20 +1992,37 @@ export async function ingestRagFile({
     }
 
     const chunkStartMs = Date.now();
-    const chunks = splitIntoChunks(text);
+    const baseChunks = await splitIntoChunks(text, file.name, {
+      ingestId: ingestionId,
+      userId,
+    });
     const normalizedSourceTextChars = normalizeWhitespace(text).length;
     logIngestion(
       ingestionId,
-      `Chunking finished in ${Date.now() - chunkStartMs} ms (${chunks.length} chunks).`,
+      `Chunking finished in ${Date.now() - chunkStartMs} ms (${baseChunks.length} chunks).`,
       logs,
     );
-    if (chunks.length === 0) {
+    if (baseChunks.length === 0) {
       return {
         success: false,
         error: "No chunks were produced from this file.",
         logs,
       };
     }
+
+    const proofcheckStartMs = Date.now();
+    const chunks = await proofcheckChunksWithThoth({
+      chunks: baseChunks,
+      fileName: file.name,
+      ingestId: ingestionId,
+      logs,
+      userId,
+    });
+    logIngestion(
+      ingestionId,
+      `Proofcheck stage finished in ${Date.now() - proofcheckStartMs} ms.`,
+      logs,
+    );
 
     const chunkStats = buildChunkStats(chunks, normalizedSourceTextChars);
     logIngestion(
@@ -1089,7 +2075,7 @@ export async function ingestRagFile({
       );
 
       return chunks.map((chunk, index) => ({
-        content: chunk,
+        content: chunk.content,
         embedding: createVectorLiteral(normalizedEmbeddings[index]),
         metadata: {
           chunkIndex: index,
@@ -1104,6 +2090,7 @@ export async function ingestRagFile({
           uploadedAt,
           uploadedBy: userId,
           embeddingModel: embeddingModelName,
+          ...chunk.metadata, // Spread extracted grammar/vocab info here
         },
       }));
     }
