@@ -1,13 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import {
-  Cell,
-  Legend,
-  Pie,
-  PieChart,
-  Tooltip,
-} from "recharts";
+import { Cell, Legend, Pie, PieChart, Tooltip } from "recharts";
 
 import { SurfacePanel } from "@/components/SurfacePanel";
 
@@ -69,8 +63,7 @@ export function AnalyticsPieChartCard({
     };
   }, []);
 
-  const hasMeasuredChartSize =
-    chartSize.width > 0 && chartSize.height > 0;
+  const hasMeasuredChartSize = chartSize.width > 0 && chartSize.height > 0;
   const chartPlaceholder = (
     <div className="h-full w-full rounded-2xl bg-stone-100/70 dark:bg-stone-900/40" />
   );

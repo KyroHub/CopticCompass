@@ -3,7 +3,11 @@ import mammoth from "mammoth";
 import pdfParse from "pdf-parse/lib/pdf-parse.js";
 import { pdf } from "pdf-to-img";
 import { createThothChatCompletion } from "@/lib/thoth";
-import { GEMINI_EMBEDDING_MODEL, getGeminiEmbeddingModel, getGeminiModel } from "@/lib/gemini";
+import {
+  GEMINI_EMBEDDING_MODEL,
+  getGeminiEmbeddingModel,
+  getGeminiModel,
+} from "@/lib/gemini";
 import { HF_EMBEDDING_MODEL, generateHFEmbeddings } from "@/lib/hf";
 import {
   OPENROUTER_EMBEDDING_MODEL,
@@ -431,7 +435,11 @@ function hasThothAvailable() {
   return RAG_THOTH_ENABLED && Boolean(process.env.THOTH_API_KEY);
 }
 
-function buildThothIngestionUserId(userId: string, ingestId: string, tag: string) {
+function buildThothIngestionUserId(
+  userId: string,
+  ingestId: string,
+  tag: string,
+) {
   return `ingest:${userId}:${ingestId}:${tag}`.slice(0, 200);
 }
 
@@ -543,7 +551,9 @@ function toChunkCategory(value: unknown): ChunkCategory {
   return "document";
 }
 
-function normalizeChunkEnrichment(value: unknown): ChunkEnrichmentResult | null {
+function normalizeChunkEnrichment(
+  value: unknown,
+): ChunkEnrichmentResult | null {
   if (!value || typeof value !== "object") {
     return null;
   }
@@ -983,7 +993,10 @@ async function splitIntoChunks(
           };
 
           // Dictionary format
-          if (typeof entry.headword === "string" && typeof entry.pos === "string") {
+          if (
+            typeof entry.headword === "string" &&
+            typeof entry.pos === "string"
+          ) {
             const dialects =
               entry.dialects && typeof entry.dialects === "object"
                 ? (entry.dialects as Record<string, unknown>)
@@ -995,7 +1008,8 @@ async function splitIntoChunks(
                   return "";
                 }
 
-                const absolute = (dialectValue as { absolute?: unknown }).absolute;
+                const absolute = (dialectValue as { absolute?: unknown })
+                  .absolute;
                 return typeof absolute === "string"
                   ? `${dialectName}: ${absolute}`
                   : "";
@@ -1020,7 +1034,10 @@ async function splitIntoChunks(
             };
           }
 
-          return { content: JSON.stringify(entry), metadata: { type: "json_data" } };
+          return {
+            content: JSON.stringify(entry),
+            metadata: { type: "json_data" },
+          };
         });
 
         return applyThothEnrichmentToChunks({
@@ -1065,7 +1082,10 @@ async function splitIntoChunks(
             };
           }
 
-          return { content: JSON.stringify(item), metadata: { type: "json_data" } };
+          return {
+            content: JSON.stringify(item),
+            metadata: { type: "json_data" },
+          };
         });
 
         return applyThothEnrichmentToChunks({
@@ -1087,16 +1107,22 @@ async function splitIntoChunks(
       const xmlChunks = matches
         .map((match) => {
           const entryXml = match[1] || "";
-          
+
           const orthMatch = entryXml.match(/<orth[^>]*>([\s\S]*?)<\/orth>/i);
           const posMatch = entryXml.match(/<pos[^>]*>([\s\S]*?)<\/pos>/i);
-          const defMatch = entryXml.match(/<quote[^>]*>([\s\S]*?)<\/quote>/i) || entryXml.match(/<def[^>]*>([\s\S]*?)<\/def>/i);
-          const gramMatch = entryXml.match(/<gramGrp[^>]*>([\s\S]*?)<\/gramGrp>/i);
+          const defMatch =
+            entryXml.match(/<quote[^>]*>([\s\S]*?)<\/quote>/i) ||
+            entryXml.match(/<def[^>]*>([\s\S]*?)<\/def>/i);
+          const gramMatch = entryXml.match(
+            /<gramGrp[^>]*>([\s\S]*?)<\/gramGrp>/i,
+          );
 
           const word = orthMatch ? stripHtml(orthMatch[1]) : "";
           const pos = posMatch ? stripHtml(posMatch[1]) : "";
           const definition = defMatch ? stripHtml(defMatch[1]) : "";
-          const grammar = gramMatch ? stripHtml(gramMatch[1]).replace(/\s+/g, ' ') : "";
+          const grammar = gramMatch
+            ? stripHtml(gramMatch[1]).replace(/\s+/g, " ")
+            : "";
 
           // Extract cleanly if we found meaningful fields
           if (word || definition) {
@@ -1104,23 +1130,26 @@ async function splitIntoChunks(
             if (pos) parsedContent += ` Part of Speech: ${pos}.`;
             if (definition) parsedContent += ` Definition: ${definition}.`;
             if (grammar) parsedContent += ` Grammar/Notes: ${grammar}.`;
-             
+
             return {
               content: parsedContent.trim(),
-              metadata: { 
+              metadata: {
                 type: "vocabulary_xml",
                 word,
                 partOfSpeech: pos,
                 definition,
-                grammar
+                grammar,
               },
             };
           } else {
-             // Fallback for unstructured TEI <entry>
-             return {
-                content: match[0].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim(),
-                metadata: { type: "vocabulary_xml" }
-             };
+            // Fallback for unstructured TEI <entry>
+            return {
+              content: match[0]
+                .replace(/<[^>]+>/g, " ")
+                .replace(/\s+/g, " ")
+                .trim(),
+              metadata: { type: "vocabulary_xml" },
+            };
           }
         })
         .filter((chunk) => chunk.content.length > 10);
@@ -1184,7 +1213,10 @@ ${sampleText}`,
         return normalized;
       }
     } catch (llmError) {
-      console.warn("[RAG Ingestion] LLM fallback parsing for new schema failed. Falling back to semantic chunking.", llmError);
+      console.warn(
+        "[RAG Ingestion] LLM fallback parsing for new schema failed. Falling back to semantic chunking.",
+        llmError,
+      );
     }
   }
 
@@ -1214,39 +1246,41 @@ ${sampleText}`,
   if (currentChunk) chunks.push(currentChunk);
 
   const fallbackChunks =
-    chunks.length > 0 ? chunks : [normalizeWhitespace(text).slice(0, chunkSize)];
+    chunks.length > 0
+      ? chunks
+      : [normalizeWhitespace(text).slice(0, chunkSize)];
 
   const processedChunks: RagChunkWithMetadata[] = [];
-  
+
   // Use THOTH first to classify/rephrase chunks for retrieval, then fall back to Gemini.
   for (const chunkText of fallbackChunks) {
-     if (ingestId && userId) {
-       const thothEnrichment = await enrichChunkWithThoth({
-         chunkText,
-         ingestId,
-         sourceFileName: fileName,
-         userId,
-       });
+    if (ingestId && userId) {
+      const thothEnrichment = await enrichChunkWithThoth({
+        chunkText,
+        ingestId,
+        sourceFileName: fileName,
+        userId,
+      });
 
-       if (thothEnrichment) {
-         const thothChunk = buildEnrichedChunkPayload(
-           chunkText,
-           thothEnrichment,
-           "thoth",
-         );
+      if (thothEnrichment) {
+        const thothChunk = buildEnrichedChunkPayload(
+          chunkText,
+          thothEnrichment,
+          "thoth",
+        );
 
-         processedChunks.push({
-           content: thothChunk.content,
-           metadata: thothChunk.metadata,
-         });
-         continue;
-       }
-     }
+        processedChunks.push({
+          content: thothChunk.content,
+          metadata: thothChunk.metadata,
+        });
+        continue;
+      }
+    }
 
-     try {
-       const result = await generateText({
-         model: getGeminiModel(),
-         prompt: `You are an expert in Coptic linguistics. Analyze the following text extracted from a document. 
+    try {
+      const result = await generateText({
+        model: getGeminiModel(),
+        prompt: `You are an expert in Coptic linguistics. Analyze the following text extracted from a document. 
 Identify if this text primarily contains Grammar rules, Vocabulary/Dictionary entries, or just general text.
 Rephrase, translate, or structure the content so it is highly optimized for an AI RAG vector search. If it contains vocabulary, format it distinctly with translations. If it contains grammar, explain the rule clearly and distinctly.
 Output ONLY a valid JSON object matching this schema (do NOT wrap in \`\`\`json):
@@ -1269,34 +1303,36 @@ Output ONLY a valid JSON object matching this schema (do NOT wrap in \`\`\`json)
   }
 }
 Text to analyze:
-${chunkText.slice(0, THOTH_CHUNK_INPUT_LIMIT)}`
-       });
-       
-       const parsed = normalizeChunkEnrichment(
-         tryParseJsonFromModelAnswer(result.text),
-       );
+${chunkText.slice(0, THOTH_CHUNK_INPUT_LIMIT)}`,
+      });
 
-       if (parsed) {
-         const geminiChunk = buildEnrichedChunkPayload(
-           chunkText,
-           parsed,
-           "gemini",
-         );
-         processedChunks.push(geminiChunk);
-         continue;
-       }
+      const parsed = normalizeChunkEnrichment(
+        tryParseJsonFromModelAnswer(result.text),
+      );
 
-       processedChunks.push({
-         content: chunkText,
-         metadata: { type: "document" },
-       });
-     } catch (err) {
-       console.warn("[RAG Ingestion] LLM chunk classification failed, falling back to raw chunk string.");
-       processedChunks.push({
-         content: chunkText,
-         metadata: { type: "document" }
-       });
-     }
+      if (parsed) {
+        const geminiChunk = buildEnrichedChunkPayload(
+          chunkText,
+          parsed,
+          "gemini",
+        );
+        processedChunks.push(geminiChunk);
+        continue;
+      }
+
+      processedChunks.push({
+        content: chunkText,
+        metadata: { type: "document" },
+      });
+    } catch (err) {
+      console.warn(
+        "[RAG Ingestion] LLM chunk classification failed, falling back to raw chunk string.",
+      );
+      processedChunks.push({
+        content: chunkText,
+        metadata: { type: "document" },
+      });
+    }
   }
 
   return processedChunks.filter((chunk) => chunk.content.length > 10);
@@ -1731,11 +1767,15 @@ async function extractSourceText(
   if (forceOcr) {
     let ocrText = "";
     try {
-      ocrText = sourceType === "pdf" ? await runOcrOnPdf(file) : await runOcr(file);
+      ocrText =
+        sourceType === "pdf" ? await runOcrOnPdf(file) : await runOcr(file);
     } catch (e) {
-      console.warn("[RAG Ingestion] Force OCR failed. Falling back to native PDF extraction.", e);
+      console.warn(
+        "[RAG Ingestion] Force OCR failed. Falling back to native PDF extraction.",
+        e,
+      );
     }
-    
+
     let extractedText = "";
     try {
       extractedText = await extractPdfText(file);
@@ -1759,12 +1799,14 @@ async function extractSourceText(
     if (ocrText) {
       return { ocrUsed: true, text: normalizeWhitespace(ocrText) };
     }
-    
+
     if (extractedText) {
-       return { ocrUsed: false, text: normalizeWhitespace(extractedText) };
+      return { ocrUsed: false, text: normalizeWhitespace(extractedText) };
     }
-    
-    throw new Error("Both OCR and native PDF extraction failed for this document.");
+
+    throw new Error(
+      "Both OCR and native PDF extraction failed for this document.",
+    );
   }
 
   const extractedText = await extractPdfText(file);
@@ -1774,7 +1816,8 @@ async function extractSourceText(
   }
 
   try {
-    const ocrText = sourceType === "pdf" ? await runOcrOnPdf(file) : await runOcr(file);
+    const ocrText =
+      sourceType === "pdf" ? await runOcrOnPdf(file) : await runOcr(file);
     if (!ocrText) {
       return { ocrUsed: false, text: extractedText };
     }
@@ -1790,7 +1833,10 @@ async function extractSourceText(
       text: reconciled.text,
     };
   } catch (error) {
-    console.warn("[RAG Ingestion] OCR failed. Falling back completely to extracted text.", error);
+    console.warn(
+      "[RAG Ingestion] OCR failed. Falling back completely to extracted text.",
+      error,
+    );
     if (normalizeWhitespace(extractedText).length >= OCR_MIN_TEXT_LENGTH) {
       return { ocrUsed: false, text: extractedText };
     }
@@ -1799,8 +1845,10 @@ async function extractSourceText(
     if (normalizeWhitespace(extractedText).length > 0) {
       return { ocrUsed: false, text: extractedText };
     }
-    
-    throw new Error(`OCR processing failed and PDF extraction yielded no text. Original error: ${error instanceof Error ? error.message : String(error)}`);
+
+    throw new Error(
+      `OCR processing failed and PDF extraction yielded no text. Original error: ${error instanceof Error ? error.message : String(error)}`,
+    );
   }
 }
 
@@ -1812,14 +1860,19 @@ async function runOcrOnPdf(file: File): Promise<string> {
   let fullOcrText = "";
   let i = 0;
   for await (const imageBuffer of document) {
-     try {
-       const imageFile = new File([imageBuffer as any], `page-${i + 1}.png`, { type: "image/png" });
-       const pageText = await runOcr(imageFile);
-       fullOcrText += pageText + "\n\n";
-     } catch (err) {
-       console.warn(`[RAG Ingestion] OCR failed on PDF page ${i + 1}. Attempting to continue...`, err);
-     }
-     i++;
+    try {
+      const imageFile = new File([imageBuffer as any], `page-${i + 1}.png`, {
+        type: "image/png",
+      });
+      const pageText = await runOcr(imageFile);
+      fullOcrText += pageText + "\n\n";
+    } catch (err) {
+      console.warn(
+        `[RAG Ingestion] OCR failed on PDF page ${i + 1}. Attempting to continue...`,
+        err,
+      );
+    }
+    i++;
   }
 
   return fullOcrText.trim();
@@ -1834,81 +1887,81 @@ async function generateEmbeddings(
   const embeddings: number[][] = [];
 
   if (embeddingProvider === "gemini") {
-      for (let start = 0; start < chunks.length; start += EMBEDDING_BATCH_SIZE) {
-        const batch = chunks.slice(start, start + EMBEDDING_BATCH_SIZE);
-        const batchContent = batch.map(c => c.content);
-        const batchStartMs = Date.now();
-        logIngestion(
-          ingestId,
-          `Embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} (Gemini) with ${batch.length} chunks...`,
-          logs,
-        );
-
-        const { embeddings: batchEmbeddings } = await embedMany({
-          model: getGeminiEmbeddingModel(),
-          values: batchContent,
-          providerOptions: {
-            google: {
-              outputDimensionality: GEMINI_EMBEDDING_OUTPUT_DIMENSION,
-              taskType: "RETRIEVAL_DOCUMENT",
-            },
-          },
-        });
-
-        embeddings.push(...batchEmbeddings);
-        logIngestion(
-          ingestId,
-          `Completed Gemini embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} in ${Date.now() - batchStartMs} ms.`,
-          logs,
-        );
-      }
-
-      return embeddings;
-    }
-
-    if (embeddingProvider === "openrouter") {
-      for (let start = 0; start < chunks.length; start += EMBEDDING_BATCH_SIZE) {
-        const batch = chunks.slice(start, start + EMBEDDING_BATCH_SIZE);
-        const batchContent = batch.map(c => c.content);
-        const batchStartMs = Date.now();
-        logIngestion(
-          ingestId,
-          `Embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} (OpenRouter) with ${batch.length} chunks...`,
-          logs,
-        );
-
-        const batchEmbeddings = await generateOpenRouterEmbeddings(batchContent);
-        embeddings.push(...batchEmbeddings);
-
-        logIngestion(
-          ingestId,
-          `Completed OpenRouter embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} in ${Date.now() - batchStartMs} ms.`,
-          logs,
-        );
-      }
-
-      return embeddings;
-    }
-
     for (let start = 0; start < chunks.length; start += EMBEDDING_BATCH_SIZE) {
       const batch = chunks.slice(start, start + EMBEDDING_BATCH_SIZE);
-      const batchContent = batch.map(c => c.content);
+      const batchContent = batch.map((c) => c.content);
       const batchStartMs = Date.now();
       logIngestion(
         ingestId,
-        `Embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} (Hugging Face) with ${batch.length} chunks...`,
+        `Embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} (Gemini) with ${batch.length} chunks...`,
         logs,
       );
 
-      const batchEmbeddings = await generateHFEmbeddings(batchContent);
+      const { embeddings: batchEmbeddings } = await embedMany({
+        model: getGeminiEmbeddingModel(),
+        values: batchContent,
+        providerOptions: {
+          google: {
+            outputDimensionality: GEMINI_EMBEDDING_OUTPUT_DIMENSION,
+            taskType: "RETRIEVAL_DOCUMENT",
+          },
+        },
+      });
+
+      embeddings.push(...batchEmbeddings);
+      logIngestion(
+        ingestId,
+        `Completed Gemini embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} in ${Date.now() - batchStartMs} ms.`,
+        logs,
+      );
+    }
+
+    return embeddings;
+  }
+
+  if (embeddingProvider === "openrouter") {
+    for (let start = 0; start < chunks.length; start += EMBEDDING_BATCH_SIZE) {
+      const batch = chunks.slice(start, start + EMBEDDING_BATCH_SIZE);
+      const batchContent = batch.map((c) => c.content);
+      const batchStartMs = Date.now();
+      logIngestion(
+        ingestId,
+        `Embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} (OpenRouter) with ${batch.length} chunks...`,
+        logs,
+      );
+
+      const batchEmbeddings = await generateOpenRouterEmbeddings(batchContent);
       embeddings.push(...batchEmbeddings);
 
       logIngestion(
         ingestId,
-        `Completed HF embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} in ${Date.now() - batchStartMs} ms.`,
+        `Completed OpenRouter embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} in ${Date.now() - batchStartMs} ms.`,
         logs,
       );
     }
+
+    return embeddings;
+  }
+
+  for (let start = 0; start < chunks.length; start += EMBEDDING_BATCH_SIZE) {
+    const batch = chunks.slice(start, start + EMBEDDING_BATCH_SIZE);
+    const batchContent = batch.map((c) => c.content);
+    const batchStartMs = Date.now();
+    logIngestion(
+      ingestId,
+      `Embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} (Hugging Face) with ${batch.length} chunks...`,
+      logs,
+    );
+
+    const batchEmbeddings = await generateHFEmbeddings(batchContent);
+    embeddings.push(...batchEmbeddings);
+
+    logIngestion(
+      ingestId,
+      `Completed HF embedding batch ${Math.floor(start / EMBEDDING_BATCH_SIZE) + 1} in ${Date.now() - batchStartMs} ms.`,
+      logs,
+    );
+  }
 
   return embeddings;
 }

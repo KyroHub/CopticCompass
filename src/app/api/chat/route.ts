@@ -16,7 +16,10 @@ import { createThothChatCompletion } from "../../../lib/thoth";
 import { getAuthenticatedUser } from "@/lib/supabase/authQueries";
 import { hasSupabaseRuntimeEnv } from "@/lib/supabase/config";
 import { createClient } from "@/lib/supabase/server";
-import { searchCopticDocuments, searchVocabularyByKeywords } from "@/actions/vectorSearch";
+import {
+  searchCopticDocuments,
+  searchVocabularyByKeywords,
+} from "@/actions/vectorSearch";
 
 export const maxDuration = 30;
 export const runtime = "nodejs";
@@ -448,21 +451,31 @@ Respond ONLY with a valid JSON object matching this schema, no markdown blocks:
 {"germanTranslation": "...", "keywords": ["englishKw1", "germanKw1", "englishKw2", "germanKw2"], "grammaticalConcepts": ["past perfect", "definite article", "direct object"]}
 `,
           });
-          
-          const rawResponse = kwResponse.text.replace(/```json/i, "").replace(/```/g, "").trim();
+
+          const rawResponse = kwResponse.text
+            .replace(/```json/i, "")
+            .replace(/```/g, "")
+            .trim();
           const parsed = JSON.parse(rawResponse);
-          
+
           if (parsed.germanTranslation) {
-             translatedPrompt = `${latestMessageText}\n${parsed.germanTranslation}`;
-             console.log(`[RAG DEBUG] Translated prompt for vector search:`, parsed.germanTranslation);
+            translatedPrompt = `${latestMessageText}\n${parsed.germanTranslation}`;
+            console.log(
+              `[RAG DEBUG] Translated prompt for vector search:`,
+              parsed.germanTranslation,
+            );
           }
-          
+
           if (Array.isArray(parsed.keywords)) {
-             extractedKeywords = parsed.keywords.map((k: string) => k.trim().toLowerCase()).filter(Boolean);
+            extractedKeywords = parsed.keywords
+              .map((k: string) => k.trim().toLowerCase())
+              .filter(Boolean);
           }
 
           if (Array.isArray(parsed.grammaticalConcepts)) {
-             extractedConcepts = parsed.grammaticalConcepts.map((k: string) => k.trim()).filter(Boolean);
+            extractedConcepts = parsed.grammaticalConcepts
+              .map((k: string) => k.trim())
+              .filter(Boolean);
           }
 
           console.log(`[RAG DEBUG] Extracted keywords:`, extractedKeywords);
@@ -475,9 +488,12 @@ Respond ONLY with a valid JSON object matching this schema, no markdown blocks:
 
         // Step 2: Fetch by exact/partial string metadata match FIRST
         if (extractedKeywords.length > 0) {
-          const keywordDocs = await searchVocabularyByKeywords(extractedKeywords);
+          const keywordDocs =
+            await searchVocabularyByKeywords(extractedKeywords);
           if (keywordDocs && keywordDocs.length > 0) {
-            console.log(`[RAG DEBUG] Found ${keywordDocs.length} dictionary entries via metadata/keyword match.`);
+            console.log(
+              `[RAG DEBUG] Found ${keywordDocs.length} dictionary entries via metadata/keyword match.`,
+            );
             contextChunks.push(...keywordDocs);
           }
         }
@@ -489,10 +505,12 @@ Respond ONLY with a valid JSON object matching this schema, no markdown blocks:
             grammarQuery,
             3, // Pull the top 3 most relevant grammatical lessons
             { type: "grammar" },
-            ragInferenceProvider
+            ragInferenceProvider,
           );
           if (grammarDocs && grammarDocs.length > 0) {
-            console.log(`[RAG DEBUG] Found ${grammarDocs.length} grammar chunks via concept search.`);
+            console.log(
+              `[RAG DEBUG] Found ${grammarDocs.length} grammar chunks via concept search.`,
+            );
             contextChunks.push(...grammarDocs);
           }
         }
@@ -502,19 +520,21 @@ Respond ONLY with a valid JSON object matching this schema, no markdown blocks:
           translatedPrompt,
           8, // Get top 8 most relevant chunks overall to leave room for dictionary/other context
           {},
-          ragInferenceProvider
+          ragInferenceProvider,
         );
-        console.log(`[RAG DEBUG] Retrieved ${vectorDocs?.length || 0} documents from vector search using ${inferenceProvider}.`);
+        console.log(
+          `[RAG DEBUG] Retrieved ${vectorDocs?.length || 0} documents from vector search using ${inferenceProvider}.`,
+        );
         if (vectorDocs && vectorDocs.length > 0) {
           contextChunks.push(...vectorDocs);
         }
 
         // Combine chunks and deduplicate
         const uniqueContents = new Set();
-        const finalDocs = contextChunks.filter(doc => {
-            if (uniqueContents.has(doc.content)) return false;
-            uniqueContents.add(doc.content);
-            return true;
+        const finalDocs = contextChunks.filter((doc) => {
+          if (uniqueContents.has(doc.content)) return false;
+          uniqueContents.add(doc.content);
+          return true;
         });
 
         if (finalDocs.length > 0) {
@@ -524,13 +544,17 @@ Respond ONLY with a valid JSON object matching this schema, no markdown blocks:
                 `Source (${doc.metadata?.sourceName || "Unknown"} -> ${doc.metadata?.dialect || "Any dialect"}):\n${doc.content}`,
             )
             .join("\n\n");
-            
+
           // Hard limit text character size to roughly ~6,250 tokens (25000 chars)
           if (contextText.length > 25000) {
-             contextText = contextText.slice(0, 25000) + "\n...[Context Truncated to fit token limits]";
+            contextText =
+              contextText.slice(0, 25000) +
+              "\n...[Context Truncated to fit token limits]";
           }
         } else {
-          console.warn("[RAG DEBUG] Vector and keyword search returned 0 results.");
+          console.warn(
+            "[RAG DEBUG] Vector and keyword search returned 0 results.",
+          );
         }
       } catch (error) {
         console.error("Vector search failed:", error);
@@ -557,7 +581,7 @@ Context relevant to the user's query:
 ${contextText}
 `;
 
-  const thothSystemPrompt = `You are "Shenute AI Expert" not "THOTH AI", the teacher model for Coptic language mastery (Sahidic/Bohairic dialects).
+    const thothSystemPrompt = `You are "Shenute AI Expert" not "THOTH AI", the teacher model for Coptic language mastery (Sahidic/Bohairic dialects).
 You deliver authoritative answers for Coptic vocabulary, grammar, translation, and etymology.
 You are the expert teacher that the Shenute AI Learner is distilled from.
 
@@ -570,8 +594,8 @@ Visible text excerpt from the opened page:
 ${pageContext.excerpt && pageContext.excerpt.length > 0 ? pageContext.excerpt : "No page excerpt provided."}
 `;
 
-  const systemPrompt =
-    inferenceProvider === "thoth" ? thothSystemPrompt : shenuteSystemPrompt;
+    const systemPrompt =
+      inferenceProvider === "thoth" ? thothSystemPrompt : shenuteSystemPrompt;
 
     if (inferenceProvider === "gemini") {
       const result = streamText({

@@ -12,13 +12,17 @@ type CreateThothChatCompletionOptions = {
 };
 
 const THOTH_BASE_URL = process.env.THOTH_BASE_URL ?? "https://api.dify.ai/v1";
-const THOTH_CHAT_TIMEOUT_MS = Number(process.env.THOTH_CHAT_TIMEOUT_MS ?? "60000");
+const THOTH_CHAT_TIMEOUT_MS = Number(
+  process.env.THOTH_CHAT_TIMEOUT_MS ?? "60000",
+);
 const THOTH_RESPONSE_MODE = process.env.THOTH_RESPONSE_MODE ?? "blocking";
 
 function getRequiredThothApiKey() {
   const apiKey = process.env.THOTH_API_KEY;
   if (!apiKey) {
-    throw new Error("THOTH_API_KEY is not configured in environment variables.");
+    throw new Error(
+      "THOTH_API_KEY is not configured in environment variables.",
+    );
   }
 
   return apiKey;

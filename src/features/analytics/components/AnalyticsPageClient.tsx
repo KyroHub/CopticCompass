@@ -11,10 +11,7 @@ import { CompactSelect } from "@/components/CompactSelect";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PageHeader } from "@/components/PageHeader";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
-import {
-  SurfacePanel,
-  surfacePanelClassName,
-} from "@/components/SurfacePanel";
+import { SurfacePanel, surfacePanelClassName } from "@/components/SurfacePanel";
 import {
   type AnalyticsSnapshotMap,
   type EtymologyFilter,
@@ -252,7 +249,8 @@ export default function AnalyticsPageClient({
   const [hasMoreSlideOverResults, setHasMoreSlideOverResults] = useState(false);
   const [isSlideOverLoading, setSlideOverLoading] = useState(false);
   const [isSlideOverLoadingMore, setSlideOverLoadingMore] = useState(false);
-  const [requiresChartInteraction, setRequiresChartInteraction] = useState(false);
+  const [requiresChartInteraction, setRequiresChartInteraction] =
+    useState(false);
   const [shouldRenderCharts, setShouldRenderCharts] = useState(false);
   const activeDrilldownKeyRef = useRef("");
   const chartsSectionRef = useRef<HTMLDivElement | null>(null);
@@ -305,7 +303,7 @@ export default function AnalyticsPageClient({
       },
       {
         rootMargin: "240px 0px",
-      }
+      },
     );
 
     observer.observe(chartsSection);
@@ -491,9 +489,7 @@ export default function AnalyticsPageClient({
   if (requiresChartInteraction) {
     chartsContent = (
       <AnalyticsChartsCallout
-        description={t(
-          "analytics.mobileChartsDescription" as TranslationKey,
-        )}
+        description={t("analytics.mobileChartsDescription" as TranslationKey)}
         loadLabel={t("analytics.loadCharts" as TranslationKey)}
         onLoadCharts={() => setShouldRenderCharts(true)}
         title={t("analytics.visualBreakdowns" as TranslationKey)}
@@ -625,9 +621,7 @@ export default function AnalyticsPageClient({
         />
       </div>
 
-      <div ref={chartsSectionRef}>
-        {chartsContent}
-      </div>
+      <div ref={chartsSectionRef}>{chartsContent}</div>
 
       <AnalyticsSlideOver
         isOpen={!!slideOverFilter}

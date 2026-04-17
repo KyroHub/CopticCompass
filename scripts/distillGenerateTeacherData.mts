@@ -132,7 +132,10 @@ class DistillTeacherRequestError extends Error {
   statusCode?: number;
   retryable: boolean;
 
-  constructor(message: string, options?: { retryable?: boolean; statusCode?: number }) {
+  constructor(
+    message: string,
+    options?: { retryable?: boolean; statusCode?: number },
+  ) {
     super(message);
     this.name = "DistillTeacherRequestError";
     this.statusCode = options?.statusCode;
@@ -163,7 +166,9 @@ function findLatestChunksFile(rootDir: string) {
     .sort();
 
   if (files.length === 0) {
-    throw new Error("No extracted chunk file found. Run distill:extract first.");
+    throw new Error(
+      "No extracted chunk file found. Run distill:extract first.",
+    );
   }
 
   return path.join(rootDir, files[files.length - 1]);
@@ -328,7 +333,10 @@ async function callShenuteExpertWithRetry(options: {
   throw new Error("Unexpected retry flow state.");
 }
 
-function normalizeTeacherRecord(chunk: ChunkRecord, teacherOutput: TeacherOutput) {
+function normalizeTeacherRecord(
+  chunk: ChunkRecord,
+  teacherOutput: TeacherOutput,
+) {
   const qaPairs = Array.isArray(teacherOutput.qaPairs)
     ? teacherOutput.qaPairs.filter(
         (pair): pair is TeacherQaPair =>

@@ -589,7 +589,9 @@ export default function ChatAI() {
             >
               <option value="hf">Shenute AI Learner (HF)</option>
               <option value="gemini">Shenute AI Learner (Gemini)</option>
-              <option value="openrouter">Shenute AI Learner (OpenRouter)</option>
+              <option value="openrouter">
+                Shenute AI Learner (OpenRouter)
+              </option>
               <option value="thoth">Shenute AI Expert (THOTH AI)</option>
             </select>
           </label>
@@ -621,7 +623,7 @@ export default function ChatAI() {
               around the Japanese Archipelago.
             </p>
             <p>
-              Contact: {" "}
+              Contact:{" "}
               <a
                 className="underline"
                 href="mailto:miyagawa.so.kb@u.tsukuba.ac.jp"

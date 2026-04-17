@@ -181,7 +181,10 @@ async function main() {
   writeJsonl(path.join(outputDir, "sft-val.jsonl"), sftSplit.val);
   writeJsonl(path.join(outputDir, "preference-train.jsonl"), prefSplit.train);
   writeJsonl(path.join(outputDir, "preference-val.jsonl"), prefSplit.val);
-  writeJsonl(path.join(outputDir, "retrieval-train.jsonl"), retrievalSplit.train);
+  writeJsonl(
+    path.join(outputDir, "retrieval-train.jsonl"),
+    retrievalSplit.train,
+  );
   writeJsonl(path.join(outputDir, "retrieval-val.jsonl"), retrievalSplit.val);
 
   const manifest = {

@@ -32,13 +32,14 @@ export async function searchCopticDocuments(
   query: string,
   matchCount: number = 5,
   metadataFilter: Record<string, unknown> = {},
-  provider: "hf" | "gemini" | "openrouter" = "hf"
+  provider: "hf" | "gemini" | "openrouter" = "hf",
 ) {
   let rawEmbedding: number[];
 
   if (provider === "openrouter") {
     const embeds = await generateOpenRouterEmbeddings([query]);
-    if (!embeds || embeds.length === 0) throw new Error("OpenRouter embedding failed");
+    if (!embeds || embeds.length === 0)
+      throw new Error("OpenRouter embedding failed");
     rawEmbedding = embeds[0];
   } else if (provider === "gemini") {
     const { embeddings } = await embedMany({
@@ -51,7 +52,8 @@ export async function searchCopticDocuments(
         },
       },
     });
-    if (!embeddings || embeddings.length === 0) throw new Error("Gemini embedding failed");
+    if (!embeddings || embeddings.length === 0)
+      throw new Error("Gemini embedding failed");
     rawEmbedding = embeddings[0];
   } else {
     rawEmbedding = await generateHFEmbedding(query);
@@ -61,12 +63,15 @@ export async function searchCopticDocuments(
 
   const supabase = createServiceRoleClient();
 
-  const { data, error } = await (supabase.rpc as any)("match_coptic_documents", {
-    query_embedding: `[${queryEmbedding.join(",")}]`,
-    query_text: query,
-    match_count: matchCount,
-    filter_metadata: metadataFilter,
-  });
+  const { data, error } = await (supabase.rpc as any)(
+    "match_coptic_documents",
+    {
+      query_embedding: `[${queryEmbedding.join(",")}]`,
+      query_text: query,
+      match_count: matchCount,
+      filter_metadata: metadataFilter,
+    },
+  );
 
   if (error) {
     throw new Error(`Vector search failed: ${error.message}`);
@@ -93,12 +98,14 @@ export async function getAllGrammarRules() {
 export async function searchVocabularyByKeywords(keywords: string[]) {
   if (!keywords || keywords.length === 0) return [];
   const supabase = createServiceRoleClient();
-  
+
   // Create an ILIKE query for each keyword
-  const orFilters = keywords.map(kw => {
-    const cleanKw = kw.replace(/[^a-zA-ZäöüßÄÖÜ0-9]/g, '');
-    return `content.ilike.%${cleanKw}%`;
-  }).join(',');
+  const orFilters = keywords
+    .map((kw) => {
+      const cleanKw = kw.replace(/[^a-zA-ZäöüßÄÖÜ0-9]/g, "");
+      return `content.ilike.%${cleanKw}%`;
+    })
+    .join(",");
 
   const { data, error } = await supabase
     .from("coptic_documents")
@@ -108,7 +115,10 @@ export async function searchVocabularyByKeywords(keywords: string[]) {
     .limit(30);
 
   if (error) {
-    console.error("Failed to search vocabulary chunks by keyword:", error.message);
+    console.error(
+      "Failed to search vocabulary chunks by keyword:",
+      error.message,
+    );
     return [];
   }
 
