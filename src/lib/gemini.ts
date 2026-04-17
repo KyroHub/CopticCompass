@@ -1,7 +1,6 @@
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 
-export const GEMINI_CHAT_MODEL =
-  process.env.GEMINI_CHAT_MODEL ?? "gemma-3-27b-it";
+const GEMINI_CHAT_MODEL = process.env.GEMINI_CHAT_MODEL ?? "gemma-3-27b-it";
 export const GEMINI_EMBEDDING_MODEL =
   process.env.GEMINI_EMBEDDING_MODEL ?? "gemini-embedding-2-preview";
 

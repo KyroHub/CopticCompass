@@ -3,8 +3,8 @@ export type HfChatMessage = {
   role: "assistant" | "system" | "user";
 };
 
-export const HF_ROUTER_BASE_URL = "https://router.huggingface.co/v1";
-export const HF_CHAT_MODEL =
+const HF_ROUTER_BASE_URL = "https://router.huggingface.co/v1";
+const HF_CHAT_MODEL =
   process.env.HF_CHAT_MODEL ?? "google/gemma-4-31B-it:novita";
 export const HF_EMBEDDING_MODEL =
   process.env.HF_EMBEDDING_MODEL ?? "sentence-transformers/all-mpnet-base-v2";

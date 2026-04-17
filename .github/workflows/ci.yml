@@ -40,7 +40,7 @@ jobs:
           # Get list of changed files compared to origin/main
           # Filter for added/modified files and specific extensions
           FILES=$(git diff --name-only --diff-filter=ACMR origin/main... | grep -E '\.(js|jsx|ts|tsx|json|css|md)$' || true)
-          
+
           if [ -z "$FILES" ]; then
             echo "No relevant files changed. Skipping Prettier check."
           else

@@ -112,7 +112,7 @@ const TEXT_EXTENSIONS = new Set([
   "sql",
 ]);
 
-export type RagIngestionResult = {
+type RagIngestionResult = {
   chunkStats?: RagChunkStats;
   chunksInserted?: number;
   error?: string;
@@ -130,7 +130,7 @@ export type RagIngestionLogEntry = {
   timestamp: string;
 };
 
-export type RagChunkStats = {
+type RagChunkStats = {
   avgChunkEstimatedTokens: number;
   avgChunkChars: number;
   avgChunkWords: number;
@@ -154,9 +154,9 @@ export type RagChunkStats = {
 };
 
 type SourceType = "pdf" | "image" | "docx" | "text";
-export type RagEmbeddingProvider = "gemini" | "hf" | "openrouter";
+type RagEmbeddingProvider = "gemini" | "hf" | "openrouter";
 
-export type IngestRagFileOptions = {
+type IngestRagFileOptions = {
   embeddingProvider?: RagEmbeddingProvider;
   enableOcr: boolean;
   forceOcr?: boolean;
@@ -961,7 +961,7 @@ function mergeUniqueSegments(primaryText: string, secondaryText: string) {
 
 /* Lines omitted... */
 
-export type RagChunkWithMetadata = {
+type RagChunkWithMetadata = {
   content: string;
   metadata: Record<string, unknown>;
 };

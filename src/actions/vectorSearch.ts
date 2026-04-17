@@ -80,21 +80,6 @@ export async function searchCopticDocuments(
   return (data as any[]) || [];
 }
 
-export async function getAllGrammarRules() {
-  const supabase = createServiceRoleClient();
-  const { data, error } = await supabase
-    .from("coptic_documents")
-    .select("content, metadata")
-    .eq("metadata->>type", "grammar");
-
-  if (error) {
-    console.error("Failed to fetch grammar chunks:", error.message);
-    return [];
-  }
-
-  return (data as any[]) || [];
-}
-
 export async function searchVocabularyByKeywords(keywords: string[]) {
   if (!keywords || keywords.length === 0) return [];
   const supabase = createServiceRoleClient();

@@ -26,7 +26,7 @@ export type ChatFeedbackPageContext = {
   url?: string;
 };
 
-export type IngestChatFeedbackSignalOptions = {
+type IngestChatFeedbackSignalOptions = {
   assistantMessageId?: string;
   assistantResponse: string;
   chatId?: string;
