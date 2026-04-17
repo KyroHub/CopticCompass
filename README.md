@@ -192,6 +192,30 @@ Reference: https://somiyagawa.github.io/THOTH.AI/
   - normalize embedding dimensions for DB compatibility
   - insert into `public.coptic_documents`
 
+### Distillation Pipeline (Shenute AI Expert -> Shenute AI Learner)
+
+The repository includes an offline distillation data pipeline that transforms
+RAG chunks into supervised datasets for Shenute AI Learner training.
+
+- Stage 1: extract chunk corpus from `public.coptic_documents`
+- Stage 2: generate teacher outputs with Shenute AI Expert (THOTH AI)
+- Stage 3: build SFT, preference, and retrieval training splits
+
+Commands:
+
+```bash
+npm run distill:extract
+npm run distill:teacher
+npm run distill:build
+
+# or run all stages in sequence
+npm run distill:pipeline
+```
+
+For full process documentation (inputs, outputs, JSON contracts,
+troubleshooting, and environment tuning), see
+[docs/distillation.md](./docs/distillation.md).
+
 ### Embedding Dimensions
 
 There are two separate dimension concepts:
