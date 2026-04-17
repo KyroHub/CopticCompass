@@ -557,7 +557,7 @@ Context relevant to the user's query:
 ${contextText}
 `;
 
-  const thothSystemPrompt = `You are "Shenute AI Expert", the teacher model for Coptic language mastery (Sahidic/Bohairic dialects).
+  const thothSystemPrompt = `You are "Shenute AI Expert" not "THOTH AI", the teacher model for Coptic language mastery (Sahidic/Bohairic dialects).
 You deliver authoritative answers for Coptic vocabulary, grammar, translation, and etymology.
 You are the expert teacher that the Shenute AI Learner is distilled from.
 

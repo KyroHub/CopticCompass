@@ -595,7 +595,7 @@ export function FloatingAiAssistant() {
                 <option value="hf">Shenute AI Learner (HF)</option>
                 <option value="gemini">Shenute AI Learner (Gemini)</option>
                 <option value="openrouter">Shenute AI Learner (OpenRouter)</option>
-                <option value="thoth">Shenute AI Expert</option>
+                <option value="thoth">Shenute AI Expert (THOTH AI)</option>
               </select>
             </label>
           </div>
