@@ -114,4 +114,26 @@ describe("dictionary entry display helpers", () => {
     );
     expect(getPreferredEntryDisplaySpelling(entry)).toBe("ⲛⲉⲙ-/ⲛⲉⲙⲁ=");
   });
+
+  it("shows the Bohairic between entry as nominal plus pronominal bound forms", () => {
+    const entry = createEntry({
+      id: "cd_1713",
+      headword: "ⲟⲩⲧⲉ-",
+      dialects: {
+        B: {
+          absolute: "",
+          nominal: "ⲟⲩⲧⲉ-",
+          pronominal: "ⲟⲩⲧⲱ=",
+          stative: "",
+        },
+      },
+      pos: "PREP",
+      english_meanings: ["between, among"],
+    });
+
+    expect(formatDialectForms(entry.dialects.B!, entry.headword)).toBe(
+      "ⲟⲩⲧⲉ-/ⲟⲩⲧⲱ=",
+    );
+    expect(getPreferredEntryDisplaySpelling(entry)).toBe("ⲟⲩⲧⲉ-/ⲟⲩⲧⲱ=");
+  });
 });

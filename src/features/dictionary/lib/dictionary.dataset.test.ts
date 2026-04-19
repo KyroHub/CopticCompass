@@ -140,6 +140,12 @@ describe("dictionary dataset guardrails", () => {
         etymology: "Egy",
       },
       {
+        id: "cd_1713",
+        nominal: "ⲟⲩⲧⲉ-",
+        pronominal: "ⲟⲩⲧⲱ=",
+        etymology: "Egy",
+      },
+      {
         headword: "ⲕⲁⲧⲁ-",
         nominal: "ⲕⲁⲧⲁ-",
         pronominal: "ⲕⲁⲧⲁⲣⲟ=",

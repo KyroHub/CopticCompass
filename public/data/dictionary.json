@@ -20971,17 +20971,13 @@
     },
     "pos": "PREP",
     "gender": "",
-    "english_meanings": ["of place in, at, on", "of time", "by, with as agent"],
+    "english_meanings": ["in, at, on", "by, with"],
     "greek_equivalents": [],
     "raw": {
       "word": "(S, sA, F, O) ϩⲛ-\r\n(A) ⳉⲛ-\r\n(B) ⳳⲉⲛ-\r\n(F) ϩⲓⲛ-, ϩⲉ-, ϩⲏ-\r\n(F, O) ϩⲉⲛ-\r\n(O) ⳳⲛ-\r\n(S, sA, F) ⲛϩⲏⲧ=\r\n(A) ⲛⳉⲏⲧ=\r\n(B) ⲛ̀ⳳⲏⲧ=",
-      "meaning": "of place in, at, on\r\nof time\r\nby, with as agent"
+      "meaning": "in, at, on\r\nby, with"
     },
-    "dutch_meanings": [
-      "van plaats in, op, op",
-      "van tijd",
-      "door, met als agent"
-    ],
+    "dutch_meanings": ["in, op, aan", "door, met"],
     "etymology": "Egy"
   },
   {
@@ -70481,7 +70477,7 @@
       },
       "B": {
         "absolute": "",
-        "nominal": "",
+        "nominal": "ⲟⲩⲧⲉ-",
         "pronominal": "ⲟⲩⲧⲱ=",
         "stative": ""
       },
@@ -70497,7 +70493,7 @@
     "english_meanings": ["between, among [μεσον, μεταξυ]", "c suff & ⲛ-"],
     "greek_equivalents": ["μεσον, μεταξυ"],
     "raw": {
-      "word": "(S, F) ⲟⲩⲧⲉ-, ⲟⲩⲇⲉ-\r\n(S, A, sA, B, F, O) ⲟⲩⲧⲱ=",
+      "word": "(S, F) ⲟⲩⲧⲉ-, ⲟⲩⲇⲉ-\r\n(B) ⲟⲩⲧⲉ-\r\n(S, A, sA, B, F, O) ⲟⲩⲧⲱ=",
       "meaning": "between, among [μεσον, μεταξυ]\r\nc suff & ⲛ-"
     },
     "dutch_meanings": ["tussen, tussen", "c vol & ⲛ-"],
