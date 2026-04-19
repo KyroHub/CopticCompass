@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { LexicalEntry } from "@/features/dictionary/types";
 
 import {
+  formatDialectForms,
   getPreferredEntryDialectKey,
   getPreferredEntryDisplaySpelling,
 } from "./entryDisplay";
@@ -70,5 +71,47 @@ describe("dictionary entry display helpers", () => {
 
     expect(getPreferredEntryDialectKey(entry)).toBe("S");
     expect(getPreferredEntryDisplaySpelling(entry)).toBe("ⲥⲁϫⲓ");
+  });
+
+  it("does not prepend the headword when a dialect only has bound forms", () => {
+    const entry = createEntry({
+      id: "cd_361",
+      headword: "ϩⲛ-",
+      dialects: {
+        B: {
+          absolute: "",
+          nominal: "ⳳⲉⲛ-",
+          pronominal: "ⲛⳳⲏⲧ=",
+          stative: "",
+        },
+      },
+    });
+
+    expect(formatDialectForms(entry.dialects.B!, entry.headword)).toBe(
+      "ⳳⲉⲛ-/ⲛⳳⲏⲧ=",
+    );
+    expect(getPreferredEntryDisplaySpelling(entry)).toBe("ⳳⲉⲛ-/ⲛⳳⲏⲧ=");
+  });
+
+  it("shows the Bohairic with entry as nominal plus pronominal bound forms", () => {
+    const entry = createEntry({
+      id: "cd_892",
+      headword: "ⲙⲛ-",
+      dialects: {
+        B: {
+          absolute: "",
+          nominal: "ⲛⲉⲙ-",
+          pronominal: "ⲛⲉⲙⲁ=",
+          stative: "",
+        },
+      },
+      pos: "PREP",
+      english_meanings: ["preposition, with"],
+    });
+
+    expect(formatDialectForms(entry.dialects.B!, entry.headword)).toBe(
+      "ⲛⲉⲙ-/ⲛⲉⲙⲁ=",
+    );
+    expect(getPreferredEntryDisplaySpelling(entry)).toBe("ⲛⲉⲙ-/ⲛⲉⲙⲁ=");
   });
 });

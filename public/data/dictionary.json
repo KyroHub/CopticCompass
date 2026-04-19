@@ -944,7 +944,7 @@
     ],
     "greek_equivalents": ["ειναι, γινεσθαι", "γινεσθαι, συμβαινειν"],
     "raw": {
-      "word": "(S, sA, O) ϣⲱⲡⲉ\r\n(A) ⳉⲱⲡⲉ\r\n(B, F) ϣⲱⲡⲓ\r\n(O) ϧⲱⲡⲉ, ⲥⲱⲃⲓ\r\n(S, sA) ϣⲟⲟⲡ+\r\n(A) ⳉⲟⲟⲡ+\r\n(B, F) ϣⲟⲡ+\r\n(F) ϣⲁⲁⲡ+",
+      "word": "(S, sA, O) ϣⲱⲡⲉ\r\n(A) ⳉⲱⲡⲉ\r\n(B, F) ϣⲱⲡⲓ\r\n(O) ⳳⲱⲡⲉ, ⲥⲱⲃⲓ\r\n(S, sA) ϣⲟⲟⲡ+\r\n(A) ⳉⲟⲟⲡ+\r\n(B, F) ϣⲟⲡ+\r\n(F) ϣⲁⲁⲡ+",
       "meaning": "intr: become, befall [ειναι, γινεσθαι]\r\nimpersonal, befall [γινεσθαι, συμβαινειν]\r\n― 3d sg f\r\n― 3d sg m\r\nqual: be, exist"
     },
     "dutch_meanings": [
@@ -2725,13 +2725,13 @@
         "stative": "ⲁⲛⳉ†"
       },
       "B": {
-        "absolute": "ⲱⲛϧ",
+        "absolute": "ⲱⲛⳳ",
         "nominal": "",
-        "pronominal": "ⲟⲛϧ=",
-        "stative": "ⲟⲛϧ†"
+        "pronominal": "ⲟⲛⳳ=",
+        "stative": "ⲟⲛⳳ†"
       },
       "O": {
-        "absolute": "ⲱⲛϧ",
+        "absolute": "ⲱⲛⳳ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -2748,7 +2748,7 @@
     "english_meanings": ["intr: live [ζην, ζωοποιειν]", "tr:"],
     "greek_equivalents": ["ζην, ζωοποιειν"],
     "raw": {
-      "word": "(S, sA, F) ⲱⲛϩ\r\n(Sf, F) ⲱⲛⲁϩ\r\n(A) ⲱⲛⳉ\r\n(sA) ⲱⲱⲛϩ\r\n(B, O) ⲱⲛϧ\r\n(B) ⲟⲛϧ=\r\n(S, Sf) ⲟⲛ(ⲁ)ϩ+\r\n(A) ⲁⲛⳉ+\r\n(Sa, sA) ⲁⲛϩ+\r\n(sA) ⲁⲁⲛϩ\r\n(B) ⲟⲛϧ+\r\n(F) ⲁⲛⲁϩ+, ⲁⲛ(ⲉ)ϩ+",
+      "word": "(S, sA, F) ⲱⲛϩ\r\n(Sf, F) ⲱⲛⲁϩ\r\n(A) ⲱⲛⳉ\r\n(sA) ⲱⲱⲛϩ\r\n(B, O) ⲱⲛⳳ\r\n(B) ⲟⲛⳳ=\r\n(S, Sf) ⲟⲛ(ⲁ)ϩ+\r\n(A) ⲁⲛⳉ+\r\n(Sa, sA) ⲁⲛϩ+\r\n(sA) ⲁⲁⲛϩ\r\n(B) ⲟⲛⳳ+\r\n(F) ⲁⲛⲁϩ+, ⲁⲛ(ⲉ)ϩ+",
       "meaning": "intr: live [ζην, ζωοποιειν]\r\ntr:"
     },
     "dutch_meanings": ["int.: live", "nl:"],
@@ -2920,10 +2920,10 @@
         "absoluteVariants": ["ⲥⲉⲓϩⲉⲓ", "ⲥⲉⲓϩ", "ⲥϩⲉ", "ⲥⲉⲓ", "ⲥⲉⲧ"]
       },
       "B": {
-        "absolute": "ⲥϧⲁⲓ",
-        "nominal": "ⲥϧⲉ-",
-        "pronominal": "ⲥϧⲏⲧ=",
-        "stative": "ⲥϧⲏⲟⲩⲧ†",
+        "absolute": "ⲥⳳⲁⲓ",
+        "nominal": "ⲥⳳⲉ-",
+        "pronominal": "ⲥⳳⲏⲧ=",
+        "stative": "ⲥⳳⲏⲟⲩⲧ†",
         "absoluteVariants": ["ⲥⲁⲓ"]
       }
     },
@@ -2938,7 +2938,7 @@
     ],
     "greek_equivalents": ["γραφειν", "γραφειν, ζωγραφειν, διαγραφειν"],
     "raw": {
-      "word": "(S, sA) ⲥϩⲁⲓ\r\n(S) ⲥⲁϩⲉⲓ\r\n(A) ⲥⳉⲉⲓ, ⲥⳉⲉⲉⲓ\r\n(sA) ⲥϩⲉⲉⲓ\r\n(S, F) ⲥϩⲏⲧ\r\n(B) ⲥϧⲁⲓ, ⲥⲁⲓ\r\n(F) ⲥϩⲉⲓ, ⲥⲉⲓϩⲉⲓ, ⲥⲉⲓϩ, ⲥϩⲉ, ⲥⲉⲓ, ⲥⲉⲧ\r\n(S) ⲥϩⲁⲓ-, ⲥⲉϩ-\r\n(sA) ⲥⲁϩ-\r\n(A) ⲥⳉⲉⲓ-\r\n(B) ⲥϧⲉ-, ⲥϧⲏⲧ-, ⲥⲏⲧ-\r\n(F) ⲥϩⲉ-, ⲥϩⲏ-, ⲥⲏ-, ⲥϩⲉⲧ-, ⲥⲉⲧ-, ⲥⲏⲧ-\r\n(S) ⲥϩⲁⲓⲥ=, ⲥϩⲁⲓⲧ=, ⲥⲁϩ=, ⲥϩⲁ(ⲉ)ⲓ=, ⲥⲁϩⲧ=, ⲥⲉϩⲧ=\r\n(A) ⲥⲁⳉ=, ⲥⳉⲉⲓⲧ=\r\n(sA) ⲥⲁϩ=\r\n(B) ⲥϧⲏⲧ=\r\n(F) ⲥϩⲉⲧ=, ⲥϩⲏⲧ=, ⲥⲉⲧ=\r\n(S, sA) ⲥⲏϩ+\r\n(A) ⲥⲏⳉ+\r\n(B) ⲥϧⲏⲟⲩⲧ+\r\n(F) ⲥϩⲏⲟⲩⲧ+",
+      "word": "(S, sA) ⲥϩⲁⲓ\r\n(S) ⲥⲁϩⲉⲓ\r\n(A) ⲥⳉⲉⲓ, ⲥⳉⲉⲉⲓ\r\n(sA) ⲥϩⲉⲉⲓ\r\n(S, F) ⲥϩⲏⲧ\r\n(B) ⲥⳳⲁⲓ, ⲥⲁⲓ\r\n(F) ⲥϩⲉⲓ, ⲥⲉⲓϩⲉⲓ, ⲥⲉⲓϩ, ⲥϩⲉ, ⲥⲉⲓ, ⲥⲉⲧ\r\n(S) ⲥϩⲁⲓ-, ⲥⲉϩ-\r\n(sA) ⲥⲁϩ-\r\n(A) ⲥⳉⲉⲓ-\r\n(B) ⲥⳳⲉ-, ⲥⳳⲏⲧ-, ⲥⲏⲧ-\r\n(F) ⲥϩⲉ-, ⲥϩⲏ-, ⲥⲏ-, ⲥϩⲉⲧ-, ⲥⲉⲧ-, ⲥⲏⲧ-\r\n(S) ⲥϩⲁⲓⲥ=, ⲥϩⲁⲓⲧ=, ⲥⲁϩ=, ⲥϩⲁ(ⲉ)ⲓ=, ⲥⲁϩⲧ=, ⲥⲉϩⲧ=\r\n(A) ⲥⲁⳉ=, ⲥⳉⲉⲓⲧ=\r\n(sA) ⲥⲁϩ=\r\n(B) ⲥⳳⲏⲧ=\r\n(F) ⲥϩⲉⲧ=, ⲥϩⲏⲧ=, ⲥⲉⲧ=\r\n(S, sA) ⲥⲏϩ+\r\n(A) ⲥⲏⳉ+\r\n(B) ⲥⳳⲏⲟⲩⲧ+\r\n(F) ⲥϩⲏⲟⲩⲧ+",
       "meaning": "intr: write [γραφειν]\r\ntr:\r\n― [γραφειν, ζωγραφειν, διαγραφειν]\r\n― register\r\n― draw, paint"
     },
     "dutch_meanings": [
@@ -3728,7 +3728,7 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ϧⲟⲩⲛ",
+        "absolute": "ⳳⲟⲩⲛ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -3747,7 +3747,7 @@
     ],
     "greek_equivalents": ["εσωτερον"],
     "raw": {
-      "word": "(S, sA, F) ϩⲟⲩⲛ\r\n(A) ⳉⲟⲩⲛ\r\n(B) ϧⲟⲩⲛ\r\n(O) ⲭⲟⲩⲛ",
+      "word": "(S, sA, F) ϩⲟⲩⲛ\r\n(A) ⳉⲟⲩⲛ\r\n(B) ⳳⲟⲩⲛ\r\n(O) ⲭⲟⲩⲛ",
       "meaning": "inward part (rarely except as advb or + prep) [εσωτερον]"
     },
     "dutch_meanings": ["binnenwaarts deel (zelden behalve als advb of + prep)"],
@@ -4267,7 +4267,7 @@
       "― ⲛⲟⲩⲕ. , a little [μικρον, ολιγον]",
       "― ⲡⲕⲉⲕ., ⲕⲉⲕ , yet a little",
       "― ⲙⲛⲛⲥⲁⲟⲩⲕ. , after a little",
-      "― ϩⲁ-, ϧⲁ-, ϩⲓⲑⲏ ⲛⲟⲩⲕ. , a little before",
+      "― ϩⲁ-, ⳳⲁ-, ϩⲓⲑⲏ ⲛⲟⲩⲕ. , a little before",
       "― ϣⲁⲧⲛⲟⲩⲕ. S mostly ⲡⲁⲣⲁ, almost",
       "― ⲡⲣⲟⲥ ⲟⲩⲕ. , for a little",
       "― ⲕⲁⲧⲁ ⲕ. , occasionally",
@@ -4276,7 +4276,7 @@
     "greek_equivalents": ["μικροσ, ολιγοσ, νηπιοσ", "μικρον, ολιγον"],
     "raw": {
       "word": "(S, A, F, O) ⲕⲟⲩⲓ\r\n(sA) ⲕⲟⲩⲉⲓ\r\n(B) ⲕⲟⲩϫⲓ\r\n(F) ⲕⲟⲩϭⲓ\r\n(NH) ⲕⲟⲟⲩⲉⲓ {ext codex II - The Apocryphon of John; 106; 25; 20; ⲟⲩⲇⲩⲥⲕⲟⲗⲟⲛ ⲅⲁⲣ ⲡⲉ ⲉϭⲟⲗⲡⲟⲩ ⲉⲃⲟⲗ ⲛϩⲛⲕⲟⲟⲩⲉⲓ; Ext; ?}\r\n(S, F) ⲕⲟⲩ-\r\n(F) ⲕⲁ-, ⲕⲟ-",
-      "meaning": "small person or thing, young person [μικροσ, ολιγοσ, νηπιοσ]\r\nadjective\r\n― small\r\n― few\r\n― young\r\nadvb\r\n― ⲛⲟⲩⲕ. , a little [μικρον, ολιγον]\r\n― ⲡⲕⲉⲕ., ⲕⲉⲕ , yet a little\r\n― ⲙⲛⲛⲥⲁⲟⲩⲕ. , after a little\r\n― ϩⲁ-, ϧⲁ-, ϩⲓⲑⲏ ⲛⲟⲩⲕ. , a little before\r\n― ϣⲁⲧⲛⲟⲩⲕ. S mostly ⲡⲁⲣⲁ, almost\r\n― ⲡⲣⲟⲥ ⲟⲩⲕ. , for a little\r\n― ⲕⲁⲧⲁ ⲕ. , occasionally\r\n― ⲕⲟⲩⲓ ⲕⲟⲩⲓ, ⲛⲕ. ⲕ. , little by little"
+      "meaning": "small person or thing, young person [μικροσ, ολιγοσ, νηπιοσ]\r\nadjective\r\n― small\r\n― few\r\n― young\r\nadvb\r\n― ⲛⲟⲩⲕ. , a little [μικρον, ολιγον]\r\n― ⲡⲕⲉⲕ., ⲕⲉⲕ , yet a little\r\n― ⲙⲛⲛⲥⲁⲟⲩⲕ. , after a little\r\n― ϩⲁ-, ⳳⲁ-, ϩⲓⲑⲏ ⲛⲟⲩⲕ. , a little before\r\n― ϣⲁⲧⲛⲟⲩⲕ. S mostly ⲡⲁⲣⲁ, almost\r\n― ⲡⲣⲟⲥ ⲟⲩⲕ. , for a little\r\n― ⲕⲁⲧⲁ ⲕ. , occasionally\r\n― ⲕⲟⲩⲓ ⲕⲟⲩⲓ, ⲛⲕ. ⲕ. , little by little"
     },
     "dutch_meanings": [
       "klein persoon of ding, jong persoon [μικροσ, ολιγοσ, νηπιοσ]",
@@ -4288,7 +4288,7 @@
       "― ⲛⲟⲩⲕ. , een beetje [μικρον, ολιγον]",
       "― ⲡⲕⲉⲕ., ⲕⲉⲕ , nog een beetje",
       "― ⲙⲛⲛⲥⲁⲟⲩⲕ. , na een beetje",
-      "― ϩⲁ-, ϧⲁ-, ϩⲓⲑⲏ ⲛⲟⲩⲕ. , iets eerder",
+      "― ϩⲁ-, ⳳⲁ-, ϩⲓⲑⲏ ⲛⲟⲩⲕ. , iets eerder",
       "― ϣⲁⲧⲛⲟⲩⲕ. S meestal ⲡⲁⲣⲁ, bijna",
       "― ⲡⲣⲟⲥ ⲟⲩⲕ. , voor een beetje",
       "― ⲕⲁⲧⲁ ⲕ. , af en toe",
@@ -4386,7 +4386,7 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ϧⲉⲗⲗⲟ",
+        "absolute": "ⳳⲉⲗⲗⲟ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -4408,26 +4408,26 @@
     "pos": "N",
     "gender": "BOTH",
     "english_meanings": [
-      "old person opp ϩⲣϣⲓⲣⲉ, ϧⲉⲗϣⲓⲣⲉ [πρεσβυτησ, γερων]",
+      "old person opp ϩⲣϣⲓⲣⲉ, ⳳⲉⲗϣⲓⲣⲉ [πρεσβυτησ, γερων]",
       "as adj, before nn"
     ],
     "greek_equivalents": ["πρεσβυτησ, γερων"],
     "raw": {
-      "word": "(S, sA) ϩⲗⲗⲟ\r\n(A) ⳉⲗⲗⲟ\r\n(sA) ϩⲉⲗⲗⲟ\r\n(B) ϧⲉⲗⲗⲟ\r\n(F) ϩⲉⲗ(ⲗ)ⲁ, ϩⲗ(ⲗ)ⲁ\r\n(S) female: ϩⲗⲗⲱ\r\n(S, Sa) female: ϩⲗⲗⲟⲩ\r\n(A) female: ⳉⲗⲗⲟⲩ\r\n(B) female: ϧⲉⲗⲗⲱ\r\n(S) plural: ϩⲗⲗⲟⲓ\r\n(A) plural: ⳉⲗⲗⲁ(ⲉ)ⲓ\r\n(sA) plural: ϩⲗⲗⲁⲓ\r\n(B) plural: ϧⲉⲗⲗⲟⲓ\r\n(F) plural: ϩⲉⲗⲗⲟⲩⲓ",
-      "meaning": "old person opp ϩⲣϣⲓⲣⲉ, ϧⲉⲗϣⲓⲣⲉ [πρεσβυτησ, γερων]\r\nas adj, before nn"
+      "word": "(S, sA) ϩⲗⲗⲟ\r\n(A) ⳉⲗⲗⲟ\r\n(sA) ϩⲉⲗⲗⲟ\r\n(B) ⳳⲉⲗⲗⲟ\r\n(F) ϩⲉⲗ(ⲗ)ⲁ, ϩⲗ(ⲗ)ⲁ\r\n(S) female: ϩⲗⲗⲱ\r\n(S, Sa) female: ϩⲗⲗⲟⲩ\r\n(A) female: ⳉⲗⲗⲟⲩ\r\n(B) female: ⳳⲉⲗⲗⲱ\r\n(S) plural: ϩⲗⲗⲟⲓ\r\n(A) plural: ⳉⲗⲗⲁ(ⲉ)ⲓ\r\n(sA) plural: ϩⲗⲗⲁⲓ\r\n(B) plural: ⳳⲉⲗⲗⲟⲓ\r\n(F) plural: ϩⲉⲗⲗⲟⲩⲓ",
+      "meaning": "old person opp ϩⲣϣⲓⲣⲉ, ⳳⲉⲗϣⲓⲣⲉ [πρεσβυτησ, γερων]\r\nas adj, before nn"
     },
     "dutch_meanings": [
-      "oude persoon opp ϩⲣϣⲓⲣⲉ, ϧⲉⲗϣⲓⲣⲉ",
+      "oude persoon opp ϩⲣϣⲓⲣⲉ, ⳳⲉⲗϣⲓⲣⲉ",
       "als bijvoeglijk naamwoord, vóór nn"
     ],
     "etymology": "Egy"
   },
   {
     "id": "cd_63a",
-    "headword": "ϧⲉⲗⲗⲱ",
+    "headword": "ⳳⲉⲗⲗⲱ",
     "dialects": {
       "B": {
-        "absolute": "ϧⲉⲗⲗⲱ",
+        "absolute": "ⳳⲉⲗⲗⲱ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -4441,17 +4441,17 @@
     "dutch_meanings": ["oude vrouw"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(B) female: ϧⲉⲗⲗⲱ",
+      "word": "(B) female: ⳳⲉⲗⲗⲱ",
       "meaning": "old woman"
     },
     "etymology": "Egy"
   },
   {
     "id": "cd_63c",
-    "headword": "ϧⲉⲗⲗⲟⲓ",
+    "headword": "ⳳⲉⲗⲗⲟⲓ",
     "dialects": {
       "B": {
-        "absolute": "ϧⲉⲗⲗⲟⲓ",
+        "absolute": "ⳳⲉⲗⲗⲟⲓ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -4461,13 +4461,13 @@
     "gender": "BOTH",
     "parentEntryId": "cd_63",
     "relationType": "paradigm-member",
-    "english_meanings": ["old person opp ϩⲣϣⲓⲣⲉ, ϧⲉⲗϣⲓⲣⲉ (plural)"],
+    "english_meanings": ["old person opp ϩⲣϣⲓⲣⲉ, ⳳⲉⲗϣⲓⲣⲉ (plural)"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(B) plural: ϧⲉⲗⲗⲟⲓ",
-      "meaning": "old person opp ϩⲣϣⲓⲣⲉ, ϧⲉⲗϣⲓⲣⲉ (plural)"
+      "word": "(B) plural: ⳳⲉⲗⲗⲟⲓ",
+      "meaning": "old person opp ϩⲣϣⲓⲣⲉ, ⳳⲉⲗϣⲓⲣⲉ (plural)"
     },
-    "dutch_meanings": ["oude persoon opp ϩⲣϣⲓⲣⲉ, ϧⲉⲗϣⲓⲣⲉ (meervoud)"],
+    "dutch_meanings": ["oude persoon opp ϩⲣϣⲓⲣⲉ, ⳳⲉⲗϣⲓⲣⲉ (meervoud)"],
     "etymology": "Egy"
   },
   {
@@ -4658,11 +4658,11 @@
         "absoluteVariants": ["ⳉⲁⲓⲉⲓ"]
       },
       "B": {
-        "absolute": "ϧⲁⲉ",
+        "absolute": "ⳳⲁⲉ",
         "nominal": "",
         "pronominal": "",
         "stative": "",
-        "absoluteVariants": ["ϧⲁⲓⲉ", "ϧⲁⲓⲏ"]
+        "absoluteVariants": ["ⳳⲁⲓⲉ", "ⳳⲁⲓⲏ"]
       },
       "F": {
         "absolute": "ϩⲁⲏ",
@@ -4689,7 +4689,7 @@
     ],
     "greek_equivalents": ["εσχατοσ"],
     "raw": {
-      "word": "(S, sA) ϩⲁⲉ\r\n(S) ϩⲁ(ⲉ)ⲓⲏ\r\n(S, Sf) ϩⲁⲓⲉ\r\n(A) ⳉⲁⲉ\r\n(B) ϧⲁⲉ, ϧⲁⲓⲉ\r\n(Sf, F) ϩⲁⲏ\r\n(S, sA, F) female: ϩⲁⲏ\r\n(S) female: ϩⲁⲉ\r\n(A) female: ⳉⲁ(ⲉ)ⲓ, ⳉⲁⲓⲉⲓ\r\n(B) female: ϧⲁⲏ, ϧⲁⲓⲏ\r\n(F) female: ϩⲁⲓⲏ\r\n(NH) female: ϩⲁϩⲏ, {in} ⲑⲁϩⲏ {ext codex II - The Gospel of Thomas; 107; 36; 11; ⲁⲧⲉⲧⲛϭⲱⲗⲡ ⲅⲁⲣ ⲉⲃⲟⲗ ⲛⲧⲁⲣⲭⲏ ϫⲉⲕⲁⲁⲥ ⲉⲧⲉⲧⲛⲁϣⲓⲛⲉ ⲛⲥⲁ ⲑⲁϩⲏ ϫⲉ ϩⲙ ⲡⲙⲁ ⲉⲧⲉ ⲧⲁⲣⲭⲏ ⲙⲙⲁⲩ ⲉⲑⲁϩⲏ ⲛⲁϣⲱⲡⲉ ⲙⲙⲁⲩ; Ext}, {codex XIII - Trimorphic Protennoia; 158; 42; 20; ϯⲛⲁⲧⲁⲙⲟⲟⲩ ⲁⲑⲁϩⲏ ⲙⲡⲁⲓⲱⲛ ⲉⲧⲛⲁϣⲱⲡⲉ; Ext}\r\n(S) plural: ϩⲁⲉ(ⲉ)ⲩ, ϩⲁⲉⲟⲩ\r\n(S, sA) plural: ϩⲁ(ⲉ)ⲉⲩⲉ\r\n(sA) plural: ϩⲁⲉⲟⲩⲉ\r\n(A) plural: ⳉⲁⲉ(ⲟ)ⲩⲉ\r\n(B) plural: ϧⲁⲉⲩ\r\n(F) plural: ϩⲁⲏⲟⲩ, ϩⲁⲓⲏⲩ",
+      "word": "(S, sA) ϩⲁⲉ\r\n(S) ϩⲁ(ⲉ)ⲓⲏ\r\n(S, Sf) ϩⲁⲓⲉ\r\n(A) ⳉⲁⲉ\r\n(B) ⳳⲁⲉ, ⳳⲁⲓⲉ\r\n(Sf, F) ϩⲁⲏ\r\n(S, sA, F) female: ϩⲁⲏ\r\n(S) female: ϩⲁⲉ\r\n(A) female: ⳉⲁ(ⲉ)ⲓ, ⳉⲁⲓⲉⲓ\r\n(B) female: ⳳⲁⲏ, ⳳⲁⲓⲏ\r\n(F) female: ϩⲁⲓⲏ\r\n(NH) female: ϩⲁϩⲏ, {in} ⲑⲁϩⲏ {ext codex II - The Gospel of Thomas; 107; 36; 11; ⲁⲧⲉⲧⲛϭⲱⲗⲡ ⲅⲁⲣ ⲉⲃⲟⲗ ⲛⲧⲁⲣⲭⲏ ϫⲉⲕⲁⲁⲥ ⲉⲧⲉⲧⲛⲁϣⲓⲛⲉ ⲛⲥⲁ ⲑⲁϩⲏ ϫⲉ ϩⲙ ⲡⲙⲁ ⲉⲧⲉ ⲧⲁⲣⲭⲏ ⲙⲙⲁⲩ ⲉⲑⲁϩⲏ ⲛⲁϣⲱⲡⲉ ⲙⲙⲁⲩ; Ext}, {codex XIII - Trimorphic Protennoia; 158; 42; 20; ϯⲛⲁⲧⲁⲙⲟⲟⲩ ⲁⲑⲁϩⲏ ⲙⲡⲁⲓⲱⲛ ⲉⲧⲛⲁϣⲱⲡⲉ; Ext}\r\n(S) plural: ϩⲁⲉ(ⲉ)ⲩ, ϩⲁⲉⲟⲩ\r\n(S, sA) plural: ϩⲁ(ⲉ)ⲉⲩⲉ\r\n(sA) plural: ϩⲁⲉⲟⲩⲉ\r\n(A) plural: ⳉⲁⲉ(ⲟ)ⲩⲉ\r\n(B) plural: ⳳⲁⲉⲩ\r\n(F) plural: ϩⲁⲏⲟⲩ, ϩⲁⲓⲏⲩ",
       "meaning": "properly adj, so, last thing, end [εσχατοσ]\r\nadj, last\r\n― before nn\r\n― after nn"
     },
     "dutch_meanings": [
@@ -4702,10 +4702,10 @@
   },
   {
     "id": "cd_67c",
-    "headword": "ϧⲁⲏ",
+    "headword": "ⳳⲁⲏ",
     "dialects": {
       "B": {
-        "absolute": "ϧⲁⲏ",
+        "absolute": "ⳳⲁⲏ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -4718,7 +4718,7 @@
     "english_meanings": ["last (feminine form)"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(B) female: ϧⲁⲏ, ϧⲁⲓⲏ",
+      "word": "(B) female: ⳳⲁⲏ, ⳳⲁⲓⲏ",
       "meaning": "last (feminine form)"
     },
     "dutch_meanings": ["na nn (vrouwelijke vorm)"],
@@ -4726,10 +4726,10 @@
   },
   {
     "id": "cd_67d",
-    "headword": "ϧⲁⲓⲏ",
+    "headword": "ⳳⲁⲓⲏ",
     "dialects": {
       "B": {
-        "absolute": "ϧⲁⲓⲏ",
+        "absolute": "ⳳⲁⲓⲏ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -4742,7 +4742,7 @@
     "english_meanings": ["last (feminine form)"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(B) female: ϧⲁⲏ, ϧⲁⲓⲏ",
+      "word": "(B) female: ⳳⲁⲏ, ⳳⲁⲓⲏ",
       "meaning": "last (feminine form)"
     },
     "dutch_meanings": ["na nn (vrouwelijke vorm)"],
@@ -4750,10 +4750,10 @@
   },
   {
     "id": "cd_67f",
-    "headword": "ϧⲁⲉⲩ",
+    "headword": "ⳳⲁⲉⲩ",
     "dialects": {
       "B": {
-        "absolute": "ϧⲁⲉⲩ",
+        "absolute": "ⳳⲁⲉⲩ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -4766,7 +4766,7 @@
     "english_meanings": ["so, last thing, end (plural form)"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(B) plural: ϧⲁⲉⲩ",
+      "word": "(B) plural: ⳳⲁⲉⲩ",
       "meaning": "so, last thing, end (plural form)"
     },
     "dutch_meanings": [
@@ -5036,7 +5036,7 @@
     "english_meanings": ["face [προσωπον, οξισ, μορφη]", "side, edge"],
     "greek_equivalents": ["προσωπον, οξισ, μορφη"],
     "raw": {
-      "word": "(S, A, sA, B, O) ϩⲟ\r\n(S, Sf, A, sA, F, O) ϩⲁ\r\n(S, A) ϩⲱ\r\n(S) ϩⲁ-\r\n(S, B, O) ϩⲣⲁ=\r\n(A, sA, B, F) ϩⲣⲉ=\r\n(F) ϩⲗⲉ=\r\n(O) ϧⲣⲁ=",
+      "word": "(S, A, sA, B, O) ϩⲟ\r\n(S, Sf, A, sA, F, O) ϩⲁ\r\n(S, A) ϩⲱ\r\n(S) ϩⲁ-\r\n(S, B, O) ϩⲣⲁ=\r\n(A, sA, B, F) ϩⲣⲉ=\r\n(F) ϩⲗⲉ=\r\n(O) ⳳⲣⲁ=",
       "meaning": "face [προσωπον, οξισ, μορφη]\r\nside, edge"
     },
     "dutch_meanings": ["gezicht", "zijkant, rand"],
@@ -6110,10 +6110,10 @@
         "stative": "ⳉⲁⲥⲉ†"
       },
       "B": {
-        "absolute": "ϧⲓⲥⲓ",
+        "absolute": "ⳳⲓⲥⲓ",
         "nominal": "",
-        "pronominal": "ϧⲁⲥ=",
-        "stative": "ϧⲟⲥⲓ†"
+        "pronominal": "ⳳⲁⲥ=",
+        "stative": "ⳳⲟⲥⲓ†"
       },
       "F": {
         "absolute": "ϩⲓⲥⲓ",
@@ -6140,7 +6140,7 @@
     ],
     "greek_equivalents": ["κοπιαν, σπουδαζειν, πονειν"],
     "raw": {
-      "word": "(S, sA) ϩⲓⲥⲉ\r\n(A) ⳉⲓⲥⲉ\r\n(B) ϧⲓⲥⲓ\r\n(F) ϩⲓⲥⲓ\r\n(S) ϩⲁⲥⲧ- {2d pl}\r\n(S, F) ϩⲁⲥⲧ=\r\n(S) ϩⲟⲥⲧ=, ϩⲓⲥⲧ=\r\n(sA) ϩⲉⲥⲧ=\r\n(B) ϧⲁⲥ=\r\n(S) ϩⲟⲥⲉ+\r\n(Sa, sA) ϩⲁⲥⲉ+\r\n(A) ⳉⲁⲥⲉ+\r\n(B) ϧⲟⲥⲓ+\r\n(F) ϩⲁⲥⲓ+\r\n(S) p c ϩⲁⲥⲧ-",
+      "word": "(S, sA) ϩⲓⲥⲉ\r\n(A) ⳉⲓⲥⲉ\r\n(B) ⳳⲓⲥⲓ\r\n(F) ϩⲓⲥⲓ\r\n(S) ϩⲁⲥⲧ- {2d pl}\r\n(S, F) ϩⲁⲥⲧ=\r\n(S) ϩⲟⲥⲧ=, ϩⲓⲥⲧ=\r\n(sA) ϩⲉⲥⲧ=\r\n(B) ⳳⲁⲥ=\r\n(S) ϩⲟⲥⲉ+\r\n(Sa, sA) ϩⲁⲥⲉ+\r\n(A) ⳉⲁⲥⲉ+\r\n(B) ⳳⲟⲥⲓ+\r\n(F) ϩⲁⲥⲓ+\r\n(S) p c ϩⲁⲥⲧ-",
       "meaning": "intr:\r\n― toil, be troubled, difficult [κοπιαν, σπουδαζειν, πονειν]\r\n― be wearied, suffering\r\ntr: trouble, weary (mostly refl)\r\n― + advb\r\nqual:"
     },
     "dutch_meanings": [
@@ -7319,7 +7319,7 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ϧⲉⲙⲥ",
+        "absolute": "ⳳⲉⲙⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -7330,7 +7330,7 @@
     "english_meanings": ["ear of corn [σταχυσ]"],
     "greek_equivalents": ["σταχυσ"],
     "raw": {
-      "word": "(S, F) ϩ(ⲉ)ⲙⲥ\r\n(S) ϩⲙⲯ\r\n(S, F) ϩⲏⲙⲥ\r\n(B) ϧⲉⲙⲥ",
+      "word": "(S, F) ϩ(ⲉ)ⲙⲥ\r\n(S) ϩⲙⲯ\r\n(S, F) ϩⲏⲙⲥ\r\n(B) ⳳⲉⲙⲥ",
       "meaning": "ear of corn [σταχυσ]"
     },
     "dutch_meanings": ["korenaar"],
@@ -8143,10 +8143,10 @@
         "stative": "ⲧⲁⳉⲉ†"
       },
       "B": {
-        "absolute": "ⲑⲓϧⲓ",
+        "absolute": "ⲑⲓⳳⲓ",
         "nominal": "",
         "pronominal": "",
-        "stative": "ⲑⲁϧⲓ†"
+        "stative": "ⲑⲁⳳⲓ†"
       },
       "F": {
         "absolute": "ϯϩⲓ",
@@ -8166,7 +8166,7 @@
     "english_meanings": ["intr: become, be drunken [μεθυειν, μεθυσκειν]"],
     "greek_equivalents": ["μεθυειν, μεθυσκειν"],
     "raw": {
-      "word": "(S) ϯϩⲉ\r\n(A) ϯⳉⲉ\r\n(B) ⲑⲓϧⲓ\r\n(F) ϯϩⲓ\r\n(S) ⲧⲁϩⲉ+\r\n(A) ⲧⲁⳉⲉ+\r\n(B) ⲑⲁϧⲓ+\r\n(NH) ⲧⲟϩⲉ+ {ext codex II - The Gospel of Thomas; 107; 38; 29; ⲧⲉⲛⲟⲩ ⲥⲉⲧⲟϩⲉ; Ext}",
+      "word": "(S) ϯϩⲉ\r\n(A) ϯⳉⲉ\r\n(B) ⲑⲓⳳⲓ\r\n(F) ϯϩⲓ\r\n(S) ⲧⲁϩⲉ+\r\n(A) ⲧⲁⳉⲉ+\r\n(B) ⲑⲁⳳⲓ+\r\n(NH) ⲧⲟϩⲉ+ {ext codex II - The Gospel of Thomas; 107; 38; 29; ⲧⲉⲛⲟⲩ ⲥⲉⲧⲟϩⲉ; Ext}",
       "meaning": "intr: become, be drunken [μεθυειν, μεθυσκειν]"
     },
     "dutch_meanings": ["intr: dronken worden, dronken worden"],
@@ -8967,10 +8967,10 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ϭⲱϧⲉⲙ",
-        "nominal": "ϭⲁϧⲉⲙ-",
-        "pronominal": "ϭⲁϧⲙ=",
-        "stative": "ϭⲁϧⲉⲙ†"
+        "absolute": "ϭⲱⳳⲉⲙ",
+        "nominal": "ϭⲁⳳⲉⲙ-",
+        "pronominal": "ϭⲁⳳⲙ=",
+        "stative": "ϭⲁⳳⲉⲙ†"
       },
       "Sl": {
         "absolute": "",
@@ -8996,7 +8996,7 @@
       "μιαινεσθαι, κοινουν"
     ],
     "raw": {
-      "word": "(S, sA) ϫⲱϩⲙ\r\n(A) ϫⲱⳉⲙⲉ\r\n(Sa) ϫⲱϩⲙⲉ\r\n(B) ϭⲱϧⲉⲙ\r\n(S) ϫⲉϩⲙ-\r\n(B) ϭⲁϧⲉⲙ-\r\n(S, sA) ϫⲁϩⲙ=\r\n(A) ϫⲁⳉⲙ=\r\n(B) ϭⲁϧⲙ=\r\n(NH) ϫⲟϩⲙ=, , ϫⲱϩⲙ= {ext codex II - The Gospel of Philip; 108; 55; 31; ⲧⲉⲉⲓⲡⲁⲣⲑⲉⲛⲟⲥ ⲉⲧⲉ ⲙⲡⲉ ⲇⲩⲛⲁⲙⲓⲥ ϫⲟϩⲙⲉⲥ ⲟⲩ --- ⲁⲛⲇⲩⲛⲁⲙⲓⲥ ϫⲟϩⲙⲟⲩ; Ext}, {codex II - The Gospel of Philip; 108; 65; 14; ϣⲁⲩϥⲱϭⲉ ⲉϩⲣⲁⲓ ⲉϫⲱϥ ⲛⲥⲉⲥⲱⲃⲉ ⲛⲙⲙⲁϥ ⲛⲥⲉϫⲟϩⲙⲉϥ; Ext}, {codex II - The Hypostasis of the Archons; 109; 89; 27; ⲁⲩϫⲟϩⲙⲉⲥ ϩⲛⲟⲩⲥⲱϥ; Ext}, {ext codex II - The Gospel of Thomas; 107; 35; 24; ⲡⲉⲧⲛⲁⲃⲱⲕ ⲅⲁⲣ ⲉϩⲟⲩⲛ ϩⲛ ⲧⲉⲧⲛⲧⲁⲡⲣⲟ ϥⲛⲁϫⲱϩⲙ ⲧⲏⲩⲧⲛ ⲁⲛ; Ext}\r\n(S, sA) ϫⲁϩⲙ+\r\n(A) ϫⲁⳉⲙⲉ+\r\n(S, sA) ϫⲁϩⲙⲉ+\r\n(B) ϭⲁϧⲉⲙ+\r\n(F) ϫⲉϩ(ⲉ)ⲙ+\r\n(S, NH) ϫⲟϩⲙ+ {ext Gospel of Judas; 824; 12; 3; --- ⲙⲡⲅⲉⲛⲟⲥ ⲉⲧϫⲟϩⲙ ⲙⲛ ⲧⲥⲟⲫⲓⲁ ⲛⲫⲑⲁⲣⲧⲏ; Ext}, {Gospel of Judas; 824; 19; 11; ⲡⲉϥⲉⲓⲛⲉ ⲇⲉ ⲉϥϫⲟϩⲙ ⲛⲥⲛⲟϥ; Ext}, {codex II - The Gospel of Philip; 108; 69; 2; ⲙⲁϥϣⲱⲡⲉ ⲛⲛϩⲙϩⲁⲗ ⲟⲩⲧⲉ ⲛⲥϩⲓⲙⲉ ⲉϥϫⲟϩⲙ; Ext}",
+      "word": "(S, sA) ϫⲱϩⲙ\r\n(A) ϫⲱⳉⲙⲉ\r\n(Sa) ϫⲱϩⲙⲉ\r\n(B) ϭⲱⳳⲉⲙ\r\n(S) ϫⲉϩⲙ-\r\n(B) ϭⲁⳳⲉⲙ-\r\n(S, sA) ϫⲁϩⲙ=\r\n(A) ϫⲁⳉⲙ=\r\n(B) ϭⲁⳳⲙ=\r\n(NH) ϫⲟϩⲙ=, , ϫⲱϩⲙ= {ext codex II - The Gospel of Philip; 108; 55; 31; ⲧⲉⲉⲓⲡⲁⲣⲑⲉⲛⲟⲥ ⲉⲧⲉ ⲙⲡⲉ ⲇⲩⲛⲁⲙⲓⲥ ϫⲟϩⲙⲉⲥ ⲟⲩ --- ⲁⲛⲇⲩⲛⲁⲙⲓⲥ ϫⲟϩⲙⲟⲩ; Ext}, {codex II - The Gospel of Philip; 108; 65; 14; ϣⲁⲩϥⲱϭⲉ ⲉϩⲣⲁⲓ ⲉϫⲱϥ ⲛⲥⲉⲥⲱⲃⲉ ⲛⲙⲙⲁϥ ⲛⲥⲉϫⲟϩⲙⲉϥ; Ext}, {codex II - The Hypostasis of the Archons; 109; 89; 27; ⲁⲩϫⲟϩⲙⲉⲥ ϩⲛⲟⲩⲥⲱϥ; Ext}, {ext codex II - The Gospel of Thomas; 107; 35; 24; ⲡⲉⲧⲛⲁⲃⲱⲕ ⲅⲁⲣ ⲉϩⲟⲩⲛ ϩⲛ ⲧⲉⲧⲛⲧⲁⲡⲣⲟ ϥⲛⲁϫⲱϩⲙ ⲧⲏⲩⲧⲛ ⲁⲛ; Ext}\r\n(S, sA) ϫⲁϩⲙ+\r\n(A) ϫⲁⳉⲙⲉ+\r\n(S, sA) ϫⲁϩⲙⲉ+\r\n(B) ϭⲁⳳⲉⲙ+\r\n(F) ϫⲉϩ(ⲉ)ⲙ+\r\n(S, NH) ϫⲟϩⲙ+ {ext Gospel of Judas; 824; 12; 3; --- ⲙⲡⲅⲉⲛⲟⲥ ⲉⲧϫⲟϩⲙ ⲙⲛ ⲧⲥⲟⲫⲓⲁ ⲛⲫⲑⲁⲣⲧⲏ; Ext}, {Gospel of Judas; 824; 19; 11; ⲡⲉϥⲉⲓⲛⲉ ⲇⲉ ⲉϥϫⲟϩⲙ ⲛⲥⲛⲟϥ; Ext}, {codex II - The Gospel of Philip; 108; 69; 2; ⲙⲁϥϣⲱⲡⲉ ⲛⲛϩⲙϩⲁⲗ ⲟⲩⲧⲉ ⲛⲥϩⲓⲙⲉ ⲉϥϫⲟϩⲙ; Ext}",
       "meaning": "intr: be defiled [μιαινεσθαι, λοιμευεσθαι, μολυνεσθαι]\r\ntr: defile, pollute [μιαινεσθαι, κοινουν]"
     },
     "dutch_meanings": ["intr: verontreinigd zijn", "tr: vervuilen, vervuilen"],
@@ -9025,10 +9025,10 @@
         "stative": "ⲡⲁⳉⲧ†"
       },
       "B": {
-        "absolute": "ⲫⲱϧⲧ",
-        "nominal": "ⲫⲁϧⲧ-",
-        "pronominal": "ⲫⲁϧⲧ=",
-        "stative": "ⲫⲁϧⲧ†"
+        "absolute": "ⲫⲱⳳⲧ",
+        "nominal": "ⲫⲁⳳⲧ-",
+        "pronominal": "ⲫⲁⳳⲧ=",
+        "stative": "ⲫⲁⳳⲧ†"
       },
       "F": {
         "absolute": "",
@@ -9048,7 +9048,7 @@
     ],
     "greek_equivalents": ["πιπτειν, κυπτειν", "εκχεειν επι", "αποκενουν"],
     "raw": {
-      "word": "(S, sA) ⲡⲱϩⲧ\r\n(A) ⲡⲱⳉⲧ\r\n(B) ⲫⲱϧⲧ\r\n(S, F) ⲡⲉϩⲧ-\r\n(S) ⲡⲁϩⲧ-\r\n(B) ⲫⲁϧⲧ-\r\n(S, sA) ⲡⲁϩⲧ=\r\n(A) ⲡⲁⳉⲧ=\r\n(B) ⲫⲁϧⲧ=\r\n(F) ⲡⲉϩⲧ=\r\n(S) ⲡⲁϩⲧ+\r\n(A) ⲡⲁⳉⲧ+\r\n(B) ⲫⲁϧⲧ+\r\n(F) ⲡⲉϩⲧ+",
+      "word": "(S, sA) ⲡⲱϩⲧ\r\n(A) ⲡⲱⳉⲧ\r\n(B) ⲫⲱⳳⲧ\r\n(S, F) ⲡⲉϩⲧ-\r\n(S) ⲡⲁϩⲧ-\r\n(B) ⲫⲁⳳⲧ-\r\n(S, sA) ⲡⲁϩⲧ=\r\n(A) ⲡⲁⳉⲧ=\r\n(B) ⲫⲁⳳⲧ=\r\n(F) ⲡⲉϩⲧ=\r\n(S) ⲡⲁϩⲧ+\r\n(A) ⲡⲁⳉⲧ+\r\n(B) ⲫⲁⳳⲧ+\r\n(F) ⲡⲉϩⲧ+",
       "meaning": "bend\r\n― tr (refl): bend self, fall [πιπτειν, κυπτειν]\r\npour, flow\r\n― intr: S,A,sA, with preposition [εκχεειν επι]\r\n― tr: S,B [αποκενουν]"
     },
     "dutch_meanings": [
@@ -9868,11 +9868,11 @@
       "tr: bind, gird, tie [δειν, δεσμευειν, ζωννυειν]",
       "― c acc of thing bound",
       "― c ⲛ- of that wherewith bound",
-      "― c ϩⲛ-, ϧⲉⲛ- sim",
+      "― c ϩⲛ-, ⳳⲉⲛ- sim",
       "― c ⲛ- of that upon, to, in which bound",
       "― c ⲉ- sim",
       "― c ⲉϫⲛ- sim",
-      "― c ϩⲛ-, ϧⲉⲛ- of place where bound",
+      "― c ϩⲛ-, ⳳⲉⲛ- of place where bound",
       "― c ⲛⲥⲁ- S, tie behind",
       "― gird with monastic habit",
       "― bind, oblige by oath, adjure",
@@ -9882,17 +9882,17 @@
     "greek_equivalents": ["δειν, δεσμευειν, ζωννυειν"],
     "raw": {
       "word": "(S, A, sA, B, F) ⲙⲟⲩⲣ\r\n(S, A) ⲙⲣ-\r\n(S, B) ⲙⲉⲣ-\r\n(Sf, F) ⲙⲁⲣ-\r\n(S, B) ⲙⲟⲣ=\r\n(Sf, A, sA, F) ⲙⲁⲣ=\r\n(F) ⲙⲁⲗ=\r\n(S, A, sA, B, F) ⲙⲏⲣ+\r\n(F) ⲙⲉⲗ+\r\n(S, F) p c ⲙⲁⲣ-\r\n(S, B) p c ⲙⲉⲣ-\r\n(B) p c ⲙⲟⲣ-",
-      "meaning": "tr: bind, gird, tie [δειν, δεσμευειν, ζωννυειν]\r\n― c acc of thing bound\r\n― c ⲛ- of that wherewith bound\r\n― c ϩⲛ-, ϧⲉⲛ- sim\r\n― c ⲛ- of that upon, to, in which bound\r\n― c ⲉ- sim\r\n― c ⲉϫⲛ- sim\r\n― c ϩⲛ-, ϧⲉⲛ- of place where bound\r\n― c ⲛⲥⲁ- S, tie behind\r\n― gird with monastic habit\r\n― bind, oblige by oath, adjure\r\nqual: bound, girt\r\nintr: S, bind"
+      "meaning": "tr: bind, gird, tie [δειν, δεσμευειν, ζωννυειν]\r\n― c acc of thing bound\r\n― c ⲛ- of that wherewith bound\r\n― c ϩⲛ-, ⳳⲉⲛ- sim\r\n― c ⲛ- of that upon, to, in which bound\r\n― c ⲉ- sim\r\n― c ⲉϫⲛ- sim\r\n― c ϩⲛ-, ⳳⲉⲛ- of place where bound\r\n― c ⲛⲥⲁ- S, tie behind\r\n― gird with monastic habit\r\n― bind, oblige by oath, adjure\r\nqual: bound, girt\r\nintr: S, bind"
     },
     "dutch_meanings": [
       "tr: binden, omgorden, binden [δειν, δεσμευειν, ζωννυειν]",
       "- c acc van ding gebonden",
       "― c ⲛ- van datgene waarmee gebonden is",
-      "― c ϩⲛ-, ϧⲉⲛ- sim",
+      "― c ϩⲛ-, ⳳⲉⲛ- sim",
       "― c ⲛ- van dat op, tot, waarin gebonden",
       "― c ⲉ- sim",
       "― c ⲉϫⲛ- sim",
-      "― c ϩⲛ-, ϧⲉⲛ- van plaats waar gebonden",
+      "― c ϩⲛ-, ⳳⲉⲛ- van plaats waar gebonden",
       "― c ⲛⲥⲁ- S, strik achter",
       "- omgord met monastieke gewoonte",
       "– binden, verplichten onder ede, bezweren",
@@ -10131,9 +10131,9 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ⲱⲥϧ",
-        "nominal": "ⲟⲥϧ-",
-        "pronominal": "ⲟⲥϧ=",
+        "absolute": "ⲱⲥⳳ",
+        "nominal": "ⲟⲥⳳ-",
+        "pronominal": "ⲟⲥⳳ=",
         "stative": ""
       },
       "Sl": {
@@ -10156,7 +10156,7 @@
       "θερισμοσ"
     ],
     "raw": {
-      "word": "(S, Sf, A, sA, F) ⲱϩⲥ\r\n(A) ⲱⲥⳉ\r\n(sA) ⲱⲥϩ\r\n(B) ⲱⲥϧ\r\n(S) ⲉϩⲥ-, ⲱϩⲥ-\r\n(B) ⲟⲥϧ-, ⲱⲥϧ-\r\n(Sf, F) ⲁϩⲥ-\r\n(S) ⲟϩⲥ=, ⲟⲥϩ=\r\n(Sf, sA) ⲁϩⲥ=\r\n(A) ⲁⲥⳉ=\r\n(sA) ⲁⲥϩ=\r\n(B) ⲟⲥϧ=\r\n(NH) ϩⲁⲥ= {ext codex II - The Gospel of Thomas; 107; 37; 18; ⲁϥϩⲁⲥϥ; Ext}",
+      "word": "(S, Sf, A, sA, F) ⲱϩⲥ\r\n(A) ⲱⲥⳉ\r\n(sA) ⲱⲥϩ\r\n(B) ⲱⲥⳳ\r\n(S) ⲉϩⲥ-, ⲱϩⲥ-\r\n(B) ⲟⲥⳳ-, ⲱⲥⳳ-\r\n(Sf, F) ⲁϩⲥ-\r\n(S) ⲟϩⲥ=, ⲟⲥϩ=\r\n(Sf, sA) ⲁϩⲥ=\r\n(A) ⲁⲥⳉ=\r\n(sA) ⲁⲥϩ=\r\n(B) ⲟⲥⳳ=\r\n(NH) ϩⲁⲥ= {ext codex II - The Gospel of Thomas; 107; 37; 18; ⲁϥϩⲁⲥϥ; Ext}",
       "meaning": "intr: reap, mow [θεριζειν, αμαν]\r\ntr: [αποθεριζειν, εκθεριζειν, αμαν]\r\nas nn, reaping [θερισμοσ]"
     },
     "dutch_meanings": [
@@ -11608,7 +11608,7 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ϧⲏⲃⲥ",
+        "absolute": "ⳳⲏⲃⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -11619,7 +11619,7 @@
     "english_meanings": ["lamp [λυχνοσ]"],
     "greek_equivalents": ["λυχνοσ"],
     "raw": {
-      "word": "(S, sA, F) ϩⲏⲃⲥ\r\n(S) ϩ(ⲉ)ⲃⲥ\r\n(A) ⳉⲏⲃⲥ\r\n(B) ϧⲏⲃⲥ\r\n(F) ϩⲏⲃⲉⲥ",
+      "word": "(S, sA, F) ϩⲏⲃⲥ\r\n(S) ϩ(ⲉ)ⲃⲥ\r\n(A) ⳉⲏⲃⲥ\r\n(B) ⳳⲏⲃⲥ\r\n(F) ϩⲏⲃⲉⲥ",
       "meaning": "lamp [λυχνοσ]"
     },
     "dutch_meanings": ["lamp"],
@@ -13473,7 +13473,7 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ϧⲉ",
+        "absolute": "ⳳⲉ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -13496,7 +13496,7 @@
     "english_meanings": ["manner"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(S, sA) ϩⲉ\r\n(S) ϩⲓⲏ\r\n(A) ⳉⲉ\r\n(B) ϧⲉ\r\n(Sf, F) ϩⲏ\r\n(F) ϩⲓ",
+      "word": "(S, sA) ϩⲉ\r\n(S) ϩⲓⲏ\r\n(A) ⳉⲉ\r\n(B) ⳳⲉ\r\n(Sf, F) ϩⲏ\r\n(F) ϩⲓ",
       "meaning": "manner"
     },
     "dutch_meanings": ["wijze"],
@@ -14089,10 +14089,10 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ϧⲟⲧϧⲉⲧ",
-        "nominal": "ϧⲉⲧϧⲉⲧ-",
-        "pronominal": "ϧⲉⲧϧⲱⲧ=",
-        "stative": "ϧⲉⲧϧⲱⲧ†"
+        "absolute": "ⳳⲟⲧⳳⲉⲧ",
+        "nominal": "ⳳⲉⲧⳳⲉⲧ-",
+        "pronominal": "ⳳⲉⲧⳳⲱⲧ=",
+        "stative": "ⳳⲉⲧⳳⲱⲧ†"
       },
       "F": {
         "absolute": "ϩⲁⲧϩⲉⲧ",
@@ -14103,7 +14103,7 @@
       "O": {
         "absolute": "",
         "nominal": "",
-        "pronominal": "ϧⲧϧⲟⲧ=",
+        "pronominal": "ⳳⲧⳳⲟⲧ=",
         "stative": ""
       },
       "Sa": {
@@ -14121,7 +14121,7 @@
     ],
     "greek_equivalents": ["ερευναν, εκζητειν, εξιχνιαζειν", "ερευναν"],
     "raw": {
-      "word": "(S) ϩⲟⲧϩⲧ\r\n(Sf, sA) ϩⲁⲧϩⲧ\r\n(A) ⳉⲁⲧⳉⲧ\r\n(B) ϧⲟⲧϧⲉⲧ\r\n(F) ϩⲁⲧϩⲉⲧ\r\n(S) ϩⲉⲧϩ(ⲉ)ⲧ-\r\n(B) ϧⲉⲧϧⲉⲧ-\r\n(S, F) ϩⲉⲧϩⲱⲧ=\r\n(A) ⳉⲧⳉⲱⲧ=\r\n(B) ϧⲉⲧϧⲱⲧ=\r\n(O) ϧⲧϧⲟⲧ=\r\n(S, Sa) ϩⲉⲧϩⲱⲧ+\r\n(B) ϧⲉⲧϧⲱⲧ+",
+      "word": "(S) ϩⲟⲧϩⲧ\r\n(Sf, sA) ϩⲁⲧϩⲧ\r\n(A) ⳉⲁⲧⳉⲧ\r\n(B) ⳳⲟⲧⳳⲉⲧ\r\n(F) ϩⲁⲧϩⲉⲧ\r\n(S) ϩⲉⲧϩ(ⲉ)ⲧ-\r\n(B) ⳳⲉⲧⳳⲉⲧ-\r\n(S, F) ϩⲉⲧϩⲱⲧ=\r\n(A) ⳉⲧⳉⲱⲧ=\r\n(B) ⳳⲉⲧⳳⲱⲧ=\r\n(O) ⳳⲧⳳⲟⲧ=\r\n(S, Sa) ϩⲉⲧϩⲱⲧ+\r\n(B) ⳳⲉⲧⳳⲱⲧ+",
       "meaning": "intr: inquire, examine [ερευναν, εκζητειν, εξιχνιαζειν]\r\ntr: [ερευναν]"
     },
     "dutch_meanings": ["intr: onderzoeken, onderzoeken", "tr: [onderzocht]"],
@@ -15870,9 +15870,9 @@
         "stative": "ⲧⲏⳉ†"
       },
       "B": {
-        "absolute": "ⲧⲱϧ",
-        "nominal": "ⲑⲉϧ-",
-        "pronominal": "ⲑⲁϧ=",
+        "absolute": "ⲧⲱⳳ",
+        "nominal": "ⲑⲉⳳ-",
+        "pronominal": "ⲑⲁⳳ=",
         "stative": "",
         "absoluteVariants": ["ⲑⲟϩ"]
       }
@@ -15885,7 +15885,7 @@
     ],
     "greek_equivalents": ["ταρασσεσθαι, συγχεειν", "κεραννυειν, συντριβειν"],
     "raw": {
-      "word": "(S, sA, F) ⲧⲱϩ\r\n(A) ⲧⲱⳉ\r\n(B) ⲧⲱϧ, ⲑⲟϩ\r\n(F) ⲧⲟϩ\r\n(S) ⲧⲉϩ-, ⲧⲁϩ-, ⲧⲱϩ-\r\n(B) ⲑⲉϧ-\r\n(S, F) ⲧⲁϩ=\r\n(B) ⲑⲁϧ=\r\n(F) ⲧⲉϩ=\r\n(S, sA, F) ⲧⲏϩ+\r\n(A) ⲧⲏⳉ+\r\n(B) ⲑⲉϩ\r\n(F) ⲧⲉϩ+",
+      "word": "(S, sA, F) ⲧⲱϩ\r\n(A) ⲧⲱⳉ\r\n(B) ⲧⲱⳳ, ⲑⲟϩ\r\n(F) ⲧⲟϩ\r\n(S) ⲧⲉϩ-, ⲧⲁϩ-, ⲧⲱϩ-\r\n(B) ⲑⲉⳳ-\r\n(S, F) ⲧⲁϩ=\r\n(B) ⲑⲁⳳ=\r\n(F) ⲧⲉϩ=\r\n(S, sA, F) ⲧⲏϩ+\r\n(A) ⲧⲏⳉ+\r\n(B) ⲑⲉϩ\r\n(F) ⲧⲉϩ+",
       "meaning": "intr: be mixed, disturbed, clouded [ταρασσεσθαι, συγχεειν]\r\ntr: mix, stir [κεραννυειν, συντριβειν]"
     },
     "dutch_meanings": [
@@ -17318,7 +17318,7 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ⲙⲁϧⲧ",
+        "absolute": "ⲙⲁⳳⲧ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -17335,7 +17335,7 @@
     "english_meanings": ["bowels, intestines [εντερα, σπλαγχνα, κοιλια]"],
     "greek_equivalents": ["εντερα, σπλαγχνα, κοιλια"],
     "raw": {
-      "word": "(S) ⲙⲁϩⲧ\r\n(B) ⲙⲁϧⲧ\r\n(S, F) ⲙⲉϩⲧ",
+      "word": "(S) ⲙⲁϩⲧ\r\n(B) ⲙⲁⳳⲧ\r\n(S, F) ⲙⲉϩⲧ",
       "meaning": "bowels, intestines [εντερα, σπλαγχνα, κοιλια]"
     },
     "dutch_meanings": ["darmen, darmen"],
@@ -18047,11 +18047,11 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ϧⲏⲓⲃⲓ",
+        "absolute": "ⳳⲏⲓⲃⲓ",
         "nominal": "",
         "pronominal": "",
         "stative": "",
-        "absoluteVariants": ["ϧⲏⲃⲓ"]
+        "absoluteVariants": ["ⳳⲏⲃⲓ"]
       },
       "F": {
         "absolute": "ϩⲏⲓⲃⲉⲥ",
@@ -18072,7 +18072,7 @@
     "english_meanings": ["shade, shadow [σκια, αποσκιασμα, σκεπη, σκηνη]"],
     "greek_equivalents": ["σκια, αποσκιασμα, σκεπη, σκηνη"],
     "raw": {
-      "word": "(S) ϩⲁ(ⲉ)ⲓⲃⲉⲥ, ϩⲟⲓⲃⲉⲥ\r\n(Sa) ϩⲁⲓⲃⲉ\r\n(A) ⳉⲁ(ⲉ)ⲓⲃⲉ\r\n(sA) ϩⲁⲓⲃ(ⲉ)ⲥ\r\n(B) ϧⲏⲓⲃⲓ, ϧⲏⲃⲓ\r\n(F) ϩⲏⲓⲃⲉⲥ, ϩⲏ(ⲓ)ⲃⲓ, ϩⲓⲏⲃⲓ\r\n(NH) ϩⲁⲉⲓⲃⲉ {ext codex I - The Gospel of Truth; 103; 28; 26; ⲁⲉⲓϣⲱⲡⲉ ⲙⲡⲣⲏⲧⲉ ⲛⲛⲓϩⲁⲉⲓⲃⲉ ⲙⲛ ⲛⲓⲫⲁⲛⲧⲁⲥⲓⲁ; Ext}, {codex II - On the Origin of the World; 110; 98; 29; ϯϩⲁⲉⲓⲃⲉ ⲇⲉ ⲁⲛⲇⲩⲛⲁⲙⲓⲥ ⲛⲧⲁϩϣⲱⲡⲉ ⲙⲛⲛⲥⲱⲟⲩ ⲁⲩⲙⲟⲩⲧⲉ ⲉⲣⲟϥ ϫⲉ ⲡⲭⲁⲟⲥ ⲉⲧⲉⲙⲛⲧⲉϥ ⲁⲣⲏϫϥ; Ext}, {codex III - The Apocryphon of John; 113; 27; 23; ⲛⲉϥⲕⲗⲁⲇⲟⲥ ϩⲉⲛϩⲁⲉⲓⲃⲉ ⲛⲉ ⲛⲧⲉ ⲡⲙⲟⲩ; Ext}, {codex VII - The Second Treatise of the Great Seth; 134; 70; 2; ϯⲕⲗⲟⲟⲗⲉ ⲛⲥⲁⲣⲕⲓⲕⲟⲛ ⲣϩⲁⲉⲓⲃⲉ ⲉⲣⲱⲧⲛ; Ext}, {codex II - The Hypostasis of the Archons; 109; 94; 13; ⲑⲁⲉⲓⲃⲉ ⲉⲧⲙⲙⲁⲩ ⲁⲩⲛⲟϫⲥ ⲁⲩⲥⲁ ⲛⲟⲩⲙⲉⲣⲟⲥ; Ext}",
+      "word": "(S) ϩⲁ(ⲉ)ⲓⲃⲉⲥ, ϩⲟⲓⲃⲉⲥ\r\n(Sa) ϩⲁⲓⲃⲉ\r\n(A) ⳉⲁ(ⲉ)ⲓⲃⲉ\r\n(sA) ϩⲁⲓⲃ(ⲉ)ⲥ\r\n(B) ⳳⲏⲓⲃⲓ, ⳳⲏⲃⲓ\r\n(F) ϩⲏⲓⲃⲉⲥ, ϩⲏ(ⲓ)ⲃⲓ, ϩⲓⲏⲃⲓ\r\n(NH) ϩⲁⲉⲓⲃⲉ {ext codex I - The Gospel of Truth; 103; 28; 26; ⲁⲉⲓϣⲱⲡⲉ ⲙⲡⲣⲏⲧⲉ ⲛⲛⲓϩⲁⲉⲓⲃⲉ ⲙⲛ ⲛⲓⲫⲁⲛⲧⲁⲥⲓⲁ; Ext}, {codex II - On the Origin of the World; 110; 98; 29; ϯϩⲁⲉⲓⲃⲉ ⲇⲉ ⲁⲛⲇⲩⲛⲁⲙⲓⲥ ⲛⲧⲁϩϣⲱⲡⲉ ⲙⲛⲛⲥⲱⲟⲩ ⲁⲩⲙⲟⲩⲧⲉ ⲉⲣⲟϥ ϫⲉ ⲡⲭⲁⲟⲥ ⲉⲧⲉⲙⲛⲧⲉϥ ⲁⲣⲏϫϥ; Ext}, {codex III - The Apocryphon of John; 113; 27; 23; ⲛⲉϥⲕⲗⲁⲇⲟⲥ ϩⲉⲛϩⲁⲉⲓⲃⲉ ⲛⲉ ⲛⲧⲉ ⲡⲙⲟⲩ; Ext}, {codex VII - The Second Treatise of the Great Seth; 134; 70; 2; ϯⲕⲗⲟⲟⲗⲉ ⲛⲥⲁⲣⲕⲓⲕⲟⲛ ⲣϩⲁⲉⲓⲃⲉ ⲉⲣⲱⲧⲛ; Ext}, {codex II - The Hypostasis of the Archons; 109; 94; 13; ⲑⲁⲉⲓⲃⲉ ⲉⲧⲙⲙⲁⲩ ⲁⲩⲛⲟϫⲥ ⲁⲩⲥⲁ ⲛⲟⲩⲙⲉⲣⲟⲥ; Ext}",
       "meaning": "shade, shadow [σκια, αποσκιασμα, σκεπη, σκηνη]"
     },
     "dutch_meanings": ["schaduw, schaduw"],
@@ -18963,10 +18963,10 @@
         "absoluteVariants": ["ⲥⲱϣⲉ", "ⲥⲱϩⲧ"]
       },
       "B": {
-        "absolute": "ⲥⲱϧⲓ",
+        "absolute": "ⲥⲱⳳⲓ",
         "nominal": "ⲥⲁϩⲧ-",
-        "pronominal": "ⲥⲁϧ=",
-        "stative": "ⲥⲏϧⲓ†"
+        "pronominal": "ⲥⲁⳳ=",
+        "stative": "ⲥⲏⳳⲓ†"
       },
       "F": {
         "absolute": "",
@@ -18986,7 +18986,7 @@
     "english_meanings": ["intr: weave [υφαινειν, εριθευεσθαι]", "p.c., weaver"],
     "greek_equivalents": ["υφαινειν, εριθευεσθαι"],
     "raw": {
-      "word": "(S) ⲥⲱϩⲉ, ⲥⲱϣⲉ, ⲥⲱϩⲧ\r\n(B) ⲥⲱϧⲓ\r\n(S, B, F) ⲥⲁϩⲧ-\r\n(S) ⲥⲁϩⲧ=\r\n(B) ⲥⲁϧ=\r\n(S) ⲥⲁϩⲧ+, ⲥⲁϣⲧ+\r\n(B) ⲥⲏϧⲓ+, ⲥⲏϧ+\r\n(S, sA, F) p c ⲥⲁϩⲧ-",
+      "word": "(S) ⲥⲱϩⲉ, ⲥⲱϣⲉ, ⲥⲱϩⲧ\r\n(B) ⲥⲱⳳⲓ\r\n(S, B, F) ⲥⲁϩⲧ-\r\n(S) ⲥⲁϩⲧ=\r\n(B) ⲥⲁⳳ=\r\n(S) ⲥⲁϩⲧ+, ⲥⲁϣⲧ+\r\n(B) ⲥⲏⳳⲓ+, ⲥⲏⳳ+\r\n(S, sA, F) p c ⲥⲁϩⲧ-",
       "meaning": "intr: weave [υφαινειν, εριθευεσθαι]\r\np.c., weaver"
     },
     "dutch_meanings": ["int.: weven", "p.c., wever"],
@@ -20674,7 +20674,7 @@
         "stative": ""
       }
     },
-    "pos": "N",
+    "pos": "PREP",
     "gender": "",
     "english_meanings": ["because of, concerning [δια, ενεκα]"],
     "greek_equivalents": ["δια, ενεκα"],
@@ -20964,17 +20964,17 @@
       },
       "B": {
         "absolute": "",
-        "nominal": "ϧⲉⲛ-",
-        "pronominal": "ⲛϧⲏⲧ=",
+        "nominal": "ⳳⲉⲛ-",
+        "pronominal": "ⲛ̀ⳳⲏⲧ=",
         "stative": ""
       }
     },
-    "pos": "N",
+    "pos": "PREP",
     "gender": "",
     "english_meanings": ["of place in, at, on", "of time", "by, with as agent"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(S, sA, F, O) ϩⲛ-\r\n(A) ⳉⲛ-\r\n(B) ϧⲉⲛ-\r\n(F) ϩⲓⲛ-, ϩⲉ-, ϩⲏ-\r\n(F, O) ϩⲉⲛ-\r\n(O) ϧⲛ-\r\n(S, sA, F) ⲛϩⲏⲧ=\r\n(A) ⲛⳉⲏⲧ=\r\n(B) ⲛϧⲏⲧ=",
+      "word": "(S, sA, F, O) ϩⲛ-\r\n(A) ⳉⲛ-\r\n(B) ⳳⲉⲛ-\r\n(F) ϩⲓⲛ-, ϩⲉ-, ϩⲏ-\r\n(F, O) ϩⲉⲛ-\r\n(O) ⳳⲛ-\r\n(S, sA, F) ⲛϩⲏⲧ=\r\n(A) ⲛⳉⲏⲧ=\r\n(B) ⲛ̀ⳳⲏⲧ=",
       "meaning": "of place in, at, on\r\nof time\r\nby, with as agent"
     },
     "dutch_meanings": [
@@ -21771,7 +21771,7 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ⲫⲁϧⲣⲓ",
+        "absolute": "ⲫⲁⳳⲣⲓ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -21792,7 +21792,7 @@
     ],
     "greek_equivalents": ["φαρμακον, ιαμα", "κολλουριον"],
     "raw": {
-      "word": "(S, sA, O) ⲡⲁϩⲣⲉ\r\n(S) ⲡⲁϩⲣ\r\n(A) ⲡⲁⳉⲣⲉ\r\n(B) ⲫⲁϧⲣⲓ\r\n(F) ⲡⲉϩⲗⲓ",
+      "word": "(S, sA, O) ⲡⲁϩⲣⲉ\r\n(S) ⲡⲁϩⲣ\r\n(A) ⲡⲁⳉⲣⲉ\r\n(B) ⲫⲁⳳⲣⲓ\r\n(F) ⲡⲉϩⲗⲓ",
       "meaning": "(f twice)\r\ndrug, medicament [φαρμακον, ιαμα]\r\npaint, colour [κολλουριον]"
     },
     "dutch_meanings": ["(f tweemaal)", "medicijn, medicijn", "verf, kleur"],
@@ -22274,9 +22274,9 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ⲧⲁⲛϧⲟ",
-        "nominal": "ⲧⲁⲛϧⲉ-",
-        "pronominal": "ⲧⲁⲛϧⲟ=",
+        "absolute": "ⲧⲁⲛⳳⲟ",
+        "nominal": "ⲧⲁⲛⳳⲉ-",
+        "pronominal": "ⲧⲁⲛⳳⲟ=",
         "stative": ""
       },
       "F": {
@@ -22294,7 +22294,7 @@
     ],
     "greek_equivalents": ["ζωγρειν, ζωογονειν, ζωοποιειν"],
     "raw": {
-      "word": "(S, sA) ⲧⲁⲛϩⲟ\r\n(A) ⲧⲛⳉⲟ\r\n(sA) ⲧⲛϩⲟ\r\n(B) ⲧⲁⲛϧⲟ\r\n(F) ⲧⲁⲛϩⲁ\r\n(S) ⲧⲁⲛϩⲉ-\r\n(sA) ⲧⲁⲛϩⲁ-\r\n(B) ⲧⲁⲛϧⲉ-\r\n(S) ⲧⲁⲛϩⲟ=\r\n(A) ⲧⲛⳉⲁ=\r\n(sA, F) ⲧⲁⲛϩⲁ\r\n(B) ⲧⲁⲛϧⲟ=\r\n(S) ⲧⲁⲛϩⲏⲩ+",
+      "word": "(S, sA) ⲧⲁⲛϩⲟ\r\n(A) ⲧⲛⳉⲟ\r\n(sA) ⲧⲛϩⲟ\r\n(B) ⲧⲁⲛⳳⲟ\r\n(F) ⲧⲁⲛϩⲁ\r\n(S) ⲧⲁⲛϩⲉ-\r\n(sA) ⲧⲁⲛϩⲁ-\r\n(B) ⲧⲁⲛⳳⲉ-\r\n(S) ⲧⲁⲛϩⲟ=\r\n(A) ⲧⲛⳉⲁ=\r\n(sA, F) ⲧⲁⲛϩⲁ\r\n(B) ⲧⲁⲛⳳⲟ=\r\n(S) ⲧⲁⲛϩⲏⲩ+",
       "meaning": "tr: make, keep alive (caus of ⲱⲛϩ) [ζωγρειν, ζωογονειν, ζωοποιειν]\r\nintr: make, be alive"
     },
     "dutch_meanings": [
@@ -22757,7 +22757,7 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ϧⲁϯ",
+        "absolute": "ⳳⲁϯ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -22768,7 +22768,7 @@
     "english_meanings": ["intr: flow [ρειν]", "tr: let flow, pour [ρειν]"],
     "greek_equivalents": ["ρειν", "ρειν"],
     "raw": {
-      "word": "(S) ϩⲁⲧⲉ, ϩⲁⲁⲧⲉ\r\n(Sf, sA, F) ϩⲉϯ\r\n(sA) ϩⲉⲧⲉ, ϩⲉϯⲉ\r\n(B) ϧⲁϯ\r\n(S) ϩⲁⲁⲧ=",
+      "word": "(S) ϩⲁⲧⲉ, ϩⲁⲁⲧⲉ\r\n(Sf, sA, F) ϩⲉϯ\r\n(sA) ϩⲉⲧⲉ, ϩⲉϯⲉ\r\n(B) ⳳⲁϯ\r\n(S) ϩⲁⲁⲧ=",
       "meaning": "intr: flow [ρειν]\r\ntr: let flow, pour [ρειν]"
     },
     "dutch_meanings": [
@@ -25034,10 +25034,10 @@
         "stative": "ϩⲏⲙ†"
       },
       "B": {
-        "absolute": "ϧⲙⲟⲙ",
+        "absolute": "ⳳⲙⲟⲙ",
         "nominal": "",
         "pronominal": "",
-        "stative": "ϧⲏⲙ†"
+        "stative": "ⳳⲏⲙ†"
       }
     },
     "pos": "V",
@@ -25048,7 +25048,7 @@
     ],
     "greek_equivalents": ["θερμαινεσθαι, ζειν, φλεγμαινειν", "θερμοσ"],
     "raw": {
-      "word": "(S) ϩⲙⲟⲙ, ϣⲙⲟⲙ\r\n(A) ⳉⲙⲁⲙ\r\n(Sf, sA, F) ϩⲙⲁⲙ\r\n(B) ϧⲙⲟⲙ\r\n(S, sA, F) ϩⲏⲙ+\r\n(B) ϧⲏⲙ+",
+      "word": "(S) ϩⲙⲟⲙ, ϣⲙⲟⲙ\r\n(A) ⳉⲙⲁⲙ\r\n(Sf, sA, F) ϩⲙⲁⲙ\r\n(B) ⳳⲙⲟⲙ\r\n(S, sA, F) ϩⲏⲙ+\r\n(B) ⳳⲏⲙ+",
       "meaning": "intr: be hot [θερμαινεσθαι, ζειν, φλεγμαινειν]\r\nqual: [θερμοσ]"
     },
     "dutch_meanings": ["intr: wees warm", "kwaliteit: [thermo]"],
@@ -25457,11 +25457,11 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ⲙⲟϫϧ",
+        "absolute": "ⲙⲟϫⳳ",
         "nominal": "",
         "pronominal": "",
         "stative": "",
-        "absoluteVariants": ["ⲙⲟⲩϫϧ", "ⲙⲟϧϫ"]
+        "absoluteVariants": ["ⲙⲟⲩϫⳳ", "ⲙⲟⳳϫ"]
       },
       "F": {
         "absolute": "ⲙⲁϫⲃ",
@@ -25475,7 +25475,7 @@
     "english_meanings": ["girdle of soldier or monk [ζωνη]"],
     "greek_equivalents": ["ζωνη"],
     "raw": {
-      "word": "(S) ⲙⲟϫϩ, ⲙⲁϫϩ, ⲙⲟⲧϫϩ, ⲙⲟϫⲏϩ, ⲙⲟϫϩϥ, ⲙⲟϫⲏϥ, ⲙⲟϫϥϩϥ, ⲙⲟϫϥ, ⲙⲁϫϥ, ⲙⲁϫⲏϥ\r\n(A) ⲙⲁϫⳉ\r\n(B) ⲙⲟϫϧ, ⲙⲟⲩϫϧ, ⲙⲟϧϫ\r\n(F) ⲙⲁϫⲃ\r\n(S, F) ⲙⲟϫ\r\n(F) ⲙⲁϫ",
+      "word": "(S) ⲙⲟϫϩ, ⲙⲁϫϩ, ⲙⲟⲧϫϩ, ⲙⲟϫⲏϩ, ⲙⲟϫϩϥ, ⲙⲟϫⲏϥ, ⲙⲟϫϥϩϥ, ⲙⲟϫϥ, ⲙⲁϫϥ, ⲙⲁϫⲏϥ\r\n(A) ⲙⲁϫⳉ\r\n(B) ⲙⲟϫⳳ, ⲙⲟⲩϫⳳ, ⲙⲟⳳϫ\r\n(F) ⲙⲁϫⲃ\r\n(S, F) ⲙⲟϫ\r\n(F) ⲙⲁϫ",
       "meaning": "girdle of soldier or monk [ζωνη]"
     },
     "dutch_meanings": ["gordel van soldaat of monnik [riem]"],
@@ -25618,10 +25618,10 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ϧⲱⲕ",
-        "nominal": "ϧⲉⲕ-",
-        "pronominal": "ϧⲟⲕ=",
-        "stative": "ϧⲏⲕ†"
+        "absolute": "ⳳⲱⲕ",
+        "nominal": "ⳳⲉⲕ-",
+        "pronominal": "ⳳⲟⲕ=",
+        "stative": "ⳳⲏⲕ†"
       }
     },
     "pos": "V",
@@ -25631,7 +25631,7 @@
     ],
     "greek_equivalents": ["επισασσειν, ενοπλιζειν, περιζωννυναι"],
     "raw": {
-      "word": "(S) ϩⲱⲱⲕ\r\n(S, Sf, sA, F) ϩⲱⲕ\r\n(A) ⳉⲱⲕ\r\n(B) ϧⲱⲕ\r\n(S) ϩⲉⲕ-\r\n(Sf, sA) ϩⲁⲕ-\r\n(B) ϧⲉⲕ-\r\n(S) ϩ(ⲟ)ⲟⲕ=\r\n(A) ⳉⲁⲕ=, ⳉⲉⲕ=\r\n(sA, F) ϩⲁⲕ=\r\n(B) ϧⲟⲕ=\r\n(S, sA, F) ϩⲏⲕ+\r\n(B) ϧⲏⲕ+",
+      "word": "(S) ϩⲱⲱⲕ\r\n(S, Sf, sA, F) ϩⲱⲕ\r\n(A) ⳉⲱⲕ\r\n(B) ⳳⲱⲕ\r\n(S) ϩⲉⲕ-\r\n(Sf, sA) ϩⲁⲕ-\r\n(B) ⳳⲉⲕ-\r\n(S) ϩ(ⲟ)ⲟⲕ=\r\n(A) ⳉⲁⲕ=, ⳉⲉⲕ=\r\n(sA, F) ϩⲁⲕ=\r\n(B) ⳳⲟⲕ=\r\n(S, sA, F) ϩⲏⲕ+\r\n(B) ⳳⲏⲕ+",
       "meaning": "tr: gird, brace with harness, armour [επισασσειν, ενοπλιζειν, περιζωννυναι]"
     },
     "dutch_meanings": ["tr: gordel, beugel met harnas, harnas"],
@@ -28383,7 +28383,7 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ⲁϧⲱⲙ",
+        "absolute": "ⲁⳳⲱⲙ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -28394,7 +28394,7 @@
     "english_meanings": ["eagle [ιεραξ, αετοσ]"],
     "greek_equivalents": ["ιεραξ, αετοσ"],
     "raw": {
-      "word": "(S) ⲁϩⲱⲙ, ⲁϩⲱⲙⲉ, ⲁϩⲱⲱⲙⲉ\r\n(A) ⲁⳉⲱⲙ\r\n(B) ⲁϧⲱⲙ\r\n(S) plural:  (?) ⲛⲁϩⲱⲙⲉⲓ",
+      "word": "(S) ⲁϩⲱⲙ, ⲁϩⲱⲙⲉ, ⲁϩⲱⲱⲙⲉ\r\n(A) ⲁⳉⲱⲙ\r\n(B) ⲁⳳⲱⲙ\r\n(S) plural:  (?) ⲛⲁϩⲱⲙⲉⲓ",
       "meaning": "eagle [ιεραξ, αετοσ]"
     },
     "dutch_meanings": ["adelaar"],
@@ -28412,7 +28412,7 @@
         "absoluteVariants": ["ⲁϩⲣⲉ"]
       },
       "B": {
-        "absolute": "ⲁϧⲓ",
+        "absolute": "ⲁⳳⲓ",
         "nominal": "",
         "pronominal": "",
         "stative": "",
@@ -28424,7 +28424,7 @@
     "english_meanings": ["marsh herbage, sedge [αχει]"],
     "greek_equivalents": ["αχει"],
     "raw": {
-      "word": "(S) ⲁϩⲣ, ⲁϩⲣⲉ\r\n(B) ⲁϧⲓ, ⲁⲭⲓ",
+      "word": "(S) ⲁϩⲣ, ⲁϩⲣⲉ\r\n(B) ⲁⳳⲓ, ⲁⲭⲓ",
       "meaning": "marsh herbage, sedge [αχει]"
     },
     "dutch_meanings": ["moeraskruid, zegge [αχει]"],
@@ -28455,7 +28455,7 @@
       "B": {
         "absolute": "",
         "nominal": "",
-        "pronominal": "ⲁϧⲟ=",
+        "pronominal": "ⲁⳳⲟ=",
         "stative": ""
       },
       "F": {
@@ -28472,7 +28472,7 @@
     ],
     "greek_equivalents": ["τι;, ινα τι;"],
     "raw": {
-      "word": "(S, O) ⲁϩⲣⲟ=\r\n(sA) ⲁϩⲣⲁ=\r\n(B) ⲁϧⲟ=\r\n(F) ⲁϩⲁ=",
+      "word": "(S, O) ⲁϩⲣⲟ=\r\n(sA) ⲁϩⲣⲁ=\r\n(B) ⲁⳳⲟ=\r\n(F) ⲁϩⲁ=",
       "meaning": "interrog pron with suff, referring to subject of phrase, what? why? [τι;, ινα τι;]"
     },
     "dutch_meanings": [
@@ -28522,7 +28522,7 @@
       "B": {
         "absolute": "",
         "nominal": "ⲁⲧϭⲛⲉ-",
-        "pronominal": "",
+        "pronominal": "ⲁⲧϭⲛⲟⲩ=",
         "stative": ""
       },
       "F": {
@@ -28532,12 +28532,12 @@
         "stative": ""
       }
     },
-    "pos": "N",
+    "pos": "PREP",
     "gender": "",
     "english_meanings": ["without [χωρισ]"],
     "greek_equivalents": ["χωρισ"],
     "raw": {
-      "word": "(S, A) ⲁϫⲛ-\r\n(S) ⲉϫⲛ-\r\n(B) ⲁⲧϭⲛⲉ-, ⲁϭⲛⲉ-\r\n(F) ⲁϫⲉⲛ-\r\n(F) ⲁϫⲛⲧ=, ⲉϫⲛⲧ=, ⲁⲧϭⲛⲟⲩ=, ⲁϫⲉⲛⲧ=",
+      "word": "(S, A) ⲁϫⲛ-\r\n(S) ⲉϫⲛ-\r\n(B) ⲁⲧϭⲛⲉ-, ⲁϭⲛⲉ-\r\n(F) ⲁϫⲉⲛ-\r\n(B) ⲁⲧϭⲛⲟⲩ=, ⲁϭⲛⲟⲩ=\r\n(F) ⲁϫⲛⲧ=, ⲉϫⲛⲧ=, ⲁϫⲉⲛⲧ=",
       "meaning": "without [χωρισ]"
     },
     "dutch_meanings": ["zonder"],
@@ -31158,8 +31158,8 @@
       },
       "B": {
         "absolute": "",
-        "nominal": "ⲉ-",
-        "pronominal": "ⲉⲣⲟ=",
+        "nominal": "ⲉ̀-",
+        "pronominal": "ⲉ̀ⲣⲟ=",
         "stative": ""
       },
       "F": {
@@ -31187,7 +31187,7 @@
         "stative": ""
       }
     },
-    "pos": "N",
+    "pos": "PREP",
     "gender": "",
     "english_meanings": [
       "dative to, for, according to, as regards",
@@ -31201,7 +31201,7 @@
     ],
     "greek_equivalents": [],
     "raw": {
-      "word": "(S, B, F) ⲉ-\r\n(A, sA, O) ⲁ-\r\n(S, B) ⲉⲣⲟ=, ⲉⲣⲱ=\r\n(A, O) ⲁⲣⲁ=\r\n(F) ⲉⲗⲁ=",
+      "word": "(S, F) ⲉ-\r\n(B) ⲉ̀-\r\n(A, sA, O) ⲁ-\r\n(S) ⲉⲣⲟ=, ⲉⲣⲱ=\r\n(B) ⲉ̀ⲣⲟ=, ⲉ̀ⲣⲱ=\r\n(A, O) ⲁⲣⲁ=\r\n(F) ⲉⲗⲁ=",
       "meaning": "dative to, for, according to, as regards\r\npurpose for, in order to\r\nabout, because of\r\nfrom, by means of\r\ndirection towards, to\r\nin hostile sense against\r\nethic dative\r\n..."
     },
     "dutch_meanings": [
@@ -35194,10 +35194,10 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ⲣⲱϧⲧ",
-        "nominal": "ⲣⲉϧⲧ-",
-        "pronominal": "ⲣⲁϧⲧ=",
-        "stative": "ⲣⲁϧⲧ†"
+        "absolute": "ⲣⲱⳳⲧ",
+        "nominal": "ⲣⲉⳳⲧ-",
+        "pronominal": "ⲣⲁⳳⲧ=",
+        "stative": "ⲣⲁⳳⲧ†"
       },
       "F": {
         "absolute": "ⲗⲱϩⲧ",
@@ -35214,7 +35214,7 @@
     ],
     "greek_equivalents": ["καθαιρειν, πιπτειν"],
     "raw": {
-      "word": "(S, A, sA) ⲣⲱϩⲧ\r\n(sA) ⲣⲱϩⲉ\r\n(B) ⲣⲱϧⲧ\r\n(F) ⲗⲱϩⲧ\r\n(S, F) ⲣⲉϩⲧ-\r\n(B) ⲣⲉϧⲧ-\r\n(S, A, F) ⲣⲁϩⲧ=\r\n(S) ⲣⲟϩⲧ=\r\n(B) ⲣⲁϧⲧ=\r\n(F) ⲗⲉϩⲧ=\r\n(S) ⲣⲁϩⲧ+\r\n(B) ⲣⲁϧⲧ+",
+      "word": "(S, A, sA) ⲣⲱϩⲧ\r\n(sA) ⲣⲱϩⲉ\r\n(B) ⲣⲱⳳⲧ\r\n(F) ⲗⲱϩⲧ\r\n(S, F) ⲣⲉϩⲧ-\r\n(B) ⲣⲉⳳⲧ-\r\n(S, A, F) ⲣⲁϩⲧ=\r\n(S) ⲣⲟϩⲧ=\r\n(B) ⲣⲁⳳⲧ=\r\n(F) ⲗⲉϩⲧ=\r\n(S) ⲣⲁϩⲧ+\r\n(B) ⲣⲁⳳⲧ+",
       "meaning": "intr: strike, be struck, so fall [καθαιρειν, πιπτειν]\r\ntr: strike, cast"
     },
     "dutch_meanings": [
@@ -36131,10 +36131,10 @@
   },
   {
     "id": "cd_730",
-    "headword": "ⲓϧ",
+    "headword": "ⲓⳳ",
     "dialects": {
       "B": {
-        "absolute": "ⲓϧ",
+        "absolute": "ⲓⳳ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -36145,7 +36145,7 @@
     "english_meanings": ["demon [δαιμονιον, δαιμων]"],
     "greek_equivalents": ["δαιμονιον, δαιμων"],
     "raw": {
-      "word": "(B) ⲓϧ",
+      "word": "(B) ⲓⳳ",
       "meaning": "demon [δαιμονιον, δαιμων]"
     },
     "dutch_meanings": ["demon"],
@@ -41202,9 +41202,9 @@
       },
       "B": {
         "absolute": "ϩⲱⲛⲧ",
-        "nominal": "ϧ(ⲉ)ⲛⲧ-",
-        "pronominal": "ϧⲟⲛⲧ=",
-        "stative": "ϧⲉⲛⲧ†"
+        "nominal": "ⳳ(ⲉ)ⲛⲧ-",
+        "pronominal": "ⳳⲟⲛⲧ=",
+        "stative": "ⳳⲉⲛⲧ†"
       },
       "F": {
         "absolute": "ϩⲱⲛⲧ",
@@ -41233,7 +41233,7 @@
     ],
     "greek_equivalents": ["εγγιζειν, εφισταναι", "εγγυσ"],
     "raw": {
-      "word": "(S, sA, B, F) ϩⲱⲛⲧ\r\n(A) ⳉⲱⲛⲧ\r\n(B) ϧⲱⲛⲧ\r\n(S) ϩ(ⲉ)ⲛⲧ-\r\n(B) ϧ(ⲉ)ⲛⲧ-\r\n(S) ϩⲟⲛⲧ=\r\n(B) ϧⲟⲛⲧ=\r\n(S, F) ϩⲏⲛⲧ+\r\n(Sf, sA) ϩⲁⲛⲧ+\r\n(B) ϧⲉⲛⲧ+",
+      "word": "(S, sA, B, F) ϩⲱⲛⲧ\r\n(A) ⳉⲱⲛⲧ\r\n(B) ⳳⲱⲛⲧ\r\n(S) ϩ(ⲉ)ⲛⲧ-\r\n(B) ⳳ(ⲉ)ⲛⲧ-\r\n(S) ϩⲟⲛⲧ=\r\n(B) ⳳⲟⲛⲧ=\r\n(S, F) ϩⲏⲛⲧ+\r\n(Sf, sA) ϩⲁⲛⲧ+\r\n(B) ⳳⲉⲛⲧ+",
       "meaning": "intr: approach [εγγιζειν, εφισταναι]\r\nqual: [εγγυσ]"
     },
     "dutch_meanings": ["int.: aanpak", "kwaliteit: [nabijheid]"],
@@ -41760,18 +41760,21 @@
         "stative": ""
       }
     },
-    "pos": "CONJ",
+    "pos": "PREP",
     "gender": "",
     "english_meanings": [
-      "prep, with [μετα, συν, προσ, εν, και]",
-      "conjunct, and"
+      "preposition, with [μετα, συν, προσ, εν]",
+      "in nominal state also conjunction, and [και]"
     ],
-    "greek_equivalents": ["μετα, συν, προσ, εν, και"],
+    "greek_equivalents": ["μετα, συν, προσ, εν", "και"],
     "raw": {
       "word": "(S, A, sA, F) ⲙⲛ-\r\n(S) ⲛⲙ-\r\n(O) ⲙⲉⲛ-\r\n(F) ⲙⲉ-\r\n(B, F, O) ⲛⲉⲙ-\r\n(S) ⲛⲙⲙⲁ=\r\n(Sa, A, sA, F) ⲛⲉⲙⲉ=\r\n(Sa, sA) ⲛⲙⲙⲉ=, ⲛⲙⲉ=\r\n(S, B, NH) ⲛⲉⲙⲁ= {ext codex III - The Apocryphon of John; 113; 12; 6; ⲉⲩⲛ ϣⲟⲙⲛⲧ ⲛⲁⲓⲱⲛ ⲛⲉⲙⲁϥ; Ext}, {codex III - The Apocryphon of John; 113; 38; 7; ⲙⲛ ⲛⲉⲧⲛⲉⲙⲁϥ; Ext}, {Gospel of Judas; 824; 18; 15; ⲡⲉϣϥⲉⲥⲛⲟⲟⲩⲥ ⲛⲫⲱⲥⲧⲏⲣ ⲉⲧⲛⲉⲙⲁϥ; Ext}\r\n(F) ⲙⲉⲛⲉ=\r\n(NH) ⲛⲛⲉⲙⲁ= {ext codex II - The Apocryphon of John; 106; 8; 7; ⲥⲉⲛⲛⲉⲙⲁϥ ⲛϭⲓ ⲕⲉϣⲟⲙⲧ ⲛⲁⲓⲱⲛ ⲧⲭⲁⲣⲓⲥ ⲧⲙⲏⲉ ⲧⲙⲟⲣⲫⲏ; Ext}, {codex II - The Apocryphon of John; 106; 8; 10; ⲥⲉⲛⲛⲉⲙⲁϥ ⲇⲉ ⲛϭⲓ ⲕⲉϣⲟⲙⲧ ⲛⲁⲓⲱⲛ ⲧⲉⲡⲓⲛⲟⲓⲁ ⲧⲉⲥⲑⲏⲥⲓⲥ ⲡⲣⲡⲙⲉⲉⲩⲉ; Ext}",
-      "meaning": "prep, with [μετα, συν, προσ, εν, και]\r\nconjunct, and"
+      "meaning": "preposition, with [μετα, συν, προσ, εν]\r\nin nominal state also conjunction, and [και]"
     },
-    "dutch_meanings": ["voorbereiden, met", "conjunctie, en"],
+    "dutch_meanings": [
+      "voorzetsel, met",
+      "in nominale staat ook voegwoord, en"
+    ],
     "etymology": "Egy"
   },
   {
@@ -43563,16 +43566,16 @@
     "pos": "V",
     "gender": "",
     "english_meanings": [
-      "tr: smear, paint, overlay c ⲛ- (ⲙⲙⲟ=), ϧⲉⲛ- of stuff used, acc of obj smeared, ⲉ- of further obj [καταπλασσειν, εξαλειφεσθαι, χριεσθαι]",
+      "tr: smear, paint, overlay c ⲛ- (ⲙⲙⲟ=), ⳳⲉⲛ- of stuff used, acc of obj smeared, ⲉ- of further obj [καταπλασσειν, εξαλειφεσθαι, χριεσθαι]",
       "intr: c ⲉ- [ενδεισθαι]"
     ],
     "greek_equivalents": ["καταπλασσειν, εξαλειφεσθαι, χριεσθαι", "ενδεισθαι"],
     "raw": {
       "word": "(S) ⲗⲁⲗⲉ, ⲗⲟⲟⲗⲉ\r\n(B) ⲗⲁⲗⲱ, ⲗⲁⲗⲟ\r\n(S, B) ⲗⲁⲗⲱ-\r\n(B) ⲗⲁⲗⲉ-\r\n(S, B) ⲗⲁⲗⲱⲱ=, ⲗⲁⲗⲱ=\r\n(Sf) ⲗⲉⲗⲱⲱ=\r\n(S) ⲗⲁⲗⲱⲟⲩ+, ⲗⲁⲗⲱ+, ⲗⲁⲗⲏⲟⲩ+, ⲗⲟⲟⲗⲉ+\r\n(B) ⲗⲁⲗⲏⲟⲩⲧ+",
-      "meaning": "tr: smear, paint, overlay c ⲛ- (ⲙⲙⲟ=), ϧⲉⲛ- of stuff used, acc of obj smeared, ⲉ- of further obj [καταπλασσειν, εξαλειφεσθαι, χριεσθαι]\r\nintr: c ⲉ- [ενδεισθαι]"
+      "meaning": "tr: smear, paint, overlay c ⲛ- (ⲙⲙⲟ=), ⳳⲉⲛ- of stuff used, acc of obj smeared, ⲉ- of further obj [καταπλασσειν, εξαλειφεσθαι, χριεσθαι]\r\nintr: c ⲉ- [ενδεισθαι]"
     },
     "dutch_meanings": [
-      "tr: uitstrijkje, verf, overlay c ⲛ- (ⲙⲙⲟ=), ϧⲉⲛ- van gebruikte spullen, acc van obj besmeurd, ⲉ- van verdere obj",
+      "tr: uitstrijkje, verf, overlay c ⲛ- (ⲙⲙⲟ=), ⳳⲉⲛ- van gebruikte spullen, acc van obj besmeurd, ⲉ- van verdere obj",
       "intr: c ⲉ- [binnen]"
     ],
     "etymology": "Egy"
@@ -43956,8 +43959,8 @@
       },
       "B": {
         "absolute": "",
-        "nominal": "ⲛ-",
-        "pronominal": "",
+        "nominal": "ⲛ̀-",
+        "pronominal": "ⲙ̀ⲙⲟ=",
         "stative": ""
       },
       "F": {
@@ -43973,10 +43976,10 @@
         "stative": ""
       }
     },
-    "pos": "CONJ",
+    "pos": "PREP",
     "gender": "",
     "english_meanings": [
-      "instrument, agent (often var ϩⲛ-, ϧⲉⲛ-), with, by, Gk dat or εν",
+      "instrument, agent (often var ϩⲛ-, ⳳⲉⲛ-), with, by, Gk dat or εν",
       "― with ⲉⲃⲟⲗ",
       "local, in, to, from",
       "― with ⲉⲃⲟⲗ, ⲥⲁⲃⲟⲗ, from, from out [απο]",
@@ -43988,11 +43991,11 @@
     ],
     "greek_equivalents": ["απο", "εν"],
     "raw": {
-      "word": "(S, A, sA, B, F, O) ⲛ-",
-      "meaning": "instrument, agent (often var ϩⲛ-, ϧⲉⲛ-), with, by, Gk dat or εν \r\n― with ⲉⲃⲟⲗ\r\nlocal, in, to, from\r\n― with ⲉⲃⲟⲗ, ⲥⲁⲃⲟⲗ, from, from out [απο]\r\ntemporal, in, on [εν]\r\nin compound prep, as ⲛⲥⲁ-, ⲛⲟⲩⲉ, ⲛⲟⲩⲃⲉ\r\nin advbs, as ⲛⲁ, ⲛⲑⲉ\r\nbefore conjunction (archaic) S,A,sA,F\r\n― or interj S"
+      "word": "(S, A, sA, F, O) ⲛ-\r\n(B) ⲛ̀-, ⲙ̀-\r\n(B) ⲙ̀ⲙⲟ=",
+      "meaning": "instrument, agent (often var ϩⲛ-, ⳳⲉⲛ-), with, by, Gk dat or εν \r\n― with ⲉⲃⲟⲗ\r\nlocal, in, to, from\r\n― with ⲉⲃⲟⲗ, ⲥⲁⲃⲟⲗ, from, from out [απο]\r\ntemporal, in, on [εν]\r\nin compound prep, as ⲛⲥⲁ-, ⲛⲟⲩⲉ, ⲛⲟⲩⲃⲉ\r\nin advbs, as ⲛⲁ, ⲛⲑⲉ\r\nbefore conjunction (archaic) S,A,sA,F\r\n― or interj S"
     },
     "dutch_meanings": [
-      "instrument, agent (vaak var ϩⲛ-, ϧⲉⲛ-), met, door, Gk dat of εν",
+      "instrument, agent (vaak var ϩⲛ-, ⳳⲉⲛ-), met, door, Gk dat of εν",
       "― met ⲉⲃⲟⲗ",
       "lokaal, in, naar, van",
       "― met ⲉⲃⲟⲗ, ⲥⲁⲃⲟⲗ, van, van uit [απο]",
@@ -44028,7 +44031,7 @@
       },
       "B": {
         "absolute": "",
-        "nominal": "ⲛ-",
+        "nominal": "ⲛ̀-",
         "pronominal": "ⲛⲁ=",
         "stative": ""
       },
@@ -44061,7 +44064,7 @@
     ],
     "greek_equivalents": [],
     "raw": {
-      "word": "(S, A, sA, B, F, O) ⲛ-\r\n(S, B, O) ⲛⲁ=\r\n(Sa, F, O) ⲛⲏ=\r\n(A, sA, F) ⲛⲉ=",
+      "word": "(S, A, sA, F, O) ⲛ-\r\n(B) ⲛ̀-\r\n(S, B, O) ⲛⲁ=\r\n(Sa, F, O) ⲛⲏ=\r\n(A, sA, F) ⲛⲉ=",
       "meaning": "preposition of dative to, for\r\nin address of letter\r\nwith give, pay S (Theban) sometimes dat ⲛ- only, vb omitted\r\nethic dat"
     },
     "dutch_meanings": [
@@ -44113,7 +44116,7 @@
         "stative": ""
       }
     },
-    "pos": "N",
+    "pos": "PREP",
     "gender": "",
     "english_meanings": ["opposite, toward, against [αντι]"],
     "greek_equivalents": ["αντι"],
@@ -44171,7 +44174,7 @@
         "stative": ""
       }
     },
-    "pos": "N",
+    "pos": "PREP",
     "gender": "",
     "english_meanings": [
       "to, toward of persons [προσ]",
@@ -44230,12 +44233,12 @@
       },
       "B": {
         "absolute": "",
-        "nominal": "ϧⲁ-",
-        "pronominal": "ϧⲁⲣⲟ=",
+        "nominal": "ⳳⲁ-",
+        "pronominal": "ⳳⲁⲣⲟ=",
         "stative": ""
       }
     },
-    "pos": "N",
+    "pos": "PREP",
     "gender": "",
     "english_meanings": [
       "under, in, at [υπο]",
@@ -44248,7 +44251,7 @@
     ],
     "greek_equivalents": ["υπο", "εκ, απο", "υπο, απο", "υπερ", "αντι"],
     "raw": {
-      "word": "(S, sA, F, O) ϩⲁ-\r\n(A) ⳉⲁ-\r\n(B, O) ϧⲁ-\r\n(O) ⲭⲁ-\r\n(S) ϩⲁⲣⲟ=\r\n(A) ⳉⲁⲣⲁ=\r\n(sA) ϩⲁⲣⲁ=\r\n(B) ϧⲁⲣⲟ=\r\n(F) ϩⲁⲗⲁ=",
+      "word": "(S, sA, F, O) ϩⲁ-\r\n(A) ⳉⲁ-\r\n(B, O) ⳳⲁ-\r\n(O) ⲭⲁ-\r\n(S) ϩⲁⲣⲟ=\r\n(A) ⳉⲁⲣⲁ=\r\n(sA) ϩⲁⲣⲁ=\r\n(B) ⳳⲁⲣⲟ=\r\n(F) ϩⲁⲗⲁ=",
       "meaning": "under, in, at [υπο]\r\ndative\r\nfrom [εκ, απο]\r\nby reason of [υπο, απο]\r\nfor, in respect of, on behalf of [υπερ]\r\nfor of price [αντι]\r\nagainst"
     },
     "dutch_meanings": [
@@ -45446,10 +45449,10 @@
         "stative": "ⲗⲁϩⲉⲙ†"
       },
       "B": {
-        "absolute": "ⲗⲱϧⲉⲙ",
+        "absolute": "ⲗⲱⳳⲉⲙ",
         "nominal": "",
         "pronominal": "",
-        "stative": "ⲗⲁϧⲉⲙ†"
+        "stative": "ⲗⲁⳳⲉⲙ†"
       },
       "F": {
         "absolute": "",
@@ -45463,7 +45466,7 @@
     "english_meanings": ["intr: be boiling, boiled", "tr: boil", "as nn m"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(S) ⲗⲱϩⲙ\r\n(B) ⲗⲱϧⲉⲙ\r\n(S) ⲗⲉϩⲙ-\r\n(S) ⲗⲟϩⲙ=, ⲗⲁϩⲙ=\r\n(F) ⲗⲉϩⲙ=\r\n(S) ⲗⲁϩⲉⲙ+, ⲗⲟϩⲙ+\r\n(B) ⲗⲁϧⲉⲙ+",
+      "word": "(S) ⲗⲱϩⲙ\r\n(B) ⲗⲱⳳⲉⲙ\r\n(S) ⲗⲉϩⲙ-\r\n(S) ⲗⲟϩⲙ=, ⲗⲁϩⲙ=\r\n(F) ⲗⲉϩⲙ=\r\n(S) ⲗⲁϩⲉⲙ+, ⲗⲟϩⲙ+\r\n(B) ⲗⲁⳳⲉⲙ+",
       "meaning": "intr: be boiling, boiled\r\ntr: boil\r\nas nn m"
     },
     "dutch_meanings": ["intr: kokend, gekookt", "tr: kook", "als nn m"],
@@ -45950,7 +45953,7 @@
         "nominal": "",
         "pronominal": "",
         "stative": "",
-        "absoluteVariants": ["ϧⲟⲙϧⲉⲙ", "ϩⲉⲙϩⲉⲙ-", "ϩⲉⲙϩⲱⲙ="]
+        "absoluteVariants": ["ⳳⲟⲙⳳⲉⲙ", "ϩⲉⲙϩⲉⲙ-", "ϩⲉⲙϩⲱⲙ="]
       }
     },
     "pos": "V",
@@ -45961,7 +45964,7 @@
     ],
     "greek_equivalents": ["καταπατειν", "καταπατημα"],
     "raw": {
-      "word": "(B) ϩⲟⲙϩⲉⲙ, ϧⲟⲙϧⲉⲙ, ϩⲉⲙϩⲉⲙ-, ϩⲉⲙϩⲱⲙ=",
+      "word": "(B) ϩⲟⲙϩⲉⲙ, ⳳⲟⲙⳳⲉⲙ, ϩⲉⲙϩⲉⲙ-, ϩⲉⲙϩⲱⲙ=",
       "meaning": "tr: tread, trample [καταπατειν]\r\nas nn m [καταπατημα]"
     },
     "dutch_meanings": ["tr: betreden, vertrappen", "als nn m [overtreding]"],
@@ -46755,14 +46758,14 @@
   },
   {
     "id": "cd_1026",
-    "headword": "ⲙⲗⲁϧ",
+    "headword": "ⲙⲗⲁⳳ",
     "dialects": {
       "B": {
-        "absolute": "ⲙⲗⲁϧ",
+        "absolute": "ⲙⲗⲁⳳ",
         "nominal": "",
         "pronominal": "",
         "stative": "",
-        "absoluteVariants": ["ⲉⲙⲗⲁϧ"]
+        "absoluteVariants": ["ⲉⲙⲗⲁⳳ"]
       },
       "F": {
         "absolute": "ⲙⲗⲉϩ",
@@ -46776,7 +46779,7 @@
     "english_meanings": ["intr: fight, quarrel [μαχεσθαι]"],
     "greek_equivalents": ["μαχεσθαι"],
     "raw": {
-      "word": "(B) ⲙⲗⲁϧ, ⲉⲙⲗⲁϧ\r\n(F) ⲙⲗⲉϩ",
+      "word": "(B) ⲙⲗⲁⳳ, ⲉⲙⲗⲁⳳ\r\n(F) ⲙⲗⲉϩ",
       "meaning": "intr: fight, quarrel [μαχεσθαι]"
     },
     "dutch_meanings": ["int.: ruzie, ruzie"],
@@ -46904,9 +46907,9 @@
         "stative": "ⲙⲟⲗϩ†"
       },
       "B": {
-        "absolute": "ⲙⲟⲗϧ",
+        "absolute": "ⲙⲟⲗⳳ",
         "nominal": "",
-        "pronominal": "ⲙⲟⲗϧ=",
+        "pronominal": "ⲙⲟⲗⳳ=",
         "stative": ""
       }
     },
@@ -46918,7 +46921,7 @@
     ],
     "greek_equivalents": [],
     "raw": {
-      "word": "(S) ⲙⲟⲩⲗϩ\r\n(B) ⲙⲟⲗϧ\r\n(S) ⲙⲟⲗϩ=\r\n(B) ⲙⲟⲗϧ=\r\n(S) ⲙⲟⲗϩ+",
+      "word": "(S) ⲙⲟⲩⲗϩ\r\n(B) ⲙⲟⲗⳳ\r\n(S) ⲙⲟⲗϩ=\r\n(B) ⲙⲟⲗⳳ=\r\n(S) ⲙⲟⲗϩ+",
       "meaning": "intr: be hooked into, twisted into, attached to\r\ntr: involve, enmesh"
     },
     "dutch_meanings": [
@@ -48516,10 +48519,10 @@
   },
   {
     "id": "cd_1074",
-    "headword": "ⲙⲣⲟϧⲧ",
+    "headword": "ⲙⲣⲟⳳⲧ",
     "dialects": {
       "B": {
-        "absolute": "ⲙⲣⲟϧⲧ",
+        "absolute": "ⲙⲣⲟⳳⲧ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -48530,7 +48533,7 @@
     "english_meanings": ["pipe-clay [μοροχθοσ]"],
     "greek_equivalents": ["μοροχθοσ"],
     "raw": {
-      "word": "(B) ⲙⲣⲟϧⲧ",
+      "word": "(B) ⲙⲣⲟⳳⲧ",
       "meaning": "pipe-clay [μοροχθοσ]"
     },
     "dutch_meanings": ["pijpaarde"],
@@ -50052,10 +50055,10 @@
   },
   {
     "id": "cd_1119",
-    "headword": "ⲙⲁϧⲟⲩⲗ",
+    "headword": "ⲙⲁⳳⲟⲩⲗ",
     "dialects": {
       "B": {
-        "absolute": "ⲙⲁϧⲟⲩⲗ",
+        "absolute": "ⲙⲁⳳⲟⲩⲗ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -50066,7 +50069,7 @@
     "english_meanings": ["chisel, pick"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(B) ⲙⲁϧⲟⲩⲗ",
+      "word": "(B) ⲙⲁⳳⲟⲩⲗ",
       "meaning": "chisel, pick"
     },
     "dutch_meanings": ["beitel, kies"],
@@ -51983,8 +51986,8 @@
       },
       "B": {
         "absolute": "",
-        "nominal": "ⲛⲧⲉ-",
-        "pronominal": "ⲛⲧⲁ=",
+        "nominal": "ⲛ̀ⲧⲉ-",
+        "pronominal": "ⲛ̀ⲧⲁ=",
         "stative": ""
       },
       "L": {
@@ -52006,7 +52009,7 @@
         "stative": ""
       }
     },
-    "pos": "N",
+    "pos": "PREP",
     "gender": "",
     "english_meanings": [
       "particle of genitive, used",
@@ -52019,7 +52022,7 @@
     ],
     "greek_equivalents": [],
     "raw": {
-      "word": "(S, A, B) ⲛⲧⲉ-\r\n(S, B) ⲛⲧⲁ=\r\n(sA) ⲛⲧⲉ=\r\n(Sf, F) ⲛⲧⲏ=",
+      "word": "(S, A) ⲛⲧⲉ-\r\n(B) ⲛ̀ⲧⲉ-\r\n(S) ⲛⲧⲁ=\r\n(B) ⲛ̀ⲧⲁ=\r\n(sA) ⲛⲧⲉ=\r\n(Sf, F) ⲛⲧⲏ=",
       "meaning": "particle of genitive, used\r\n― for greater precision than ⲛ-\r\n― where preceding word has indefinite article\r\n― between 2 names (persons or places)\r\n― after foregoing gen or after attribute (adj or rel)\r\n― after strong art\r\nⲛⲧⲁ= &c, indicates possession, ownership (esp in B)"
     },
     "dutch_meanings": [
@@ -52927,11 +52930,11 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ⲛⲟⲩϫϧ",
+        "absolute": "ⲛⲟⲩϫⳳ",
         "nominal": "",
-        "pronominal": "ⲛⲟϫϧ=",
-        "stative": "ⲛⲟϫϧ†",
-        "absoluteVariants": ["ⲛⲟⲩϧϫ"]
+        "pronominal": "ⲛⲟϫⳳ=",
+        "stative": "ⲛⲟϫⳳ†",
+        "absoluteVariants": ["ⲛⲟⲩⳳϫ"]
       }
     },
     "pos": "V",
@@ -52942,7 +52945,7 @@
     ],
     "greek_equivalents": ["ραινειν, βαπτειν"],
     "raw": {
-      "word": "(S, F) ⲛⲟⲩϫⲕ, ⲛⲟⲩϫϭ, ⲛⲟⲩϫ\r\n(A) ⲛⲟⲩϫⳉ\r\n(B) ⲛⲟⲩϫϧ, ⲛⲟⲩϧϫ\r\n(S) ⲛⲟϫⲕ=, ⲛⲟϫϭ=, ⲛⲟϫ=, ⲛⲁϫ=(?)\r\n(B) ⲛⲟϫϧ=, ⲛⲟϧϫ=\r\n(B) ⲛⲟϫϧ+",
+      "word": "(S, F) ⲛⲟⲩϫⲕ, ⲛⲟⲩϫϭ, ⲛⲟⲩϫ\r\n(A) ⲛⲟⲩϫⳉ\r\n(B) ⲛⲟⲩϫⳳ, ⲛⲟⲩⳳϫ\r\n(S) ⲛⲟϫⲕ=, ⲛⲟϫϭ=, ⲛⲟϫ=, ⲛⲁϫ=(?)\r\n(B) ⲛⲟϫⳳ=, ⲛⲟⳳϫ=\r\n(B) ⲛⲟϫⳳ+",
       "meaning": "intr: sprinkle, asperge [ραινειν, βαπτειν]\r\ntr: sprinkle, scatter"
     },
     "dutch_meanings": [
@@ -55681,10 +55684,10 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ⲫⲱϧ",
-        "nominal": "ⲫⲁϧ-",
-        "pronominal": "ⲫⲁϧ=",
-        "stative": "ⲫⲏϧ†"
+        "absolute": "ⲫⲱⳳ",
+        "nominal": "ⲫⲁⳳ-",
+        "pronominal": "ⲫⲁⳳ=",
+        "stative": "ⲫⲏⳳ†"
       }
     },
     "pos": "V",
@@ -55695,7 +55698,7 @@
     ],
     "greek_equivalents": ["ρηγνυναι, σχιζειν"],
     "raw": {
-      "word": "(S, sA, F) ⲡⲱϩ\r\n(A) ⲡⲱⳉ\r\n(B) ⲫⲱϧ\r\n(S, F) ⲡⲉϩ-\r\n(S) ⲡⲁϩ-\r\n(B) ⲫⲁϧ-, ⲫⲉϧ-\r\n(S, sA) ⲡⲁϩ=\r\n(S) ⲡⲟϩ=\r\n(B) ⲫⲁϧ=\r\n(S, F) ⲡⲏϩ+\r\n(S) ⲡⲉϩ+\r\n(B) ⲫⲏϧ+",
+      "word": "(S, sA, F) ⲡⲱϩ\r\n(A) ⲡⲱⳉ\r\n(B) ⲫⲱⳳ\r\n(S, F) ⲡⲉϩ-\r\n(S) ⲡⲁϩ-\r\n(B) ⲫⲁⳳ-, ⲫⲉⳳ-\r\n(S, sA) ⲡⲁϩ=\r\n(S) ⲡⲟϩ=\r\n(B) ⲫⲁⳳ=\r\n(S, F) ⲡⲏϩ+\r\n(S) ⲡⲉϩ+\r\n(B) ⲫⲏⳳ+",
       "meaning": "intr: break, burst, tear [ρηγνυναι, σχιζειν]\r\ntr: S,A,sA,B,F, meanings same"
     },
     "dutch_meanings": [
@@ -55706,13 +55709,13 @@
   },
   {
     "id": "cd_1271",
-    "headword": "(ⲫⲱϧⲉⲣ)",
+    "headword": "(ⲫⲱⳳⲉⲣ)",
     "dialects": {
       "B": {
-        "absolute": "(ⲫⲱϧⲉⲣ)",
+        "absolute": "(ⲫⲱⳳⲉⲣ)",
         "nominal": "",
         "pronominal": "",
-        "stative": "ⲫⲁϧⲉⲣ†"
+        "stative": "ⲫⲁⳳⲉⲣ†"
       },
       "O": {
         "absolute": "",
@@ -55726,7 +55729,7 @@
     "english_meanings": ["intr & tr: charm, bewitch"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(B) (ⲫⲱϧⲉⲣ)\r\n(O) ⲡⲉϩⲉⲣ-\r\n(B) ⲫⲁϧⲉⲣ+",
+      "word": "(B) (ⲫⲱⳳⲉⲣ)\r\n(O) ⲡⲉϩⲉⲣ-\r\n(B) ⲫⲁⳳⲉⲣ+",
       "meaning": "intr & tr: charm, bewitch"
     },
     "dutch_meanings": ["intr & tr: charme, betovering"],
@@ -57636,10 +57639,10 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ⲣⲱϧⲓ",
+        "absolute": "ⲣⲱⳳⲓ",
         "nominal": "",
-        "pronominal": "ⲣⲁϧ=",
-        "stative": "ⲣⲁϧⲓ†"
+        "pronominal": "ⲣⲁⳳ=",
+        "stative": "ⲣⲁⳳⲓ†"
       }
     },
     "pos": "V",
@@ -57651,7 +57654,7 @@
     ],
     "greek_equivalents": ["πλυνειν", "ραντιζειν"],
     "raw": {
-      "word": "(S) ⲣⲱϩⲉ\r\n(A) ⲣⲱⳉⲉ\r\n(B) ⲣⲱϧⲓ\r\n(B) ⲣⲁϧ=\r\n(S) ⲣⲁϩⲉ+\r\n(B) ⲣⲁϧⲓ+",
+      "word": "(S) ⲣⲱϩⲉ\r\n(A) ⲣⲱⳉⲉ\r\n(B) ⲣⲱⳳⲓ\r\n(B) ⲣⲁⳳ=\r\n(S) ⲣⲁϩⲉ+\r\n(B) ⲣⲁⳳⲓ+",
       "meaning": "intr: become, be clean [πλυνειν]\r\ntr: cleanse, wash [ραντιζειν]\r\nas nn, cleansing"
     },
     "dutch_meanings": [
@@ -61379,7 +61382,7 @@
         "nominal": "",
         "pronominal": "",
         "stative": "",
-        "absoluteVariants": ["ϧⲁⲣⲁϭⲱⲟⲩⲧⲥ"]
+        "absoluteVariants": ["ⳳⲁⲣⲁϭⲱⲟⲩⲧⲥ"]
       },
       "F": {
         "absolute": "ϭⲁⲛϭⲱϣ",
@@ -61393,7 +61396,7 @@
     "english_meanings": ["hare [χοιρογρυλλιον]"],
     "greek_equivalents": ["χοιρογρυλλιον"],
     "raw": {
-      "word": "(S) ⲥⲁⲣⲁϭⲱⲟⲩϣ, ⲥⲁⲣⲁϭⲱϣ, ⲥⲁⲣⲁⲡϭⲱϣ, ⲥⲁⲗⲁϭⲱⲱϣ, ϭⲁⲗⲁⲡϭⲱϣ\r\n(B) ⲥⲁⲣⲁϫⲱϥ, ϧⲁⲣⲁϭⲱⲟⲩⲧⲥ\r\n(F) ϭⲁⲛϭⲱϣ",
+      "word": "(S) ⲥⲁⲣⲁϭⲱⲟⲩϣ, ⲥⲁⲣⲁϭⲱϣ, ⲥⲁⲣⲁⲡϭⲱϣ, ⲥⲁⲗⲁϭⲱⲱϣ, ϭⲁⲗⲁⲡϭⲱϣ\r\n(B) ⲥⲁⲣⲁϫⲱϥ, ⳳⲁⲣⲁϭⲱⲟⲩⲧⲥ\r\n(F) ϭⲁⲛϭⲱϣ",
       "meaning": "hare [χοιρογρυλλιον]"
     },
     "dutch_meanings": ["haas"],
@@ -62887,7 +62890,7 @@
         "absolute": "",
         "nominal": "",
         "pronominal": "",
-        "stative": "ⲥⲁϧⲉⲙ†"
+        "stative": "ⲥⲁⳳⲉⲙ†"
       }
     },
     "pos": "V",
@@ -62899,7 +62902,7 @@
     ],
     "greek_equivalents": ["εκλυεσθαι, εκλειπειν", "εκλυσισ"],
     "raw": {
-      "word": "(S, F) ⲥⲱϣⲙ, ⲥⲱϩⲙ, ϣⲱⲥ(ⲉ)ⲙ\r\n(A) ϣⲱⲥⲙⲉ\r\n(S) ⲥⲟϣⲙ+, ϣⲟⲥⲙ+\r\n(Sf) ⲥⲁⲥⲙ+\r\n(B) ⲥⲁϧⲉⲙ+",
+      "word": "(S, F) ⲥⲱϣⲙ, ⲥⲱϩⲙ, ϣⲱⲥ(ⲉ)ⲙ\r\n(A) ϣⲱⲥⲙⲉ\r\n(S) ⲥⲟϣⲙ+, ϣⲟⲥⲙ+\r\n(Sf) ⲥⲁⲥⲙ+\r\n(B) ⲥⲁⳳⲉⲙ+",
       "meaning": "intr:\r\n― be faint, undone, disheartened [εκλυεσθαι, εκλειπειν]\r\n― [εκλυσισ]"
     },
     "dutch_meanings": [
@@ -63115,14 +63118,14 @@
   },
   {
     "id": "cd_1498",
-    "headword": "ⲥⲁϧⲱⲧ",
+    "headword": "ⲥⲁⳳⲱⲧ",
     "dialects": {
       "B": {
-        "absolute": "ⲥⲁϧⲱⲧ",
+        "absolute": "ⲥⲁⳳⲱⲧ",
         "nominal": "",
         "pronominal": "",
         "stative": "",
-        "absoluteVariants": ["ⲥⲁϧⲟⲧ"]
+        "absoluteVariants": ["ⲥⲁⳳⲟⲧ"]
       }
     },
     "pos": "V",
@@ -63130,7 +63133,7 @@
     "english_meanings": ["treasury (?)"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(B) ⲥⲁϧⲱⲧ, ⲥⲁϧⲟⲧ",
+      "word": "(B) ⲥⲁⳳⲱⲧ, ⲥⲁⳳⲟⲧ",
       "meaning": "treasury (?)"
     },
     "dutch_meanings": ["schatkist (?)"],
@@ -63215,7 +63218,7 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ⲥϧⲟ",
+        "absolute": "ⲥⳳⲟ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -63226,7 +63229,7 @@
     "english_meanings": ["plough-handle [εχετλη]"],
     "greek_equivalents": ["εχετλη"],
     "raw": {
-      "word": "(S) ⲥϩⲟ\r\n(B) ⲥϧⲟ",
+      "word": "(S) ⲥϩⲟ\r\n(B) ⲥⳳⲟ",
       "meaning": "plough-handle [εχετλη]"
     },
     "dutch_meanings": ["ploeghandvat [εχετλη]"],
@@ -63279,9 +63282,9 @@
         "stative": "ⲥⲁϩⲙ†"
       },
       "B": {
-        "absolute": "ⲥⲱϧⲉⲙ",
+        "absolute": "ⲥⲱⳳⲉⲙ",
         "nominal": "",
-        "pronominal": "ⲥⲁϧⲙ=",
+        "pronominal": "ⲥⲁⳳⲙ=",
         "stative": "",
         "absoluteVariants": ["ⲥⲁϩⲉⲙ"]
       }
@@ -63294,7 +63297,7 @@
     ],
     "greek_equivalents": [],
     "raw": {
-      "word": "(S) ⲥⲱϩⲙ\r\n(B) ⲥⲱϧⲉⲙ\r\n(S) ⲥⲁϩⲙ=\r\n(B) ⲥⲁϧⲙ=\r\n(S) ⲥⲁϩⲙ+, ⲥⲟϩⲙ+\r\n(B) ⲥⲁϧⲉⲙ, ⲥⲁϩⲉⲙ",
+      "word": "(S) ⲥⲱϩⲙ\r\n(B) ⲥⲱⳳⲉⲙ\r\n(S) ⲥⲁϩⲙ=\r\n(B) ⲥⲁⳳⲙ=\r\n(S) ⲥⲁϩⲙ+, ⲥⲟϩⲙ+\r\n(B) ⲥⲁⳳⲉⲙ, ⲥⲁϩⲉⲙ",
       "meaning": "intr: sink, fall down\r\ntr: cause to fall, overwhelmm, press down"
     },
     "dutch_meanings": [
@@ -63314,11 +63317,11 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ⲥⲱϧⲉⲙ",
+        "absolute": "ⲥⲱⳳⲉⲙ",
         "nominal": "",
         "pronominal": "",
         "stative": "",
-        "absoluteVariants": ["ⲥⲱϧⲙ="]
+        "absoluteVariants": ["ⲥⲱⳳⲙ="]
       }
     },
     "pos": "V",
@@ -63329,7 +63332,7 @@
     ],
     "greek_equivalents": ["εκοπαν"],
     "raw": {
-      "word": "(S) ⲥⲱϩⲙ\r\n(B) ⲥⲱϧⲉⲙ, ⲥⲱϧⲙ=",
+      "word": "(S) ⲥⲱϩⲙ\r\n(B) ⲥⲱⳳⲉⲙ, ⲥⲱⳳⲙ=",
       "meaning": "tr: B, pluck, draw [εκοπαν]\r\nintr: S c ϩⲁ-, be withdrawn, recede from"
     },
     "dutch_meanings": [
@@ -66852,10 +66855,10 @@
   },
   {
     "id": "cd_1606",
-    "headword": "ⲧⲱⲣϧ",
+    "headword": "ⲧⲱⲣⳳ",
     "dialects": {
       "S": {
-        "absolute": "ⲧⲱⲣϧ",
+        "absolute": "ⲧⲱⲣⳳ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -66866,7 +66869,7 @@
     "english_meanings": ["tr: meaning unknown, smear, anoint (?)"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(S) ⲧⲱⲣϧ",
+      "word": "(S) ⲧⲱⲣⳳ",
       "meaning": "tr: meaning unknown, smear, anoint (?)"
     },
     "dutch_meanings": ["tr: betekenis onbekend, uitstrijkje, zalven (?)"],
@@ -68376,11 +68379,11 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ⲧϧⲙⲟ",
+        "absolute": "ⲧⳳⲙⲟ",
         "nominal": "",
         "pronominal": "",
         "stative": "",
-        "absoluteVariants": ["ⲧϧⲙⲟⲙ", "ⲑⲉⲙⲙⲟ", "ⲧϩⲉⲙⲙⲟ", "ⲑϧⲙⲟ-", "ⲑϧⲙⲟ="]
+        "absoluteVariants": ["ⲧⳳⲙⲟⲙ", "ⲑⲉⲙⲙⲟ", "ⲧϩⲉⲙⲙⲟ", "ⲑⳳⲙⲟ-", "ⲑⳳⲙⲟ="]
       }
     },
     "pos": "V",
@@ -68392,7 +68395,7 @@
     ],
     "greek_equivalents": ["φλεγμαινειν, θερμαινεσθαι", "θερμασια"],
     "raw": {
-      "word": "(S) ⲑⲙⲟ\r\n(sA) ⲧϩⲙⲙⲟ\r\n(B) ⲧϧⲙⲟ, ⲧϧⲙⲟⲙ, ⲑⲉⲙⲙⲟ, ⲧϩⲉⲙⲙⲟ, ⲑϧⲙⲟ-, ⲑϧⲙⲟ=",
+      "word": "(S) ⲑⲙⲟ\r\n(sA) ⲧϩⲙⲙⲟ\r\n(B) ⲧⳳⲙⲟ, ⲧⳳⲙⲟⲙ, ⲑⲉⲙⲙⲟ, ⲧϩⲉⲙⲙⲟ, ⲑⳳⲙⲟ-, ⲑⳳⲙⲟ=",
       "meaning": "tr: warm (caus of ϩⲙⲟⲙ) [φλεγμαινειν, θερμαινεσθαι]\r\nintr:\r\nas nn B [θερμασια]"
     },
     "dutch_meanings": [
@@ -68719,9 +68722,9 @@
         "absoluteVariants": ["ⲧⲟϩⲧⲉϩ(nn)", "ⲧⲁϩⲧ"]
       },
       "B": {
-        "absolute": "ⲑⲟϧⲧⲉϧ",
+        "absolute": "ⲑⲟⳳⲧⲉⳳ",
         "nominal": "",
-        "pronominal": "ⲑⲉϧⲑⲱϧ=",
+        "pronominal": "ⲑⲉⳳⲑⲱⳳ=",
         "stative": ""
       },
       "O": {
@@ -68736,7 +68739,7 @@
     "english_meanings": ["tr: mix, confuse [φυρμον ποιειν]"],
     "greek_equivalents": ["φυρμον ποιειν"],
     "raw": {
-      "word": "(S) ⲧⲁϩⲧϩ, ⲧⲟϩⲧⲉϩ(nn), ⲧⲁϩⲧ\r\n(B) ⲑⲟϧⲧⲉϧ\r\n(S) ⲧⲉϩⲧⲱϩ=\r\n(B) ⲑⲉϧⲑⲱϧ=\r\n(O) ⲧⲁϩⲧϩ=\r\n(S) ⲧⲉϩⲧⲱϩ+\r\n(B) ⲑⲉϧⲑⲱϧ",
+      "word": "(S) ⲧⲁϩⲧϩ, ⲧⲟϩⲧⲉϩ(nn), ⲧⲁϩⲧ\r\n(B) ⲑⲟⳳⲧⲉⳳ\r\n(S) ⲧⲉϩⲧⲱϩ=\r\n(B) ⲑⲉⳳⲑⲱⳳ=\r\n(O) ⲧⲁϩⲧϩ=\r\n(S) ⲧⲉϩⲧⲱϩ+\r\n(B) ⲑⲉⳳⲑⲱⳳ",
       "meaning": "tr: mix, confuse [φυρμον ποιειν]"
     },
     "dutch_meanings": ["tr: mixen, verwarren"],
@@ -70489,7 +70492,7 @@
         "stative": ""
       }
     },
-    "pos": "N",
+    "pos": "PREP",
     "gender": "",
     "english_meanings": ["between, among [μεσον, μεταξυ]", "c suff & ⲛ-"],
     "greek_equivalents": ["μεσον, μεταξυ"],
@@ -71734,10 +71737,10 @@
   },
   {
     "id": "cd_1750",
-    "headword": "ⲫⲉϧ",
+    "headword": "ⲫⲉⳳ",
     "dialects": {
       "B": {
-        "absolute": "ⲫⲉϧ",
+        "absolute": "ⲫⲉⳳ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -71748,7 +71751,7 @@
     "english_meanings": ["melon"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(B) ⲫⲉϧ",
+      "word": "(B) ⲫⲉⳳ",
       "meaning": "melon"
     },
     "dutch_meanings": ["meloen"],
@@ -71756,10 +71759,10 @@
   },
   {
     "id": "cd_1751",
-    "headword": "ⲫⲱϧⲓ",
+    "headword": "ⲫⲱⳳⲓ",
     "dialects": {
       "B": {
-        "absolute": "ⲫⲱϧⲓ",
+        "absolute": "ⲫⲱⳳⲓ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -71770,7 +71773,7 @@
     "english_meanings": ["shark"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(B) ⲫⲱϧⲓ",
+      "word": "(B) ⲫⲱⳳⲓ",
       "meaning": "shark"
     },
     "dutch_meanings": ["haai"],
@@ -73471,13 +73474,13 @@
   },
   {
     "id": "cd_1803",
-    "headword": "ⲱϧⲧ",
+    "headword": "ⲱⳳⲧ",
     "dialects": {
       "B": {
-        "absolute": "ⲱϧⲧ",
+        "absolute": "ⲱⳳⲧ",
         "nominal": "",
         "pronominal": "",
-        "stative": "ⲟϧⲧ†"
+        "stative": "ⲟⳳⲧ†"
       },
       "F": {
         "absolute": "ⲱϩⲧ",
@@ -73491,7 +73494,7 @@
     "english_meanings": ["intr: drip, trickle"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(B) ⲱϧⲧ\r\n(F) ⲱϩⲧ\r\n(B) ⲟϧⲧ+",
+      "word": "(B) ⲱⳳⲧ\r\n(F) ⲱϩⲧ\r\n(B) ⲟⳳⲧ+",
       "meaning": "intr: drip, trickle"
     },
     "dutch_meanings": ["intr: druppelen, druppelen"],
@@ -79822,14 +79825,14 @@
   },
   {
     "id": "cd_2001",
-    "headword": "ϣϧⲉⲗⲧ",
+    "headword": "ϣⳳⲉⲗⲧ",
     "dialects": {
       "B": {
-        "absolute": "ϣϧⲉⲗⲧ",
+        "absolute": "ϣⳳⲉⲗⲧ",
         "nominal": "",
         "pronominal": "",
         "stative": "",
-        "absoluteVariants": ["ϭϧⲉⲗⲧ", "ϣϧⲁⲧ"]
+        "absoluteVariants": ["ϭⳳⲉⲗⲧ", "ϣⳳⲁⲧ"]
       }
     },
     "pos": "N",
@@ -79837,7 +79840,7 @@
     "english_meanings": ["what is excessive, exudes, humour, pus"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(B) ϣϧⲉⲗⲧ, ϭϧⲉⲗⲧ, ϣϧⲁⲧ",
+      "word": "(B) ϣⳳⲉⲗⲧ, ϭⳳⲉⲗⲧ, ϣⳳⲁⲧ",
       "meaning": "what is excessive, exudes, humour, pus"
     },
     "dutch_meanings": ["wat buitensporig is, straalt uit, humor, etter"],
@@ -80861,11 +80864,11 @@
   },
   {
     "id": "cd_2038",
-    "headword": "ϧⲁ-",
+    "headword": "ⳳⲁ-",
     "dialects": {
       "B": {
         "absolute": "",
-        "nominal": "ϧⲁ-",
+        "nominal": "ⳳⲁ-",
         "pronominal": "",
         "stative": ""
       },
@@ -80881,7 +80884,7 @@
     "english_meanings": ["particle of apposition before pronoun or art"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(B) ϧⲁ-, ϩⲁ-, ϣⲁ-, ⲭⲉ-\r\n(S) ϩⲁ-",
+      "word": "(B) ⳳⲁ-, ϩⲁ-, ϣⲁ-, ⲭⲉ-\r\n(S) ϩⲁ-",
       "meaning": "particle of apposition before pronoun or art"
     },
     "dutch_meanings": ["deeltje van appositie vóór voornaamwoord of kunst"],
@@ -80889,14 +80892,14 @@
   },
   {
     "id": "cd_2039",
-    "headword": "ϧⲁ",
+    "headword": "ⳳⲁ",
     "dialects": {},
     "pos": "N",
     "gender": "",
     "english_meanings": ["heel, mark of heel (?)"],
     "greek_equivalents": [],
     "raw": {
-      "word": "ϧⲁ {or ϧⲁⲓ}",
+      "word": "ⳳⲁ {or ⳳⲁⲓ}",
       "meaning": "heel, mark of heel (?)"
     },
     "dutch_meanings": ["heel, mark of heel (?)"],
@@ -80904,14 +80907,14 @@
   },
   {
     "id": "cd_2040",
-    "headword": "ϧⲁⲓ",
+    "headword": "ⳳⲁⲓ",
     "dialects": {},
     "pos": "N",
     "gender": "",
     "english_meanings": ["nitre"],
     "greek_equivalents": [],
     "raw": {
-      "word": "ϧⲁⲓ",
+      "word": "ⳳⲁⲓ",
       "meaning": "nitre"
     },
     "dutch_meanings": ["binnenkant"],
@@ -80919,14 +80922,14 @@
   },
   {
     "id": "cd_2041",
-    "headword": "ϧⲁⲓ",
+    "headword": "ⳳⲁⲓ",
     "dialects": {},
     "pos": "N",
     "gender": "",
     "english_meanings": ["breath of nose"],
     "greek_equivalents": [],
     "raw": {
-      "word": "ϧⲁⲓ",
+      "word": "ⳳⲁⲓ",
       "meaning": "breath of nose"
     },
     "dutch_meanings": ["adem van de neus"],
@@ -80934,14 +80937,14 @@
   },
   {
     "id": "cd_2042",
-    "headword": "ϧⲁⲓ",
+    "headword": "ⳳⲁⲓ",
     "dialects": {},
     "pos": "N",
     "gender": "",
     "english_meanings": ["ship's pole, boat-hook"],
     "greek_equivalents": [],
     "raw": {
-      "word": "ϧⲁⲓ",
+      "word": "ⳳⲁⲓ",
       "meaning": "ship's pole, boat-hook"
     },
     "dutch_meanings": ["scheepspaal, bootshaak"],
@@ -80949,14 +80952,14 @@
   },
   {
     "id": "cd_2043",
-    "headword": "ϧⲉ",
+    "headword": "ⳳⲉ",
     "dialects": {},
     "pos": "N",
     "gender": "",
     "english_meanings": ["woof [κροκη]"],
     "greek_equivalents": ["κροκη"],
     "raw": {
-      "word": "ϧⲉ",
+      "word": "ⳳⲉ",
       "meaning": "woof [κροκη]"
     },
     "dutch_meanings": ["inslag"],
@@ -80964,14 +80967,14 @@
   },
   {
     "id": "cd_2044",
-    "headword": "ϧⲏⲓ",
+    "headword": "ⳳⲏⲓ",
     "dialects": {},
     "pos": "N",
     "gender": "",
     "english_meanings": ["sun [ηλιοσ]"],
     "greek_equivalents": ["ηλιοσ"],
     "raw": {
-      "word": "ϧⲏⲓ",
+      "word": "ⳳⲏⲓ",
       "meaning": "sun [ηλιοσ]"
     },
     "dutch_meanings": ["zon"],
@@ -80979,10 +80982,10 @@
   },
   {
     "id": "cd_2045",
-    "headword": "ϧⲉⲗ",
+    "headword": "ⳳⲉⲗ",
     "dialects": {
       "O": {
-        "absolute": "ϧⲉⲗ",
+        "absolute": "ⳳⲉⲗ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -80993,7 +80996,7 @@
     "english_meanings": ["context lost"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(O) ϧⲉⲗ",
+      "word": "(O) ⳳⲉⲗ",
       "meaning": "context lost"
     },
     "dutch_meanings": ["context verloren"],
@@ -81001,14 +81004,14 @@
   },
   {
     "id": "cd_2046",
-    "headword": "ϧⲉⲗⲗⲟⲧ",
+    "headword": "ⳳⲉⲗⲗⲟⲧ",
     "dialects": {},
     "pos": "N",
     "gender": "",
     "english_meanings": ["ravine, wady including water & rocks [φαραγξ]"],
     "greek_equivalents": ["φαραγξ"],
     "raw": {
-      "word": "ϧⲉⲗⲗⲟⲧ, ϧⲉⲗⲟⲧ",
+      "word": "ⳳⲉⲗⲗⲟⲧ, ⳳⲉⲗⲟⲧ",
       "meaning": "ravine, wady including water & rocks [φαραγξ]"
     },
     "dutch_meanings": ["ravijn, waadachtig inclusief water en rotsen [φαραγξ]"],
@@ -81016,14 +81019,14 @@
   },
   {
     "id": "cd_2047",
-    "headword": "ϧⲉⲙⲥ",
+    "headword": "ⳳⲉⲙⲥ",
     "dialects": {},
     "pos": "N",
     "gender": "",
     "english_meanings": ["as title"],
     "greek_equivalents": [],
     "raw": {
-      "word": "ϧⲉⲙⲥ",
+      "word": "ⳳⲉⲙⲥ",
       "meaning": "as title"
     },
     "dutch_meanings": ["als titel"],
@@ -81031,12 +81034,12 @@
   },
   {
     "id": "cd_2048",
-    "headword": "ϧⲟⲙϧⲉⲙ",
+    "headword": "ⳳⲟⲙⳳⲉⲙ",
     "dialects": {
       "B": {
-        "absolute": "ϧⲟⲙϧⲉⲙ",
+        "absolute": "ⳳⲟⲙⳳⲉⲙ",
         "nominal": "",
-        "pronominal": "ϧⲉⲙϧⲱⲙ=",
+        "pronominal": "ⳳⲉⲙⳳⲱⲙ=",
         "stative": ""
       },
       "F": {
@@ -81054,7 +81057,7 @@
     ],
     "greek_equivalents": ["συντριβεσθαι"],
     "raw": {
-      "word": "(B) ϧⲟⲙϧⲉⲙ\r\n(F) ϩⲁⲙϩⲉⲙ\r\n(B) ϧⲉⲙϧⲱⲙ=, ϧⲉⲙϧⲱⲙ+",
+      "word": "(B) ⳳⲟⲙⳳⲉⲙ\r\n(F) ϩⲁⲙϩⲉⲙ\r\n(B) ⳳⲉⲙⳳⲱⲙ=, ⳳⲉⲙⳳⲱⲙ+",
       "meaning": "intr: be crushed, broken, destroyed [συντριβεσθαι]\r\ntr: crush, break, destroy"
     },
     "dutch_meanings": [
@@ -81065,14 +81068,14 @@
   },
   {
     "id": "cd_2049",
-    "headword": "ϧⲉⲛⲓ",
+    "headword": "ⳳⲉⲛⲓ",
     "dialects": {},
     "pos": "V",
     "gender": "",
     "english_meanings": ["intr: quarrel"],
     "greek_equivalents": [],
     "raw": {
-      "word": "ϧⲉⲛⲓ",
+      "word": "ⳳⲉⲛⲓ",
       "meaning": "intr: quarrel"
     },
     "dutch_meanings": ["int.: ruzie"],
@@ -81080,14 +81083,14 @@
   },
   {
     "id": "cd_2050",
-    "headword": "ϧⲱⲣ",
+    "headword": "ⳳⲱⲣ",
     "dialects": {},
     "pos": "V",
     "gender": "",
     "english_meanings": ["tr: destroy"],
     "greek_equivalents": [],
     "raw": {
-      "word": "ϧⲱⲣ, ϧⲉⲣ-, ϧⲟⲣ=",
+      "word": "ⳳⲱⲣ, ⳳⲉⲣ-, ⳳⲟⲣ=",
       "meaning": "tr: destroy"
     },
     "dutch_meanings": ["tr: vernietigen"],
@@ -81095,14 +81098,14 @@
   },
   {
     "id": "cd_2051",
-    "headword": "ϧⲁⲓⲣⲓ",
+    "headword": "ⳳⲁⲓⲣⲓ",
     "dialects": {},
     "pos": "N",
     "gender": "",
     "english_meanings": ["serpent"],
     "greek_equivalents": [],
     "raw": {
-      "word": "ϧⲁⲓⲣⲓ",
+      "word": "ⳳⲁⲓⲣⲓ",
       "meaning": "serpent"
     },
     "dutch_meanings": ["slang"],
@@ -81110,14 +81113,14 @@
   },
   {
     "id": "cd_2052",
-    "headword": "ϧⲟⲣⲡⲥ",
+    "headword": "ⳳⲟⲣⲡⲥ",
     "dialects": {},
     "pos": "N",
     "gender": "",
     "english_meanings": ["handful [δραξ]"],
     "greek_equivalents": ["δραξ"],
     "raw": {
-      "word": "ϧⲟⲣⲡⲥ",
+      "word": "ⳳⲟⲣⲡⲥ",
       "meaning": "handful [δραξ]"
     },
     "dutch_meanings": ["handvol"],
@@ -81125,14 +81128,14 @@
   },
   {
     "id": "cd_2053",
-    "headword": "ϧⲟⲣⲧ",
+    "headword": "ⳳⲟⲣⲧ",
     "dialects": {},
     "pos": "N",
     "gender": "",
     "english_meanings": ["madman"],
     "greek_equivalents": [],
     "raw": {
-      "word": "ϧⲟⲣⲧ",
+      "word": "ⳳⲟⲣⲧ",
       "meaning": "madman"
     },
     "dutch_meanings": ["gek"],
@@ -81140,10 +81143,10 @@
   },
   {
     "id": "cd_2054",
-    "headword": "ϧⲣⲟϯ",
+    "headword": "ⳳⲣⲟϯ",
     "dialects": {
       "B": {
-        "absolute": "ϧⲣⲟϯ",
+        "absolute": "ⳳⲣⲟϯ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -81155,7 +81158,7 @@
         "stative": ""
       },
       "O": {
-        "absolute": "ϧⲣⲱⲧ",
+        "absolute": "ⳳⲣⲱⲧ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -81166,7 +81169,7 @@
     "english_meanings": ["child, young [υιοσ, τεκνον]"],
     "greek_equivalents": ["υιοσ, τεκνον"],
     "raw": {
-      "word": "(B) ϧⲣⲟϯ\r\n(F) ϩⲗⲁϯ\r\n(O) ϧⲣⲱⲧ",
+      "word": "(B) ⳳⲣⲟϯ\r\n(F) ϩⲗⲁϯ\r\n(O) ⳳⲣⲱⲧ",
       "meaning": "child, young [υιοσ, τεκνον]"
     },
     "dutch_meanings": ["kind, jong"],
@@ -81174,14 +81177,14 @@
   },
   {
     "id": "cd_2055",
-    "headword": "ϧⲣⲱϯ",
+    "headword": "ⳳⲣⲱϯ",
     "dialects": {},
     "pos": "N",
     "gender": "",
     "english_meanings": ["jugular veins"],
     "greek_equivalents": [],
     "raw": {
-      "word": "ϧⲣⲱϯ",
+      "word": "ⳳⲣⲱϯ",
       "meaning": "jugular veins"
     },
     "dutch_meanings": ["halsaderen"],
@@ -81189,14 +81192,14 @@
   },
   {
     "id": "cd_2056",
-    "headword": "ϧⲱⲧ",
+    "headword": "ⳳⲱⲧ",
     "dialects": {},
     "pos": "N",
     "gender": "",
     "english_meanings": ["cloth, change of raiment"],
     "greek_equivalents": [],
     "raw": {
-      "word": "ϧⲱⲧ",
+      "word": "ⳳⲱⲧ",
       "meaning": "cloth, change of raiment"
     },
     "dutch_meanings": ["kleding, verandering van kleding"],
@@ -81204,14 +81207,14 @@
   },
   {
     "id": "cd_2057",
-    "headword": "ϧⲁϧ",
+    "headword": "ⳳⲁⳳ",
     "dialects": {},
     "pos": "N",
     "gender": "",
     "english_meanings": ["neck"],
     "greek_equivalents": [],
     "raw": {
-      "word": "ϧⲁϧ",
+      "word": "ⳳⲁⳳ",
       "meaning": "neck"
     },
     "dutch_meanings": ["nek"],
@@ -81219,14 +81222,14 @@
   },
   {
     "id": "cd_2058",
-    "headword": "ϧⲱϧ",
+    "headword": "ⳳⲱⳳ",
     "dialects": {},
     "pos": "V",
     "gender": "",
     "english_meanings": ["intr: tighten, strenghten"],
     "greek_equivalents": [],
     "raw": {
-      "word": "ϧⲱϧ",
+      "word": "ⳳⲱⳳ",
       "meaning": "intr: tighten, strenghten"
     },
     "dutch_meanings": ["intr: aanscherpen, versterken"],
@@ -81282,7 +81285,7 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ϧⲁⲓ",
+        "absolute": "ⳳⲁⲓ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -81299,7 +81302,7 @@
     "english_meanings": ["winnowing fan [πτυον]"],
     "greek_equivalents": ["πτυον"],
     "raw": {
-      "word": "(S) ϩⲁ, ϩⲟ\r\n(A) ⳉⲁ\r\n(B) ϧⲁⲓ\r\n(F) ϩⲉⲉⲓ",
+      "word": "(S) ϩⲁ, ϩⲟ\r\n(A) ⳉⲁ\r\n(B) ⳳⲁⲓ\r\n(F) ϩⲉⲉⲓ",
       "meaning": "winnowing fan [πτυον]"
     },
     "dutch_meanings": ["wannende ventilator"],
@@ -81528,7 +81531,7 @@
       "B": {
         "absolute": "",
         "nominal": "",
-        "pronominal": "ϧⲏⲧ=",
+        "pronominal": "ⳳⲏⲧ=",
         "stative": ""
       }
     },
@@ -81537,7 +81540,7 @@
     "english_meanings": ["(B mostly ⲛⲉϫⲓ) belly, also womb [κοιλια, γαστηρ]"],
     "greek_equivalents": ["κοιλια, γαστηρ"],
     "raw": {
-      "word": "(S, O) ϩⲏ\r\n(A) ⳉⲉⲓ, ⳉⲓ\r\n(S, sA) ϩⲏⲧ=\r\n(A) ⳉⲏⲧ=\r\n(B) ϧⲏⲧ=\r\n(O) ⲭⲏ=",
+      "word": "(S, O) ϩⲏ\r\n(A) ⳉⲉⲓ, ⳉⲓ\r\n(S, sA) ϩⲏⲧ=\r\n(A) ⳉⲏⲧ=\r\n(B) ⳳⲏⲧ=\r\n(O) ⲭⲏ=",
       "meaning": "(B mostly ⲛⲉϫⲓ) belly, also womb [κοιλια, γαστηρ]"
     },
     "dutch_meanings": ["(B meestal ⲛⲉϫⲓ) buik, ook baarmoeder"],
@@ -81555,7 +81558,7 @@
         "absoluteVariants": ["ϩⲉ"]
       },
       "B": {
-        "absolute": "ϧⲉ",
+        "absolute": "ⳳⲉ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -81566,7 +81569,7 @@
     "english_meanings": ["storey of house [υπερωον]"],
     "greek_equivalents": ["υπερωον"],
     "raw": {
-      "word": "(S) ϩⲏ, ϩⲉ\r\n(B) ϧⲉ",
+      "word": "(S) ϩⲏ, ϩⲉ\r\n(B) ⳳⲉ",
       "meaning": "storey of house [υπερωον]"
     },
     "dutch_meanings": ["verdieping van huis"],
@@ -81736,7 +81739,7 @@
         "stative": ""
       }
     },
-    "pos": "N",
+    "pos": "PREP",
     "gender": "",
     "english_meanings": [
       "on, at, in",
@@ -82202,7 +82205,7 @@
         "nominal": "",
         "pronominal": "",
         "stative": "",
-        "absoluteVariants": ["ϩⲏⲓⲃⲓ", "ϧⲏⲓⲃⲓ"]
+        "absoluteVariants": ["ϩⲏⲓⲃⲓ", "ⳳⲏⲓⲃⲓ"]
       },
       "F": {
         "absolute": "ϩⲏⲃⲓ",
@@ -82217,7 +82220,7 @@
     "english_meanings": ["grief, mourning [πενθοσ, θρηνοσ]"],
     "greek_equivalents": ["πενθοσ, θρηνοσ"],
     "raw": {
-      "word": "(S, Sf, A, sA) ϩⲏⲃⲉ\r\n(S, Sf) ϩⲏⲏⲃⲉ\r\n(S) ϩⲏⲓⲃⲉ\r\n(A) ⲏⲃⲉ\r\n(B, F) ϩⲏⲃⲓ, ϩⲏⲓⲃⲓ\r\n(B) ϧⲏⲃⲓ, ϧⲏⲓⲃⲓ",
+      "word": "(S, Sf, A, sA) ϩⲏⲃⲉ\r\n(S, Sf) ϩⲏⲏⲃⲉ\r\n(S) ϩⲏⲓⲃⲉ\r\n(A) ⲏⲃⲉ\r\n(B, F) ϩⲏⲃⲓ, ϩⲏⲓⲃⲓ\r\n(B) ⳳⲏⲃⲓ, ⳳⲏⲓⲃⲓ",
       "meaning": "grief, mourning [πενθοσ, θρηνοσ]"
     },
     "dutch_meanings": ["verdriet, rouw"],
@@ -82598,7 +82601,7 @@
         "absoluteVariants": ["ϩⲟⲕⲉ(?)"]
       },
       "B": {
-        "absolute": "ϧⲟⲕ",
+        "absolute": "ⳳⲟⲕ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -82609,7 +82612,7 @@
     "english_meanings": ["tr: smite, crush [διακρουειν]"],
     "greek_equivalents": ["διακρουειν"],
     "raw": {
-      "word": "(S) ϩⲱⲕ, ϩⲟⲕⲉ(?)\r\n(B) ϧⲟⲕ\r\n(S) ϩⲉⲕ-, ϩⲟⲕ=, ϩⲏⲕ+",
+      "word": "(S) ϩⲱⲕ, ϩⲟⲕⲉ(?)\r\n(B) ⳳⲟⲕ\r\n(S) ϩⲉⲕ-, ϩⲟⲕ=, ϩⲏⲕ+",
       "meaning": "tr: smite, crush [διακρουειν]"
     },
     "dutch_meanings": ["tr: slaan, verpletteren"],
@@ -82755,10 +82758,10 @@
       },
       "B": {
         "absolute": "ϩⲱⲕⲓ",
-        "nominal": "ϧⲉⲕ-",
-        "pronominal": "ϧⲟⲕ=",
-        "stative": "ϧⲏⲕ†",
-        "absoluteVariants": ["ϧⲱⲕⲓ", "ϧⲱⲕ"]
+        "nominal": "ⳳⲉⲕ-",
+        "pronominal": "ⳳⲟⲕ=",
+        "stative": "ⳳⲏⲕ†",
+        "absoluteVariants": ["ⳳⲱⲕⲓ", "ⳳⲱⲕ"]
       },
       "F": {
         "absolute": "",
@@ -82779,7 +82782,7 @@
     ],
     "greek_equivalents": ["ξυειν", "ξυραν, κειρειν", "ξυρησισ"],
     "raw": {
-      "word": "(S, sA) ϩⲱ(ⲱ)ⲕⲉ, ϩⲱ(ⲱ)ⲕ\r\n(Sf) ϩⲱⲕⲉ\r\n(A) ⳉⲟⲩⲟⲩⲕ\r\n(B) ϩⲱⲕⲓ, ϧⲱⲕⲓ, ϧⲱⲕ\r\n(S) ϩⲉ(ⲉ)ⲕⲉ-, ϩⲉⲕ-\r\n(A) ⳉⲟⲕ-\r\n(B) ϧⲉⲕ-\r\n(F) ϩⲁⲕⲉ-\r\n(S) ϩⲟ(ⲟ)ⲕ=\r\n(B) ϧⲟⲕ=\r\n(S) ϩⲟⲟⲕⲉ+\r\n(B) ϧⲏⲕ+\r\n(F) ϩⲁⲁⲕⲉ+",
+      "word": "(S, sA) ϩⲱ(ⲱ)ⲕⲉ, ϩⲱ(ⲱ)ⲕ\r\n(Sf) ϩⲱⲕⲉ\r\n(A) ⳉⲟⲩⲟⲩⲕ\r\n(B) ϩⲱⲕⲓ, ⳳⲱⲕⲓ, ⳳⲱⲕ\r\n(S) ϩⲉ(ⲉ)ⲕⲉ-, ϩⲉⲕ-\r\n(A) ⳉⲟⲕ-\r\n(B) ⳳⲉⲕ-\r\n(F) ϩⲁⲕⲉ-\r\n(S) ϩⲟ(ⲟ)ⲕ=\r\n(B) ⳳⲟⲕ=\r\n(S) ϩⲟⲟⲕⲉ+\r\n(B) ⳳⲏⲕ+\r\n(F) ϩⲁⲁⲕⲉ+",
       "meaning": "scrape, scratch\r\n― tr: [ξυειν]\r\n― intr: (rare) S itch (?)\r\nshave, shear\r\n― tr: [ξυραν, κειρειν]\r\n― as nn, shaved condition, baldness [ξυρησισ]"
     },
     "dutch_meanings": [
@@ -82985,7 +82988,7 @@
     "english_meanings": ["intr: be hoarse"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(S, B) ϩⲱⲗ\r\n(S) ϩⲱ(ⲱ)ⲗⲉ\r\n(B) ϧⲱⲗ",
+      "word": "(S, B) ϩⲱⲗ\r\n(S) ϩⲱ(ⲱ)ⲗⲉ\r\n(B) ⳳⲱⲗ",
       "meaning": "intr: be hoarse"
     },
     "dutch_meanings": ["in: paarden zijn"],
@@ -83240,11 +83243,11 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ϧⲉⲗ(ⲗ)ⲓⲃϣ",
+        "absolute": "ⳳⲉⲗ(ⲗ)ⲓⲃϣ",
         "nominal": "",
         "pronominal": "",
         "stative": "",
-        "absoluteVariants": ["ϧⲉⲗ(ⲗ)ⲉⲃϣ"]
+        "absoluteVariants": ["ⳳⲉⲗ(ⲗ)ⲉⲃϣ"]
       }
     },
     "pos": "N",
@@ -83252,7 +83255,7 @@
     "english_meanings": ["breast-plate [θωραξ]"],
     "greek_equivalents": ["θωραξ"],
     "raw": {
-      "word": "(sA) ϩⲁⲗⲃϣⲉ\r\n(B) ϧⲉⲗ(ⲗ)ⲓⲃϣ, ϧⲉⲗ(ⲗ)ⲉⲃϣ",
+      "word": "(sA) ϩⲁⲗⲃϣⲉ\r\n(B) ⳳⲉⲗ(ⲗ)ⲓⲃϣ, ⳳⲉⲗ(ⲗ)ⲉⲃϣ",
       "meaning": "breast-plate [θωραξ]"
     },
     "dutch_meanings": ["borstplaat [θωραξ]"],
@@ -83751,7 +83754,7 @@
         "absoluteVariants": ["ϩⲁⲗⲙⲏϩ", "ϩⲁⲗⲙⲉϩⲉ", "ϩⲁⲗⲙⲉϩⲏ", "ϩⲉⲗⲙⲉϩⲉ"]
       },
       "B": {
-        "absolute": "ϧⲉⲗⲙⲉϩⲓ",
+        "absolute": "ⳳⲉⲗⲙⲉϩⲓ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -83762,7 +83765,7 @@
     "english_meanings": ["boat [σκαφη]"],
     "greek_equivalents": ["σκαφη"],
     "raw": {
-      "word": "(S) ϩⲁⲗⲙⲏϩⲉ, ϩⲁⲗⲙⲏϩ, ϩⲁⲗⲙⲉϩⲉ, ϩⲁⲗⲙⲉϩⲏ, ϩⲉⲗⲙⲉϩⲉ\r\n(B) ϧⲉⲗⲙⲉϩⲓ",
+      "word": "(S) ϩⲁⲗⲙⲏϩⲉ, ϩⲁⲗⲙⲏϩ, ϩⲁⲗⲙⲉϩⲉ, ϩⲁⲗⲙⲉϩⲏ, ϩⲉⲗⲙⲉϩⲉ\r\n(B) ⳳⲉⲗⲙⲉϩⲓ",
       "meaning": "boat [σκαφη]"
     },
     "dutch_meanings": ["boot [boot]"],
@@ -83819,11 +83822,11 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ϧⲉⲗⲡⲓ",
+        "absolute": "ⳳⲉⲗⲡⲓ",
         "nominal": "",
         "pronominal": "",
         "stative": "",
-        "absoluteVariants": ["ϧⲉⲗⲃⲓ"]
+        "absoluteVariants": ["ⳳⲉⲗⲃⲓ"]
       },
       "O": {
         "absolute": "ϩⲉⲗⲡⲓ",
@@ -83838,7 +83841,7 @@
     "english_meanings": ["navel [ομφαλοσ, οσφυσ]"],
     "greek_equivalents": ["ομφαλοσ, οσφυσ"],
     "raw": {
-      "word": "(S) ϩ(ⲉ)ⲗⲡⲉ\r\n(Sf) ϩⲏⲗⲡⲓ\r\n(sA) ϩⲗⲡⲉ\r\n(B) ϧⲉⲗⲡⲓ, ϧⲉⲗⲃⲓ\r\n(O) ϩⲉⲗⲡⲓ, ϩⲉⲗⲡⲉ",
+      "word": "(S) ϩ(ⲉ)ⲗⲡⲉ\r\n(Sf) ϩⲏⲗⲡⲓ\r\n(sA) ϩⲗⲡⲉ\r\n(B) ⳳⲉⲗⲡⲓ, ⳳⲉⲗⲃⲓ\r\n(O) ϩⲉⲗⲡⲓ, ϩⲉⲗⲡⲉ",
       "meaning": "navel [ομφαλοσ, οσφυσ]"
     },
     "dutch_meanings": ["navel"],
@@ -84093,11 +84096,11 @@
         "stative": "ϩⲗϩⲁⲗⲧ†"
       },
       "B": {
-        "absolute": "ϧⲟⲗϧⲉⲗ",
+        "absolute": "ⳳⲟⲗⳳⲉⲗ",
         "nominal": "",
-        "pronominal": "ϧⲉⲗϧⲱⲗ=",
-        "stative": "ϧⲉⲗϧⲱⲗ†",
-        "absoluteVariants": ["ϧⲉⲗϧⲱⲗ-"]
+        "pronominal": "ⳳⲉⲗⳳⲱⲗ=",
+        "stative": "ⳳⲉⲗⳳⲱⲗ†",
+        "absoluteVariants": ["ⳳⲉⲗⳳⲱⲗ-"]
       }
     },
     "pos": "V",
@@ -84105,7 +84108,7 @@
     "english_meanings": ["intr: slay [σφαζειν, αποκεντειν]", "tr: [σφαζειν]"],
     "greek_equivalents": ["σφαζειν, αποκεντειν", "σφαζειν"],
     "raw": {
-      "word": "(S) ϩⲟⲗϩⲗ\r\n(sA) ϩⲁⲗϩⲗ\r\n(B) ϧⲟⲗϧⲉⲗ, ϧⲉⲗϧⲱⲗ-\r\n(S) ϩⲉⲗϩⲱⲗ=\r\n(B) ϧⲉⲗϧⲱⲗ=, ϧⲉⲗϧⲟⲗ=\r\n(sA) ϩⲗϩⲁⲗⲧ+\r\n(B) ϧⲉⲗϧⲱⲗ+",
+      "word": "(S) ϩⲟⲗϩⲗ\r\n(sA) ϩⲁⲗϩⲗ\r\n(B) ⳳⲟⲗⳳⲉⲗ, ⳳⲉⲗⳳⲱⲗ-\r\n(S) ϩⲉⲗϩⲱⲗ=\r\n(B) ⳳⲉⲗⳳⲱⲗ=, ⳳⲉⲗⳳⲟⲗ=\r\n(sA) ϩⲗϩⲁⲗⲧ+\r\n(B) ⳳⲉⲗⳳⲱⲗ+",
       "meaning": "intr: slay [σφαζειν, αποκεντειν]\r\ntr: [σφαζειν]"
     },
     "dutch_meanings": ["int.: dood", "tr: [slachting]"],
@@ -84122,7 +84125,7 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ϧⲉⲗϧⲉⲗⲧ",
+        "absolute": "ⳳⲉⲗⳳⲉⲗⲧ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -84133,7 +84136,7 @@
     "english_meanings": ["death rattle"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(S) ϩⲉⲗϩⲓⲗⲉ\r\n(B) ϧⲉⲗϧⲉⲗⲧ",
+      "word": "(S) ϩⲉⲗϩⲓⲗⲉ\r\n(B) ⳳⲉⲗⳳⲉⲗⲧ",
       "meaning": "death rattle"
     },
     "dutch_meanings": ["dood rammelen"],
@@ -85570,7 +85573,7 @@
         "absoluteVariants": ["ϩⲁⲛϫ", "ϩⲟⲛϫ", "ϩⲱϫ", "ϩⲱⲛϭ"]
       },
       "B": {
-        "absolute": "ϧⲱⲛϫ",
+        "absolute": "ⳳⲱⲛϫ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -85581,7 +85584,7 @@
     "english_meanings": ["intr: entreat, exhort"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(S, F) ϩⲱⲛϫ\r\n(B) ϧⲱⲛϫ\r\n(F) ϩⲱⲛϫⲉ, ϩⲁⲛϫ, ϩⲟⲛϫ, ϩⲱϫ, ϩⲱⲛϭ",
+      "word": "(S, F) ϩⲱⲛϫ\r\n(B) ⳳⲱⲛϫ\r\n(F) ϩⲱⲛϫⲉ, ϩⲁⲛϫ, ϩⲟⲛϫ, ϩⲱϫ, ϩⲱⲛϭ",
       "meaning": "intr: entreat, exhort"
     },
     "dutch_meanings": ["intr: smeken, aansporen"],
@@ -85851,7 +85854,7 @@
       },
       "B": {
         "absolute": "",
-        "nominal": "ϧⲁⲣⲁ-",
+        "nominal": "ⳳⲁⲣⲁ-",
         "pronominal": "",
         "stative": ""
       }
@@ -85861,7 +85864,7 @@
     "english_meanings": ["nn (?), as distributive preposition"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(S) ϩⲣ-, ϩⲣⲉ-\r\n(B) ϧⲁⲣⲁ-",
+      "word": "(S) ϩⲣ-, ϩⲣⲉ-\r\n(B) ⳳⲁⲣⲁ-",
       "meaning": "nn (?), as distributive preposition"
     },
     "dutch_meanings": ["nn (?), als distributief voorzetsel"],
@@ -85918,7 +85921,7 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ϧⲓⲣ",
+        "absolute": "ⳳⲓⲣ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -85936,7 +85939,7 @@
     "english_meanings": ["road, street, quarter [οδοσ, αμφοδοσ, πλατεια]"],
     "greek_equivalents": ["οδοσ, αμφοδοσ, πλατεια"],
     "raw": {
-      "word": "(S, Sf, sA) ϩⲓⲣ\r\n(S) ϩⲉⲓⲣ\r\n(A) ⳉⲓⲣ\r\n(B) ϧⲓⲣ\r\n(F) ϩⲓⲗ, ϩⲗ",
+      "word": "(S, Sf, sA) ϩⲓⲣ\r\n(S) ϩⲉⲓⲣ\r\n(A) ⳉⲓⲣ\r\n(B) ⳳⲓⲣ\r\n(F) ϩⲓⲗ, ϩⲗ",
       "meaning": "road, street, quarter [οδοσ, αμφοδοσ, πλατεια]"
     },
     "dutch_meanings": ["weg, straat, wijk"],
@@ -86158,7 +86161,7 @@
         "absoluteVariants": ["ⳉⲣⲏⲩ"]
       },
       "B": {
-        "absolute": "ϧⲣⲉ",
+        "absolute": "ⳳⲣⲉ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -86179,7 +86182,7 @@
     ],
     "greek_equivalents": ["βρωμα", "βρωμα"],
     "raw": {
-      "word": "(S, sA) ϩⲣⲉ\r\n(S) ϩⲉⲣⲉ\r\n(Sa) ϩⲣⲓⲉⲓ, ϩⲣⲩⲉⲓ\r\n(A) ⳉⲣⲉ\r\n(B) ϧⲣⲉ\r\n(F) ϩⲣⲏ\r\n(S, sA) plural: ϩⲣⲏⲩⲉ\r\n(S) plural: ϩⲣⲉⲟⲩⲉ, ϩⲣⲉⲟⲟⲩ\r\n(A) plural: ⳉⲣⲏⲟⲩⲉ, ⳉⲣⲏⲩ\r\n(B) plural: ϧⲣⲏⲟⲩⲓ\r\n(F) plural: ϩⲣⲏⲟⲩⲓ",
+      "word": "(S, sA) ϩⲣⲉ\r\n(S) ϩⲉⲣⲉ\r\n(Sa) ϩⲣⲓⲉⲓ, ϩⲣⲩⲉⲓ\r\n(A) ⳉⲣⲉ\r\n(B) ⳳⲣⲉ\r\n(F) ϩⲣⲏ\r\n(S, sA) plural: ϩⲣⲏⲩⲉ\r\n(S) plural: ϩⲣⲉⲟⲩⲉ, ϩⲣⲉⲟⲟⲩ\r\n(A) plural: ⳉⲣⲏⲟⲩⲉ, ⳉⲣⲏⲩ\r\n(B) plural: ⳳⲣⲏⲟⲩⲓ\r\n(F) plural: ϩⲣⲏⲟⲩⲓ",
       "meaning": "food\r\n― of men [βρωμα]\r\n― of beasts, fodder [βρωμα]"
     },
     "dutch_meanings": ["eten", "– van mannen [geur]", "– van dieren, voer"],
@@ -86187,10 +86190,10 @@
   },
   {
     "id": "cd_2210b",
-    "headword": "ϧⲣⲏⲟⲩⲓ",
+    "headword": "ⳳⲣⲏⲟⲩⲓ",
     "dialects": {
       "B": {
-        "absolute": "ϧⲣⲏⲟⲩⲓ",
+        "absolute": "ⳳⲣⲏⲟⲩⲓ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -86203,7 +86206,7 @@
     "english_meanings": ["food (plural)"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(B) plural: ϧⲣⲏⲟⲩⲓ",
+      "word": "(B) plural: ⳳⲣⲏⲟⲩⲓ",
       "meaning": "food (plural)"
     },
     "dutch_meanings": ["eten (meervoud)"],
@@ -86255,7 +86258,7 @@
         "absoluteVariants": ["ⲣⲃⲉ"]
       },
       "B": {
-        "absolute": "ϧⲉⲣⲉⲃ",
+        "absolute": "ⳳⲉⲣⲉⲃ",
         "nominal": "",
         "pronominal": "",
         "stative": "",
@@ -86267,7 +86270,7 @@
     "english_meanings": ["form, likeness [ειδοσ, ομοιωμα, μορφωσισ]"],
     "greek_equivalents": ["ειδοσ, ομοιωμα, μορφωσισ"],
     "raw": {
-      "word": "(S, sA) ϩⲣⲃ\r\n(A) ⳉⲣⲃⲉ, ⲣⲃⲉ\r\n(sA) ϩⲣⲃⲉ\r\n(B) ϧⲉⲣⲉⲃ, ⲭⲉⲣⲉⲃ",
+      "word": "(S, sA) ϩⲣⲃ\r\n(A) ⳉⲣⲃⲉ, ⲣⲃⲉ\r\n(sA) ϩⲣⲃⲉ\r\n(B) ⳳⲉⲣⲉⲃ, ⲭⲉⲣⲉⲃ",
       "meaning": "form, likeness [ειδοσ, ομοιωμα, μορφωσισ]"
     },
     "dutch_meanings": ["vorm, gelijkenis"],
@@ -86945,8 +86948,8 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ϧⲣⲱⲟⲩ",
-        "nominal": "ϧⲁⲣⲁ-",
+        "absolute": "ⳳⲣⲱⲟⲩ",
+        "nominal": "ⳳⲁⲣⲁ-",
         "pronominal": "",
         "stative": ""
       },
@@ -86960,7 +86963,7 @@
       "O": {
         "absolute": "",
         "nominal": "",
-        "pronominal": "ϧⲣⲁ=",
+        "pronominal": "ⳳⲣⲁ=",
         "stative": ""
       }
     },
@@ -86973,7 +86976,7 @@
     ],
     "greek_equivalents": ["φωνη, βοη", "φωνη"],
     "raw": {
-      "word": "(S) ϩⲣⲟⲟⲩ\r\n(A) ⳉⲣⲁⲩ\r\n(sA) ϩⲣⲁⲩ\r\n(B) ϧⲣⲱⲟⲩ\r\n(F) ϩⲗⲁⲩ, ϩⲣⲁⲁⲩ\r\n(S, sA) ϩⲣⲟⲩ-\r\n(S) ϩⲣ-\r\n(B) ϧⲁⲣⲁ-, ⲭⲁⲣⲁ-\r\n(F) ϩⲁⲣⲁ-\r\n(S) ϩⲣⲁ=\r\n(sA) ϩⲣⲉ=\r\n(O) ϧⲣⲁ=",
+      "word": "(S) ϩⲣⲟⲟⲩ\r\n(A) ⳉⲣⲁⲩ\r\n(sA) ϩⲣⲁⲩ\r\n(B) ⳳⲣⲱⲟⲩ\r\n(F) ϩⲗⲁⲩ, ϩⲣⲁⲁⲩ\r\n(S, sA) ϩⲣⲟⲩ-\r\n(S) ϩⲣ-\r\n(B) ⳳⲁⲣⲁ-, ⲭⲁⲣⲁ-\r\n(F) ϩⲁⲣⲁ-\r\n(S) ϩⲣⲁ=\r\n(sA) ϩⲣⲉ=\r\n(O) ⳳⲣⲁ=",
       "meaning": "voice, sound\r\n― of God or man [φωνη, βοη]\r\n― of beasts, things [φωνη]"
     },
     "dutch_meanings": [
@@ -87111,7 +87114,7 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ϧⲉⲣϧⲉⲣ",
+        "absolute": "ⳳⲉⲣⳳⲉⲣ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -87122,7 +87125,7 @@
     "english_meanings": ["intr: snore [ρεγκειν]"],
     "greek_equivalents": ["ρεγκειν"],
     "raw": {
-      "word": "(S) ϩⲣϩⲣ\r\n(A) ⳉⲣⳉⲣⲉ\r\n(B) ϧⲉⲣϧⲉⲣ",
+      "word": "(S) ϩⲣϩⲣ\r\n(A) ⳉⲣⳉⲣⲉ\r\n(B) ⳳⲉⲣⳳⲉⲣ",
       "meaning": "intr: snore [ρεγκειν]"
     },
     "dutch_meanings": ["intr: snurken [regen]"],
@@ -87212,7 +87215,7 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ϧⲣⲁϫⲣⲉϫ",
+        "absolute": "ⳳⲣⲁϫⲣⲉϫ",
         "nominal": "",
         "pronominal": "",
         "stative": "",
@@ -87227,7 +87230,7 @@
     ],
     "greek_equivalents": ["βρυχειν, τριζειν"],
     "raw": {
-      "word": "(S) ϩⲣⲟϫⲣ(ⲉ)ϫ\r\n(Sf) ϩⲣⲟϭⲣⲉϭ\r\n(B) ϧⲣⲁϫⲣⲉϫ, ⲣⲁϫⲣⲉϫ",
+      "word": "(S) ϩⲣⲟϫⲣ(ⲉ)ϫ\r\n(Sf) ϩⲣⲟϭⲣⲉϭ\r\n(B) ⳳⲣⲁϫⲣⲉϫ, ⲣⲁϫⲣⲉϫ",
       "meaning": "tr: grind (teeth), rub [βρυχειν, τριζειν]\r\nintr: be set on edge"
     },
     "dutch_meanings": ["tr: malen (tanden), wrijven", "intr: op scherp staan"],
@@ -87556,7 +87559,7 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ϧⲏⲧ",
+        "absolute": "ⳳⲏⲧ",
         "nominal": "",
         "pronominal": "",
         "stative": "",
@@ -87568,7 +87571,7 @@
     "english_meanings": ["north (lit downstream on Nile)"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(S, Sa, Sf, F) ϩⲏⲧ\r\n(B) ϧⲏⲧ, ⲭⲏⲧ",
+      "word": "(S, Sa, Sf, F) ϩⲏⲧ\r\n(B) ⳳⲏⲧ, ⲭⲏⲧ",
       "meaning": "north (lit downstream on Nile)"
     },
     "dutch_meanings": ["noorden (stroomafwaarts verlicht op de Nijl)"],
@@ -87671,9 +87674,9 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ϧⲓϯ",
-        "nominal": "ϧⲁⲧ-",
-        "pronominal": "ϧⲁⲧ=",
+        "absolute": "ⳳⲓϯ",
+        "nominal": "ⳳⲁⲧ-",
+        "pronominal": "ⳳⲁⲧ=",
         "stative": "",
         "absoluteVariants": ["ϩⲓϯ"]
       }
@@ -87699,7 +87702,7 @@
       "σπαρασσειν, τυμπανιζειν"
     ],
     "raw": {
-      "word": "(S, sA, F) ϩⲓⲧⲉ\r\n(A) ⳉⲓⲧⲉ\r\n(B) ϧⲓϯ, ϩⲓϯ\r\n(S) ϩⲉⲧ-\r\n(B) ϧⲁⲧ-\r\n(S) ϩⲁⲧ=\r\n(A) ⳉⲉⲧ=\r\n(sA) ϩⲉⲧ=\r\n(B) ϧⲁⲧ=, ϩⲓⲧ=",
+      "word": "(S, sA, F) ϩⲓⲧⲉ\r\n(A) ⳉⲓⲧⲉ\r\n(B) ⳳⲓϯ, ϩⲓϯ\r\n(S) ϩⲉⲧ-\r\n(B) ⳳⲁⲧ-\r\n(S) ϩⲁⲧ=\r\n(A) ⳉⲉⲧ=\r\n(sA) ϩⲉⲧ=\r\n(B) ⳳⲁⲧ=, ϩⲓⲧ=",
       "meaning": "tr: move to & fro, rub, whet\r\n| intr: be worn with age, old [παλαιουν]\r\ntr:\r\n― wear out [παλαιουν]\r\n― with prep or advb\r\n― spend time, loiter S\r\n| intr: be convulsed, tormented [δαιμονιζεσθαι, σεληνιζεσθαι]\r\ntr: [σπαρασσειν, τυμπανιζειν]\r\nas nn m, spasm, pain\r\n| tr: flay"
     },
     "dutch_meanings": [
@@ -88039,10 +88042,10 @@
         "absoluteVariants": ["ⲉϩⲑⲁ(ⲉ)ⲓ"]
       },
       "B": {
-        "absolute": "ϧⲑⲁⲓ",
+        "absolute": "ⳳⲑⲁⲓ",
         "nominal": "",
         "pronominal": "",
-        "stative": "ϧⲟⲧ†"
+        "stative": "ⳳⲟⲧ†"
       },
       "F": {
         "absolute": "ϩⲧⲉⲓ",
@@ -88059,7 +88062,7 @@
     ],
     "greek_equivalents": ["παχυνεσθαι", "ευσαρκια"],
     "raw": {
-      "word": "(S) ϩⲧⲁ(ⲉ)ⲓ, ⲉϩⲑⲁ(ⲉ)ⲓ\r\n(B) ϧⲑⲁⲓ\r\n(F) ϩⲧⲉⲓ\r\n(B) ϧⲟⲧ+, ϧⲁⲑ+",
+      "word": "(S) ϩⲧⲁ(ⲉ)ⲓ, ⲉϩⲑⲁ(ⲉ)ⲓ\r\n(B) ⳳⲑⲁⲓ\r\n(F) ϩⲧⲉⲓ\r\n(B) ⳳⲟⲧ+, ⳳⲁⲑ+",
       "meaning": "intr: become, be fat [παχυνεσθαι]\r\nas nn m [ευσαρκια]"
     },
     "dutch_meanings": ["intr: dik worden, dik worden", "als nn m [vettig]"],
@@ -88260,9 +88263,9 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ϧⲱⲧⲉⲃ",
-        "nominal": "ϧⲉⲧⲉⲃ-",
-        "pronominal": "ϧⲟⲑⲃ=",
+        "absolute": "ⳳⲱⲧⲉⲃ",
+        "nominal": "ⳳⲉⲧⲉⲃ-",
+        "pronominal": "ⳳⲟⲑⲃ=",
         "stative": ""
       }
     },
@@ -88277,7 +88280,7 @@
       "αποκτεινειν, θανατουν, αναιρειν"
     ],
     "raw": {
-      "word": "(S, sA) ϩⲱⲧⲃ\r\n(S, F) ϩⲱⲧⲉⲃ\r\n(A) ⳉⲱⲧⲃⲉ\r\n(sA) ϩⲱⲧⲃⲉ\r\n(B) ϧⲱⲧⲉⲃ\r\n(S) ϩⲉⲧⲃ-\r\n(sA) ϩⲁⲧⲃ-\r\n(B) ϧⲉⲧⲉⲃ-, ϧⲁⲧⲉⲃ- {ⲣⲉϥ-}\r\n(F) ϩⲁⲧⲉⲃ-\r\n(S) ϩⲟⲧⲃ=\r\n(A) ⳉⲁⲧⲃ=\r\n(sA, F) ϩⲁⲧⲃ=\r\n(B) ϧⲟⲑⲃ=\r\n(S) ϩⲟⲧⲃ+\r\n(sA) ϩⲁⲧⲃⲉ+\r\n(S) p c ϩⲁⲧⲃ-\r\n(A) p c ⳉⲁⲧⲃⲉ-\r\n(sA) p c ϩⲁⲧⲃⲉ-\r\n(B) p c ϧⲁⲑⲉⲃ-",
+      "word": "(S, sA) ϩⲱⲧⲃ\r\n(S, F) ϩⲱⲧⲉⲃ\r\n(A) ⳉⲱⲧⲃⲉ\r\n(sA) ϩⲱⲧⲃⲉ\r\n(B) ⳳⲱⲧⲉⲃ\r\n(S) ϩⲉⲧⲃ-\r\n(sA) ϩⲁⲧⲃ-\r\n(B) ⳳⲉⲧⲉⲃ-, ⳳⲁⲧⲉⲃ- {ⲣⲉϥ-}\r\n(F) ϩⲁⲧⲉⲃ-\r\n(S) ϩⲟⲧⲃ=\r\n(A) ⳉⲁⲧⲃ=\r\n(sA, F) ϩⲁⲧⲃ=\r\n(B) ⳳⲟⲑⲃ=\r\n(S) ϩⲟⲧⲃ+\r\n(sA) ϩⲁⲧⲃⲉ+\r\n(S) p c ϩⲁⲧⲃ-\r\n(A) p c ⳉⲁⲧⲃⲉ-\r\n(sA) p c ϩⲁⲧⲃⲉ-\r\n(B) p c ⳳⲁⲑⲉⲃ-",
       "meaning": "intr: kill [αποκτεινειν, θανατουν]\r\ntr: [αποκτεινειν, θανατουν, αναιρειν]"
     },
     "dutch_meanings": ["int.: doden", "tr: [wegnemen, doden, ongedaan maken]"],
@@ -89216,7 +89219,7 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ⲟⲩϧⲉ",
+        "absolute": "ⲟⲩⳳⲉ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -89233,7 +89236,7 @@
     "english_meanings": ["untimely birth [εκτρωμα]"],
     "greek_equivalents": ["εκτρωμα"],
     "raw": {
-      "word": "(S, sA) ϩⲟⲩϩⲉ\r\n(B) ⲟⲩϧⲉ\r\n(F) ϩⲟⲩϩⲏ",
+      "word": "(S, sA) ϩⲟⲩϩⲉ\r\n(B) ⲟⲩⳳⲉ\r\n(F) ϩⲟⲩϩⲏ",
       "meaning": "untimely birth [εκτρωμα]"
     },
     "dutch_meanings": ["vroegtijdige geboorte [εκτρωμα]"],
@@ -89534,9 +89537,9 @@
         "stative": ""
       },
       "B": {
-        "absolute": "ϧⲱϧ",
+        "absolute": "ⳳⲱⳳ",
         "nominal": "",
-        "pronominal": "ϧⲁϧ=",
+        "pronominal": "ⳳⲁⳳ=",
         "stative": ""
       }
     },
@@ -89548,7 +89551,7 @@
     ],
     "greek_equivalents": ["δακνειν, κνηθειν"],
     "raw": {
-      "word": "(S, A) ϩⲱϩ\r\n(B) ϧⲱϧ\r\n(S) ϩⲟϩ=\r\n(B) ϧⲁϧ=, ϧⲏϧ+",
+      "word": "(S, A) ϩⲱϩ\r\n(B) ⳳⲱⳳ\r\n(S) ϩⲟϩ=\r\n(B) ⳳⲁⳳ=, ⳳⲏⳳ+",
       "meaning": "intr: be scraped, itch [δακνειν, κνηθειν]\r\ntr: scrape, scratch"
     },
     "dutch_meanings": [
@@ -91952,7 +91955,7 @@
         "stative": ""
       }
     },
-    "pos": "N",
+    "pos": "PREP",
     "gender": "BOTH",
     "english_meanings": [
       "from (starting from), since",
@@ -91963,13 +91966,13 @@
       "― or advb",
       "―― ⲉⲃⲟⲗ, from ... outward",
       "―― ⲉϩⲣⲁⲓ",
-      "―― ⲉⲡⲉⲥⲏⲧ S, ⲉϧⲣⲏⲓ B, downward",
+      "―― ⲉⲡⲉⲥⲏⲧ S, ⲉⳳⲣⲏⲓ B, downward",
       "preceded by other prep"
     ],
     "greek_equivalents": [],
     "raw": {
       "word": "(S, Sf, F) ϫⲓⲛ-\r\n(S, A, sA, O) ϫⲛ-\r\n(S, F) ϫⲉⲛ-\r\n(S) ϭ(ⲉ)ⲛ-, ⲕⲛ-, ϣⲉⲛ-\r\n(S, Sf, F) ϭⲓⲛ-\r\n(B) ⲓⲥϫⲉⲛ-\r\n(F) ϭⲏⲛ-, ϫⲓ-, ϫⲉ-",
-      "meaning": "from (starting from), since\r\n― before nn\r\n― before vb\r\nprefixed other prep\r\nwith nn intervening, from ... to\r\n― or advb\r\n―― ⲉⲃⲟⲗ, from ... outward\r\n―― ⲉϩⲣⲁⲓ\r\n―― ⲉⲡⲉⲥⲏⲧ S, ⲉϧⲣⲏⲓ B, downward\r\npreceded by other prep"
+      "meaning": "from (starting from), since\r\n― before nn\r\n― before vb\r\nprefixed other prep\r\nwith nn intervening, from ... to\r\n― or advb\r\n―― ⲉⲃⲟⲗ, from ... outward\r\n―― ⲉϩⲣⲁⲓ\r\n―― ⲉⲡⲉⲥⲏⲧ S, ⲉⳳⲣⲏⲓ B, downward\r\npreceded by other prep"
     },
     "dutch_meanings": [
       "van (vanaf), sinds",
@@ -91980,7 +91983,7 @@
       "– of bijwoord",
       "―― ⲉⲃⲟⲗ, van ... naar buiten",
       "―― ⲉϩⲣⲁⲓ",
-      "―― ⲉⲡⲉⲥⲏⲧ S, ⲉϧⲣⲏⲓ B, naar beneden",
+      "―― ⲉⲡⲉⲥⲏⲧ S, ⲉⳳⲣⲏⲓ B, naar beneden",
       "voorafgegaan door andere voorbereiding"
     ],
     "etymology": "Egy"
@@ -100552,14 +100555,14 @@
   },
   {
     "id": "cd_2666",
-    "headword": "ⲁϧⲱⲣⲓ",
+    "headword": "ⲁⳳⲱⲣⲓ",
     "dialects": {
       "B": {
-        "absolute": "ⲁϧⲱⲣⲓ",
+        "absolute": "ⲁⳳⲱⲣⲓ",
         "nominal": "",
         "pronominal": "",
         "stative": "",
-        "absoluteVariants": ["ⲁϧⲱⲓⲣⲓ", "ⲁϧⲟⲣⲓ"]
+        "absoluteVariants": ["ⲁⳳⲱⲓⲣⲓ", "ⲁⳳⲟⲣⲓ"]
       }
     },
     "pos": "N",
@@ -100567,7 +100570,7 @@
     "english_meanings": ["asp"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(B) ⲁϧⲱⲣⲓ, ⲁϧⲱⲓⲣⲓ, ⲁϧⲟⲣⲓ",
+      "word": "(B) ⲁⳳⲱⲣⲓ, ⲁⳳⲱⲓⲣⲓ, ⲁⳳⲟⲣⲓ",
       "meaning": "asp"
     },
     "dutch_meanings": ["adder"],
@@ -104121,10 +104124,10 @@
   },
   {
     "id": "cd_2808",
-    "headword": "ⲕⲟⲗⲧⲁϧ",
+    "headword": "ⲕⲟⲗⲧⲁⳳ",
     "dialects": {
       "B": {
-        "absolute": "ⲕⲟⲗⲧⲁϧ",
+        "absolute": "ⲕⲟⲗⲧⲁⳳ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -104135,7 +104138,7 @@
     "english_meanings": ["colocasia, water plant"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(B) ⲕⲟⲗⲧⲁϧ",
+      "word": "(B) ⲕⲟⲗⲧⲁⳳ",
       "meaning": "colocasia, water plant"
     },
     "dutch_meanings": ["colocasia, waterplant"],
@@ -106404,10 +106407,10 @@
   },
   {
     "id": "cd_2905",
-    "headword": "ⲗⲁϧⲉⲙ",
+    "headword": "ⲗⲁⳳⲉⲙ",
     "dialects": {
       "B": {
-        "absolute": "ⲗⲁϧⲉⲙ",
+        "absolute": "ⲗⲁⳳⲉⲙ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -106420,7 +106423,7 @@
     ],
     "greek_equivalents": ["καρφοσ, πυθμην, στελεχοσ, καυλοσ, κλαδοσ"],
     "raw": {
-      "word": "(B) ⲗⲁϧⲉⲙ",
+      "word": "(B) ⲗⲁⳳⲉⲙ",
       "meaning": "trunk, branch, stalk, tube [καρφοσ, πυθμην, στελεχοσ, καυλοσ, κλαδοσ]"
     },
     "dutch_meanings": ["stam, tak, stengel, buis"],
@@ -107606,10 +107609,10 @@
   },
   {
     "id": "cd_2956",
-    "headword": "ⲙⲁϧⲓ",
+    "headword": "ⲙⲁⳳⲓ",
     "dialects": {
       "B": {
-        "absolute": "ⲙⲁϧⲓ",
+        "absolute": "ⲙⲁⳳⲓ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -107620,7 +107623,7 @@
     "english_meanings": ["vb (?)"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(B) ⲙⲁϧⲓ",
+      "word": "(B) ⲙⲁⳳⲓ",
       "meaning": "vb (?)"
     },
     "dutch_meanings": ["bv (?)"],
@@ -111263,14 +111266,14 @@
   },
   {
     "id": "cd_3113",
-    "headword": "ⲫⲱϧⲉⲛ",
+    "headword": "ⲫⲱⳳⲉⲛ",
     "dialects": {
       "B": {
-        "absolute": "ⲫⲱϧⲉⲛ",
+        "absolute": "ⲫⲱⳳⲉⲛ",
         "nominal": "",
         "pronominal": "",
         "stative": "",
-        "absoluteVariants": ["ⲫⲟϧⲉⲛ"]
+        "absoluteVariants": ["ⲫⲟⳳⲉⲛ"]
       }
     },
     "pos": "N",
@@ -111278,7 +111281,7 @@
     "english_meanings": ["covering-planks, roofing-planks"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(B) ⲫⲱϧⲉⲛ, ⲫⲟϧⲉⲛ",
+      "word": "(B) ⲫⲱⳳⲉⲛ, ⲫⲟⳳⲉⲛ",
       "meaning": "covering-planks, roofing-planks"
     },
     "dutch_meanings": ["afdekplanken, dakplanken"],
@@ -112777,14 +112780,14 @@
   },
   {
     "id": "cd_3180",
-    "headword": "ϧⲱⲥ",
+    "headword": "ⳳⲱⲥ",
     "dialects": {},
     "pos": "N",
     "gender": "",
     "english_meanings": ["meaning uncertain"],
     "greek_equivalents": [],
     "raw": {
-      "word": "ϧⲱⲥ",
+      "word": "ⳳⲱⲥ",
       "meaning": "meaning uncertain"
     },
     "dutch_meanings": ["betekent onzeker"],
@@ -112792,10 +112795,10 @@
   },
   {
     "id": "cd_3181",
-    "headword": "ϧⲏⲧ+ ⲉⲃⲟⲗ",
+    "headword": "ⳳⲏⲧ+ ⲉⲃⲟⲗ",
     "dialects": {
-      "ϦⲰⲦ": {
-        "absolute": "ϧⲏⲧ+ ⲉⲃⲟⲗ",
+      "ⳳⲱⲧ": {
+        "absolute": "ⳳⲏⲧ+ ⲉⲃⲟⲗ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -112806,7 +112809,7 @@
     "english_meanings": ["intr: meaning uncertain"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(ϧⲱⲧ), ϧⲏⲧ+ ⲉⲃⲟⲗ",
+      "word": "(ⳳⲱⲧ), ⳳⲏⲧ+ ⲉⲃⲟⲗ",
       "meaning": "intr: meaning uncertain"
     },
     "dutch_meanings": ["intr: betekent onzeker"],
@@ -113907,7 +113910,7 @@
         "absoluteVariants": ["ϩⲣⲏⲉⲓ"]
       },
       "B": {
-        "absolute": "ϧⲣⲏⲓ",
+        "absolute": "ⳳⲣⲏⲓ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -113924,7 +113927,7 @@
     "english_meanings": ["lower part opp to ϩⲣⲁⲓ upper part"],
     "greek_equivalents": [],
     "raw": {
-      "word": "(S) ϩⲣⲁⲓ\r\n(A) ⳉⲣⲏⲓ\r\n(sA) ϩⲣⲏⲓ, ϩⲣⲏⲉⲓ\r\n(B) ϧⲣⲏⲓ\r\n(F) ϩⲗⲏⲓ",
+      "word": "(S) ϩⲣⲁⲓ\r\n(A) ⳉⲣⲏⲓ\r\n(sA) ϩⲣⲏⲓ, ϩⲣⲏⲉⲓ\r\n(B) ⳳⲣⲏⲓ\r\n(F) ϩⲗⲏⲓ",
       "meaning": "lower part opp to ϩⲣⲁⲓ upper part"
     },
     "dutch_meanings": ["onderste deel tegenover ϩⲣⲁⲓ bovenste deel"],
@@ -116393,10 +116396,10 @@
   },
   {
     "id": "cd_3334",
-    "headword": "Ⲁⲃⲃⲁⲕⲟⲩⲙ",
+    "headword": "ⲁⲃⲃⲁⲕⲟⲩⲙ",
     "dialects": {
       "B": {
-        "absolute": "Ⲁⲃⲃⲁⲕⲟⲩⲙ",
+        "absolute": "ⲁⲃⲃⲁⲕⲟⲩⲙ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -116417,10 +116420,10 @@
   },
   {
     "id": "cd_3335",
-    "headword": "Ⲁⲃⲇⲓⲟⲩ",
+    "headword": "ⲁⲃⲇⲓⲟⲩ",
     "dialects": {
       "B": {
-        "absolute": "Ⲁⲃⲇⲓⲟⲩ",
+        "absolute": "ⲁⲃⲇⲓⲟⲩ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -116855,10 +116858,10 @@
   },
   {
     "id": "cd_3359",
-    "headword": "Ⲁⲅⲅⲉⲟⲥ",
+    "headword": "ⲁⲅⲅⲉⲟⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲁⲅⲅⲉⲟⲥ",
+        "absolute": "ⲁⲅⲅⲉⲟⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -117802,10 +117805,10 @@
   },
   {
     "id": "cd_3407",
-    "headword": "Ⲁⲍⲁⲣⲓⲁⲥ",
+    "headword": "ⲁⲍⲁⲣⲓⲁⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲁⲍⲁⲣⲓⲁⲥ",
+        "absolute": "ⲁⲍⲁⲣⲓⲁⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -117961,10 +117964,10 @@
   },
   {
     "id": "cd_3415",
-    "headword": "Ⲁⲑⲏⲛⲁⲓ",
+    "headword": "ⲁⲑⲏⲛⲁⲓ",
     "dialects": {
       "B": {
-        "absolute": "Ⲁⲑⲏⲛⲁⲓ",
+        "absolute": "ⲁⲑⲏⲛⲁⲓ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -118185,10 +118188,10 @@
   },
   {
     "id": "cd_3427",
-    "headword": "Ⲁⲓⲅⲩⲡⲧⲟⲥ",
+    "headword": "ⲁⲓⲅⲩⲡⲧⲟⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲁⲓⲅⲩⲡⲧⲟⲥ",
+        "absolute": "ⲁⲓⲅⲩⲡⲧⲟⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -118221,10 +118224,10 @@
   },
   {
     "id": "cd_3429",
-    "headword": "Ⲁⲓⲑⲓⲟⲡⲓⲁ",
+    "headword": "ⲁⲓⲑⲓⲟⲡⲓⲁ",
     "dialects": {
       "B": {
-        "absolute": "Ⲁⲓⲑⲓⲟⲡⲓⲁ",
+        "absolute": "ⲁⲓⲑⲓⲟⲡⲓⲁ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -119329,10 +119332,10 @@
   },
   {
     "id": "cd_3484",
-    "headword": "Ⲁⲗⲉⲝⲁⲛⲇⲣⲉⲓⲁ",
+    "headword": "ⲁⲗⲉⲝⲁⲛⲇⲣⲉⲓⲁ",
     "dialects": {
       "B": {
-        "absolute": "Ⲁⲗⲉⲝⲁⲛⲇⲣⲉⲓⲁ",
+        "absolute": "ⲁⲗⲉⲝⲁⲛⲇⲣⲉⲓⲁ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -120042,10 +120045,10 @@
   },
   {
     "id": "cd_3519",
-    "headword": "Ⲁⲙⲱⲥ",
+    "headword": "ⲁⲙⲱⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲁⲙⲱⲥ",
+        "absolute": "ⲁⲙⲱⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -122362,10 +122365,10 @@
   },
   {
     "id": "cd_3636",
-    "headword": "Ⲁⲡⲟⲗⲗⲱⲛ",
+    "headword": "ⲁⲡⲟⲗⲗⲱⲛ",
     "dialects": {
       "B": {
-        "absolute": "Ⲁⲡⲟⲗⲗⲱⲛ",
+        "absolute": "ⲁⲡⲟⲗⲗⲱⲛ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -122897,10 +122900,10 @@
   },
   {
     "id": "cd_3663",
-    "headword": "Ⲁⲣⲁⲃⲓⲁ(ⲧ)",
+    "headword": "ⲁⲣⲁⲃⲓⲁ(ⲧ)",
     "dialects": {
       "B": {
-        "absolute": "Ⲁⲣⲁⲃⲓⲁ(ⲧ)",
+        "absolute": "ⲁⲣⲁⲃⲓⲁ(ⲧ)",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -123127,10 +123130,10 @@
   },
   {
     "id": "cd_3675",
-    "headword": "Ⲁⲣⲓⲙⲁⲑⲉⲁⲥ",
+    "headword": "ⲁⲣⲓⲙⲁⲑⲉⲁⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲁⲣⲓⲙⲁⲑⲉⲁⲥ",
+        "absolute": "ⲁⲣⲓⲙⲁⲑⲉⲁⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -123908,10 +123911,10 @@
   },
   {
     "id": "cd_3715",
-    "headword": "Ⲁⲥⲓⲁ(ⲧ)",
+    "headword": "ⲁⲥⲓⲁ(ⲧ)",
     "dialects": {
       "B": {
-        "absolute": "Ⲁⲥⲓⲁ(ⲧ)",
+        "absolute": "ⲁⲥⲓⲁ(ⲧ)",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -126971,10 +126974,10 @@
   },
   {
     "id": "cd_3871",
-    "headword": "Ⲅⲟⲗⲅⲟⲑⲁ",
+    "headword": "ⲅⲟⲗⲅⲟⲑⲁ",
     "dialects": {
       "B": {
-        "absolute": "Ⲅⲟⲗⲅⲟⲑⲁ",
+        "absolute": "ⲅⲟⲗⲅⲟⲑⲁ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -127209,10 +127212,10 @@
   },
   {
     "id": "cd_3883",
-    "headword": "Ⲅⲱⲅ",
+    "headword": "ⲅⲱⲅ",
     "dialects": {
       "B": {
-        "absolute": "Ⲅⲱⲅ",
+        "absolute": "ⲅⲱⲅ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -127333,10 +127336,10 @@
   },
   {
     "id": "cd_3889",
-    "headword": "Ⲇⲁⲛⲓⲏⲗ",
+    "headword": "ⲇⲁⲛⲓⲏⲗ",
     "dialects": {
       "B": {
-        "absolute": "Ⲇⲁⲛⲓⲏⲗ",
+        "absolute": "ⲇⲁⲛⲓⲏⲗ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -127447,10 +127450,10 @@
   },
   {
     "id": "cd_3895",
-    "headword": "Ⲇⲁⲩⲓⲇ",
+    "headword": "ⲇⲁⲩⲓⲇ",
     "dialects": {
       "B": {
-        "absolute": "Ⲇⲁⲩⲓⲇ",
+        "absolute": "ⲇⲁⲩⲓⲇ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -130299,10 +130302,10 @@
   },
   {
     "id": "cd_4043",
-    "headword": "Ⲉⲕⲕⲗⲏⲥⲓⲁⲥⲧⲏⲥ",
+    "headword": "ⲉⲕⲕⲗⲏⲥⲓⲁⲥⲧⲏⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲉⲕⲕⲗⲏⲥⲓⲁⲥⲧⲏⲥ",
+        "absolute": "ⲉⲕⲕⲗⲏⲥⲓⲁⲥⲧⲏⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -132258,10 +132261,10 @@
   },
   {
     "id": "cd_4141",
-    "headword": "Ⲉⲡⲓⲫⲁⲛⲓⲟⲥ",
+    "headword": "ⲉⲡⲓⲫⲁⲛⲓⲟⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲉⲡⲓⲫⲁⲛⲓⲟⲥ",
+        "absolute": "ⲉⲡⲓⲫⲁⲛⲓⲟⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -136290,10 +136293,10 @@
   },
   {
     "id": "cd_4348",
-    "headword": "Ⲉⲥⲇⲣⲁⲥ",
+    "headword": "ⲉⲥⲇⲣⲁⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲉⲥⲇⲣⲁⲥ",
+        "absolute": "ⲉⲥⲇⲣⲁⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -136560,10 +136563,10 @@
   },
   {
     "id": "cd_4362",
-    "headword": "Ⲉⲩⲁ",
+    "headword": "ⲉⲩⲁ",
     "dialects": {
       "B": {
-        "absolute": "Ⲉⲩⲁ",
+        "absolute": "ⲉⲩⲁ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -137975,10 +137978,10 @@
   },
   {
     "id": "cd_4434",
-    "headword": "Ⲍⲉⲩⲥ",
+    "headword": "ⲍⲉⲩⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲍⲉⲩⲥ",
+        "absolute": "ⲍⲉⲩⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -138248,10 +138251,10 @@
   },
   {
     "id": "cd_4447",
-    "headword": "Ⲍⲱⲏ",
+    "headword": "ⲍⲱⲏ",
     "dialects": {
       "B": {
-        "absolute": "Ⲍⲱⲏ",
+        "absolute": "ⲍⲱⲏ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -138520,10 +138523,10 @@
   },
   {
     "id": "cd_4461",
-    "headword": "Ⲏⲗⲓⲁⲥ",
+    "headword": "ⲏⲗⲓⲁⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲏⲗⲓⲁⲥ",
+        "absolute": "ⲏⲗⲓⲁⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -139201,10 +139204,10 @@
   },
   {
     "id": "cd_4495",
-    "headword": "Ⲑⲉⲟⲥ",
+    "headword": "ⲑⲉⲟⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲑⲉⲟⲥ",
+        "absolute": "ⲑⲉⲟⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -139657,10 +139660,10 @@
   },
   {
     "id": "cd_4519",
-    "headword": "ⲑⲣⲓⲛⲟⲓ ⲛⲧⲉ Ⲓⲉⲣⲉⲙⲓⲁⲥ",
+    "headword": "ⲑⲣⲓⲛⲟⲓ ⲛⲧⲉ ⲓⲉⲣⲉⲙⲓⲁⲥ",
     "dialects": {
       "B": {
-        "absolute": "ⲑⲣⲓⲛⲟⲓ ⲛⲧⲉ Ⲓⲉⲣⲉⲙⲓⲁⲥ",
+        "absolute": "ⲑⲣⲓⲛⲟⲓ ⲛⲧⲉ ⲓⲉⲣⲉⲙⲓⲁⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -139899,10 +139902,10 @@
   },
   {
     "id": "cd_4532",
-    "headword": "Ⲓⲁⲕⲱⲃⲟⲥ",
+    "headword": "ⲓⲁⲕⲱⲃⲟⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲓⲁⲕⲱⲃⲟⲥ",
+        "absolute": "ⲓⲁⲕⲱⲃⲟⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -140207,10 +140210,10 @@
   },
   {
     "id": "cd_4548",
-    "headword": "Ⲓⲏⲥ = Ⲓⲏⲥⲟⲩⲥ",
+    "headword": "ⲓⲏⲥ = ⲓⲏⲥⲟⲩⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲓⲏⲥ = Ⲓⲏⲥⲟⲩⲥ",
+        "absolute": "ⲓⲏⲥ = ⲓⲏⲥⲟⲩⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -140225,10 +140228,10 @@
   },
   {
     "id": "cd_4549",
-    "headword": "Ⲓⲏⲥⲟⲩⲥ",
+    "headword": "ⲓⲏⲥⲟⲩⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲓⲏⲥⲟⲩⲥ",
+        "absolute": "ⲓⲏⲥⲟⲩⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -140383,10 +140386,10 @@
   },
   {
     "id": "cd_4557",
-    "headword": "Ⲓⲟⲡⲏ",
+    "headword": "ⲓⲟⲡⲏ",
     "dialects": {
       "B": {
-        "absolute": "Ⲓⲟⲡⲏ",
+        "absolute": "ⲓⲟⲡⲏ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -140401,10 +140404,10 @@
   },
   {
     "id": "cd_4558",
-    "headword": "Ⲓⲟⲣⲇⲁⲛⲏⲥ",
+    "headword": "ⲓⲟⲣⲇⲁⲛⲏⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲓⲟⲣⲇⲁⲛⲏⲥ",
+        "absolute": "ⲓⲟⲣⲇⲁⲛⲏⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -140419,10 +140422,10 @@
   },
   {
     "id": "cd_4559",
-    "headword": "Ⲓⲟⲩⲇⲁⲓ (ⲛ)",
+    "headword": "ⲓⲟⲩⲇⲁⲓ (ⲛ)",
     "dialects": {
       "B": {
-        "absolute": "Ⲓⲟⲩⲇⲁⲓ (ⲛ)",
+        "absolute": "ⲓⲟⲩⲇⲁⲓ (ⲛ)",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -140437,10 +140440,10 @@
   },
   {
     "id": "cd_4560",
-    "headword": "Ⲓⲟⲩⲇⲁⲓⲁ, Ⲓⲟⲩⲇⲉⲁ",
+    "headword": "ⲓⲟⲩⲇⲁⲓⲁ, ⲓⲟⲩⲇⲉⲁ",
     "dialects": {
       "B": {
-        "absolute": "Ⲓⲟⲩⲇⲁⲓⲁ, Ⲓⲟⲩⲇⲉⲁ",
+        "absolute": "ⲓⲟⲩⲇⲁⲓⲁ, ⲓⲟⲩⲇⲉⲁ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -140455,10 +140458,10 @@
   },
   {
     "id": "cd_4561",
-    "headword": "Ⲓⲟⲩⲇⲁⲥ",
+    "headword": "ⲓⲟⲩⲇⲁⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲓⲟⲩⲇⲁⲥ",
+        "absolute": "ⲓⲟⲩⲇⲁⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -140473,10 +140476,10 @@
   },
   {
     "id": "cd_4562",
-    "headword": "Ⲓⲟⲩⲇⲓⲧ",
+    "headword": "ⲓⲟⲩⲇⲓⲧ",
     "dialects": {
       "B": {
-        "absolute": "Ⲓⲟⲩⲇⲓⲧ",
+        "absolute": "ⲓⲟⲩⲇⲓⲧ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -140491,10 +140494,10 @@
   },
   {
     "id": "cd_4563",
-    "headword": "Ⲓⲟⲩⲏⲗ",
+    "headword": "ⲓⲟⲩⲏⲗ",
     "dialects": {
       "B": {
-        "absolute": "Ⲓⲟⲩⲏⲗ",
+        "absolute": "ⲓⲟⲩⲏⲗ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -140509,10 +140512,10 @@
   },
   {
     "id": "cd_4564",
-    "headword": "Ⲓⲟⲩⲗⲓⲟⲥ",
+    "headword": "ⲓⲟⲩⲗⲓⲟⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲓⲟⲩⲗⲓⲟⲥ",
+        "absolute": "ⲓⲟⲩⲗⲓⲟⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -140824,10 +140827,10 @@
   },
   {
     "id": "cd_4580",
-    "headword": "Ⲓⲱⲁⲛⲛⲏⲥ",
+    "headword": "ⲓⲱⲁⲛⲛⲏⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲓⲱⲁⲛⲛⲏⲥ",
+        "absolute": "ⲓⲱⲁⲛⲛⲏⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -140842,10 +140845,10 @@
   },
   {
     "id": "cd_4581",
-    "headword": "Ⲓⲱⲃ",
+    "headword": "ⲓⲱⲃ",
     "dialects": {
       "B": {
-        "absolute": "Ⲓⲱⲃ",
+        "absolute": "ⲓⲱⲃ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -140860,10 +140863,10 @@
   },
   {
     "id": "cd_4582",
-    "headword": "Ⲓⲱⲛⲁ",
+    "headword": "ⲓⲱⲛⲁ",
     "dialects": {
       "B": {
-        "absolute": "Ⲓⲱⲛⲁ",
+        "absolute": "ⲓⲱⲛⲁ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -140878,10 +140881,10 @@
   },
   {
     "id": "cd_4583",
-    "headword": "Ⲓⲱⲥⲏⲫ",
+    "headword": "ⲓⲱⲥⲏⲫ",
     "dialects": {
       "B": {
-        "absolute": "Ⲓⲱⲥⲏⲫ",
+        "absolute": "ⲓⲱⲥⲏⲫ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -146084,10 +146087,10 @@
   },
   {
     "id": "cd_4854",
-    "headword": "Ⲕⲩⲡⲣⲟⲥ",
+    "headword": "ⲕⲩⲡⲣⲟⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲕⲩⲡⲣⲟⲥ",
+        "absolute": "ⲕⲩⲡⲣⲟⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -146156,10 +146159,10 @@
   },
   {
     "id": "cd_4858",
-    "headword": "Ⲕⲩⲣⲓⲉ",
+    "headword": "ⲕⲩⲣⲓⲉ",
     "dialects": {
       "B": {
-        "absolute": "Ⲕⲩⲣⲓⲉ",
+        "absolute": "ⲕⲩⲣⲓⲉ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -146174,10 +146177,10 @@
   },
   {
     "id": "cd_4859",
-    "headword": "Ⲕⲩⲣⲓⲉ ⲉⲗⲉⲏⲥⲟⲛ",
+    "headword": "ⲕⲩⲣⲓⲉ ⲉⲗⲉⲏⲥⲟⲛ",
     "dialects": {
       "B": {
-        "absolute": "Ⲕⲩⲣⲓⲉ ⲉⲗⲉⲏⲥⲟⲛ",
+        "absolute": "ⲕⲩⲣⲓⲉ ⲉⲗⲉⲏⲥⲟⲛ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -147003,10 +147006,10 @@
   },
   {
     "id": "cd_4902",
-    "headword": "Ⲗⲓⲃⲁⲛⲟⲥ",
+    "headword": "ⲗⲓⲃⲁⲛⲟⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲗⲓⲃⲁⲛⲟⲥ",
+        "absolute": "ⲗⲓⲃⲁⲛⲟⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -147021,10 +147024,10 @@
   },
   {
     "id": "cd_4903",
-    "headword": "Ⲗⲓⲃⲩⲏ",
+    "headword": "ⲗⲓⲃⲩⲏ",
     "dialects": {
       "B": {
-        "absolute": "Ⲗⲓⲃⲩⲏ",
+        "absolute": "ⲗⲓⲃⲩⲏ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -148121,10 +148124,10 @@
   },
   {
     "id": "cd_4959",
-    "headword": "Ⲙⲁⲅⲱⲅ",
+    "headword": "ⲙⲁⲅⲱⲅ",
     "dialects": {
       "B": {
-        "absolute": "Ⲙⲁⲅⲱⲅ",
+        "absolute": "ⲙⲁⲅⲱⲅ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -148202,10 +148205,10 @@
   },
   {
     "id": "cd_4963",
-    "headword": "Ⲙⲁⲓⲟⲩ",
+    "headword": "ⲙⲁⲓⲟⲩ",
     "dialects": {
       "B": {
-        "absolute": "Ⲙⲁⲓⲟⲩ",
+        "absolute": "ⲙⲁⲓⲟⲩ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -148548,10 +148551,10 @@
   },
   {
     "id": "cd_4981",
-    "headword": "Ⲙⲁⲣⲇⲟⲥ",
+    "headword": "ⲙⲁⲣⲇⲟⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲙⲁⲣⲇⲟⲥ",
+        "absolute": "ⲙⲁⲣⲇⲟⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -148710,10 +148713,10 @@
   },
   {
     "id": "cd_4989",
-    "headword": "ⲙⲁⲭⲁⲛⲏ, ⲙⲏⲙⲁϧⲛⲏ",
+    "headword": "ⲙⲁⲭⲁⲛⲏ, ⲙⲏⲙⲁⳳⲛⲏ",
     "dialects": {
       "B": {
-        "absolute": "ⲙⲁⲭⲁⲛⲏ, ⲙⲏⲙⲁϧⲛⲏ",
+        "absolute": "ⲙⲁⲭⲁⲛⲏ, ⲙⲏⲙⲁⳳⲛⲏ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -149146,10 +149149,10 @@
   },
   {
     "id": "cd_5013",
-    "headword": "Ⲙⲉⲥⲟⲡⲟⲧⲁⲙⲓⲁ",
+    "headword": "ⲙⲉⲥⲟⲡⲟⲧⲁⲙⲓⲁ",
     "dialects": {
       "B": {
-        "absolute": "Ⲙⲉⲥⲟⲡⲟⲧⲁⲙⲓⲁ",
+        "absolute": "ⲙⲉⲥⲟⲡⲟⲧⲁⲙⲓⲁ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -149168,10 +149171,10 @@
   },
   {
     "id": "cd_5014",
-    "headword": "Ⲙⲉⲥⲥⲓⲁⲥ",
+    "headword": "ⲙⲉⲥⲥⲓⲁⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲙⲉⲥⲥⲓⲁⲥ",
+        "absolute": "ⲙⲉⲥⲥⲓⲁⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -150165,10 +150168,10 @@
   },
   {
     "id": "cd_5068",
-    "headword": "Ⲙⲓⲭⲉⲟⲥ",
+    "headword": "ⲙⲓⲭⲉⲟⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲙⲓⲭⲉⲟⲥ",
+        "absolute": "ⲙⲓⲭⲉⲟⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -150273,10 +150276,10 @@
   },
   {
     "id": "cd_5074",
-    "headword": "Ⲙⲟⲗⲟⲭ",
+    "headword": "ⲙⲟⲗⲟⲭ",
     "dialects": {
       "B": {
-        "absolute": "Ⲙⲟⲗⲟⲭ",
+        "absolute": "ⲙⲟⲗⲟⲭ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -150723,10 +150726,10 @@
   },
   {
     "id": "cd_5097",
-    "headword": "Ⲙⲱⲩⲥⲏⲥ",
+    "headword": "ⲙⲱⲩⲥⲏⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲙⲱⲩⲥⲏⲥ",
+        "absolute": "ⲙⲱⲩⲥⲏⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -150741,10 +150744,10 @@
   },
   {
     "id": "cd_5098",
-    "headword": "Ⲛⲁⲉⲙⲓⲁⲥ",
+    "headword": "ⲛⲁⲉⲙⲓⲁⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲛⲁⲉⲙⲓⲁⲥ",
+        "absolute": "ⲛⲁⲉⲙⲓⲁⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -150783,10 +150786,10 @@
   },
   {
     "id": "cd_5100",
-    "headword": "Ⲛⲁⲍⲁⲣⲉⲑ",
+    "headword": "ⲛⲁⲍⲁⲣⲉⲑ",
     "dialects": {
       "B": {
-        "absolute": "Ⲛⲁⲍⲁⲣⲉⲑ",
+        "absolute": "ⲛⲁⲍⲁⲣⲉⲑ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -150819,10 +150822,10 @@
   },
   {
     "id": "cd_5102",
-    "headword": "Ⲛⲁⲟⲩⲙ",
+    "headword": "ⲛⲁⲟⲩⲙ",
     "dialects": {
       "B": {
-        "absolute": "Ⲛⲁⲟⲩⲙ",
+        "absolute": "ⲛⲁⲟⲩⲙ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -151585,10 +151588,10 @@
   },
   {
     "id": "cd_5143",
-    "headword": "Ⲛⲱⲉ",
+    "headword": "ⲛⲱⲉ",
     "dialects": {
       "B": {
-        "absolute": "Ⲛⲱⲉ",
+        "absolute": "ⲛⲱⲉ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -154735,10 +154738,10 @@
   },
   {
     "id": "cd_5303",
-    "headword": "Ⲡⲁⲣⲟⲩⲭ",
+    "headword": "ⲡⲁⲣⲟⲩⲭ",
     "dialects": {
       "B": {
-        "absolute": "Ⲡⲁⲣⲟⲩⲭ",
+        "absolute": "ⲡⲁⲣⲟⲩⲭ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -154950,10 +154953,10 @@
   },
   {
     "id": "cd_5314",
-    "headword": "Ⲡⲁⲩⲗⲟⲥ",
+    "headword": "ⲡⲁⲩⲗⲟⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲡⲁⲩⲗⲟⲥ",
+        "absolute": "ⲡⲁⲩⲗⲟⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -155484,10 +155487,10 @@
   },
   {
     "id": "cd_5342",
-    "headword": "Ⲡⲉⲧⲣⲟⲥ",
+    "headword": "ⲡⲉⲧⲣⲟⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲡⲉⲧⲣⲟⲥ",
+        "absolute": "ⲡⲉⲧⲣⲟⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -158698,10 +158701,10 @@
   },
   {
     "id": "cd_5508",
-    "headword": "Ⲣⲏⲫⲁⲛ, Ⲣⲉⲫⲁⲛ",
+    "headword": "ⲣⲏⲫⲁⲛ, ⲣⲉⲫⲁⲛ",
     "dialects": {
       "B": {
-        "absolute": "Ⲣⲏⲫⲁⲛ, Ⲣⲉⲫⲁⲛ",
+        "absolute": "ⲣⲏⲫⲁⲛ, ⲣⲉⲫⲁⲛ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -158806,10 +158809,10 @@
   },
   {
     "id": "cd_5514",
-    "headword": "Ⲣⲱⲙⲁⲓⲟⲥ, Ⲣⲱⲙⲉⲟⲥ",
+    "headword": "ⲣⲱⲙⲁⲓⲟⲥ, ⲣⲱⲙⲉⲟⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲣⲱⲙⲁⲓⲟⲥ, Ⲣⲱⲙⲉⲟⲥ",
+        "absolute": "ⲣⲱⲙⲁⲓⲟⲥ, ⲣⲱⲙⲉⲟⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -158824,10 +158827,10 @@
   },
   {
     "id": "cd_5515",
-    "headword": "Ⲣⲱⲙⲏ",
+    "headword": "ⲣⲱⲙⲏ",
     "dialects": {
       "B": {
-        "absolute": "Ⲣⲱⲙⲏ",
+        "absolute": "ⲣⲱⲙⲏ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -158992,10 +158995,10 @@
   },
   {
     "id": "cd_5524",
-    "headword": "Ⲥⲁⲙⲁⲣⲉⲓⲁ, Ⲥⲁⲙⲁⲣⲓⲁ",
+    "headword": "ⲥⲁⲙⲁⲣⲉⲓⲁ, ⲥⲁⲙⲁⲣⲓⲁ",
     "dialects": {
       "B": {
-        "absolute": "Ⲥⲁⲙⲁⲣⲉⲓⲁ, Ⲥⲁⲙⲁⲣⲓⲁ",
+        "absolute": "ⲥⲁⲙⲁⲣⲉⲓⲁ, ⲥⲁⲙⲁⲣⲓⲁ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -159430,10 +159433,10 @@
   },
   {
     "id": "cd_5547",
-    "headword": "Ⲥⲉⲡⲧⲉⲙⲃⲣⲓⲟⲥ",
+    "headword": "ⲥⲉⲡⲧⲉⲙⲃⲣⲓⲟⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲥⲉⲡⲧⲉⲙⲃⲣⲓⲟⲥ",
+        "absolute": "ⲥⲉⲡⲧⲉⲙⲃⲣⲓⲟⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -159520,10 +159523,10 @@
   },
   {
     "id": "cd_5552",
-    "headword": "Ⲥⲑⲏⲣ",
+    "headword": "ⲥⲑⲏⲣ",
     "dialects": {
       "B": {
-        "absolute": "Ⲥⲑⲏⲣ",
+        "absolute": "ⲥⲑⲏⲣ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -160315,10 +160318,10 @@
   },
   {
     "id": "cd_5593",
-    "headword": "Ⲥⲕⲩⲧⲟⲥ",
+    "headword": "ⲥⲕⲩⲧⲟⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲥⲕⲩⲧⲟⲥ",
+        "absolute": "ⲥⲕⲩⲧⲟⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -160515,10 +160518,10 @@
   },
   {
     "id": "cd_5603",
-    "headword": "Ⲥⲟⲫⲟⲛⲓⲁⲥ",
+    "headword": "ⲥⲟⲫⲟⲛⲓⲁⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲥⲟⲫⲟⲛⲓⲁⲥ",
+        "absolute": "ⲥⲟⲫⲟⲛⲓⲁⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -163366,10 +163369,10 @@
   },
   {
     "id": "cd_5744",
-    "headword": "Ⲥⲩⲣⲓⲁ",
+    "headword": "ⲥⲩⲣⲓⲁ",
     "dialects": {
       "B": {
-        "absolute": "Ⲥⲩⲣⲓⲁ",
+        "absolute": "ⲥⲩⲣⲓⲁ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -163384,10 +163387,10 @@
   },
   {
     "id": "cd_5745",
-    "headword": "Ⲥⲩⲣⲟⲥ",
+    "headword": "ⲥⲩⲣⲟⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲥⲩⲣⲟⲥ",
+        "absolute": "ⲥⲩⲣⲟⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -165850,10 +165853,10 @@
   },
   {
     "id": "cd_5872",
-    "headword": "Ⲧⲱⲃⲓⲧ",
+    "headword": "ⲧⲱⲃⲓⲧ",
     "dialects": {
       "B": {
-        "absolute": "Ⲧⲱⲃⲓⲧ",
+        "absolute": "ⲧⲱⲃⲓⲧ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -166969,10 +166972,10 @@
   },
   {
     "id": "cd_5928",
-    "headword": "Ⲫⲁⲙⲉⲛⲱⲑ",
+    "headword": "ⲫⲁⲙⲉⲛⲱⲑ",
     "dialects": {
       "B": {
-        "absolute": "Ⲫⲁⲙⲉⲛⲱⲑ",
+        "absolute": "ⲫⲁⲙⲉⲛⲱⲑ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -166980,7 +166983,7 @@
     },
     "pos": "UNKNOWN",
     "gender": "",
-    "greek_equivalents": ["Ⲡⲁⲣⲙϩⲁⲧ"],
+    "greek_equivalents": ["ⲡⲁⲣⲙϩⲁⲧ"],
     "english_meanings": [
       "Baramhat, seventh Coptic month",
       "In the Saidi dialect"
@@ -167071,10 +167074,10 @@
   },
   {
     "id": "cd_5933",
-    "headword": "Ⲫⲁⲣⲁⲱ",
+    "headword": "ⲫⲁⲣⲁⲱ",
     "dialects": {
       "B": {
-        "absolute": "Ⲫⲁⲣⲁⲱ",
+        "absolute": "ⲫⲁⲣⲁⲱ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -167095,10 +167098,10 @@
   },
   {
     "id": "cd_5934",
-    "headword": "Ⲫⲁⲣⲓⲥⲉⲟⲥ",
+    "headword": "ⲫⲁⲣⲓⲥⲉⲟⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲫⲁⲣⲓⲥⲉⲟⲥ",
+        "absolute": "ⲫⲁⲣⲓⲥⲉⲟⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -167958,10 +167961,10 @@
   },
   {
     "id": "cd_5980",
-    "headword": "Ⲫⲟⲓⲛⲓⲕⲏ",
+    "headword": "ⲫⲟⲓⲛⲓⲕⲏ",
     "dialects": {
       "B": {
-        "absolute": "Ⲫⲟⲓⲛⲓⲕⲏ",
+        "absolute": "ⲫⲟⲓⲛⲓⲕⲏ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -169600,10 +169603,10 @@
   },
   {
     "id": "cd_6064",
-    "headword": "Ⲭⲣⲓⲥⲧⲟⲥ",
+    "headword": "ⲭⲣⲓⲥⲧⲟⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ⲭⲣⲓⲥⲧⲟⲥ",
+        "absolute": "ⲭⲣⲓⲥⲧⲟⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -170456,10 +170459,10 @@
   },
   {
     "id": "cd_6108",
-    "headword": "Ⲱⲃⲇⲓⲟⲛ",
+    "headword": "ⲱⲃⲇⲓⲟⲛ",
     "dialects": {
       "B": {
-        "absolute": "Ⲱⲃⲇⲓⲟⲛ",
+        "absolute": "ⲱⲃⲇⲓⲟⲛ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -170642,10 +170645,10 @@
   },
   {
     "id": "cd_6118",
-    "headword": "Ⲱⲥⲏ, Ⲱⲥⲏⲉ",
+    "headword": "ⲱⲥⲏ, ⲱⲥⲏⲉ",
     "dialects": {
       "B": {
-        "absolute": "Ⲱⲥⲏ, Ⲱⲥⲏⲉ",
+        "absolute": "ⲱⲥⲏ, ⲱⲥⲏⲉ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -170777,10 +170780,10 @@
   },
   {
     "id": "cd_6124",
-    "headword": "Ϩⲁⲅⲉⲟⲥ",
+    "headword": "ϩⲁⲅⲉⲟⲥ",
     "dialects": {
       "B": {
-        "absolute": "Ϩⲁⲅⲉⲟⲥ",
+        "absolute": "ϩⲁⲅⲉⲟⲥ",
         "nominal": "",
         "pronominal": "",
         "stative": ""
@@ -173680,5 +173683,379 @@
       "selecteren, uitkiezen, voorstellen"
     ],
     "etymology": "Gr"
+  },
+  {
+    "id": "cd_6272",
+    "headword": "ⲕⲁⲧⲁ-",
+    "dialects": {
+      "B": {
+        "absolute": "",
+        "nominal": "ⲕⲁⲧⲁ-",
+        "pronominal": "ⲕⲁⲧⲁⲣⲟ=",
+        "stative": ""
+      }
+    },
+    "pos": "PREP",
+    "gender": "",
+    "english_meanings": ["according to"],
+    "greek_equivalents": [],
+    "raw": {
+      "word": "(B) ⲕⲁⲧⲁ-\r\n(B) ⲕⲁⲧⲁⲣⲟ=",
+      "meaning": "according to"
+    },
+    "dutch_meanings": ["volgens"],
+    "etymology": "Gr"
+  },
+  {
+    "id": "cd_6273",
+    "headword": "ϩⲱⲥ-",
+    "dialects": {
+      "B": {
+        "absolute": "",
+        "nominal": "ϩⲱⲥ-",
+        "pronominal": "",
+        "stative": ""
+      }
+    },
+    "pos": "PREP",
+    "gender": "",
+    "english_meanings": ["like, as"],
+    "greek_equivalents": [],
+    "raw": {
+      "word": "(B) ϩⲱⲥ-",
+      "meaning": "like, as"
+    },
+    "dutch_meanings": ["zoals"],
+    "etymology": "Gr"
+  },
+  {
+    "id": "cd_6274",
+    "headword": "ⲙⲉⲛⲉⲛⲥⲁ-",
+    "dialects": {
+      "B": {
+        "absolute": "",
+        "nominal": "ⲙⲉⲛⲉⲛⲥⲁ-",
+        "pronominal": "ⲙⲉⲛⲉⲛⲥⲱ=",
+        "stative": ""
+      }
+    },
+    "pos": "PREP",
+    "gender": "",
+    "english_meanings": ["after"],
+    "greek_equivalents": [],
+    "raw": {
+      "word": "(B) ⲙⲉⲛⲉⲛⲥⲁ-\r\n(B) ⲙⲉⲛⲉⲛⲥⲱ=",
+      "meaning": "after"
+    },
+    "dutch_meanings": ["na"],
+    "etymology": "Egy"
+  },
+  {
+    "id": "cd_6275",
+    "headword": "ⲉ̀ⲃⲟⲗ ⳳⲉⲛ-",
+    "dialects": {
+      "B": {
+        "absolute": "",
+        "nominal": "ⲉ̀ⲃⲟⲗ ⳳⲉⲛ-",
+        "pronominal": "ⲉ̀ⲃⲟⲗ ⲛ̀ⳳⲏⲧ=",
+        "stative": ""
+      }
+    },
+    "pos": "PREP",
+    "gender": "",
+    "english_meanings": ["from, through"],
+    "greek_equivalents": [],
+    "raw": {
+      "word": "(B) ⲉ̀ⲃⲟⲗ ⳳⲉⲛ-\r\n(B) ⲉ̀ⲃⲟⲗ ⲛ̀ⳳⲏⲧ=",
+      "meaning": "from, through"
+    },
+    "dutch_meanings": ["van, door"],
+    "etymology": "Egy"
+  },
+  {
+    "id": "cd_6276",
+    "headword": "ⲉ̀ⲃⲟⲗ ϩⲓⲧⲉⲛ-",
+    "dialects": {
+      "B": {
+        "absolute": "",
+        "nominal": "ⲉ̀ⲃⲟⲗ ϩⲓⲧⲉⲛ-",
+        "pronominal": "ⲉ̀ⲃⲟⲗ ϩⲓⲧⲟⲧ=",
+        "stative": ""
+      }
+    },
+    "pos": "PREP",
+    "gender": "",
+    "english_meanings": ["through, by way of"],
+    "greek_equivalents": [],
+    "raw": {
+      "word": "(B) ⲉ̀ⲃⲟⲗ ϩⲓⲧⲉⲛ-\r\n(B) ⲉ̀ⲃⲟⲗ ϩⲓⲧⲟⲧ=",
+      "meaning": "through, by way of"
+    },
+    "dutch_meanings": ["door, via"],
+    "etymology": "Egy"
+  },
+  {
+    "id": "cd_6277",
+    "headword": "ⲉ̀ⲃⲟⲗ ⲛ̀-",
+    "dialects": {
+      "B": {
+        "absolute": "",
+        "nominal": "ⲉ̀ⲃⲟⲗ ⲛ̀-",
+        "pronominal": "ⲉ̀ⲃⲟⲗ ⲙ̀ⲙⲟ=",
+        "stative": ""
+      }
+    },
+    "pos": "PREP",
+    "gender": "",
+    "english_meanings": ["from, through"],
+    "greek_equivalents": [],
+    "raw": {
+      "word": "(B) ⲉ̀ⲃⲟⲗ ⲛ̀-, ⲉ̀ⲃⲟⲗ ⲙ̀-\r\n(B) ⲉ̀ⲃⲟⲗ ⲙ̀ⲙⲟ=",
+      "meaning": "from, through"
+    },
+    "dutch_meanings": ["van, door"],
+    "etymology": "Egy"
+  },
+  {
+    "id": "cd_6278",
+    "headword": "ⲛ̀ⲥⲁ-",
+    "dialects": {
+      "B": {
+        "absolute": "",
+        "nominal": "ⲛ̀ⲥⲁ-",
+        "pronominal": "ⲛ̀ⲥⲱ=",
+        "stative": ""
+      }
+    },
+    "pos": "PREP",
+    "gender": "",
+    "english_meanings": ["after, behind"],
+    "greek_equivalents": [],
+    "raw": {
+      "word": "(B) ⲛ̀ⲥⲁ-\r\n(B) ⲛ̀ⲥⲱ=",
+      "meaning": "after, behind"
+    },
+    "dutch_meanings": ["na, achter"],
+    "etymology": "Egy"
+  },
+  {
+    "id": "cd_6279",
+    "headword": "ⲉ̀ϫⲉⲛ-",
+    "dialects": {
+      "B": {
+        "absolute": "",
+        "nominal": "ⲉ̀ϫⲉⲛ-",
+        "pronominal": "ⲉ̀ϫⲱ=",
+        "stative": ""
+      }
+    },
+    "pos": "PREP",
+    "gender": "",
+    "english_meanings": ["on"],
+    "greek_equivalents": [],
+    "raw": {
+      "word": "(B) ⲉ̀ϫⲉⲛ-\r\n(B) ⲉ̀ϫⲱ=",
+      "meaning": "on"
+    },
+    "dutch_meanings": ["op"],
+    "etymology": "Egy"
+  },
+  {
+    "id": "cd_6280",
+    "headword": "ϩⲓϫⲉⲛ-",
+    "dialects": {
+      "B": {
+        "absolute": "",
+        "nominal": "ϩⲓϫⲉⲛ-",
+        "pronominal": "ϩⲓϫⲱ=",
+        "stative": ""
+      }
+    },
+    "pos": "PREP",
+    "gender": "",
+    "english_meanings": ["on"],
+    "greek_equivalents": [],
+    "raw": {
+      "word": "(B) ϩⲓϫⲉⲛ-\r\n(B) ϩⲓϫⲱ=",
+      "meaning": "on"
+    },
+    "dutch_meanings": ["op"],
+    "etymology": "Egy"
+  },
+  {
+    "id": "cd_6281",
+    "headword": "ⲉ̀ϩ̀ⲣⲏⲓ ⲉ̀ϫⲉⲛ-",
+    "dialects": {
+      "B": {
+        "absolute": "",
+        "nominal": "ⲉ̀ϩ̀ⲣⲏⲓ ⲉ̀ϫⲉⲛ-",
+        "pronominal": "ⲉ̀ϩ̀ⲣⲏⲓ ⲉ̀ϫⲱ=",
+        "stative": ""
+      }
+    },
+    "pos": "PREP",
+    "gender": "",
+    "english_meanings": ["on"],
+    "greek_equivalents": [],
+    "raw": {
+      "word": "(B) ⲉ̀ϩ̀ⲣⲏⲓ ⲉ̀ϫⲉⲛ-\r\n(B) ⲉ̀ϩ̀ⲣⲏⲓ ⲉ̀ϫⲱ=",
+      "meaning": "on"
+    },
+    "dutch_meanings": ["op"],
+    "etymology": "Egy"
+  },
+  {
+    "id": "cd_6282",
+    "headword": "ⲉ̀ϩ̀ⲣⲏⲓ ϩⲓϫⲉⲛ-",
+    "dialects": {
+      "B": {
+        "absolute": "",
+        "nominal": "ⲉ̀ϩ̀ⲣⲏⲓ ϩⲓϫⲉⲛ-",
+        "pronominal": "ⲉ̀ϩ̀ⲣⲏⲓ ϩⲓϫⲱ=",
+        "stative": ""
+      }
+    },
+    "pos": "PREP",
+    "gender": "",
+    "english_meanings": ["on"],
+    "greek_equivalents": [],
+    "raw": {
+      "word": "(B) ⲉ̀ϩ̀ⲣⲏⲓ ϩⲓϫⲉⲛ-\r\n(B) ⲉ̀ϩ̀ⲣⲏⲓ ϩⲓϫⲱ=",
+      "meaning": "on"
+    },
+    "dutch_meanings": ["op"],
+    "etymology": "Egy"
+  },
+  {
+    "id": "cd_6283",
+    "headword": "ⲛ̀ⳳ̀ⲣⲏⲓ ⳳⲉⲛ-",
+    "dialects": {
+      "B": {
+        "absolute": "",
+        "nominal": "ⲛ̀ⳳ̀ⲣⲏⲓ ⳳⲉⲛ-",
+        "pronominal": "ⲛ̀ⳳ̀ⲣⲏⲓ ⲛ̀ⳳⲏⲧ=",
+        "stative": ""
+      }
+    },
+    "pos": "PREP",
+    "gender": "",
+    "english_meanings": ["in"],
+    "greek_equivalents": [],
+    "raw": {
+      "word": "(B) ⲛ̀ⳳ̀ⲣⲏⲓ ⳳⲉⲛ-\r\n(B) ⲛ̀ⳳ̀ⲣⲏⲓ ⲛ̀ⳳⲏⲧ=",
+      "meaning": "in"
+    },
+    "dutch_meanings": ["in"],
+    "etymology": "Egy"
+  },
+  {
+    "id": "cd_6284",
+    "headword": "ⲛⲁϩ̀ⲣⲉⲛ-",
+    "dialects": {
+      "B": {
+        "absolute": "",
+        "nominal": "ⲛⲁϩ̀ⲣⲉⲛ-",
+        "pronominal": "ⲛⲁϩ̀ⲣⲁ=",
+        "stative": ""
+      }
+    },
+    "pos": "PREP",
+    "gender": "",
+    "english_meanings": ["before, in front of"],
+    "greek_equivalents": [],
+    "raw": {
+      "word": "(B) ⲛⲁϩ̀ⲣⲉⲛ-\r\n(B) ⲛⲁϩ̀ⲣⲁ=",
+      "meaning": "before, in front of"
+    },
+    "dutch_meanings": ["voor"],
+    "etymology": "Egy"
+  },
+  {
+    "id": "cd_6285",
+    "headword": "ⳳⲁⲧⲉⲛ-",
+    "dialects": {
+      "B": {
+        "absolute": "",
+        "nominal": "ⳳⲁⲧⲉⲛ-",
+        "pronominal": "ⳳⲁⲧⲟⲧ=",
+        "stative": ""
+      }
+    },
+    "pos": "PREP",
+    "gender": "",
+    "english_meanings": ["at, beside"],
+    "greek_equivalents": [],
+    "raw": {
+      "word": "(B) ⳳⲁⲧⲉⲛ-\r\n(B) ⳳⲁⲧⲟⲧ=",
+      "meaning": "at, beside"
+    },
+    "dutch_meanings": ["bij, naast"],
+    "etymology": "Egy"
+  },
+  {
+    "id": "cd_6286",
+    "headword": "ⲛ̀ⲧⲉⲛ-",
+    "dialects": {
+      "B": {
+        "absolute": "",
+        "nominal": "ⲛ̀ⲧⲉⲛ-",
+        "pronominal": "ⲛ̀ⲧⲟⲧ=",
+        "stative": ""
+      }
+    },
+    "pos": "PREP",
+    "gender": "",
+    "english_meanings": ["from, via"],
+    "greek_equivalents": [],
+    "raw": {
+      "word": "(B) ⲛ̀ⲧⲉⲛ-\r\n(B) ⲛ̀ⲧⲟⲧ=",
+      "meaning": "from, via"
+    },
+    "dutch_meanings": ["van, via"],
+    "etymology": "Egy"
+  },
+  {
+    "id": "cd_6287",
+    "headword": "ϩⲓⲫⲁϩⲟⲩ ⲛ̀-",
+    "dialects": {
+      "B": {
+        "absolute": "",
+        "nominal": "ϩⲓⲫⲁϩⲟⲩ ⲛ̀-",
+        "pronominal": "ϩⲓⲫⲁϩⲟⲩ ⲙ̀ⲙⲟ=",
+        "stative": ""
+      }
+    },
+    "pos": "PREP",
+    "gender": "",
+    "english_meanings": ["behind"],
+    "greek_equivalents": [],
+    "raw": {
+      "word": "(B) ϩⲓⲫⲁϩⲟⲩ ⲛ̀-, ϩⲓⲫⲁϩⲟⲩ ⲙ̀-\r\n(B) ϩⲓⲫⲁϩⲟⲩ ⲙ̀ⲙⲟ=",
+      "meaning": "behind"
+    },
+    "dutch_meanings": ["achter"],
+    "etymology": "Egy"
+  },
+  {
+    "id": "cd_6288",
+    "headword": "ϩⲓⲧⲉⲛ-",
+    "dialects": {
+      "B": {
+        "absolute": "",
+        "nominal": "ϩⲓⲧⲉⲛ-",
+        "pronominal": "ϩⲓⲧⲟⲧ=",
+        "stative": ""
+      }
+    },
+    "pos": "PREP",
+    "gender": "",
+    "english_meanings": ["through, by way of"],
+    "greek_equivalents": [],
+    "raw": {
+      "word": "(B) ϩⲓⲧⲉⲛ-\r\n(B) ϩⲓⲧⲟⲧ=",
+      "meaning": "through, by way of"
+    },
+    "dutch_meanings": ["door, via"],
+    "etymology": "Egy"
   }
 ]

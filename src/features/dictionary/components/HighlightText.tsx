@@ -1,5 +1,6 @@
 import React from "react";
 
+import { buildCopticSearchRegex } from "@/lib/copticSearch";
 import { antinoou } from "@/lib/fonts";
 
 import type { ReactNode } from "react";
@@ -106,34 +107,6 @@ const COPTIC_RUN_REGEX = new RegExp(
   "g",
 );
 
-/**
- * Builds a query regex that tolerates combining-mark differences so highlighted
- * matches line up with the accent-insensitive dictionary search behavior.
- */
-function buildRegexFromQuery(query: string) {
-  if (!query || query.trim() === "") {
-    return null;
-  }
-
-  const nQuery = query
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f\uFE20-\uFE2F\u0483-\u0489]/g, "");
-  if (nQuery.length === 0) {
-    return null;
-  }
-
-  const combiningChars = "[\\u0300-\\u036f\\uFE20-\\uFE2F\\u0483-\\u0489]*";
-  const escapeRegex = (s: string) =>
-    s.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
-
-  const pattern = nQuery
-    .split("")
-    .map((char) => escapeRegex(char) + combiningChars)
-    .join("");
-
-  return new RegExp(`(${pattern})`, "gi");
-}
-
 function renderWithSuperscript(
   text: string,
   keyPrefix: string,
@@ -237,7 +210,7 @@ function renderSearchableText(
     );
   }
 
-  const regex = buildRegexFromQuery(query);
+  const regex = buildCopticSearchRegex(query);
   if (!regex) {
     return (
       <span className={className}>

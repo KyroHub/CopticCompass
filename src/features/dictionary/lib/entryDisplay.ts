@@ -19,11 +19,23 @@ export function formatDialectForms(
   headwordFallback: string,
 ) {
   const parts: string[] = [];
-  const absoluteWithVariants = forms.absolute
-    ? [forms.absolute, ...(forms.absoluteVariants ?? [])].join(", ")
-    : headwordFallback;
+  const hasBoundOrStative = Boolean(
+    forms.nominal || forms.pronominal || forms.stative,
+  );
+  let absoluteWithVariants = "";
 
-  parts.push(absoluteWithVariants);
+  if (forms.absolute) {
+    absoluteWithVariants = [
+      forms.absolute,
+      ...(forms.absoluteVariants ?? []),
+    ].join(", ");
+  } else if (!hasBoundOrStative) {
+    absoluteWithVariants = headwordFallback;
+  }
+
+  if (absoluteWithVariants) {
+    parts.push(absoluteWithVariants);
+  }
 
   const bound: string[] = [];
   if (forms.nominal) {
@@ -40,7 +52,7 @@ export function formatDialectForms(
     parts.push(forms.stative);
   }
 
-  return parts.join(" ");
+  return parts.join(" ").trim();
 }
 
 /**

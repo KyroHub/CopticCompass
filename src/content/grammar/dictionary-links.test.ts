@@ -28,6 +28,14 @@ describe("grammar dictionary link enrichment", () => {
     expect(getBohairicDictionaryEntryIdForWord("Ⲟⲩⲓⲱⲧ")).toBe("cd_57");
     expect(getBohairicDictionaryEntryIdForWord("ϭⲱⲓⲥ")).toBe("cd_17");
     expect(getBohairicDictionaryEntryIdForWord("⳪")).toBe("cd_17");
+    expect(getBohairicDictionaryEntryIdForWord("ϧⲉⲗⲗⲱ")).toBe("cd_63a");
+    expect(getBohairicDictionaryEntryIdForWord("ⳳⲉⲗⲗⲱ")).toBe("cd_63a");
+    expect(getBohairicDictionaryEntryIdForWord("ϦⲈⲖⲖⲰ")).toBe("cd_63a");
+    expect(getBohairicDictionaryEntryIdForWord("ⳲⲈⲖⲖⲰ")).toBe("cd_63a");
+    expect(getBohairicDictionaryEntryIdForWord("ϧⲉⲛ-")).toBe("cd_361");
+    expect(getBohairicDictionaryEntryIdForWord("ⳳⲉⲛ-")).toBe("cd_361");
+    expect(getBohairicDictionaryEntryIdForWord("ϦⲈⲚ-")).toBe("cd_361");
+    expect(getBohairicDictionaryEntryIdForWord("ⳲⲈⲚ-")).toBe("cd_361");
     expect(getBohairicDictionaryEntryIdForWord("Ⲛ̀ⲑⲟⲥ")).toBe("cd_493a");
     expect(getBohairicDictionaryEntryIdForWord("Ⲛ̀ⲑⲱⲟⲩ")).toBe("cd_493b");
     expect(getBohairicDictionaryEntryIdForWord("Ϣⲏⲣⲓ")).toBeNull();

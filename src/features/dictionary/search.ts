@@ -3,6 +3,7 @@ import type {
   DictionaryPartOfSpeechFilter,
 } from "@/features/dictionary/config";
 import type { DictionaryClientEntry } from "@/features/dictionary/types";
+import { normalizeCopticSearchText } from "@/lib/copticSearch";
 
 export const DEFAULT_DICTIONARY_SEARCH_PAGE_SIZE = 50;
 export const MAX_DICTIONARY_SEARCH_PAGE_SIZE = 100;
@@ -41,22 +42,6 @@ type SearchPreparedDictionaryPageArgs = DictionarySearchPageOptions & {
 };
 
 /**
- * Normalizes Coptic text into an accent-insensitive search form so headwords
- * and dialect variants match across Unicode combining-mark differences.
- */
-function normalizeCoptic(text: string): string {
-  if (!text) {
-    return "";
-  }
-
-  return text
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f\uFE20-\uFE2F\u0483-\u0489]/g, "")
-    .toLowerCase()
-    .trim();
-}
-
-/**
  * Precomputes the normalized search fields used by interactive dictionary
  * filtering so repeated queries do not rebuild the same derived strings.
  */
@@ -80,8 +65,8 @@ export function prepareDictionaryForSearch(
       dutchSearchText: (entry.dutch_meanings || []).join(" ").toLowerCase(),
       greekSearchText: entry.greek_equivalents.join(" ").toLowerCase(),
       index,
-      normalizedHeadword: normalizeCoptic(entry.headword),
-      normalizedDialectForms: normalizeCoptic(dialectForms),
+      normalizedHeadword: normalizeCopticSearchText(entry.headword),
+      normalizedDialectForms: normalizeCopticSearchText(dialectForms),
     };
   });
 }
@@ -112,7 +97,7 @@ export function searchPreparedDictionaryPage(
   const sanitizedOffset = Math.max(0, Math.trunc(offset));
   const trimmedQuery = query.trim();
   const plainQuery = trimmedQuery.toLowerCase();
-  const normalizedQuery = normalizeCoptic(trimmedQuery);
+  const normalizedQuery = normalizeCopticSearchText(trimmedQuery);
   const usesQuery = trimmedQuery.length > 0;
   const pageEntries: DictionaryClientEntry[] = [];
 

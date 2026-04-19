@@ -1,4 +1,5 @@
 import { getGrammarDictionaryData } from "./dictionary-data.ts";
+import { normalizeCopticSearchText } from "../../lib/copticSearch.ts";
 
 import type {
   GrammarBlock,
@@ -34,13 +35,7 @@ const BOHAIRIC_PREFIX_STRIPPING_CANDIDATES = [
 ] as const;
 
 function normalizeBohairicLookupCandidate(value: string): string | null {
-  const normalizedValue = value
-    .normalize("NFD")
-    .replace(/\p{M}/gu, "")
-    .normalize("NFC")
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, " ");
+  const normalizedValue = normalizeCopticSearchText(value).replace(/\s+/g, " ");
 
   if (!normalizedValue || /\s/.test(normalizedValue)) {
     return null;

@@ -5,7 +5,7 @@ const E2E_TEST_USER_EMAIL = process.env.E2E_TEST_USER_EMAIL;
 const E2E_TEST_USER_PASSWORD = process.env.E2E_TEST_USER_PASSWORD;
 const HAS_E2E_AUTH = Boolean(E2E_TEST_USER_EMAIL && E2E_TEST_USER_PASSWORD);
 const LOCKED_ENTRY_PROMPT_PATTERN =
-  /Log in or sign up to save entries and report issues\.|Entry actions are unavailable right now\./;
+  /Sign in or sign up to save entries and report issues\.|Log in or sign up to save entries and report issues\.|Entry actions are unavailable right now\./;
 
 async function loginToEntryPage(page: Page) {
   await page.goto(`/login?redirect_to=${encodeURIComponent(ENTRY_PATH)}`);
