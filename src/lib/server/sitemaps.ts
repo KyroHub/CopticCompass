@@ -10,6 +10,7 @@ import {
 import {
   getAnalyticsPath,
   getContactPath,
+  getContributorsPath,
   getDevelopersPath,
   getDictionaryPath,
   getEntryPath,
@@ -118,6 +119,12 @@ const localizedStaticRoutes: readonly LocalizedStaticRouteConfig[] = [
       "src/app/(app)/api-docs/page.tsx",
       "src/features/grammar/lib/grammarOpenApi.ts",
     ],
+  },
+  {
+    getRoute: getContributorsPath,
+    changeFrequency: "yearly",
+    priority: 0.5,
+    sourcePaths: ["src/app/(site)/[locale]/contributors/page.tsx"],
   },
   {
     getRoute: getAnalyticsPath,

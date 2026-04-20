@@ -21,6 +21,20 @@ function formatLogTimestamp(value: string) {
   return date.toLocaleTimeString();
 }
 
+function toEmbeddingProvider(
+  value: FormDataEntryValue | string | null,
+): "gemini" | "hf" | "openrouter" {
+  if (value === "gemini") {
+    return "gemini";
+  }
+
+  if (value === "openrouter") {
+    return "openrouter";
+  }
+
+  return "hf";
+}
+
 function getEmbeddingProviderLabel(
   provider: "gemini" | "hf" | "openrouter" | undefined,
 ) {
@@ -32,11 +46,7 @@ function getEmbeddingProviderLabel(
     return "OpenRouter";
   }
 
-  if (provider === "hf") {
-    return "Hugging Face";
-  }
-
-  return null;
+  return "Hugging Face";
 }
 
 type RagStatusItem = {
@@ -333,12 +343,9 @@ export function AdminRagIngestionForm() {
       setActiveIngestId(ingestId);
       formData.set("ingest_id", ingestId);
 
-      let selectedProvider: "gemini" | "openrouter" | "hf" = "hf";
-      if (formData.get("embedding_provider") === "gemini") {
-        selectedProvider = "gemini";
-      } else if (formData.get("embedding_provider") === "openrouter") {
-        selectedProvider = "openrouter";
-      }
+      const selectedProvider = toEmbeddingProvider(
+        formData.get("embedding_provider"),
+      );
       setEmbeddingProvider(selectedProvider);
       console.warn(
         `[RAG] Starting ingestion ${ingestId} with provider=${selectedProvider}. Watch server logs for stage timings.`,
@@ -410,17 +417,15 @@ export function AdminRagIngestionForm() {
           </button>
         </div>
 
-        {statusLoading && (
-          <p className="text-xs text-stone-500 dark:text-stone-400">
-            Checking RAG services...
-          </p>
-        )}
-        {!statusLoading && ragStatusError && (
-          <p className="text-xs text-red-500 dark:text-red-300">
-            {ragStatusError}
-          </p>
-        )}
-        {!statusLoading && !ragStatusError && ragStatus && (
+        {statusLoading ? (
+          <p className="text-xs text-[#86c8d8]">Checking RAG services...</p>
+        ) : null}
+
+        {!statusLoading && ragStatusError ? (
+          <p className="text-xs text-red-300">{ragStatusError}</p>
+        ) : null}
+
+        {!statusLoading && !ragStatusError && ragStatus ? (
           <ul className="space-y-2 text-base">
             <li className="flex items-start gap-3">
               <StatusDot healthy={ragStatus.statuses.llm.healthy} />
@@ -489,7 +494,7 @@ export function AdminRagIngestionForm() {
               </span>
             </li>
           </ul>
-        )}
+        ) : null}
       </SurfacePanel>
 
       <div className="grid gap-4 md:grid-cols-2">
@@ -529,6 +534,15 @@ export function AdminRagIngestionForm() {
         Run OCR when PDF text extraction is weak
       </label>
 
+      <label className="inline-flex items-center gap-2 text-sm text-stone-700 dark:text-stone-300">
+        <input
+          name="force_ocr"
+          type="checkbox"
+          className="h-4 w-4 rounded border-stone-300 text-sky-600 focus:ring-sky-400"
+        />
+        Force OCR for PDF extraction (bypass native PDF text)
+      </label>
+
       <label className="flex flex-col gap-2 text-sm text-stone-700 dark:text-stone-300 md:max-w-xs">
         <span className="font-semibold text-stone-700 dark:text-stone-200">
           Embedding provider
@@ -537,14 +551,7 @@ export function AdminRagIngestionForm() {
           name="embedding_provider"
           value={embeddingProvider}
           onChange={(event) => {
-            const value = event.target.value;
-            let newProvider: "gemini" | "hf" | "openrouter" = "hf";
-            if (value === "gemini") {
-              newProvider = "gemini";
-            } else if (value === "openrouter") {
-              newProvider = "openrouter";
-            }
-            setEmbeddingProvider(newProvider);
+            setEmbeddingProvider(toEmbeddingProvider(event.target.value));
           }}
           className="select-base h-11 rounded-xl bg-white/80 text-sm dark:bg-stone-900"
         >
@@ -681,7 +688,7 @@ export function AdminRagIngestionForm() {
                     <span className="text-sky-600 dark:text-sky-300">
                       [{formatLogTimestamp(log.timestamp)}]
                     </span>{" "}
-                    {"sourcePath" in log && log.sourcePath ? (
+                    {log.sourcePath ? (
                       <span className="text-emerald-700 dark:text-emerald-300">
                         {log.sourcePath}{" "}
                       </span>
@@ -698,7 +705,7 @@ export function AdminRagIngestionForm() {
       {state?.success ? (
         <StatusNotice tone="success" align="left">
           {state.message}
-          {getEmbeddingProviderLabel(state.embeddingProvider)
+          {state.embeddingProvider
             ? ` Provider: ${getEmbeddingProviderLabel(state.embeddingProvider)}.`
             : ""}
           {typeof state.chunksInserted === "number"

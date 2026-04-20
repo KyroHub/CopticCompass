@@ -94,6 +94,10 @@ export function getDevelopersPath(locale?: Language) {
   return locale ? getLocalizedPath(locale, "/developers") : "/developers";
 }
 
+export function getContributorsPath(locale?: Language) {
+  return locale ? getLocalizedPath(locale, "/contributors") : "/contributors";
+}
+
 export function getPrivacyPath(locale?: Language) {
   return locale ? getLocalizedPath(locale, "/privacy") : "/privacy";
 }

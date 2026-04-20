@@ -26,6 +26,7 @@ export const sharedMessages = defineMessages({
     "footer.terms": "Terms of Service",
     "footer.apiDocs": "API Docs",
     "footer.developers": "Developers",
+    "footer.contributors": "Contributors",
   },
   nl: {
     "lang.toggle": "Taal wisselen",
@@ -49,5 +50,6 @@ export const sharedMessages = defineMessages({
     "footer.terms": "Gebruiksvoorwaarden",
     "footer.apiDocs": "API-docs",
     "footer.developers": "Ontwikkelaars",
+    "footer.contributors": "Contributors",
   },
 });

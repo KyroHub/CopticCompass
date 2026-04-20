@@ -10,6 +10,20 @@ import { createClient } from "@/lib/supabase/server";
 export const maxDuration = 300;
 export const runtime = "nodejs";
 
+function toEmbeddingProvider(
+  value: FormDataEntryValue | null,
+): "gemini" | "hf" | "openrouter" {
+  if (value === "gemini") {
+    return "gemini";
+  }
+
+  if (value === "openrouter") {
+    return "openrouter";
+  }
+
+  return "hf";
+}
+
 export async function POST(request: Request) {
   let requestId = crypto.randomUUID();
 
@@ -77,13 +91,12 @@ export async function POST(request: Request) {
     const enableOcrRaw = formData.get("enable_ocr");
     const enableOcr = enableOcrRaw === "on" || enableOcrRaw === "true";
 
-    const embeddingProviderRaw = formData.get("embedding_provider");
-    let embeddingProvider: "gemini" | "hf" | "openrouter" = "hf";
-    if (embeddingProviderRaw === "gemini") {
-      embeddingProvider = "gemini";
-    } else if (embeddingProviderRaw === "openrouter") {
-      embeddingProvider = "openrouter";
-    }
+    const forceOcrRaw = formData.get("force_ocr");
+    const forceOcr = forceOcrRaw === "on" || forceOcrRaw === "true";
+
+    const embeddingProvider = toEmbeddingProvider(
+      formData.get("embedding_provider"),
+    );
 
     console.warn(
       `[RAG:${requestId}] API request received for ${fileValue.name} with provider=${embeddingProvider}.`,
@@ -92,6 +105,7 @@ export async function POST(request: Request) {
     const result = await ingestRagFile({
       embeddingProvider,
       enableOcr,
+      forceOcr,
       file: fileValue,
       ingestId: requestId,
       sourceTitle,

@@ -1,0 +1,11 @@
+{
+  "createdAt": "2026-04-17T18:50:03.569Z",
+  "inputFile": "C:\\Users\\HP DRAGONFLY\\Documents\\GitHub\\copticapp\\tmp\\distill\\teacher-20260417184555681.jsonl",
+  "learnerName": "Shenute AI Learner",
+  "teacherName": "Shenute AI Expert",
+  "totals": {
+    "preference": 18,
+    "retrieval": 29,
+    "sft": 29
+  }
+}

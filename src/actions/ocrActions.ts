@@ -9,7 +9,7 @@ const OCR_UPLOAD_FIELD_FALLBACKS = [
   "files",
 ];
 
-const OCR_TEXT_LIKE_KEYS = [
+const _OCR_TEXT_LIKE_KEYS = [
   "text",
   "extracted_text",
   "ocr_text",
@@ -65,40 +65,36 @@ function stripHtml(input: string) {
     .trim();
 }
 
-function normalizeCandidateText(input: string) {
-  return stripHtml(input).replace(/\s+/g, " ").trim();
-}
-
-function normalizeStringCandidate(value: string) {
-  const normalized = normalizeCandidateText(value);
+function normalizeStringCandidate(input: string): string[] {
+  const normalized = stripHtml(input).replace(/\s+/g, " ").trim();
   return normalized ? [normalized] : [];
 }
 
-function collectTextCandidatesFromArray(payload: unknown[], depth: number) {
-  return payload.flatMap((entry) => collectTextCandidates(entry, depth));
+function collectTextCandidatesFromArray(
+  payload: unknown[],
+  depth: number,
+): string[] {
+  return payload.flatMap((item) => collectTextCandidates(item, depth));
 }
 
 function collectTextCandidatesFromRecord(
   payload: Record<string, unknown>,
   depth: number,
-) {
-  const collected: string[] = [];
-
-  for (const [key, value] of Object.entries(payload)) {
-    const loweredKey = key.toLowerCase();
-    if (OCR_TEXT_LIKE_KEYS.includes(loweredKey) && typeof value === "string") {
-      collected.push(...normalizeStringCandidate(value));
-      continue;
+): string[] {
+  return Object.entries(payload).flatMap(([key, value]) => {
+    if (
+      typeof value === "string" &&
+      _OCR_TEXT_LIKE_KEYS.includes(key.toLowerCase())
+    ) {
+      return normalizeStringCandidate(value);
     }
 
-    collected.push(...collectTextCandidates(value, depth));
-  }
-
-  return collected;
+    return collectTextCandidates(value, depth);
+  });
 }
 
 function collectTextCandidates(payload: unknown, depth = 0): string[] {
-  if (depth > 6 || payload === null || payload === undefined) {
+  if (depth > 6 || payload === null || typeof payload === "undefined") {
     return [];
   }
 
@@ -125,14 +121,20 @@ function extractOcrText(payload: unknown): string {
   return candidates.find((candidate) => candidate.length > 0) ?? "";
 }
 
-function getUploadedOcrFile(formData: FormData) {
-  const file = formData.get("file");
-
-  if (!file || !(file instanceof File)) {
-    throw new Error("No valid file uploaded.");
+function getUploadedOcrFile(formData: FormData): File {
+  for (const fieldName of getOcrUploadFieldCandidates()) {
+    const value = formData.get(fieldName);
+    if (value instanceof File) {
+      return value;
+    }
   }
 
-  return file;
+  const fallback = formData.get("file");
+  if (fallback instanceof File) {
+    return fallback;
+  }
+
+  throw new Error("No valid file uploaded.");
 }
 
 function createOcrTargetUrl() {

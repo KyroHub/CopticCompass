@@ -280,6 +280,10 @@ export async function GET() {
     }
 
     const knowledgeBaseHealthy = vectorDbHealthy && chunkCount > 0;
+    const knowledgeBaseNote =
+      chunkCount > 0
+        ? `${new Intl.NumberFormat("en-US").format(chunkCount)} chunks indexed`
+        : "No chunks indexed yet";
     const [dictionaryJsonRag, grammarJsonRag] = await Promise.all([
       getDictionaryJsonStatus(),
       getGrammarJsonStatus(),
@@ -312,10 +316,7 @@ export async function GET() {
         knowledgeBase: {
           healthy: knowledgeBaseHealthy,
           label: "Knowledge base",
-          note:
-            chunkCount > 0
-              ? `${new Intl.NumberFormat("en-US").format(chunkCount)} chunks indexed`
-              : "No chunks indexed yet",
+          note: knowledgeBaseNote,
         },
       },
     } satisfies RagStatusResponse);

@@ -30,7 +30,7 @@ const chatApiExample = `const response = await fetch("https://kyrilloswannes.com
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify({
-    inferenceProvider: "openrouter",
+    inferenceProvider: "thoth",
     messages: [
       {
         id: "u1",

@@ -14,7 +14,7 @@ import {
 } from "@/components/AuthGateNotice";
 import { useOptionalAuthGate } from "@/lib/supabase/useOptionalAuthGate";
 
-type ChatProvider = "gemini" | "hf" | "openrouter";
+type ChatProvider = "gemini" | "hf" | "openrouter" | "thoth";
 
 type TextMessagePart = {
   text: string;
@@ -99,7 +99,11 @@ function toChatProvider(value: string): ChatProvider {
     return "hf";
   }
 
-  return "openrouter";
+  if (value === "thoth") {
+    return "thoth";
+  }
+
+  return "thoth";
 }
 
 function getFeedbackStatusClass(status: "error" | "pending" | "success") {
@@ -146,7 +150,7 @@ export function FloatingAiAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [inferenceProvider, setInferenceProvider] =
-    useState<ChatProvider>("openrouter");
+    useState<ChatProvider>("thoth");
   const [ocrPending, setOcrPending] = useState(false);
   const [ocrError, setOcrError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -180,11 +184,8 @@ export function FloatingAiAssistant() {
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
-        body: {
-          inferenceProvider,
-        },
       }),
-    [inferenceProvider],
+    [],
   );
 
   const { messages, sendMessage, status, error } = useChat({
@@ -774,11 +775,26 @@ export function FloatingAiAssistant() {
                 }}
                 disabled={isLoading || isChatAccessBlocked}
               >
-                <option value="hf">Hugging Face</option>
-                <option value="gemini">Gemini</option>
-                <option value="openrouter">OpenRouter</option>
+                <option value="hf">Shenute AI Learner (HF)</option>
+                <option value="gemini">Shenute AI Learner (Gemini)</option>
+                <option value="openrouter">
+                  Shenute AI Learner (OpenRouter)
+                </option>
+                <option value="thoth">Shenute AI Expert (THOTH AI)</option>
               </select>
             </label>
+          </div>
+
+          <div className="border-b border-stone-200 px-4 py-2 text-[11px] text-stone-500 dark:border-stone-700 dark:text-stone-400">
+            THOTH AI credits: Dr. So Miyagawa (University of Tsukuba).{" "}
+            <a
+              className="underline"
+              href="https://somiyagawa.github.io/THOTH.AI/"
+              rel="noreferrer"
+              target="_blank"
+            >
+              Details
+            </a>
           </div>
 
           <div className="flex-1 space-y-3 overflow-y-auto bg-stone-50/60 p-3 dark:bg-stone-950/40">

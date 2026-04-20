@@ -23,7 +23,7 @@ import { cx } from "@/lib/classes";
 import { getLocalizedHomePath } from "@/lib/locale";
 import { useOptionalAuthGate } from "@/lib/supabase/useOptionalAuthGate";
 
-type ChatProvider = "gemini" | "hf" | "openrouter";
+type ChatProvider = "gemini" | "hf" | "openrouter" | "thoth";
 
 type TextMessagePart = {
   text: string;
@@ -103,7 +103,11 @@ function toChatProvider(value: string): ChatProvider {
     return "hf";
   }
 
-  return "gemini";
+  if (value === "thoth") {
+    return "thoth";
+  }
+
+  return "thoth";
 }
 
 function getErrorStatusCode(error: unknown): number | undefined {
@@ -197,7 +201,7 @@ function getReactionButtonClassName(
 export default function ChatAI() {
   const { language, t } = useLanguage();
   const [inferenceProvider, setInferenceProvider] =
-    useState<ChatProvider>("gemini");
+    useState<ChatProvider>("thoth");
   const [inputValue, setInputValue] = useState("");
   const [ocrPending, setOcrPending] = useState(false);
   const [ocrError, setOcrError] = useState<string | null>(null);
@@ -231,11 +235,8 @@ export default function ChatAI() {
     () =>
       new DefaultChatTransport({
         api: "/api/chat",
-        body: {
-          inferenceProvider,
-        },
       }),
-    [inferenceProvider],
+    [],
   );
 
   const { messages, sendMessage, status, error } = useChat({
@@ -445,7 +446,14 @@ export default function ChatAI() {
       return;
     }
 
-    sendMessage({ text: composedPrompt });
+    sendMessage(
+      { text: composedPrompt },
+      {
+        body: {
+          inferenceProvider,
+        },
+      },
+    );
     setInputValue("");
     clearSelectedImage();
   };
@@ -636,26 +644,105 @@ export default function ChatAI() {
           />
         </div>
 
-        <label className="flex flex-col gap-2 text-sm font-medium text-stone-600 dark:text-stone-300 lg:items-end">
+        <div className="flex flex-col gap-2 text-sm font-medium text-stone-600 dark:text-stone-300 lg:items-end">
           <span className="text-xs font-semibold uppercase tracking-[0.2em] text-stone-500 dark:text-stone-400">
             Provider
           </span>
-          <select
-            id="chat-inference-provider"
-            name="chat_inference_provider"
-            className="compact-select-base min-w-[10.5rem] bg-white/85 text-sm dark:bg-stone-900"
-            value={inferenceProvider}
-            onChange={(event) => {
-              setInferenceProvider(toChatProvider(event.target.value));
-            }}
-            disabled={isLoading || isChatAccessBlocked}
-          >
-            <option value="hf">Hugging Face</option>
-            <option value="gemini">Gemini</option>
-            <option value="openrouter">OpenRouter</option>
-          </select>
-        </label>
+          <p>Shenute AI</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <p className="text-sm font-medium text-slate-500">Coptic Scholar</p>
+          <div className="text-xs text-slate-600 dark:text-slate-300">
+            <span className="mr-2">Provider</span>
+            <select
+              className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs dark:border-slate-700 dark:bg-slate-900"
+              value={inferenceProvider}
+              onChange={(event) => {
+                setInferenceProvider(toChatProvider(event.target.value));
+              }}
+              disabled={isLoading || isChatAccessBlocked}
+            >
+              <option value="hf">Shenute AI Learner (HF)</option>
+              <option value="gemini">Shenute AI Learner (Gemini)</option>
+              <option value="openrouter">
+                Shenute AI Learner (OpenRouter)
+              </option>
+              <option value="thoth">Shenute AI Expert (THOTH AI)</option>
+            </select>
+          </div>
+        </div>
       </div>
+
+      <details className="mx-4 mb-4 rounded-md border border-slate-200 bg-white p-3 text-xs text-slate-700 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+        <summary className="cursor-pointer text-sm font-semibold text-slate-800 dark:text-slate-100">
+          THOTH AI Credits and Technical Specifications
+        </summary>
+        <div className="mt-3 space-y-3 leading-relaxed">
+          <div>
+            <p className="font-semibold">Credits</p>
+            <p>Dr. So Miyagawa</p>
+            <p>Associate Professor of Linguistics and Egyptology</p>
+            <p>University of Tsukuba</p>
+            <p>
+              Dr. So Miyagawa is an associate professor of linguistics and
+              Egyptology at the University of Tsukuba, specializing in the
+              Ancient Egyptian-Coptic language. Following doctoral research at
+              the University of Gottingen&apos;s Seminar for Egyptology and
+              Coptic Studies, his work integrates computational linguistic
+              methods with traditional philological approaches.
+            </p>
+            <p>
+              His research focuses on ancient and medieval Nile Valley
+              languages, including Ancient Egyptian-Coptic, Old Nubian, Greek,
+              Arabic, and Meroitic, as well as endangered languages in and
+              around the Japanese Archipelago.
+            </p>
+            <p>
+              Contact:{" "}
+              <a
+                className="underline"
+                href="mailto:miyagawa.so.kb@u.tsukuba.ac.jp"
+              >
+                miyagawa.so.kb@u.tsukuba.ac.jp
+              </a>
+            </p>
+          </div>
+
+          <div>
+            <p className="font-semibold">Base Technology</p>
+            <ul className="list-disc pl-4">
+              <li>Platform: Dify</li>
+              <li>Base LLM: Claude 4.5 Sonnet (upgraded from 3.5)</li>
+              <li>Architecture: RAG (Retrieval Augmented Generation)</li>
+              <li>Natural Language Processing and OCR capabilities</li>
+            </ul>
+          </div>
+
+          <div>
+            <p className="font-semibold">Knowledge Base</p>
+            <ul className="list-disc pl-4">
+              <li>Comprehensive Coptic Lexicon v1.2 (2020)</li>
+              <li>Burns, D., Feder, F., John, K., Kupreyev, M., et al.</li>
+              <li>Freie Universitat Berlin</li>
+              <li>A Concise Dictionary of Middle Egyptian (1962)</li>
+              <li>Raymond Oliver Faulkner</li>
+              <li>Griffith Institute, Oxford</li>
+              <li>Custom instruction prompts (500 plus lines)</li>
+            </ul>
+          </div>
+
+          <p>
+            <a
+              className="underline"
+              href="https://somiyagawa.github.io/THOTH.AI/"
+              rel="noreferrer"
+              target="_blank"
+            >
+              https://somiyagawa.github.io/THOTH.AI/
+            </a>
+          </p>
+        </div>
+      </details>
 
       <SurfacePanel
         rounded="4xl"
@@ -763,6 +850,7 @@ export default function ChatAI() {
                             if (part.type !== "text") {
                               return null;
                             }
+
                             if (m.role === "assistant") {
                               return (
                                 <ReactMarkdown
@@ -799,9 +887,15 @@ export default function ChatAI() {
                             return <p key={partIndex}>{part.text}</p>;
                           })
                       ) : (
-                        <p>{getMessageText(m)}</p>
+                        <p>
+                          {(() => {
+                            const candidate = m as { content?: unknown };
+                            return typeof candidate.content === "string"
+                              ? candidate.content
+                              : "";
+                          })()}
+                        </p>
                       )}
-
                       {m.role === "assistant" ? (
                         <div className="mt-3 space-y-2 border-t border-stone-200 pt-3 text-xs dark:border-stone-700">
                           <div className="flex flex-wrap items-center gap-2">
@@ -989,15 +1083,34 @@ export default function ChatAI() {
                   className="mb-3 w-full rounded-2xl border border-stone-200 dark:border-stone-700"
                 />
                 <canvas ref={captureCanvasRef} className="hidden" />
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3">
+                  <span className="mr-2">Provider</span>
+                  <select
+                    className="rounded-md border border-slate-300 bg-white px-2 py-1 text-xs dark:border-slate-700 dark:bg-slate-900"
+                    value={inferenceProvider}
+                    onChange={(event) => {
+                      setInferenceProvider(toChatProvider(event.target.value));
+                    }}
+                    disabled={isLoading || isChatAccessBlocked}
+                  >
+                    <option value="hf">Shenute AI Learner (HF)</option>
+                    <option value="gemini">Shenute AI Learner (Gemini)</option>
+                    <option value="openrouter">
+                      Shenute AI Learner (OpenRouter)
+                    </option>
+                    <option value="thoth">Shenute AI Expert (THOTH AI)</option>
+                  </select>
+                </div>
+                <div className="mt-3 flex justify-end gap-2">
                   <button
                     type="button"
-                    onClick={() => {
-                      void captureFromCamera();
-                    }}
-                    className={buttonClassName({ size: "sm" })}
+                    onClick={captureFromCamera}
+                    className={buttonClassName({
+                      size: "sm",
+                      variant: "primary",
+                    })}
                   >
-                    Capture
+                    Capture Image
                   </button>
                   <button
                     type="button"

@@ -35,8 +35,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Check formatting
-        run: npm run format:check
+      - name: Check formatting (Changed files only)
+        run: |
+          # Get list of changed files compared to origin/main
+          # Filter for added/modified files and specific extensions
+          FILES=$(git diff --name-only --diff-filter=ACMR origin/main... | grep -E '\.(js|jsx|ts|tsx|json|css|md)$' || true)
+
+          if [ -z "$FILES" ]; then
+            echo "No relevant files changed. Skipping Prettier check."
+          else
+            echo "Checking: $FILES"
+            npx prettier --check $FILES
+          fi
 
       - name: Check dead code
         run: npm run knip

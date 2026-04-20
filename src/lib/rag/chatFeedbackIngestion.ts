@@ -7,6 +7,7 @@ import {
   generateOpenRouterEmbeddings,
 } from "@/lib/openrouter";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
+import { createThothChatCompletion } from "@/lib/thoth";
 import type { Json } from "@/types/supabase";
 
 const RAG_VECTOR_DIMENSIONS = Number(
@@ -14,6 +15,11 @@ const RAG_VECTOR_DIMENSIONS = Number(
 );
 const GEMINI_EMBEDDING_OUTPUT_DIMENSION = Number(
   process.env.GEMINI_EMBEDDING_OUTPUT_DIMENSION ?? "3072",
+);
+const CHAT_FEEDBACK_THOTH_REFINEMENT_ENABLED =
+  process.env.CHAT_FEEDBACK_THOTH_REFINEMENT_ENABLED !== "false";
+const CHAT_FEEDBACK_THOTH_INPUT_LIMIT = Number(
+  process.env.CHAT_FEEDBACK_THOTH_INPUT_LIMIT ?? "4000",
 );
 
 export type ChatFeedbackSignal = "admin_feedback" | "dislike" | "like";
@@ -44,8 +50,6 @@ type CopticDocumentsInsertRow = {
   embedding: string;
   metadata: Json;
 };
-
-type JsonObject = { [key: string]: Json | undefined };
 
 function normalizeWhitespace(value: string) {
   return value.replace(/\s+/g, " ").trim();
@@ -83,6 +87,83 @@ function getSignalLearningLine(signal: ChatFeedbackSignal) {
   }
 
   return "Admin signal: curated written feedback provided.";
+}
+
+function hasThothFeedbackRefinementAvailable() {
+  return (
+    CHAT_FEEDBACK_THOTH_REFINEMENT_ENABLED && Boolean(process.env.THOTH_API_KEY)
+  );
+}
+
+function buildThothAdminFeedbackRefinementQuery(options: {
+  assistantResponse: string;
+  feedbackText: string;
+  prompt: string;
+}) {
+  return `You are THOTH AI refining admin feedback for a Coptic tutoring assistant quality-improvement pipeline.
+
+Task:
+- Rewrite the admin note so it is concise, actionable, and specific.
+- Keep factual intent identical to the original note.
+- Preserve mentions of Coptic terms, dialect details, or correction targets.
+- Output plain text only with no markdown and no preface.
+
+User prompt:
+${options.prompt}
+
+Assistant response:
+${options.assistantResponse}
+
+Original admin note:
+${options.feedbackText}`;
+}
+
+async function maybeRefineAdminFeedbackWithThoth(options: {
+  assistantResponse: string;
+  feedbackText?: string;
+  prompt: string;
+  signal: ChatFeedbackSignal;
+  userId: string;
+}) {
+  if (options.signal !== "admin_feedback" || !options.feedbackText) {
+    return null;
+  }
+
+  if (!hasThothFeedbackRefinementAvailable()) {
+    return null;
+  }
+
+  const trimmedFeedbackText = options.feedbackText
+    .slice(0, CHAT_FEEDBACK_THOTH_INPUT_LIMIT)
+    .trim();
+
+  if (trimmedFeedbackText.length === 0) {
+    return null;
+  }
+
+  try {
+    const completion = await createThothChatCompletion({
+      query: buildThothAdminFeedbackRefinementQuery({
+        assistantResponse: options.assistantResponse,
+        feedbackText: trimmedFeedbackText,
+        prompt: options.prompt,
+      }),
+      user: `chat-feedback-admin-refine:${options.userId}`,
+    });
+
+    const refinedFeedbackText =
+      typeof completion.answer === "string"
+        ? normalizeWhitespace(completion.answer)
+        : "";
+
+    if (!refinedFeedbackText) {
+      return null;
+    }
+
+    return refinedFeedbackText.slice(0, 5000);
+  } catch {
+    return null;
+  }
 }
 
 async function generateFeedbackEmbedding(options: {
@@ -145,6 +226,7 @@ async function generateFeedbackEmbedding(options: {
 function buildFeedbackLearningContent(options: {
   assistantResponse: string;
   feedbackText?: string;
+  isThothRefinedFeedback?: boolean;
   prompt: string;
   signal: ChatFeedbackSignal;
 }) {
@@ -164,7 +246,9 @@ function buildFeedbackLearningContent(options: {
   if (options.signal === "admin_feedback" && options.feedbackText) {
     sections.push(
       "",
-      "Admin feedback:",
+      options.isThothRefinedFeedback
+        ? "Admin feedback (THOTH refined):"
+        : "Admin feedback:",
       normalizeWhitespace(options.feedbackText),
     );
   }
@@ -172,111 +256,39 @@ function buildFeedbackLearningContent(options: {
   return sections.join("\n");
 }
 
-function truncateOptionalText(value: string | undefined, maxLength: number) {
-  if (typeof value !== "string") {
-    return null;
-  }
-
-  return value.slice(0, maxLength);
-}
-
-function getAdminFeedbackText(
-  signal: ChatFeedbackSignal,
-  feedbackText?: string,
-) {
-  if (signal !== "admin_feedback") {
-    return null;
-  }
-
-  return feedbackText ?? null;
-}
-
-function buildFeedbackMetadata(options: {
-  embedding: number[];
-  feedbackText?: string;
-  model: string;
-  pageContext?: ChatFeedbackPageContext;
-  prompt: string;
-  signal: ChatFeedbackSignal;
-  sourceEmbeddingDimensions: number;
-  uploadedAt: string;
-  userId: string;
-}): JsonObject {
-  const isAdminFeedback = options.signal === "admin_feedback";
-
-  return {
-    createdAt: options.uploadedAt,
-    embeddingDimensions: options.embedding.length,
-    embeddingModel: options.model,
-    feedbackText: getAdminFeedbackText(options.signal, options.feedbackText),
-    isAdminFeedback,
-    pageExcerpt: truncateOptionalText(options.pageContext?.excerpt, 1200),
-    pagePath: truncateOptionalText(options.pageContext?.path, 240),
-    pageTitle: truncateOptionalText(options.pageContext?.title, 320),
-    pageUrl: truncateOptionalText(options.pageContext?.url, 500),
-    promptPreview: normalizeWhitespace(options.prompt).slice(0, 240),
-    signal: options.signal,
-    sourceEmbeddingDimensions: options.sourceEmbeddingDimensions,
-    uploadedAt: options.uploadedAt,
-    uploadedBy: options.userId,
-  };
-}
-
 function buildFeedbackDocumentRow(options: {
   assistantMessageId?: string;
   assistantResponse: string;
   chatId?: string;
   content: string;
-  embedding: number[];
-  feedbackText?: string;
-  inferenceProvider: ChatFeedbackEmbeddingProvider;
-  model: string;
-  pageContext?: ChatFeedbackPageContext;
-  prompt: string;
-  signal: ChatFeedbackSignal;
-  sourceEmbeddingDimensions: number;
-  uploadedAt: string;
-  userId: string;
-  userMessageId?: string;
+  embedding: string;
+  metadata: Json;
 }): CopticDocumentsInsertRow {
-  const metadata: JsonObject = {
-    ...buildFeedbackMetadata({
-      embedding: options.embedding,
-      feedbackText: options.feedbackText,
-      model: options.model,
-      pageContext: options.pageContext,
-      prompt: options.prompt,
-      signal: options.signal,
-      sourceEmbeddingDimensions: options.sourceEmbeddingDimensions,
-      uploadedAt: options.uploadedAt,
-      userId: options.userId,
-    }),
-    assistantMessageId: options.assistantMessageId ?? null,
-    chatId: options.chatId ?? null,
-    inferenceProvider: options.inferenceProvider,
-    responsePreview: normalizeWhitespace(options.assistantResponse).slice(
-      0,
-      240,
-    ),
-    sourceName: "chat_feedback_signal",
-    sourceType: "chat_feedback_signal",
-    userMessageId: options.userMessageId ?? null,
-  };
-
   return {
     content: options.content,
-    embedding: createVectorLiteral(options.embedding),
-    metadata,
+    embedding: options.embedding,
+    metadata: options.metadata,
   };
 }
 
+// eslint-disable-next-line complexity, max-lines-per-function
 export async function ingestChatFeedbackLearningSignal(
   options: IngestChatFeedbackSignalOptions,
 ) {
   const uploadedAt = new Date().toISOString();
-  const content = buildFeedbackLearningContent({
+  const thothRefinedFeedbackText = await maybeRefineAdminFeedbackWithThoth({
     assistantResponse: options.assistantResponse,
     feedbackText: options.feedbackText,
+    prompt: options.prompt,
+    signal: options.signal,
+    userId: options.userId,
+  });
+  const feedbackTextForLearning =
+    thothRefinedFeedbackText ?? options.feedbackText;
+  const content = buildFeedbackLearningContent({
+    assistantResponse: options.assistantResponse,
+    feedbackText: feedbackTextForLearning,
+    isThothRefinedFeedback: Boolean(thothRefinedFeedbackText),
     prompt: options.prompt,
     signal: options.signal,
   });
@@ -288,22 +300,52 @@ export async function ingestChatFeedbackLearningSignal(
 
   const targetEmbedding = normalizeEmbeddingDimensions(embedding);
 
+  const metadata: Json = {
+    assistantMessageId: options.assistantMessageId ?? null,
+    adminFeedbackOriginal:
+      options.signal === "admin_feedback"
+        ? (options.feedbackText ?? null)
+        : null,
+    adminFeedbackRefined:
+      options.signal === "admin_feedback"
+        ? (feedbackTextForLearning ?? null)
+        : null,
+    adminFeedbackRefinementProvider: thothRefinedFeedbackText ? "thoth" : null,
+    chatId: options.chatId ?? null,
+    createdAt: uploadedAt,
+    embeddingDimensions: targetEmbedding.length,
+    embeddingModel: model,
+    feedbackText:
+      options.signal === "admin_feedback"
+        ? (feedbackTextForLearning ?? null)
+        : null,
+    inferenceProvider: options.inferenceProvider,
+    isAdminFeedback: options.signal === "admin_feedback",
+    pageExcerpt: options.pageContext?.excerpt?.slice(0, 1200) ?? null,
+    pagePath: options.pageContext?.path?.slice(0, 240) ?? null,
+    pageTitle: options.pageContext?.title?.slice(0, 320) ?? null,
+    pageUrl: options.pageContext?.url?.slice(0, 500) ?? null,
+    promptPreview: normalizeWhitespace(options.prompt).slice(0, 240),
+    responsePreview: normalizeWhitespace(options.assistantResponse).slice(
+      0,
+      240,
+    ),
+    signal: options.signal,
+    sourceEmbeddingDimensions: embedding.length,
+    sourceName: "chat_feedback_signal",
+    sourceType: "chat_feedback_signal",
+    uploadedAt,
+    uploadedBy: options.userId,
+    userMessageId: options.userMessageId ?? null,
+  };
+
   const row = buildFeedbackDocumentRow({
     assistantMessageId: options.assistantMessageId,
     assistantResponse: options.assistantResponse,
     chatId: options.chatId,
     content,
-    embedding: targetEmbedding,
-    feedbackText: options.feedbackText,
-    inferenceProvider: options.inferenceProvider,
-    model,
-    pageContext: options.pageContext,
-    prompt: options.prompt,
-    signal: options.signal,
-    sourceEmbeddingDimensions: embedding.length,
-    uploadedAt,
-    userId: options.userId,
-    userMessageId: options.userMessageId,
+    embedding: createVectorLiteral(targetEmbedding),
+    metadata,
   });
 
   const serviceRoleClient = createServiceRoleClient();

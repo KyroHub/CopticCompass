@@ -3,7 +3,12 @@
 import Link from "next/link";
 import { FaXTwitter, FaInstagram, FaGithub } from "react-icons/fa6";
 
-import { getDevelopersPath, getPrivacyPath, getTermsPath } from "@/lib/locale";
+import {
+  getContributorsPath,
+  getDevelopersPath,
+  getPrivacyPath,
+  getTermsPath,
+} from "@/lib/locale";
 
 import { useLanguage } from "./LanguageProvider";
 
@@ -40,6 +45,12 @@ export function Footer() {
               className="hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
             >
               {t("footer.developers")}
+            </Link>
+            <Link
+              href={getContributorsPath(language)}
+              className="hover:text-stone-900 dark:hover:text-stone-100 transition-colors"
+            >
+              {t("footer.contributors")}
             </Link>
             <Link
               href="/api-docs"
