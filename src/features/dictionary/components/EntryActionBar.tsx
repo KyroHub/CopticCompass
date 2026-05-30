@@ -4,10 +4,9 @@ import { Flag, Heart, Share2 } from "lucide-react";
 import { useCallback, useState, type ComponentType } from "react";
 
 import { AuthGatedActionButton } from "@/components/AuthGatedActionButton";
-import { iconButtonClassName } from "@/components/Button";
+import { buttonClassName, iconButtonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import type { LexicalEntry } from "@/features/dictionary/types";
-import { cx } from "@/lib/classes";
 
 type EntryActionIntent = "favorite" | "report" | "share";
 
@@ -130,7 +129,7 @@ export function EntryActionBar({
           <p className="text-xs font-semibold uppercase tracking-widest text-accent-strong dark:text-accent">
             {t("entry.actions.eyebrow")}
           </p>
-          <p className="text-sm leading-6 text-stone-600 dark:text-stone-400">
+          <p className="text-sm leading-6 text-muted">
             {t("entry.actions.description")}
           </p>
         </div>
@@ -138,7 +137,10 @@ export function EntryActionBar({
         <div className="flex flex-wrap gap-3">
           <button
             type="button"
-            className="btn-secondary gap-2 px-4"
+            className={buttonClassName({
+              className: "gap-2 px-4",
+              variant: "secondary",
+            })}
             onClick={() => loadPanel("share")}
             onFocus={() => loadPanel()}
             onMouseEnter={() => loadPanel()}
@@ -153,7 +155,10 @@ export function EntryActionBar({
             onPointerDownCapture={() => loadPanel("favorite")}
           >
             <AuthGatedActionButton
-              className={cx("btn-secondary gap-2 px-4")}
+              className={buttonClassName({
+                className: "gap-2 px-4",
+                variant: "secondary",
+              })}
               isAuthenticated={false}
               isReady
               lockedMessage={lockedMessage}
@@ -169,7 +174,10 @@ export function EntryActionBar({
             onPointerDownCapture={() => loadPanel("report")}
           >
             <AuthGatedActionButton
-              className={cx("btn-secondary gap-2 px-4")}
+              className={buttonClassName({
+                className: "gap-2 px-4",
+                variant: "secondary",
+              })}
               isAuthenticated={false}
               isReady
               lockedMessage={lockedMessage}

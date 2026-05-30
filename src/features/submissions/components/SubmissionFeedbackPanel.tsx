@@ -1,3 +1,4 @@
+import { Badge } from "@/components/Badge";
 import { StatusNotice } from "@/components/StatusNotice";
 import { getDashboardCopy } from "@/features/dashboard/lib/dashboardCopy";
 import type { SubmissionRow } from "@/features/submissions/types";
@@ -16,19 +17,21 @@ export function SubmissionFeedbackPanel({
 
   if (submission.status === "reviewed") {
     return (
-      <div className="rounded-2xl border border-emerald-100 bg-emerald-50 p-5 dark:border-emerald-800/30 dark:bg-emerald-900/10 md:p-6">
-        <div className="mb-4 flex items-center gap-2">
-          <span className="rounded-full bg-emerald-100 px-4 py-1.5 text-sm font-bold text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300">
+      <StatusNotice
+        tone="success"
+        size="comfortable"
+        align="left"
+        title={copy.submissions.feedbackTitle}
+      >
+        <div className="mb-4">
+          <Badge tone="success" size="sm">
             {copy.submissions.scoreLabel}: {submission.rating ?? "—"} / 5
-          </span>
+          </Badge>
         </div>
-        <h4 className="mb-2 font-bold text-stone-800 dark:text-stone-200">
-          {copy.submissions.feedbackTitle}
-        </h4>
-        <p className="font-medium leading-relaxed text-stone-700 dark:text-stone-300">
+        <p className="font-medium leading-relaxed">
           &ldquo;{submission.feedback_text}&rdquo;
         </p>
-      </div>
+      </StatusNotice>
     );
   }
 

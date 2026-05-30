@@ -12,14 +12,12 @@ import {
   Lightbulb,
   LogIn,
   RotateCcw,
-  SlidersHorizontal,
   Sparkles,
   X,
   XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import {
-  type ComponentType,
   useCallback,
   useEffect,
   useId,
@@ -38,8 +36,14 @@ import { AppPageIntro } from "@/components/AppPageIntro";
 import { Badge } from "@/components/Badge";
 import { buttonClassName } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
+import {
+  FilterBar,
+  FilterMenu,
+  type FilterMenuOption,
+} from "@/components/FilterMenu";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
+import { SegmentedControl } from "@/components/SegmentedControl";
 import { StatusNotice } from "@/components/StatusNotice";
 import DialectSiglum from "@/features/dictionary/components/DialectSiglum";
 import { SpeakButton } from "@/features/dictionary/components/SpeakButton";
@@ -68,10 +72,7 @@ import type {
   AppFlashcardDeckOption,
   AppFlashcardDeckSummary,
 } from "@/features/practice/lib/deckRegistry";
-import {
-  DICTIONARY_FLASHCARD_QUEUE_LIMIT,
-  type DictionaryFlashcardDeckScope,
-} from "@/features/practice/lib/dictionaryDecks";
+import type { DictionaryFlashcardDeckScope } from "@/features/practice/lib/dictionaryDecks";
 import type { DictionaryFlashcardCandidate } from "@/features/practice/lib/dictionaryFlashcards";
 import type { GrammarFlashcardCandidate } from "@/features/practice/lib/grammarFlashcards";
 import {
@@ -134,14 +135,14 @@ const RATING_OPTIONS: readonly RatingOption[] = [
     icon: XCircle,
     rating: "again",
     toneClassName:
-      "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 dark:border-rose-900/55 dark:bg-rose-950/25 dark:text-rose-300",
+      "border-danger/20 bg-danger/5 text-danger hover:bg-danger/10 dark:bg-danger/10",
     translationKey: "practice.saved.again",
   },
   {
     icon: AlertTriangle,
     rating: "hard",
     toneClassName:
-      "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-900/55 dark:bg-amber-950/25 dark:text-amber-300",
+      "border-warning/25 bg-warning/5 text-warning hover:bg-warning/10 dark:bg-warning/10",
     translationKey: "practice.saved.hard",
   },
   {
@@ -167,20 +168,6 @@ type StudyModeOption = {
   mode: FlashcardStudyMode;
   shortTranslationKey: TranslationKey;
   translationKey: TranslationKey;
-};
-
-type StudySetupChoiceOption = {
-  ariaLabel?: string;
-  count?: number;
-  disabled?: boolean;
-  icon?: ComponentType<{ className?: string }>;
-  label: string;
-  shortLabel?: string;
-  value: string;
-  badge?: {
-    text: string;
-    variant: "success" | "warning" | "info" | "neutral";
-  };
 };
 
 type DeckPickerGroupId = "mixed" | "dictionary" | "grammar" | "private";
@@ -216,9 +203,6 @@ const STUDY_MODE_OPTIONS: readonly StudyModeOption[] = [
   },
 ] as const;
 
-const STUDY_SETUP_LABEL_CLASS_NAME =
-  "text-xs font-semibold uppercase tracking-widest text-muted";
-
 const DECK_PICKER_GROUP_DEFINITIONS = [
   {
     descriptionKey: "practice.deckSelector.group.mixedDescription",
@@ -241,85 +225,6 @@ const DECK_PICKER_GROUP_DEFINITIONS = [
     titleKey: "practice.deckSelector.group.private",
   },
 ] as const satisfies readonly DeckPickerGroupDefinition[];
-
-function StudySetupChoiceGroup({
-  label,
-  onChange,
-  options,
-  value,
-}: {
-  label: string;
-  onChange: (value: string) => void;
-  options: readonly StudySetupChoiceOption[];
-  value: string;
-}) {
-  return (
-    <div className="min-w-0">
-      <span className={STUDY_SETUP_LABEL_CLASS_NAME}>{label}</span>
-      <div className="mt-1 flex gap-1 overflow-x-auto rounded-md border border-line bg-elevated/60 p-1 shadow-sm">
-        {options.map((option) => {
-          const Icon = option.icon;
-          const isActive = option.value === value;
-
-          return (
-            <button
-              key={option.value}
-              type="button"
-              aria-label={option.ariaLabel}
-              aria-pressed={isActive}
-              disabled={option.disabled}
-              onClick={() => onChange(option.value)}
-              className={cx(
-                "inline-flex min-h-10 shrink-0 items-center justify-center gap-1.5 rounded px-3 py-1.5 text-sm font-semibold leading-tight transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:pointer-events-none disabled:opacity-45",
-                isActive
-                  ? "bg-surface text-coptic shadow-sm ring-1 ring-coptic/20"
-                  : "text-muted hover:bg-surface/70 hover:text-ink",
-              )}
-            >
-              {Icon ? (
-                <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-              ) : null}
-              <span className={option.shortLabel ? "hidden md:inline" : ""}>
-                {option.label}
-              </span>
-              {option.shortLabel ? (
-                <span className="md:hidden">{option.shortLabel}</span>
-              ) : null}
-              {option.badge ? (
-                <span
-                  className={cx(
-                    "rounded px-1 py-0.5 text-[0.62rem] font-bold uppercase tracking-wider",
-                    option.badge.variant === "success" &&
-                      "bg-emerald-100 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400",
-                    option.badge.variant === "warning" &&
-                      "bg-amber-100 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400",
-                    option.badge.variant === "info" &&
-                      "bg-sky-100 dark:bg-sky-950/40 text-sky-700 dark:text-sky-400",
-                    option.badge.variant === "neutral" && "bg-line text-muted",
-                  )}
-                >
-                  {option.badge.text}
-                </span>
-              ) : null}
-              {typeof option.count === "number" ? (
-                <span
-                  className={cx(
-                    "rounded-full px-1.5 py-0.5 text-[0.68rem] font-semibold leading-none",
-                    isActive
-                      ? "bg-coptic/10 text-coptic"
-                      : "bg-line text-muted",
-                  )}
-                >
-                  {option.count}
-                </span>
-              ) : null}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
 
 function formatNextDue(value: string | null, language: "en" | "nl") {
   if (!value) {
@@ -346,26 +251,6 @@ function getRatingCounts(reviews: readonly ReviewOutcome[]) {
       hard: 0,
     } satisfies Record<FlashcardReviewRating, number>,
   );
-}
-
-function getDeckStatsForItems(
-  items: readonly AppFlashcardDeckItem[],
-): FlashcardDeckStats {
-  const dueCards = items.filter((item) => item.status === "due").length;
-  const newCards = items.filter((item) => item.status === "new").length;
-
-  return {
-    availableCards: items.length,
-    dueCards,
-    missingEntries: 0,
-    newCards,
-    queuedCards: Math.min(
-      DICTIONARY_FLASHCARD_QUEUE_LIMIT,
-      dueCards + newCards,
-    ),
-    scheduledCards: items.filter((item) => item.status === "scheduled").length,
-    totalSourceEntries: items.length,
-  };
 }
 
 function getCompactCharacterCount(value: string) {
@@ -558,6 +443,13 @@ function getDeckScopeText({
   return t(getDeckKindLabelKey(deck.kind));
 }
 
+function getSelectedFilterLabel(
+  options: readonly FilterMenuOption[],
+  value: string,
+) {
+  return options.find((option) => option.value === value)?.label ?? value;
+}
+
 function StudySetupPanel({
   activeDeck,
   activeMode,
@@ -589,12 +481,9 @@ function StudySetupPanel({
 }) {
   const { t } = useLanguage();
   const setupControlsId = useId();
-  const refinementControlsId = useId();
   const [isSetupExpanded, setIsSetupExpanded] = useState(false);
-  const [areRefinementsOpen, setAreRefinementsOpen] = useState(false);
 
   useEffect(() => {
-    // Expand setup panel by default on desktop viewports
     if (window.innerWidth >= 768) {
       setTimeout(() => {
         setIsSetupExpanded(true);
@@ -603,9 +492,6 @@ function StudySetupPanel({
   }, []);
 
   const hasActiveFilters = hasActiveDictionaryFlashcardDeckFilters(filters);
-  const hasActiveRefinements =
-    filters.dialect !== FLASHCARD_DECK_FILTER_ALL ||
-    filters.grammar !== FLASHCARD_DECK_FILTER_ALL;
   const deckKindLabel = t(getDeckKindLabelKey(activeDeck.kind));
   const showCardTypeFilter =
     totalCount > 0 && filterOptions.cardTypes.length > 1;
@@ -618,10 +504,14 @@ function StudySetupPanel({
   const showGrammarFilter =
     !dictionaryScope?.partOfSpeech && filterOptions.grammars.length > 1;
   const hasRefinementControls = showDialectFilter || showGrammarFilter;
-  const shouldShowCoreControls =
-    shouldShowStudyModes || showSourceFilter || showCardTypeFilter;
-  const shouldShowRefinementControls =
-    hasRefinementControls && (areRefinementsOpen || hasActiveRefinements);
+  const shouldShowFilterControls =
+    showSourceFilter || showCardTypeFilter || hasRefinementControls;
+  const activeFilterCount = [
+    filters.source !== FLASHCARD_DECK_FILTER_ALL,
+    filters.cardType !== FLASHCARD_DECK_FILTER_ALL,
+    filters.dialect !== FLASHCARD_DECK_FILTER_ALL,
+    filters.grammar !== FLASHCARD_DECK_FILTER_ALL,
+  ].filter(Boolean).length;
 
   const studyModeChoiceOptions = STUDY_MODE_OPTIONS.map((option) => ({
     count: counts[option.mode] > 0 ? counts[option.mode] : undefined,
@@ -635,42 +525,37 @@ function StudySetupPanel({
   const cardTypeChoiceOptions = [
     {
       label: t("practice.filters.allCardTypes"),
-      shortLabel: t("practice.filters.cardTypeAllShort"),
       value: FLASHCARD_DECK_FILTER_ALL,
     },
     ...filterOptions.cardTypes.map((option) => ({
-      ariaLabel: t(option.labelKey),
       label: t(option.labelKey),
       value: option.value,
     })),
-  ];
+  ] satisfies FilterMenuOption[];
 
   const sourceChoiceOptions = [
     {
       label: t("practice.filters.allSources"),
-      shortLabel: t("practice.filters.allSourcesShort"),
       value: FLASHCARD_DECK_FILTER_ALL,
     },
     ...filterOptions.sources.map((option) => ({
       label: t(option.labelKey),
       value: option.value,
     })),
-  ];
+  ] satisfies FilterMenuOption[];
   const dialectChoiceOptions = [
     {
       label: t("practice.filters.allDialects"),
-      shortLabel: t("practice.filters.allDialectsShort"),
       value: FLASHCARD_DECK_FILTER_ALL,
     },
     ...filterOptions.dialects.map((option) => ({
       label: option.value,
       value: option.value,
     })),
-  ];
+  ] satisfies FilterMenuOption[];
   const grammarChoiceOptions = [
     {
       label: t("practice.filters.allGrammar"),
-      shortLabel: t("practice.filters.allGrammarShort"),
       value: FLASHCARD_DECK_FILTER_ALL,
     },
     ...filterOptions.grammars.map((option) => {
@@ -683,16 +568,12 @@ function StudySetupPanel({
         value: option.value,
       };
     }),
-  ];
+  ] satisfies FilterMenuOption[];
 
   function updateFilter<Key extends keyof DictionaryFlashcardDeckFilters>(
     key: Key,
     value: DictionaryFlashcardDeckFilters[Key],
   ) {
-    if (key === "dialect" || key === "grammar") {
-      setAreRefinementsOpen(true);
-    }
-
     onFilterChange({
       ...filters,
       [key]: value,
@@ -700,8 +581,6 @@ function StudySetupPanel({
   }
 
   function resetFilters() {
-    setIsSetupExpanded(false);
-    setAreRefinementsOpen(false);
     onResetFilters();
   }
 
@@ -773,20 +652,20 @@ function StudySetupPanel({
                     (o) => o.value === filters.source,
                   );
                   return match ? (
-                    <span className="rounded bg-indigo-100 dark:bg-indigo-950/40 px-1.5 py-0.5 text-indigo-700 dark:text-indigo-400">
+                    <span className="rounded bg-elevated px-1.5 py-0.5 text-muted">
                       {t(match.labelKey)}
                     </span>
                   ) : null;
                 })()}
 
               {filters.dialect !== FLASHCARD_DECK_FILTER_ALL && (
-                <span className="rounded bg-amber-100 dark:bg-amber-950/40 px-1.5 py-0.5 text-amber-700 dark:text-amber-400">
+                <span className="rounded bg-accent-soft px-1.5 py-0.5 text-accent-strong dark:text-accent">
                   {t("practice.filters.dialect")}: {filters.dialect}
                 </span>
               )}
 
               {filters.grammar !== FLASHCARD_DECK_FILTER_ALL && (
-                <span className="rounded bg-emerald-100 dark:bg-emerald-950/40 px-1.5 py-0.5 text-emerald-700 dark:text-emerald-400">
+                <span className="rounded bg-coptic-soft px-1.5 py-0.5 text-coptic">
                   {t("practice.filters.grammar")}:{" "}
                   {filterOptions.grammars.find(
                     (o) => o.value === filters.grammar,
@@ -811,7 +690,19 @@ function StudySetupPanel({
           isSetupExpanded ? "block mt-4 pt-4 border-t border-line" : "hidden",
         )}
       >
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-widest text-muted">
+              {t("practice.filters.source")}
+            </p>
+            <p className="mt-1 truncate text-base font-semibold text-ink">
+              {t(activeDeck.titleKey)}
+            </p>
+            <p className="mt-1 text-sm font-medium text-muted">
+              {getDeckScopeText({ deck: activeDeck, t })}
+            </p>
+          </div>
+
           <div className="flex flex-col gap-2 sm:flex-row">
             <button
               type="button"
@@ -825,130 +716,99 @@ function StudySetupPanel({
               <ChevronDown className="h-4 w-4" aria-hidden="true" />
               {t("practice.deckSelector.changeDeck")}
             </button>
-            {hasActiveFilters ? (
-              <button
-                type="button"
-                onClick={resetFilters}
-                className={buttonClassName({
-                  className: "w-full sm:w-auto",
-                  size: "sm",
-                  variant: "secondary",
-                })}
-              >
-                <RotateCcw className="h-4 w-4" aria-hidden="true" />
-                {t("practice.filters.reset")}
-              </button>
-            ) : null}
           </div>
         </div>
 
-        {shouldShowCoreControls ? (
-          <div className="mt-4 grid gap-3 lg:grid-cols-[repeat(auto-fit,minmax(14rem,1fr))]">
-            {shouldShowStudyModes ? (
-              <StudySetupChoiceGroup
-                label={t("practice.study.modeLabel")}
-                value={activeMode}
-                options={studyModeChoiceOptions}
-                onChange={(mode) => onModeChange(mode as FlashcardStudyMode)}
-              />
-            ) : null}
-
-            {showSourceFilter ? (
-              <StudySetupChoiceGroup
-                label={t("practice.filters.sourceType")}
-                value={filters.source}
-                options={sourceChoiceOptions}
-                onChange={(source) =>
-                  updateFilter(
-                    "source",
-                    source as DictionaryFlashcardDeckFilters["source"],
-                  )
-                }
-              />
-            ) : null}
-
-            {showCardTypeFilter ? (
-              <StudySetupChoiceGroup
-                label={t("practice.filters.cardType")}
-                value={filters.cardType}
-                options={cardTypeChoiceOptions}
-                onChange={(cardType) =>
-                  updateFilter(
-                    "cardType",
-                    cardType as DictionaryFlashcardDeckFilters["cardType"],
-                  )
-                }
-              />
-            ) : null}
+        {shouldShowStudyModes ? (
+          <div className="mt-4 border-t border-line pt-4">
+            <SegmentedControl
+              label={t("practice.study.modeLabel")}
+              value={activeMode}
+              options={studyModeChoiceOptions}
+              onChange={(mode) => onModeChange(mode as FlashcardStudyMode)}
+            />
           </div>
         ) : null}
 
-        {hasRefinementControls ? (
-          <div
-            className={cx(
-              "mt-3 border-t border-line pt-3",
-              !shouldShowCoreControls && "mt-4",
-            )}
-          >
-            <button
-              type="button"
-              aria-controls={refinementControlsId}
-              aria-expanded={shouldShowRefinementControls}
-              onClick={() => {
-                if (hasActiveRefinements) {
-                  setAreRefinementsOpen(true);
-                  return;
-                }
-
-                setAreRefinementsOpen((isOpen) => !isOpen);
-              }}
-              className={buttonClassName({
-                className: "w-full justify-between sm:w-auto",
-                size: "sm",
-                variant: hasActiveRefinements ? "primary" : "secondary",
-              })}
+        {shouldShowFilterControls ? (
+          <div className="mt-4 border-t border-line pt-4">
+            <FilterBar
+              activeCount={activeFilterCount}
+              clearLabel={t("practice.filters.reset")}
+              defaultOpen="desktop"
+              label={t("practice.filters.controls")}
+              onClear={resetFilters}
             >
-              <span className="inline-flex items-center gap-2">
-                <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
-                {t(
-                  hasActiveRefinements
-                    ? "practice.filters.refined"
-                    : "practice.filters.refine",
-                )}
-              </span>
-              <ChevronDown
-                className={cx(
-                  "h-4 w-4 transition-transform",
-                  shouldShowRefinementControls && "rotate-180",
-                )}
-                aria-hidden="true"
-              />
-            </button>
+              {showSourceFilter ? (
+                <FilterMenu
+                  active={filters.source !== FLASHCARD_DECK_FILTER_ALL}
+                  closeLabel={t("practice.filters.hide")}
+                  label={t("practice.filters.sourceType")}
+                  value={filters.source}
+                  valueLabel={getSelectedFilterLabel(
+                    sourceChoiceOptions,
+                    filters.source,
+                  )}
+                  options={sourceChoiceOptions}
+                  onChange={(source) =>
+                    updateFilter(
+                      "source",
+                      source as DictionaryFlashcardDeckFilters["source"],
+                    )
+                  }
+                />
+              ) : null}
 
-            {shouldShowRefinementControls ? (
-              <div
-                id={refinementControlsId}
-                className="mt-3 grid gap-3 sm:grid-cols-2"
-              >
-                {showDialectFilter ? (
-                  <StudySetupChoiceGroup
-                    label={t("practice.filters.dialect")}
-                    value={filters.dialect}
-                    options={dialectChoiceOptions}
-                    onChange={(dialect) => updateFilter("dialect", dialect)}
-                  />
-                ) : null}
+              {showCardTypeFilter ? (
+                <FilterMenu
+                  active={filters.cardType !== FLASHCARD_DECK_FILTER_ALL}
+                  closeLabel={t("practice.filters.hide")}
+                  label={t("practice.filters.cardType")}
+                  value={filters.cardType}
+                  valueLabel={getSelectedFilterLabel(
+                    cardTypeChoiceOptions,
+                    filters.cardType,
+                  )}
+                  options={cardTypeChoiceOptions}
+                  onChange={(cardType) =>
+                    updateFilter(
+                      "cardType",
+                      cardType as DictionaryFlashcardDeckFilters["cardType"],
+                    )
+                  }
+                />
+              ) : null}
 
-                {showGrammarFilter ? (
-                  <StudySetupChoiceGroup
-                    label={t("practice.filters.grammar")}
-                    value={filters.grammar}
-                    options={grammarChoiceOptions}
-                    onChange={(grammar) => updateFilter("grammar", grammar)}
-                  />
-                ) : null}
-              </div>
-            ) : null}
+              {showDialectFilter ? (
+                <FilterMenu
+                  active={filters.dialect !== FLASHCARD_DECK_FILTER_ALL}
+                  closeLabel={t("practice.filters.hide")}
+                  label={t("practice.filters.dialect")}
+                  value={filters.dialect}
+                  valueLabel={getSelectedFilterLabel(
+                    dialectChoiceOptions,
+                    filters.dialect,
+                  )}
+                  options={dialectChoiceOptions}
+                  onChange={(dialect) => updateFilter("dialect", dialect)}
+                />
+              ) : null}
+
+              {showGrammarFilter ? (
+                <FilterMenu
+                  active={filters.grammar !== FLASHCARD_DECK_FILTER_ALL}
+                  closeLabel={t("practice.filters.hide")}
+                  label={t("practice.filters.grammar")}
+                  value={filters.grammar}
+                  valueLabel={getSelectedFilterLabel(
+                    grammarChoiceOptions,
+                    filters.grammar,
+                  )}
+                  options={grammarChoiceOptions}
+                  onChange={(grammar) => updateFilter("grammar", grammar)}
+                />
+              ) : null}
+            </FilterBar>
           </div>
         ) : null}
       </div>
@@ -1154,12 +1014,10 @@ function DeckPickerDialog({
 function ProgressPanel({
   currentPosition,
   reviews,
-  stats,
   totalCards,
 }: {
   currentPosition: number;
   reviews: readonly ReviewOutcome[];
-  stats: FlashcardDeckStats;
   totalCards: number;
 }) {
   const { t } = useLanguage();
@@ -1174,9 +1032,6 @@ function ProgressPanel({
         <h2 className="text-sm font-semibold uppercase tracking-widest text-muted">
           {t("practice.saved.progress")}
         </h2>
-        <Badge tone="surface" size="xs">
-          {currentPosition}/{totalCards}
-        </Badge>
       </div>
 
       <div
@@ -1193,49 +1048,48 @@ function ProgressPanel({
         />
       </div>
 
-      <p className="text-sm text-muted">
-        {t("practice.saved.reviewed")}: {reviewedCount}/{totalCards}
-      </p>
-
-      <div className="grid grid-cols-3 gap-2">
-        {[
-          [t("practice.saved.due"), stats.dueCards],
-          [t("practice.saved.new"), stats.newCards],
-          [t("practice.saved.scheduled"), stats.scheduledCards],
-        ].map(([label, value]) => (
-          <div
-            key={label}
-            className="rounded-lg border border-line bg-elevated/70 px-3 py-3"
-          >
-            <p className="text-[0.68rem] font-semibold uppercase tracking-widest text-muted">
-              {label}
-            </p>
-            <p className="mt-2 text-xl font-semibold text-ink">{value}</p>
-          </div>
-        ))}
-      </div>
-
       <div className="grid grid-cols-2 gap-2">
-        {RATING_OPTIONS.map((option) => {
-          const Icon = option.icon;
-
-          return (
-            <div
-              key={option.rating}
-              className={cx(
-                "flex min-h-12 items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm font-semibold",
-                option.toneClassName,
-              )}
-            >
-              <span className="inline-flex min-w-0 items-center gap-2">
-                <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
-                <span className="truncate">{t(option.translationKey)}</span>
-              </span>
-              <span>{ratingCounts[option.rating]}</span>
-            </div>
-          );
-        })}
+        <div className="rounded-lg border border-line bg-elevated/70 px-3 py-3">
+          <p className="text-[0.68rem] font-semibold uppercase tracking-widest text-muted">
+            {t("practice.saved.cardCount")}
+          </p>
+          <p className="mt-2 text-xl font-semibold text-ink">
+            {currentPosition}/{totalCards}
+          </p>
+        </div>
+        <div className="rounded-lg border border-line bg-elevated/70 px-3 py-3">
+          <p className="text-[0.68rem] font-semibold uppercase tracking-widest text-muted">
+            {t("practice.saved.reviewed")}
+          </p>
+          <p className="mt-2 text-xl font-semibold text-ink">
+            {reviewedCount}/{totalCards}
+          </p>
+        </div>
       </div>
+
+      {reviewedCount > 0 ? (
+        <div className="grid grid-cols-2 gap-2">
+          {RATING_OPTIONS.map((option) => {
+            const Icon = option.icon;
+
+            return (
+              <div
+                key={option.rating}
+                className={cx(
+                  "flex min-h-12 items-center justify-between gap-2 rounded-lg border px-3 py-2 text-sm font-semibold",
+                  option.toneClassName,
+                )}
+              >
+                <span className="inline-flex min-w-0 items-center gap-2">
+                  <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span className="truncate">{t(option.translationKey)}</span>
+                </span>
+                <span>{ratingCounts[option.rating]}</span>
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
     </aside>
   );
 }
@@ -1490,14 +1344,14 @@ function TypedAnswerPractice({
   if (status) {
     const Icon = status === "correct" ? CheckCircle2 : AlertTriangle;
     let feedbackKey: TranslationKey = "practice.saved.typeAnswerIncorrect";
-    let feedbackClassName = "text-rose-700 dark:text-rose-300";
+    let feedbackClassName = "text-danger";
 
     if (status === "correct") {
       feedbackKey = "practice.saved.typeAnswerCorrect";
       feedbackClassName = "text-coptic";
     } else if (status === "empty") {
       feedbackKey = "practice.saved.typeAnswerEmpty";
-      feedbackClassName = "text-amber-700 dark:text-amber-300";
+      feedbackClassName = "text-warning";
     }
 
     feedbackContent = (
@@ -1909,10 +1763,6 @@ export function PracticePageClient({
     () => getFlashcardStudyModeCounts(filteredItems),
     [filteredItems],
   );
-  const filteredStats = useMemo(
-    () => getDeckStatsForItems(filteredItems),
-    [filteredItems],
-  );
   const resolvedInitialStudyMode = getInitialFlashcardStudyMode({
     counts: studyModeCounts,
     requestedMode: initialStudyMode,
@@ -1974,7 +1824,6 @@ export function PracticePageClient({
     reviews.length >= ANONYMOUS_PROGRESS_CTA_REVIEW_THRESHOLD;
   const hasActiveDeckFilters =
     hasActiveDictionaryFlashcardDeckFilters(deckFilters);
-  const displayStats = hasActiveDeckFilters ? filteredStats : stats;
 
   function resetStudySessionState() {
     setCurrentIndex(0);
@@ -2481,7 +2330,6 @@ export function PracticePageClient({
           <ProgressPanel
             currentPosition={currentPosition}
             reviews={reviews}
-            stats={displayStats}
             totalCards={totalCards}
           />
         </div>
@@ -2501,15 +2349,11 @@ export function PracticePageClient({
       ]}
     >
       <AppPageIntro
+        spacing="compact"
         breadcrumbs={[
           { label: t("nav.home"), href: getLocalizedHomePath(language) },
           { label: t("nav.practice") },
         ]}
-        description={
-          <span className="hidden md:inline">
-            {t(activeDeck.descriptionKey)}
-          </span>
-        }
         title={t(activeDeck.titleKey)}
         actionsClassName="max-md:hidden"
         actions={

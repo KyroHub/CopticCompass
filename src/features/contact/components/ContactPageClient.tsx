@@ -43,7 +43,7 @@ export default function ContactPageClient() {
       />
 
       <div className="mx-auto w-full max-w-3xl">
-        <SurfacePanel rounded="3xl" className="p-8 md:p-10">
+        <SurfacePanel rounded="lg" className="p-8 md:p-10">
           <form action={formAction} className="space-y-8">
             <input
               type="text"

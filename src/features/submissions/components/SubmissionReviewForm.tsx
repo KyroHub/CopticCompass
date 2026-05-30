@@ -38,12 +38,10 @@ export function SubmissionReviewForm({
   return (
     <form
       action={submitFeedback}
-      className="space-y-6 rounded-2xl border border-stone-100 bg-stone-50/50 p-6 dark:border-stone-800 dark:bg-stone-900/20"
+      className="space-y-6 rounded-lg border border-line bg-elevated/60 p-6"
     >
       <input type="hidden" name="submission_id" value={submission.id} />
-      <h4 className="font-bold text-stone-700 dark:text-stone-300">
-        {copy.title}
-      </h4>
+      <h4 className="font-bold text-ink">{copy.title}</h4>
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <FormLabel>{copy.scoreLabel}</FormLabel>
@@ -54,7 +52,7 @@ export function SubmissionReviewForm({
           max="5"
           defaultValue={submission.rating ?? 5}
           required
-          className="input-base h-auto w-24 rounded-xl px-4 py-2 text-center font-bold"
+          className="input-base h-auto w-24 px-4 py-2 text-center font-bold"
         />
       </div>
 

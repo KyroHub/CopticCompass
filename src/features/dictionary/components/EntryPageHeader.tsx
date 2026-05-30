@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 import { BreadcrumbTrail } from "@/components/BreadcrumbTrail";
+import { buttonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { getDictionaryPath, getLocalizedHomePath } from "@/lib/locale";
 
@@ -27,7 +28,10 @@ export default function EntryPageHeader({ entryLabel }: EntryPageHeaderProps) {
       <div className="flex flex-wrap items-center gap-4">
         <Link
           href={getDictionaryPath(language)}
-          className="btn-secondary gap-2 px-4"
+          className={buttonClassName({
+            className: "gap-2 px-4",
+            variant: "secondary",
+          })}
         >
           <ArrowLeft className="h-4 w-4" />
           {t("entry.back")}

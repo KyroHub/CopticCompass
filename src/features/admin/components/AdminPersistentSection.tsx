@@ -43,7 +43,7 @@ export function AdminPersistentSection({
     <details
       id={id}
       className={surfacePanelClassName({
-        rounded: "3xl",
+        rounded: "lg",
         variant: "elevated",
         className: "group app-anchor-section overflow-hidden",
       })}

@@ -34,11 +34,15 @@ export default function GrammarHubPageClient({
       ]}
     >
       <AppPageIntro
-        align="center"
+        spacing="compact"
+        actionsClassName="w-full sm:w-auto"
         actions={
           <Link
             href={getPracticePath(language, DEFAULT_GRAMMAR_PRACTICE_DECK_ID)}
-            className={buttonClassName({ variant: "primary" })}
+            className={buttonClassName({
+              className: "w-full sm:w-auto",
+              variant: "primary",
+            })}
           >
             <Layers3 className="h-4 w-4" />
             {t("grammar.practiceGrammar")}
@@ -48,7 +52,6 @@ export default function GrammarHubPageClient({
           { label: t("nav.home"), href: getLocalizedHomePath(language) },
           { label: t("nav.grammar") },
         ]}
-        description={t("grammar.subtitle")}
         title={t("grammar.title")}
       />
 

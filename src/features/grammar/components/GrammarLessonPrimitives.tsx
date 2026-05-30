@@ -209,7 +209,7 @@ export function GrammarLessonCard({
   return (
     <div
       className={cx(
-        "rounded-xl border p-4",
+        "rounded-lg border p-4",
         tone === "coptic"
           ? "border-coptic/20 bg-coptic-soft/55 dark:bg-coptic-soft/20"
           : "border-line bg-elevated/75",

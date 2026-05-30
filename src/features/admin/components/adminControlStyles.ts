@@ -6,6 +6,10 @@ type AdminControlClassNameOptions = {
   className?: string;
 };
 
+type AdminPanelClassNameOptions = {
+  className?: string;
+};
+
 const ADMIN_INTERACTIVE_BASE_CLASS =
   "cursor-pointer select-none border transition-all duration-200 hover:-translate-y-px active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30";
 
@@ -14,6 +18,24 @@ const ADMIN_IDLE_CONTROL_CLASS =
 
 const ADMIN_ACTIVE_CONTROL_CLASS =
   "border-accent/35 bg-accent-soft/75 text-ink shadow-sm dark:bg-accent-soft/25";
+
+export function adminStickyPanelClassName({
+  className,
+}: AdminPanelClassNameOptions = {}) {
+  return surfacePanelClassName({
+    shadow: "soft",
+    className: cx("app-sticky-panel p-3 dark:shadow-black/20", className),
+  });
+}
+
+export function adminSummaryPanelClassName({
+  className,
+}: AdminPanelClassNameOptions = {}) {
+  return surfacePanelClassName({
+    shadow: "soft",
+    className: cx("p-5 dark:shadow-black/20", className),
+  });
+}
 
 export function adminFilterToggleClassName({
   active = false,
@@ -69,7 +91,7 @@ export function adminReviewQueueItemClassName({
 }: AdminControlClassNameOptions = {}) {
   return cx(
     surfacePanelClassName({
-      rounded: "3xl",
+      rounded: "lg",
       variant: active ? "elevated" : "subtle",
       className: cx(
         ADMIN_INTERACTIVE_BASE_CLASS,

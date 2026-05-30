@@ -4,7 +4,10 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { startTransition, useEffect, type ReactNode } from "react";
 
 import { useLanguage } from "@/components/LanguageProvider";
-import { adminModeCardClassName } from "@/features/admin/components/adminControlStyles";
+import {
+  adminModeCardClassName,
+  adminStickyPanelClassName,
+} from "@/features/admin/components/adminControlStyles";
 import type { AdminWorkspaceOverview } from "@/features/admin/lib/dashboardData";
 import { usePersistentEnumState } from "@/features/admin/lib/uiState";
 import {
@@ -253,7 +256,7 @@ export function AdminWorkspaceModeShell({
 
   return (
     <div className="space-y-6">
-      <nav className="app-sticky-panel rounded-xl border border-line bg-surface/90 p-3 shadow-soft backdrop-blur-xl dark:shadow-black/20">
+      <nav className={adminStickyPanelClassName()}>
         <p className="mb-3 text-xs leading-5 text-muted">{copy.description}</p>
 
         <div className="grid gap-2 md:grid-cols-3">

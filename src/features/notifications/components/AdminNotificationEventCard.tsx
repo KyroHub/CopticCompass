@@ -48,7 +48,7 @@ export function AdminNotificationEventCard({
   return (
     <SurfacePanel
       as="article"
-      rounded="3xl"
+      rounded="lg"
       variant="elevated"
       className="p-6 md:p-8"
     >
@@ -113,7 +113,7 @@ export function AdminNotificationEventCard({
       ) : null}
 
       {event.status === "failed" && event.last_error ? (
-        <div className="rounded-lg border border-red-200 bg-red-50 px-5 py-4 text-sm leading-7 text-red-700 dark:border-red-900/40 dark:bg-red-950/20 dark:text-red-300">
+        <div className="rounded-lg border border-danger/25 bg-danger/5 px-5 py-4 text-sm leading-7 text-danger dark:bg-danger/10">
           <span className="font-semibold">{copy.lastError}:</span>{" "}
           {event.last_error}
         </div>

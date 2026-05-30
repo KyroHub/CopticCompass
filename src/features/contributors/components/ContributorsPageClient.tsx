@@ -263,7 +263,7 @@ export function ContributorsPageClient() {
       />
 
       <div className="space-y-8 md:space-y-9">
-        <SurfacePanel rounded="3xl" variant="elevated" className="p-6 md:p-8">
+        <SurfacePanel rounded="lg" variant="elevated" className="p-6 md:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
             {language === "nl" ? "Oprichter" : "Founder"}
           </p>
@@ -296,7 +296,7 @@ export function ContributorsPageClient() {
           </div>
         </SurfacePanel>
 
-        <SurfacePanel rounded="3xl" variant="elevated" className="p-6 md:p-8">
+        <SurfacePanel rounded="lg" variant="elevated" className="p-6 md:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
             {t("contributors.sectionTitle")}
           </p>
@@ -339,7 +339,7 @@ export function ContributorsPageClient() {
         <SurfacePanel
           as="section"
           id="shenute-ai-credits"
-          rounded="3xl"
+          rounded="lg"
           variant="elevated"
           className="scroll-mt-28 p-6 md:p-8"
         >
@@ -393,7 +393,7 @@ export function ContributorsPageClient() {
         <SurfacePanel
           as="section"
           id="research-nmt-credits"
-          rounded="3xl"
+          rounded="lg"
           variant="elevated"
           className="scroll-mt-28 p-6 md:p-8"
         >

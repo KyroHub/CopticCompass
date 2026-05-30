@@ -227,7 +227,7 @@ export function ProfileForm({
   }
 
   return (
-    <SurfacePanel rounded="3xl" className="p-6 md:p-8">
+    <SurfacePanel rounded="lg" className="p-6 md:p-8">
       <h3 className="mb-6 text-xl font-semibold text-ink">
         {copy.profile.sectionTitle}
       </h3>

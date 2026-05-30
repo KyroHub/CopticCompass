@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Badge } from "@/components/Badge";
+import { buttonClassName } from "@/components/Button";
 import { SurfacePanel } from "@/components/SurfacePanel";
 import {
   formatDashboardDate,
@@ -134,7 +135,10 @@ export function GrammarDashboardOverview({
                       {summary.nextSectionTitle[language]}
                     </p>
                   ) : null}
-                  <Link href={lessonHref} className="btn-primary px-5">
+                  <Link
+                    href={lessonHref}
+                    className={buttonClassName({ className: "px-5" })}
+                  >
                     {summary.isStarted
                       ? copy.grammar.continueLesson
                       : copy.grammar.startLesson}

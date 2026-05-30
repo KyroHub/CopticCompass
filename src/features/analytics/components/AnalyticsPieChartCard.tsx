@@ -69,12 +69,12 @@ export function AnalyticsPieChartCard({
 
   const hasMeasuredChartSize = chartSize.width > 0 && chartSize.height > 0;
   const chartPlaceholder = (
-    <div className="h-full w-full rounded-2xl bg-elevated/65" />
+    <div className="h-full w-full rounded-lg bg-elevated/65" />
   );
 
   return (
     <SurfacePanel
-      rounded="3xl"
+      rounded="lg"
       shadow="soft"
       className="flex h-full flex-col p-6"
     >

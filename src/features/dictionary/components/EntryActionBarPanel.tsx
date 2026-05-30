@@ -4,7 +4,7 @@ import { Heart, Flag, Loader2, Share2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import { AuthGatedActionButton } from "@/components/AuthGatedActionButton";
-import { iconButtonClassName } from "@/components/Button";
+import { buttonClassName, iconButtonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { StatusNotice } from "@/components/StatusNotice";
 import type { LexicalEntry } from "@/features/dictionary/types";
@@ -163,7 +163,7 @@ export function EntryActionBarPanel({
               compactActionButtonClassName,
               (isLoading || isPending) && "opacity-70",
               isFavorited &&
-                "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/25 dark:text-rose-300 dark:hover:bg-rose-950/40",
+                "border-danger/20 bg-danger/5 text-danger hover:bg-danger/10",
             )}
             disabled={isLoading || isPending}
             isAuthenticated={authGate.isAuthenticated}
@@ -198,7 +198,7 @@ export function EntryActionBarPanel({
             className={cx(
               compactActionButtonClassName,
               isReportOpen &&
-                "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/25 dark:text-amber-300 dark:hover:bg-amber-950/40",
+                "border-warning/25 bg-warning/5 text-warning hover:bg-warning/10",
             )}
             isAuthenticated={authGate.isAuthenticated}
             isReady={authGate.isReady}
@@ -292,7 +292,7 @@ export function EntryActionBarPanel({
           <p className="text-xs font-semibold uppercase tracking-widest text-accent-strong dark:text-accent">
             {t("entry.actions.eyebrow")}
           </p>
-          <p className="text-sm leading-6 text-stone-600 dark:text-stone-400">
+          <p className="text-sm leading-6 text-muted">
             {t("entry.actions.description")}
           </p>
         </div>
@@ -303,7 +303,10 @@ export function EntryActionBarPanel({
             aria-controls={sharePanelId}
             aria-expanded={isShareOpen}
             className={cx(
-              "btn-secondary gap-2 px-4",
+              buttonClassName({
+                className: "gap-2 px-4",
+                variant: "secondary",
+              }),
               isShareOpen &&
                 "border-accent/30 bg-accent-soft text-accent-strong hover:bg-accent-soft hover:text-ink dark:text-accent",
             )}
@@ -317,10 +320,13 @@ export function EntryActionBarPanel({
 
           <AuthGatedActionButton
             className={cx(
-              "btn-secondary gap-2 px-4",
+              buttonClassName({
+                className: "gap-2 px-4",
+                variant: "secondary",
+              }),
               (isLoading || isPending) && "opacity-70",
               isFavorited &&
-                "border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 dark:border-rose-900/50 dark:bg-rose-950/25 dark:text-rose-300 dark:hover:bg-rose-950/40",
+                "border-danger/20 bg-danger/5 text-danger hover:bg-danger/10",
             )}
             disabled={isLoading || isPending}
             isAuthenticated={authGate.isAuthenticated}
@@ -345,9 +351,12 @@ export function EntryActionBarPanel({
 
           <AuthGatedActionButton
             className={cx(
-              "btn-secondary gap-2 px-4",
+              buttonClassName({
+                className: "gap-2 px-4",
+                variant: "secondary",
+              }),
               isReportOpen &&
-                "border-amber-200 bg-amber-50 text-amber-700 hover:bg-amber-100 hover:text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/25 dark:text-amber-300 dark:hover:bg-amber-950/40",
+                "border-warning/25 bg-warning/5 text-warning hover:bg-warning/10",
             )}
             isAuthenticated={authGate.isAuthenticated}
             isReady={authGate.isReady}

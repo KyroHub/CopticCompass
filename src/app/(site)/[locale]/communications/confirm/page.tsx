@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { BreadcrumbTrail } from "@/components/BreadcrumbTrail";
+import { buttonClassName } from "@/components/Button";
 import { PageHeader } from "@/components/PageHeader";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
 import { SurfacePanel } from "@/components/SurfacePanel";
@@ -99,13 +100,16 @@ export default async function CommunicationConfirmPage({
             <div className="flex flex-col justify-center gap-3 sm:flex-row">
               <Link
                 href={getLocalizedHomePath(resolvedLocale)}
-                className="btn-primary px-6"
+                className={buttonClassName({ className: "px-6" })}
               >
                 {getTranslation(resolvedLocale, "contact.confirm.homeCta")}
               </Link>
               <Link
                 href={getContactPath(resolvedLocale)}
-                className="btn-secondary px-6"
+                className={buttonClassName({
+                  className: "px-6",
+                  variant: "secondary",
+                })}
               >
                 {getTranslation(resolvedLocale, "contact.confirm.contactCta")}
               </Link>

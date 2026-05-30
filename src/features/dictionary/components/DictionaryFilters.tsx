@@ -1,11 +1,13 @@
 "use client";
 
-import { ChevronDown, SlidersHorizontal, Volume2 } from "lucide-react";
-import { useState } from "react";
+import { Volume2 } from "lucide-react";
 
-import { CheckboxField } from "@/components/CheckboxField";
-import { CompactSelect } from "@/components/CompactSelect";
-import { FormLabel } from "@/components/FormField";
+import {
+  FilterBar,
+  FilterMenu,
+  FilterToggle,
+  type FilterMenuOption,
+} from "@/components/FilterMenu";
 import { useLanguage } from "@/components/LanguageProvider";
 import {
   dialectFilterOptions,
@@ -19,7 +21,6 @@ import {
   useTtsSettings,
 } from "@/features/dictionary/hooks/useTtsSettings";
 import { type VoiceKey, VOICES } from "@/features/dictionary/lib/copticTts";
-import { cx } from "@/lib/classes";
 
 type DictionaryFiltersProps = {
   exactMatch: boolean;
@@ -36,6 +37,17 @@ const voiceEntries = Object.entries(VOICES) as [
   (typeof VOICES)[VoiceKey],
 ][];
 
+function cleanFilterLabel(label: string) {
+  return label.replace(/:$/, "");
+}
+
+function getSelectedOptionLabel(
+  options: readonly FilterMenuOption[],
+  value: string,
+) {
+  return options.find((option) => option.value === value)?.label ?? value;
+}
+
 export function DictionaryFilters({
   exactMatch,
   onClearFilters,
@@ -46,7 +58,6 @@ export function DictionaryFilters({
   setSelectedPartOfSpeech,
 }: DictionaryFiltersProps) {
   const { t } = useLanguage();
-  const [isExpandedOnMobile, setIsExpandedOnMobile] = useState(false);
   const { settings, updateSettings, isLoaded } = useTtsSettings();
 
   const activeFilterCount = [
@@ -54,174 +65,114 @@ export function DictionaryFilters({
     selectedDialect !== "ALL",
     exactMatch,
   ].filter(Boolean).length;
-  const mobileToggleLabel = isExpandedOnMobile
-    ? t("dict.hideFilters")
-    : t("dict.showFilters");
+  const partOfSpeechOptions: FilterMenuOption[] =
+    dictionaryPartOfSpeechFilterOptions.map((option) => ({
+      label: t(option.labelKey),
+      value: option.value,
+    }));
+  const dialectOptions: FilterMenuOption[] = dialectFilterOptions.map(
+    (option) => ({
+      label: getDialectFilterOptionLabel(option.value, t),
+      shortLabel: option.value === "ALL" ? undefined : option.value,
+      value: option.value,
+    }),
+  );
+  const ttsModeOptions: FilterMenuOption[] = [
+    {
+      label: t("dict.ttsModeStandard"),
+      value: "standard",
+    },
+    {
+      label: t("dict.ttsModePremium"),
+      value: "premium",
+    },
+  ];
+  const voiceOptions: FilterMenuOption[] = voiceEntries.map(([key, voice]) => ({
+    label: voice.label,
+    value: key,
+  }));
+  const showPronunciationFilters =
+    isLoaded && (selectedDialect === "ALL" || selectedDialect === "B");
 
   return (
-    <div className="relative z-0 rounded-lg border border-line bg-surface/88 p-3 shadow-soft backdrop-blur-md sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-4 sm:p-4">
-      <button
-        type="button"
-        aria-expanded={isExpandedOnMobile}
-        aria-label={mobileToggleLabel}
-        onClick={() => setIsExpandedOnMobile((current) => !current)}
-        className="flex w-full cursor-pointer select-none items-center justify-between gap-3 rounded-lg p-1 text-left text-muted transition-colors hover:bg-elevated/75 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 sm:hidden"
-      >
-        <span className="flex min-w-0 items-center gap-2">
-          <SlidersHorizontal className="h-4 w-4 shrink-0" />
-          <span className="text-xs font-semibold uppercase tracking-widest">
-            {t("dict.filters")}
-          </span>
-          {activeFilterCount > 0 ? (
-            <span
-              className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ink px-1.5 text-xs font-semibold text-paper dark:bg-elevated dark:text-ink dark:ring-1 dark:ring-line"
-              aria-label={`${t("dict.activeFilters")}: ${activeFilterCount}`}
-            >
-              {activeFilterCount}
-            </span>
-          ) : null}
-        </span>
-        <ChevronDown
-          className={cx(
-            "h-4 w-4 shrink-0 transition-transform",
-            isExpandedOnMobile && "rotate-180",
-          )}
-          aria-hidden="true"
-        />
-      </button>
-
-      <div
-        className={cx(
-          "mt-3 flex flex-col gap-3 sm:mt-0 sm:flex sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-4",
-          !isExpandedOnMobile && "hidden sm:flex",
+    <FilterBar
+      activeCount={activeFilterCount}
+      clearLabel={t("dict.clearFilters")}
+      defaultOpen="desktop"
+      label={t("dict.filters")}
+      onClear={onClearFilters}
+    >
+      <FilterMenu
+        active={selectedPartOfSpeech !== "ALL"}
+        closeLabel={t("dict.hideFilters")}
+        label={cleanFilterLabel(t("dict.pos"))}
+        menuLabel={cleanFilterLabel(t("dict.pos"))}
+        value={selectedPartOfSpeech}
+        valueLabel={getSelectedOptionLabel(
+          partOfSpeechOptions,
+          selectedPartOfSpeech,
         )}
-      >
-        <div className="hidden items-center gap-2 text-muted sm:flex">
-          <SlidersHorizontal className="h-4 w-4" />
-          <FormLabel tone="muted">{t("dict.filters")}</FormLabel>
-          {activeFilterCount > 0 ? (
-            <span
-              className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ink px-1.5 text-xs font-semibold text-paper dark:bg-elevated dark:text-ink dark:ring-1 dark:ring-line"
-              aria-label={`${t("dict.activeFilters")}: ${activeFilterCount}`}
-            >
-              {activeFilterCount}
-            </span>
+        options={partOfSpeechOptions}
+        onChange={(value) =>
+          setSelectedPartOfSpeech(value as DictionaryPartOfSpeechFilter)
+        }
+      />
+
+      <FilterMenu
+        active={selectedDialect !== "ALL"}
+        closeLabel={t("dict.hideFilters")}
+        label={cleanFilterLabel(t("dict.dialect"))}
+        menuLabel={cleanFilterLabel(t("dict.dialect"))}
+        value={selectedDialect}
+        valueLabel={getSelectedOptionLabel(dialectOptions, selectedDialect)}
+        options={dialectOptions}
+        onChange={(value) => setSelectedDialect(value as DialectFilter)}
+      />
+
+      <FilterToggle
+        active={exactMatch}
+        label={t("dict.exactMatch")}
+        value={exactMatch}
+        valueLabel={exactMatch ? t("dict.exactMatch") : t("dict.any")}
+        onChange={setExactMatch}
+      />
+
+      {showPronunciationFilters ? (
+        <>
+          <span
+            className="hidden h-11 w-px shrink-0 bg-line sm:block"
+            aria-hidden="true"
+          />
+          <FilterMenu
+            active={settings.mode === "premium"}
+            closeLabel={t("dict.hideFilters")}
+            icon={Volume2}
+            label={cleanFilterLabel(t("dict.ttsMode"))}
+            menuLabel={cleanFilterLabel(t("dict.ttsMode"))}
+            value={settings.mode}
+            valueLabel={getSelectedOptionLabel(ttsModeOptions, settings.mode)}
+            options={ttsModeOptions}
+            onChange={(value) => updateSettings({ mode: value as TtsMode })}
+          />
+
+          {settings.mode === "premium" ? (
+            <FilterMenu
+              active
+              closeLabel={t("dict.hideFilters")}
+              label={cleanFilterLabel(t("dict.ttsVoice"))}
+              menuLabel={cleanFilterLabel(t("dict.ttsVoice"))}
+              value={settings.voice}
+              valueLabel={getSelectedOptionLabel(voiceOptions, settings.voice)}
+              options={voiceOptions}
+              onChange={(value) =>
+                updateSettings({
+                  voice: value as VoiceKey,
+                })
+              }
+            />
           ) : null}
-        </div>
-
-        <div className="hidden h-6 w-px bg-line md:block" />
-
-        <CompactSelect
-          label={t("dict.pos")}
-          value={selectedPartOfSpeech}
-          wrapperClassName="w-full justify-between sm:w-auto"
-          className="min-w-0 flex-1 sm:min-w-40"
-          onChange={(event) =>
-            setSelectedPartOfSpeech(
-              event.target.value as DictionaryPartOfSpeechFilter,
-            )
-          }
-        >
-          {dictionaryPartOfSpeechFilterOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {t(option.labelKey)}
-            </option>
-          ))}
-        </CompactSelect>
-
-        <div className="hidden h-6 w-px bg-line sm:block" />
-
-        <CompactSelect
-          label={t("dict.dialect")}
-          value={selectedDialect}
-          wrapperClassName="w-full justify-between sm:w-auto"
-          className="min-w-0 flex-1 sm:min-w-44"
-          onChange={(event) =>
-            setSelectedDialect(event.target.value as DialectFilter)
-          }
-        >
-          {dialectFilterOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {getDialectFilterOptionLabel(option.value, t)}
-            </option>
-          ))}
-        </CompactSelect>
-
-        <div className="hidden h-6 w-px bg-line sm:block" />
-
-        <CheckboxField
-          checked={exactMatch}
-          label={t("dict.exactMatch")}
-          labelClassName="text-xs font-semibold uppercase tracking-widest text-muted"
-          onChange={(event) => setExactMatch(event.target.checked)}
-          wrapperClassName="rounded-lg p-2 hover:bg-elevated/75 sm:-m-2"
-        />
-
-        {activeFilterCount > 0 && onClearFilters ? (
-          <button
-            type="button"
-            onClick={onClearFilters}
-            className="btn-ghost h-9 justify-start px-3 text-xs uppercase tracking-widest sm:justify-center"
-          >
-            {t("dict.clearFilters")}
-          </button>
-        ) : null}
-
-        {/* ── TTS Settings (Bohairic only) ────────────────── */}
-
-        {selectedDialect === "ALL" || selectedDialect === "B" ? (
-          <>
-            <div className="h-px w-full bg-line sm:hidden" />
-            <div className="hidden h-6 w-px bg-line sm:block" />
-
-            <div className="flex items-center gap-2 text-muted">
-              <Volume2 className="h-4 w-4" />
-              <FormLabel tone="muted">{t("dict.ttsMode")}</FormLabel>
-            </div>
-
-            {isLoaded ? (
-              <>
-                <CompactSelect
-                  label=""
-                  value={settings.mode}
-                  wrapperClassName="w-full justify-between sm:w-auto"
-                  className="min-w-0 flex-1 sm:min-w-40"
-                  onChange={(event) =>
-                    updateSettings({ mode: event.target.value as TtsMode })
-                  }
-                >
-                  <option value="standard">{t("dict.ttsModeStandard")}</option>
-                  <option value="premium">{t("dict.ttsModePremium")}</option>
-                </CompactSelect>
-
-                {settings.mode === "premium" ? (
-                  <>
-                    <div className="hidden h-6 w-px bg-line sm:block" />
-
-                    <CompactSelect
-                      label={t("dict.ttsVoice")}
-                      value={settings.voice}
-                      wrapperClassName="w-full justify-between sm:w-auto"
-                      className="min-w-0 flex-1 sm:min-w-48"
-                      onChange={(event) =>
-                        updateSettings({
-                          voice: event.target.value as VoiceKey,
-                        })
-                      }
-                    >
-                      {voiceEntries.map(([key, voice]) => (
-                        <option key={key} value={key}>
-                          {voice.label}
-                        </option>
-                      ))}
-                    </CompactSelect>
-                  </>
-                ) : null}
-              </>
-            ) : null}
-          </>
-        ) : null}
-      </div>
-    </div>
+        </>
+      ) : null}
+    </FilterBar>
   );
 }

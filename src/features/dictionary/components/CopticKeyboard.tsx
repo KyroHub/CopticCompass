@@ -73,7 +73,7 @@ export default function CopticKeyboard({
   }
 
   return (
-    <div className="absolute right-0 top-[calc(100%+0.75rem)] z-[70] max-h-[70vh] w-full overflow-y-auto rounded-lg border border-line bg-surface/95 p-3 shadow-panel backdrop-blur-xl sm:rounded-xl sm:p-4 md:w-[640px] md:p-5">
+    <div className="absolute right-0 top-[calc(100%+0.75rem)] z-[70] max-h-[70vh] w-full overflow-y-auto rounded-lg border border-line bg-surface/95 p-3 shadow-panel backdrop-blur-xl sm:p-4 md:w-[640px] md:p-5">
       <div className="mb-3 flex items-start justify-between gap-3 sm:mb-4">
         <div>
           <h3 className="text-sm font-semibold uppercase tracking-widest text-ink">
@@ -131,7 +131,7 @@ export default function CopticKeyboard({
         <button
           type="button"
           onClick={onBackspace}
-          className="flex h-10 flex-1 cursor-pointer select-none flex-col items-center justify-center rounded-lg border border-rose-200 bg-rose-50 text-sm font-semibold text-rose-600 transition-colors hover:bg-rose-100 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 dark:border-rose-900/50 dark:bg-rose-950/40 dark:text-rose-300 dark:hover:bg-rose-900/60 sm:h-11 sm:rounded-xl"
+          className="flex h-10 flex-1 cursor-pointer select-none flex-col items-center justify-center rounded-lg border border-danger/25 bg-danger/5 text-sm font-semibold text-danger transition-colors hover:bg-danger/10 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 dark:bg-danger/10 sm:h-11"
           aria-label={t("dict.keyboardBackspace")}
         >
           <Delete className="h-5 w-5" />

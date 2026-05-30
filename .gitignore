@@ -70,6 +70,10 @@ blob-report/
 *.bak
 *.tmp
 
+# Document exports
+*.docx
+*.pdf
+
 # AI/IDE/Editor workspaces
 .vscode/
 .idea/

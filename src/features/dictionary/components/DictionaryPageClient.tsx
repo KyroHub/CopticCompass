@@ -62,21 +62,28 @@ function DictionaryPageBody({ searchPath }: DictionaryPageBodyProps) {
       ]}
     >
       <AppPageIntro
+        spacing="compact"
         actions={
-          <div className="flex flex-wrap justify-center gap-3 sm:justify-end">
+          <div className="grid w-full grid-cols-2 gap-3 sm:flex sm:w-auto sm:flex-wrap sm:justify-end">
             <Link
               href={getPracticePath(
                 language,
                 DEFAULT_DICTIONARY_PRACTICE_DECK_ID,
               )}
-              className={buttonClassName({ variant: "primary" })}
+              className={buttonClassName({
+                className: "w-full min-w-0 px-3 sm:w-auto sm:px-4",
+                variant: "primary",
+              })}
             >
               <Layers3 className="h-4 w-4" />
-              {t("practice.entryPoint.practiceWords")}
+              {t("nav.practice")}
             </Link>
             <Link
               href={getAnalyticsPath(language)}
-              className={buttonClassName({ variant: "secondary" })}
+              className={buttonClassName({
+                className: "w-full min-w-0 px-3 sm:w-auto sm:px-4",
+                variant: "secondary",
+              })}
             >
               <BarChart3 className="h-4 w-4" />
               {t("nav.analyticsShort")}
@@ -87,7 +94,6 @@ function DictionaryPageBody({ searchPath }: DictionaryPageBodyProps) {
           { label: t("nav.home"), href: getLocalizedHomePath(language) },
           { label: t("nav.dictionary") },
         ]}
-        description={t("dict.subtitle")}
         title={t("dict.title")}
       />
 

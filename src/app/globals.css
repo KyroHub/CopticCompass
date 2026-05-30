@@ -174,18 +174,6 @@
     @apply min-h-screen px-6 py-14 md:px-10 md:py-16;
   }
 
-  .btn-primary {
-    @apply inline-flex h-11 cursor-pointer select-none items-center justify-center gap-2 rounded-lg border border-transparent bg-ink px-4 text-sm font-semibold text-paper shadow-sm transition-all duration-200 hover:-translate-y-px hover:opacity-90 hover:shadow-soft active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/35 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-55 dark:border-accent/35 dark:bg-accent-soft dark:text-ink dark:hover:bg-elevated;
-  }
-
-  .btn-secondary {
-    @apply inline-flex h-11 cursor-pointer select-none items-center justify-center gap-2 rounded-lg border border-line bg-surface/88 px-4 text-sm font-semibold text-ink shadow-sm backdrop-blur-sm transition-all duration-200 hover:-translate-y-px hover:border-accent/40 hover:bg-surface active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-55 dark:bg-surface/88 dark:text-ink dark:hover:bg-elevated;
-  }
-
-  .btn-ghost {
-    @apply inline-flex h-10 cursor-pointer select-none items-center justify-center gap-2 rounded-lg px-3 text-sm font-semibold text-muted transition-all duration-200 hover:-translate-y-px hover:bg-elevated hover:text-ink active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-55 dark:text-muted dark:hover:text-ink;
-  }
-
   .input-base {
     @apply h-12 w-full rounded-lg border border-line bg-surface/90 px-4 text-base text-ink shadow-sm outline-none transition-[border-color,box-shadow,background-color,color] placeholder:text-muted/65 focus:border-accent/60 focus:ring-2 focus:ring-accent/25;
   }

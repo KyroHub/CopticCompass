@@ -4,6 +4,7 @@ import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 
 import { Badge } from "@/components/Badge";
+import { buttonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { surfacePanelClassName } from "@/components/SurfacePanel";
 import { ContactMessageReviewForm } from "@/features/contact/components/ContactMessageReviewForm";
@@ -111,7 +112,7 @@ function AdminItemDisclosure({
   return (
     <details
       className={surfacePanelClassName({
-        rounded: "3xl",
+        rounded: "lg",
         variant: "elevated",
         className: "group overflow-hidden",
       })}
@@ -214,7 +215,13 @@ export function AdminContactMessageDisclosure({
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <p className="text-sm text-muted">{copy.replyDescription}</p>
-          <a href={`mailto:${message.email}`} className="btn-secondary px-5">
+          <a
+            href={`mailto:${message.email}`}
+            className={buttonClassName({
+              className: "px-5",
+              variant: "secondary",
+            })}
+          >
             {copy.replyByEmail}
           </a>
         </div>
@@ -290,7 +297,10 @@ export function AdminEntryReportDisclosure({
 
           <Link
             href={getEntryPath(report.entry_id, language)}
-            className="btn-secondary px-5"
+            className={buttonClassName({
+              className: "px-5",
+              variant: "secondary",
+            })}
           >
             {copy.openEntry}
           </Link>

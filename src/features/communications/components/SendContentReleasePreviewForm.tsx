@@ -4,6 +4,7 @@ import { useActionState } from "react";
 
 import { sendContentReleasePreview } from "@/actions/admin";
 import type { SendContentReleaseState } from "@/actions/admin/states";
+import { buttonClassName } from "@/components/Button";
 import { FormField } from "@/components/FormField";
 import { useLanguage } from "@/components/LanguageProvider";
 import { StatusNotice } from "@/components/StatusNotice";
@@ -68,7 +69,10 @@ export function SendContentReleasePreviewForm({
 
         <button
           type="submit"
-          className="btn-secondary px-5"
+          className={buttonClassName({
+            className: "px-5",
+            variant: "secondary",
+          })}
           disabled={isPending}
         >
           {isPending ? copy.sending : copy.send}

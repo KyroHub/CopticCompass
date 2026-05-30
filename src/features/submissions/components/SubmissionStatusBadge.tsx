@@ -7,9 +7,8 @@ type SubmissionStatusBadgeProps = {
 };
 
 const TONE_CLASSES: Record<SubmissionStatusBadgeProps["tone"], string> = {
-  pending: "bg-sky-100 text-sky-800 dark:bg-sky-900/40 dark:text-sky-300",
-  reviewed:
-    "bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300",
+  pending: "bg-accent-soft text-accent-strong dark:text-accent",
+  reviewed: "bg-success/10 text-success",
 };
 
 export function SubmissionStatusBadge({

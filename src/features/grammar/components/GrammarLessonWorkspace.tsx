@@ -142,7 +142,7 @@ function CollapsedRailCard({
 
   return (
     <SurfacePanel
-      rounded="2xl"
+      rounded="lg"
       shadow="soft"
       variant="subtle"
       className="w-[3.75rem] p-2"
@@ -276,7 +276,7 @@ export function GrammarLessonStudyWorkspace({
           </div>
 
           <SurfacePanel
-            rounded="3xl"
+            rounded="lg"
             variant="elevated"
             className="px-6 py-6 sm:px-8 md:px-10"
           >
@@ -340,7 +340,7 @@ export function GrammarLessonReadingWorkspace({
   return (
     <div>
       <SurfacePanel
-        rounded="3xl"
+        rounded="lg"
         variant="elevated"
         className="p-4 transition-colors duration-300 sm:p-5 md:p-10"
       >

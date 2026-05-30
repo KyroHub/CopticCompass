@@ -1,13 +1,17 @@
 "use client";
 
-import { ArrowLeft, Filter } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
 import { AppPageIntro } from "@/components/AppPageIntro";
 import { buttonClassName } from "@/components/Button";
-import { CompactSelect } from "@/components/CompactSelect";
+import {
+  FilterBar,
+  FilterMenu,
+  type FilterMenuOption,
+} from "@/components/FilterMenu";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
 import { SurfacePanel, surfacePanelClassName } from "@/components/SurfacePanel";
@@ -83,6 +87,17 @@ function getEtymologyFilterLabel(
   }
 }
 
+function cleanFilterLabel(label: string) {
+  return label.replace(/:$/, "");
+}
+
+function getSelectedFilterLabel(
+  options: readonly FilterMenuOption[],
+  value: string,
+) {
+  return options.find((option) => option.value === value)?.label ?? value;
+}
+
 function AnalyticsStatCard({
   accentClassName,
   title,
@@ -108,7 +123,7 @@ function AnalyticsStatCard({
   if (!onClick) {
     return (
       <SurfacePanel
-        rounded="2xl"
+        rounded="lg"
         variant="subtle"
         shadow="soft"
         className="relative overflow-hidden p-4 pl-5 md:p-5 md:pl-6"
@@ -128,7 +143,7 @@ function AnalyticsStatCard({
           "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30",
           "p-4 pl-5 md:p-5 md:pl-6",
         ),
-        rounded: "2xl",
+        rounded: "lg",
         shadow: "soft",
         variant: "subtle",
       })}
@@ -161,12 +176,12 @@ function AnalyticsChartsPlaceholder() {
 function AnalyticsChartSkeletonCard() {
   return (
     <SurfacePanel
-      rounded="2xl"
+      rounded="lg"
       shadow="soft"
       className="flex h-full flex-col p-5"
     >
       <div className="mb-6 h-8 w-48 rounded-full bg-elevated/80" />
-      <div className="h-[300px] w-full rounded-2xl bg-elevated/65" />
+      <div className="h-[300px] w-full rounded-lg bg-elevated/65" />
     </SurfacePanel>
   );
 }
@@ -178,7 +193,7 @@ function AnalyticsChartsCallout({
   title,
 }: AnalyticsChartsCalloutProps) {
   return (
-    <SurfacePanel rounded="2xl" shadow="soft" className="p-4 md:p-5">
+    <SurfacePanel rounded="lg" shadow="soft" className="p-4 md:p-5">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-2">
           <h2 className="text-xl font-bold text-ink">{title}</h2>
@@ -274,6 +289,23 @@ export default function AnalyticsPageClient({
   const { language, t } = useLanguage();
   const stats =
     snapshots[selectedDialect]?.[selectedEtymology] ?? snapshots.ALL.ALL;
+  const activeFilterCount = [
+    selectedDialect !== "B",
+    selectedEtymology !== "ALL",
+  ].filter(Boolean).length;
+  const dialectOptions: FilterMenuOption[] = dialectFilterOptions.map(
+    (option) => ({
+      label: getDialectFilterOptionLabel(option.value, t),
+      shortLabel: option.value === "ALL" ? undefined : option.value,
+      value: option.value,
+    }),
+  );
+  const etymologyOptions: FilterMenuOption[] = ETYMOLOGY_FILTERS.map(
+    (etymology) => ({
+      label: getEtymologyFilterLabel(etymology, t),
+      value: etymology,
+    }),
+  );
 
   useEffect(() => {
     if (!slideOverFilter) {
@@ -467,70 +499,66 @@ export default function AnalyticsPageClient({
     >
       <AppPageIntro
         align="left"
+        spacing="compact"
         breadcrumbs={[
           { label: t("nav.home"), href: getLocalizedHomePath(language) },
           { label: t("nav.dictionary"), href: getDictionaryPath(language) },
           { label: t("nav.analyticsShort") },
         ]}
         actions={
-          <>
-            <Link
-              href={getDictionaryPath(language)}
-              prefetch={false}
-              className={buttonClassName({ variant: "secondary" })}
-            >
-              <ArrowLeft className="h-4 w-4" />
-              {t("analytics.back")}
-            </Link>
-
-            <div className="flex w-full flex-col gap-2 rounded-2xl border border-line bg-surface/88 p-2 shadow-sm backdrop-blur-md sm:w-auto sm:flex-row sm:items-center">
-              <div className="flex items-center gap-2 px-2">
-                <span className="inline-flex items-center whitespace-nowrap text-muted">
-                  <Filter className="h-4 w-4" />
-                </span>
-                <CompactSelect
-                  id="analytics-dialect-filter"
-                  label={t("analytics.filter")}
-                  name="dialect"
-                  value={selectedDialect}
-                  onChange={(e) =>
-                    setSelectedDialect(e.target.value as AnalyticsDialect)
-                  }
-                  className="text-ink"
-                >
-                  {dialectFilterOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {getDialectFilterOptionLabel(option.value, t)}
-                    </option>
-                  ))}
-                </CompactSelect>
-              </div>
-
-              <div className="flex items-center gap-2 px-2">
-                <CompactSelect
-                  id="analytics-etymology-filter"
-                  label={t("analytics.filterEtymology" as TranslationKey)}
-                  name="etymology"
-                  value={selectedEtymology}
-                  onChange={(e) =>
-                    setSelectedEtymology(e.target.value as EtymologyFilter)
-                  }
-                  className="text-ink"
-                >
-                  {ETYMOLOGY_FILTERS.map((etymology) => (
-                    <option key={etymology} value={etymology}>
-                      {getEtymologyFilterLabel(etymology, t)}
-                    </option>
-                  ))}
-                </CompactSelect>
-              </div>
-            </div>
-          </>
+          <Link
+            href={getDictionaryPath(language)}
+            prefetch={false}
+            className={buttonClassName({
+              className: "w-full sm:w-auto",
+              variant: "secondary",
+            })}
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {t("analytics.back")}
+          </Link>
         }
-        actionsPlacement="below"
         title={t("analytics.title")}
         tone="analytics"
       />
+
+      <div className="app-sticky-panel relative isolate mb-8 flex flex-col gap-3 md:mb-10">
+        <FilterBar
+          activeCount={activeFilterCount}
+          clearLabel={t("dict.clearFilters")}
+          defaultOpen="desktop"
+          label={t("dict.filters")}
+          onClear={() => {
+            setSelectedDialect("B");
+            setSelectedEtymology("ALL");
+          }}
+        >
+          <FilterMenu
+            active={selectedDialect !== "B"}
+            closeLabel={t("dict.hideFilters")}
+            label={cleanFilterLabel(t("dict.dialect"))}
+            menuLabel={cleanFilterLabel(t("dict.dialect"))}
+            value={selectedDialect}
+            valueLabel={getSelectedFilterLabel(dialectOptions, selectedDialect)}
+            options={dialectOptions}
+            onChange={(value) => setSelectedDialect(value as AnalyticsDialect)}
+          />
+
+          <FilterMenu
+            active={selectedEtymology !== "ALL"}
+            closeLabel={t("dict.hideFilters")}
+            label={t("analytics.etymologyFilterLabel")}
+            menuLabel={t("analytics.etymologyFilterLabel")}
+            value={selectedEtymology}
+            valueLabel={getSelectedFilterLabel(
+              etymologyOptions,
+              selectedEtymology,
+            )}
+            options={etymologyOptions}
+            onChange={(value) => setSelectedEtymology(value as EtymologyFilter)}
+          />
+        </FilterBar>
+      </div>
 
       <div className="mb-8 grid gap-4 md:grid-cols-3">
         <AnalyticsStatCard

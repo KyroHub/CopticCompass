@@ -215,7 +215,7 @@ export function ExerciseForm({
         <button
           type="submit"
           disabled={isPending || !submissionIntentId}
-          className="btn-primary flex w-full items-center justify-center gap-2 px-8 sm:w-auto"
+          className={buttonClassName({ className: "w-full px-8 sm:w-auto" })}
         >
           {submitLabel}
           <ArrowRight size={20} />

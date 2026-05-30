@@ -186,8 +186,7 @@ function renderBlock(
           tone={block.tone === "info" ? "coptic" : "neutral"}
           className={cx(
             "space-y-3",
-            block.tone === "warning" &&
-              "border-amber-200 bg-amber-50 dark:border-amber-900/80 dark:bg-amber-950/30",
+            block.tone === "warning" && "border-warning/25 bg-warning/10",
           )}
         >
           {block.title ? (

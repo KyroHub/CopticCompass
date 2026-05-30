@@ -22,7 +22,7 @@ type RouteLoadingStateProps = {
 function DefaultLoadingSkeleton() {
   return (
     <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-      <SurfacePanel rounded="3xl" className="space-y-5 p-6 md:p-8">
+      <SurfacePanel rounded="lg" className="space-y-5 p-6 md:p-8">
         <LoadingBlock className="h-5 w-32" />
         <LoadingBlock className="h-12 w-3/4" />
         <LoadingBlock className="h-4 w-full" />
@@ -34,7 +34,7 @@ function DefaultLoadingSkeleton() {
       </SurfacePanel>
 
       <SurfacePanel
-        rounded="3xl"
+        rounded="lg"
         variant="subtle"
         className="space-y-4 p-6 md:p-8"
       >

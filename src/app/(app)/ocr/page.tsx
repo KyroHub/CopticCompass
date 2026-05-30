@@ -127,7 +127,7 @@ export default function OCRPage() {
       />
 
       <div className="space-y-8">
-        <SurfacePanel rounded="3xl" shadow="panel" className="p-6 md:p-8">
+        <SurfacePanel rounded="lg" shadow="panel" className="p-6 md:p-8">
           <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(240px,280px)]">
             <div className="space-y-5">
               <label className="block space-y-2">
@@ -165,7 +165,7 @@ export default function OCRPage() {
             </div>
 
             <SurfacePanel
-              rounded="3xl"
+              rounded="lg"
               variant="subtle"
               shadow="soft"
               className="p-5"
@@ -194,7 +194,7 @@ export default function OCRPage() {
         </SurfacePanel>
 
         {result ? (
-          <SurfacePanel rounded="3xl" shadow="panel" className="p-6 md:p-8">
+          <SurfacePanel rounded="lg" shadow="panel" className="p-6 md:p-8">
             <div className="mb-4 flex items-center gap-3">
               <div className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-coptic-soft text-coptic">
                 <FileText className="h-5 w-5" />

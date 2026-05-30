@@ -82,7 +82,7 @@ export function AdminAudienceContactCard({
   }
 
   return (
-    <SurfacePanel rounded="3xl" className="space-y-5 p-6">
+    <SurfacePanel rounded="lg" className="space-y-5 p-6">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <h3 className="text-lg font-semibold text-ink">

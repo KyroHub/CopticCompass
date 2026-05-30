@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import { flushSync } from "react-dom";
 
 import { BreadcrumbTrail } from "@/components/BreadcrumbTrail";
-import { Button } from "@/components/Button";
+import { Button, buttonClassName } from "@/components/Button";
 import { DownloadPdfButton } from "@/components/DownloadPdfButton";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PageHeader } from "@/components/PageHeader";
@@ -275,12 +275,20 @@ export function GrammarLessonPageClient({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <Link
             href={getGrammarPath(language)}
-            className="btn-secondary gap-2 px-4"
+            className={buttonClassName({
+              className: "gap-2 px-4",
+              variant: "secondary",
+            })}
           >
             <ArrowLeft className="h-4 w-4" />
             {t("grammar.back")}
           </Link>
-          <div className="flex flex-wrap items-center gap-3">
+          <div
+            className={cx(
+              "grid w-full gap-3 sm:flex sm:w-auto sm:flex-wrap sm:items-center sm:justify-end",
+              lessonPracticeHref ? "grid-cols-2" : "grid-cols-1",
+            )}
+          >
             {isInteractiveLessonView &&
             hasSemanticSidebar &&
             canUseStudyMode ? (
@@ -298,7 +306,10 @@ export function GrammarLessonPageClient({
             {lessonPracticeHref ? (
               <Link
                 href={lessonPracticeHref}
-                className="btn-secondary gap-2 px-4"
+                className={buttonClassName({
+                  className: "w-full min-w-0 gap-2 px-3 sm:w-auto sm:px-4",
+                  variant: "secondary",
+                })}
               >
                 <Layers3 className="h-4 w-4" />
                 {t("grammar.practiceLesson")}
@@ -307,6 +318,8 @@ export function GrammarLessonPageClient({
             <DownloadPdfButton
               targetId={lessonContentId}
               fileName={`Coptic_${lesson.title.en.replace(/\s+/g, "_")}.pdf`}
+              className="w-full min-w-0 px-3 sm:w-auto sm:px-4"
+              wrapperClassName="w-full min-w-0 sm:w-auto"
               beforeCapture={() => {
                 flushSync(() => {
                   setRenderMode("pdf");

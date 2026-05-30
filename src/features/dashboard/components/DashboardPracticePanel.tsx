@@ -30,16 +30,14 @@ function PracticeStat({
   value: number;
 }) {
   return (
-    <SurfacePanel rounded="2xl" className="p-5">
+    <SurfacePanel rounded="lg" className="p-5">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500 dark:text-stone-400">
+        <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
           {label}
         </p>
         <Icon className="h-4 w-4 text-accent-strong" aria-hidden="true" />
       </div>
-      <p className="mt-3 text-3xl font-semibold text-stone-900 dark:text-stone-100">
-        {value}
-      </p>
+      <p className="mt-3 text-3xl font-semibold text-ink">{value}</p>
     </SurfacePanel>
   );
 }
@@ -76,10 +74,10 @@ export function DashboardPracticePanel({
                 : copy.practice.caughtUp}
             </Badge>
           </div>
-          <h3 className="text-2xl font-bold tracking-tight text-stone-800 dark:text-stone-200">
+          <h3 className="text-2xl font-bold tracking-tight text-ink">
             {copy.practice.title}
           </h3>
-          <p className="mt-2 max-w-3xl text-stone-600 dark:text-stone-400">
+          <p className="mt-2 max-w-3xl text-muted">
             {copy.practice.description}
           </p>
         </div>

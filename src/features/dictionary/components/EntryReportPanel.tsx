@@ -7,6 +7,7 @@ import {
   submitEntryReport,
   type EntryReportActionState,
 } from "@/actions/dictionaryEntryActions";
+import { buttonClassName } from "@/components/Button";
 import { FormField } from "@/components/FormField";
 import { useLanguage } from "@/components/LanguageProvider";
 import { StatusNotice } from "@/components/StatusNotice";
@@ -59,11 +60,11 @@ export function EntryReportPanel({
   return (
     <div className="rounded-lg border border-line bg-surface/88 p-5 shadow-soft backdrop-blur-md">
       <div className="mb-4">
-        <h3 className="flex items-center gap-2 text-sm font-semibold text-stone-800 dark:text-stone-200">
-          <MessageSquareText className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-ink">
+          <MessageSquareText className="h-4 w-4 text-accent-strong dark:text-accent" />
           {t("entry.actions.reportTitle")}
         </h3>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600 dark:text-stone-400">
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
           {t("entry.actions.reportDescription")}
         </p>
       </div>
@@ -115,17 +116,21 @@ export function EntryReportPanel({
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs leading-5 text-stone-500 dark:text-stone-400">
+          <p className="text-xs leading-5 text-muted">
             {t("entry.actions.commentaryHint")}
           </p>
           <div className="flex flex-wrap gap-3">
-            <button type="button" className="btn-ghost" onClick={onClose}>
+            <button
+              type="button"
+              className={buttonClassName({ size: "sm", variant: "ghost" })}
+              onClick={onClose}
+            >
               {t("entry.actions.cancelReport")}
             </button>
             <button
               type="submit"
               disabled={isPending}
-              className="btn-primary gap-2 px-5"
+              className={buttonClassName({ className: "gap-2 px-5" })}
             >
               {isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />

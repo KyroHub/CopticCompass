@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import { Badge } from "@/components/Badge";
+import { buttonClassName } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { useLanguage } from "@/components/LanguageProvider";
 import {
@@ -169,7 +170,10 @@ export function DictionaryResultsSection({
             type="button"
             onClick={requestMoreResults}
             disabled={loadingMore || !onLoadMore}
-            className="btn-secondary gap-2 px-5 disabled:translate-y-0 disabled:shadow-sm"
+            className={buttonClassName({
+              className: "gap-2 px-5 disabled:translate-y-0 disabled:shadow-sm",
+              variant: "secondary",
+            })}
           >
             {loadingMore ? (
               <span

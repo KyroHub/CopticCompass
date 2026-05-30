@@ -1,6 +1,7 @@
 "use client";
 
 import { updateContentReleaseStatus } from "@/actions/admin";
+import { buttonClassName } from "@/components/Button";
 import { FormField } from "@/components/FormField";
 import { useLanguage } from "@/components/LanguageProvider";
 import {
@@ -66,7 +67,10 @@ export function ContentReleaseReviewForm({
           </select>
         </FormField>
 
-        <button type="submit" className="btn-primary px-5">
+        <button
+          type="submit"
+          className={buttonClassName({ className: "px-5" })}
+        >
           {copy.save}
         </button>
       </div>

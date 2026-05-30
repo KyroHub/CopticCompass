@@ -198,7 +198,7 @@ export function DevelopersPageClient() {
 
       <div className="space-y-8 md:space-y-9">
         <section className="grid gap-4 md:grid-cols-[minmax(0,1.4fr)_minmax(18rem,1fr)]">
-          <SurfacePanel rounded="3xl" variant="elevated" className="p-6 md:p-8">
+          <SurfacePanel rounded="lg" variant="elevated" className="p-6 md:p-8">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-accent-strong dark:text-accent">
               {t("developers.discoveryTitle")}
             </p>
@@ -233,7 +233,7 @@ export function DevelopersPageClient() {
             </div>
           </SurfacePanel>
 
-          <SurfacePanel rounded="3xl" variant="elevated" className="p-6 md:p-8">
+          <SurfacePanel rounded="lg" variant="elevated" className="p-6 md:p-8">
             <p className={SECTION_EYEBROW_CLASS}>
               {t("developers.workflowTitle")}
             </p>
@@ -248,7 +248,7 @@ export function DevelopersPageClient() {
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)]">
-          <SurfacePanel rounded="3xl" variant="elevated" className="p-6 md:p-8">
+          <SurfacePanel rounded="lg" variant="elevated" className="p-6 md:p-8">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className={SECTION_EYEBROW_CLASS}>
@@ -277,7 +277,7 @@ export function DevelopersPageClient() {
             </div>
           </SurfacePanel>
 
-          <SurfacePanel rounded="3xl" variant="elevated" className="p-6 md:p-8">
+          <SurfacePanel rounded="lg" variant="elevated" className="p-6 md:p-8">
             <p className={SECTION_EYEBROW_CLASS}>
               {t("developers.integrationTitle")}
             </p>
@@ -292,7 +292,7 @@ export function DevelopersPageClient() {
         </section>
 
         <section className="grid gap-6">
-          <SurfacePanel rounded="3xl" variant="elevated" className="p-6 md:p-8">
+          <SurfacePanel rounded="lg" variant="elevated" className="p-6 md:p-8">
             <p className={SECTION_EYEBROW_CLASS}>
               {t("developers.exampleTitle")}
             </p>
@@ -304,7 +304,7 @@ export function DevelopersPageClient() {
             </pre>
           </SurfacePanel>
 
-          <SurfacePanel rounded="3xl" variant="elevated" className="p-6 md:p-8">
+          <SurfacePanel rounded="lg" variant="elevated" className="p-6 md:p-8">
             <p className={SECTION_EYEBROW_CLASS}>
               {t("developers.dictionaryExampleTitle")}
             </p>
@@ -318,7 +318,7 @@ export function DevelopersPageClient() {
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
-          <SurfacePanel rounded="3xl" variant="elevated" className="p-6 md:p-8">
+          <SurfacePanel rounded="lg" variant="elevated" className="p-6 md:p-8">
             <p className={SECTION_EYEBROW_CLASS}>
               {t("developers.resourcesTitle")}
             </p>
@@ -340,7 +340,7 @@ export function DevelopersPageClient() {
         </section>
 
         <section className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(18rem,0.9fr)]">
-          <SurfacePanel rounded="3xl" variant="elevated" className="p-6 md:p-8">
+          <SurfacePanel rounded="lg" variant="elevated" className="p-6 md:p-8">
             <p className={SECTION_EYEBROW_CLASS}>
               {t("developers.shenuteExampleTitle")}
             </p>
@@ -352,7 +352,7 @@ export function DevelopersPageClient() {
             </pre>
           </SurfacePanel>
 
-          <SurfacePanel rounded="3xl" variant="elevated" className="p-6 md:p-8">
+          <SurfacePanel rounded="lg" variant="elevated" className="p-6 md:p-8">
             <p className={SECTION_EYEBROW_CLASS}>
               {t("developers.ocrExampleTitle")}
             </p>

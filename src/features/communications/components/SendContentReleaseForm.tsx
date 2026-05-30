@@ -4,6 +4,7 @@ import { useActionState } from "react";
 
 import { sendContentRelease } from "@/actions/admin";
 import type { SendContentReleaseState } from "@/actions/admin/states";
+import { buttonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { StatusNotice } from "@/components/StatusNotice";
 import type { ContentReleaseRow } from "@/features/communications/lib/releases";
@@ -66,7 +67,11 @@ export function SendContentReleaseForm({
           {copy.queued}
         </StatusNotice>
 
-        <button type="submit" className="btn-primary px-6" disabled={isPending}>
+        <button
+          type="submit"
+          className={buttonClassName({ className: "px-6" })}
+          disabled={isPending}
+        >
           {isPending ? copy.resuming : copy.resume}
         </button>
 
@@ -99,7 +104,11 @@ export function SendContentReleaseForm({
     <form action={formAction} className="space-y-4">
       <input type="hidden" name="release_id" value={releaseId} />
 
-      <button type="submit" className="btn-primary px-6" disabled={isPending}>
+      <button
+        type="submit"
+        className={buttonClassName({ className: "px-6" })}
+        disabled={isPending}
+      >
         {isPending ? copy.queueing : copy.queue}
       </button>
 

@@ -18,7 +18,7 @@ export function DashboardWelcomePanel({
 
   return (
     <SurfacePanel
-      rounded="3xl"
+      rounded="lg"
       className="flex items-center justify-between p-6 md:p-8"
     >
       <div>

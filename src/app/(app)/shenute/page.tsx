@@ -751,7 +751,7 @@ function getShenuteErrorMessage(error: unknown, copy: ShenuteCopy) {
 
 function getFeedbackStatusClass(status: "error" | "pending" | "success") {
   if (status === "error") {
-    return "text-rose-700 dark:text-rose-300";
+    return "text-danger";
   }
 
   if (status === "pending") {
@@ -786,7 +786,7 @@ function getReactionButtonClassName(
   }
 
   if (active && tone === "negative") {
-    return "border-rose-500 bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300";
+    return "border-danger/35 bg-danger/5 text-danger dark:bg-danger/10";
   }
 
   return "border-line text-muted hover:bg-elevated hover:text-ink";
@@ -2449,7 +2449,7 @@ export default function ShenuteAI() {
               isHistorySaving ||
               (!activeSessionId && typedMessages.length === 0)
             }
-            className="border-rose-200 text-rose-700 hover:bg-rose-50 dark:border-rose-900/60 dark:text-rose-300 dark:hover:bg-rose-950/30"
+            className="border-danger/25 text-danger hover:bg-danger/5 dark:hover:bg-danger/10"
             icon={<Trash2 className={SHENUTE_ICON_CLASS.action} />}
           >
             {copy.clearConversation}
@@ -2488,7 +2488,7 @@ export default function ShenuteAI() {
       </header>
 
       <SurfacePanel
-        rounded="3xl"
+        rounded="lg"
         shadow="panel"
         className="relative overflow-hidden"
       >
@@ -3247,7 +3247,7 @@ export default function ShenuteAI() {
                                   closeContainingDetails(event.currentTarget)
                                 }
                               />
-                              <div className="fixed inset-x-3 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-[70] hidden max-h-[min(32rem,calc(100dvh-2rem))] overflow-y-auto rounded-xl border border-line bg-surface p-3 shadow-panel group-open:block">
+                              <div className="fixed inset-x-3 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-[70] hidden max-h-[min(32rem,calc(100dvh-2rem))] overflow-y-auto rounded-lg border border-line bg-surface p-3 shadow-panel group-open:block">
                                 <ShenuteSurfaceHeader
                                   closeLabel={copy.closeMenu}
                                   className="mb-2"
@@ -3458,7 +3458,7 @@ export default function ShenuteAI() {
 
             {cameraOpen ? (
               <SurfacePanel
-                rounded="3xl"
+                rounded="lg"
                 variant="subtle"
                 shadow="soft"
                 className="fixed inset-x-3 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-40 max-h-[min(30rem,calc(100dvh-8rem))] overflow-y-auto p-3 sm:static sm:mb-3 sm:max-h-none sm:p-4"
@@ -3501,7 +3501,7 @@ export default function ShenuteAI() {
             ) : null}
 
             <SurfacePanel
-              rounded="3xl"
+              rounded="lg"
               variant="subtle"
               shadow="soft"
               className={cx(
@@ -3555,7 +3555,7 @@ export default function ShenuteAI() {
                       size: "sm",
                       variant: "secondary",
                       className:
-                        "h-8 w-8 shrink-0 border-rose-200 px-0 text-rose-700 hover:bg-rose-50 dark:border-rose-900/60 dark:text-rose-300 dark:hover:bg-rose-950/30",
+                        "h-8 w-8 shrink-0 border-danger/25 px-0 text-danger hover:bg-danger/5 dark:hover:bg-danger/10",
                     })}
                   >
                     <XCircle className={SHENUTE_ICON_CLASS.action} />
@@ -3585,7 +3585,7 @@ export default function ShenuteAI() {
                   >
                     <ImagePlus className={SHENUTE_ICON_CLASS.panel} />
                   </summary>
-                  <div className="fixed inset-x-3 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-[70] hidden w-auto rounded-xl border border-line bg-surface p-3 shadow-panel group-open:block sm:absolute sm:inset-x-auto sm:bottom-full sm:left-0 sm:mb-2 sm:w-52 sm:rounded-lg sm:p-2">
+                  <div className="fixed inset-x-3 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-[70] hidden w-auto rounded-lg border border-line bg-surface p-3 shadow-panel group-open:block sm:absolute sm:inset-x-auto sm:bottom-full sm:left-0 sm:mb-2 sm:w-52 sm:p-2">
                     <ShenuteSurfaceHeader
                       closeLabel={copy.closeMenu}
                       className="mb-2 sm:hidden"
@@ -3856,7 +3856,7 @@ export default function ShenuteAI() {
                   >
                     <span
                       className={cx(
-                        "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl",
+                        "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
                         isActive
                           ? "bg-coptic text-paper"
                           : "bg-elevated text-muted",

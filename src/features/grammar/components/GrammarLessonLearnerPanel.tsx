@@ -196,7 +196,10 @@ export function GrammarLessonLearnerPanel({
           </button>
           <Link
             href={getDashboardPath(language)}
-            className="btn-secondary px-3.5 text-sm"
+            className={buttonClassName({
+              className: "px-3.5 text-sm",
+              variant: "secondary",
+            })}
           >
             {language === "nl" ? "Dashboard" : "Dashboard"}
           </Link>
@@ -466,7 +469,7 @@ export function GrammarLessonNotesPanel({
               void onSaveNote();
             }}
             disabled={isNotePending || !hasUnsavedNoteChanges}
-            className="btn-primary px-5"
+            className={buttonClassName({ className: "px-5" })}
           >
             {saveNoteLabel}
           </button>

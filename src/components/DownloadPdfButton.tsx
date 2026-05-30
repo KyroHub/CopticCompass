@@ -18,6 +18,8 @@ type DownloadPdfButtonProps = {
   fileName: string;
   beforeCapture?: PdfLifecycleCallback;
   afterCapture?: PdfLifecycleCallback;
+  className?: string;
+  wrapperClassName?: string;
 };
 
 const PDF_BUTTON_COPY = {
@@ -63,6 +65,8 @@ export function DownloadPdfButton({
   fileName,
   beforeCapture,
   afterCapture,
+  className,
+  wrapperClassName,
 }: DownloadPdfButtonProps) {
   const { language } = useLanguage();
   const authGate = useOptionalAuthGate();
@@ -204,8 +208,9 @@ export function DownloadPdfButton({
 
   return (
     <AuthGatedActionButton
+      wrapperClassName={wrapperClassName}
       className={cx(
-        buttonClassName({ variant: "secondary" }),
+        buttonClassName({ className, variant: "secondary" }),
         isGenerating && "opacity-70",
       )}
       disabled={isGenerating}

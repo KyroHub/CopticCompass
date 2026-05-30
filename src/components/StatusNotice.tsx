@@ -2,7 +2,14 @@ import { cx } from "@/lib/classes";
 
 import type { ReactNode } from "react";
 
-type StatusNoticeTone = "default" | "error" | "info" | "success";
+type StatusNoticeTone =
+  | "brand"
+  | "default"
+  | "error"
+  | "info"
+  | "language"
+  | "success"
+  | "warning";
 type StatusNoticeSize = "compact" | "comfortable";
 type StatusNoticeAlign = "left" | "center";
 
@@ -18,13 +25,19 @@ type StatusNoticeProps = {
 };
 
 const TONE_CLASSES: Record<StatusNoticeTone, string> = {
+  brand:
+    "border-[rgb(var(--accent)/0.18)] bg-[rgb(var(--accent-soft)/0.72)] text-[rgb(var(--accent-strong))]",
   default:
     "border-[rgb(var(--line))] bg-[rgb(var(--surface)/0.6)] text-[rgb(var(--muted))] shadow-sm backdrop-blur-md",
   error:
     "border-[rgb(var(--danger)/0.18)] bg-[rgb(var(--danger)/0.08)] text-[rgb(var(--danger))]",
   info: "border-[rgb(var(--accent)/0.18)] bg-[rgb(var(--accent-soft)/0.72)] text-[rgb(var(--accent-strong))]",
+  language:
+    "border-[rgb(var(--coptic)/0.18)] bg-[rgb(var(--coptic-soft)/0.72)] text-[rgb(var(--coptic))]",
   success:
     "border-[rgb(var(--success)/0.18)] bg-[rgb(var(--success)/0.08)] text-[rgb(var(--success))]",
+  warning:
+    "border-[rgb(var(--warning)/0.18)] bg-[rgb(var(--accent-soft)/0.72)] text-[rgb(var(--accent-strong))]",
 };
 
 const SIZE_CLASSES: Record<StatusNoticeSize, string> = {
@@ -47,7 +60,7 @@ export function StatusNotice({
   return (
     <div
       className={cx(
-        "rounded-2xl border font-medium",
+        "rounded-lg border font-medium",
         TONE_CLASSES[tone],
         SIZE_CLASSES[size],
         dashed && "border-dashed",

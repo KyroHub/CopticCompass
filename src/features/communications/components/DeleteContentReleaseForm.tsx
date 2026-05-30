@@ -75,7 +75,7 @@ export function DeleteContentReleaseForm({
   return (
     <form
       action={formAction}
-      className="space-y-4 rounded-lg border border-rose-200/80 bg-rose-50/70 p-5 dark:border-rose-900/40 dark:bg-rose-950/20"
+      className="space-y-4 rounded-lg border border-danger/25 bg-danger/5 p-5 dark:bg-danger/10"
       onSubmit={(event) => {
         if (!window.confirm(copy.confirm)) {
           event.preventDefault();
@@ -86,18 +86,14 @@ export function DeleteContentReleaseForm({
 
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="space-y-2">
-          <p className="text-sm font-semibold text-rose-900 dark:text-rose-100">
-            {copy.title}
-          </p>
-          <p className="text-sm leading-6 text-rose-700 dark:text-rose-200">
-            {copy.description}
-          </p>
+          <p className="text-sm font-semibold text-danger">{copy.title}</p>
+          <p className="text-sm leading-6 text-danger">{copy.description}</p>
         </div>
 
         <Button
           type="submit"
           variant="secondary"
-          className="border-rose-200 bg-surface/90 text-rose-700 hover:border-rose-300 hover:bg-rose-100 dark:border-rose-900/60 dark:bg-rose-950/10 dark:text-rose-200 dark:hover:bg-rose-950/30"
+          className="border-danger/25 bg-surface/90 text-danger hover:border-danger/35 hover:bg-danger/5 dark:bg-danger/10 dark:hover:bg-danger/15"
           disabled={isPending || state?.success === true}
         >
           {buttonLabel}

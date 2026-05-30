@@ -3,6 +3,7 @@
 import { Copy, Link2, Share2 } from "lucide-react";
 import { FaFacebookF, FaLinkedinIn, FaXTwitter } from "react-icons/fa6";
 
+import { buttonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { StatusNotice } from "@/components/StatusNotice";
 
@@ -36,11 +37,11 @@ export function EntrySharePanel({
   return (
     <div className="rounded-lg border border-accent/25 bg-accent-soft/60 p-5 shadow-soft backdrop-blur-md">
       <div className="mb-4">
-        <h3 className="flex items-center gap-2 text-sm font-semibold text-stone-800 dark:text-stone-200">
+        <h3 className="flex items-center gap-2 text-sm font-semibold text-ink">
           <Share2 className="h-4 w-4 text-accent-strong dark:text-accent" />
           {t("entry.actions.shareTitle")}
         </h3>
-        <p className="mt-2 max-w-2xl text-sm leading-6 text-stone-600 dark:text-stone-400">
+        <p className="mt-2 max-w-2xl text-sm leading-6 text-muted">
           {t("entry.actions.shareDescription")}
         </p>
       </div>
@@ -50,7 +51,7 @@ export function EntrySharePanel({
           <p className="text-xs font-semibold uppercase tracking-widest text-accent-strong dark:text-accent">
             {t("entry.actions.sharePreviewLabel")}
           </p>
-          <p className="mt-3 whitespace-pre-line text-sm leading-6 text-stone-700 dark:text-stone-300">
+          <p className="mt-3 whitespace-pre-line text-sm leading-6 text-ink">
             {sharePayload.text}
           </p>
         </div>
@@ -59,7 +60,10 @@ export function EntrySharePanel({
           {canUseNativeShare ? (
             <button
               type="button"
-              className="btn-secondary justify-center gap-2 px-4"
+              className={buttonClassName({
+                className: "justify-center gap-2 px-4",
+                variant: "secondary",
+              })}
               onClick={onNativeShare}
             >
               <Share2 className="h-4 w-4" />
@@ -69,7 +73,10 @@ export function EntrySharePanel({
 
           <button
             type="button"
-            className="btn-secondary justify-center gap-2 px-4"
+            className={buttonClassName({
+              className: "justify-center gap-2 px-4",
+              variant: "secondary",
+            })}
             onClick={onCopyText}
           >
             <Copy className="h-4 w-4" />
@@ -78,7 +85,10 @@ export function EntrySharePanel({
 
           <button
             type="button"
-            className="btn-secondary justify-center gap-2 px-4"
+            className={buttonClassName({
+              className: "justify-center gap-2 px-4",
+              variant: "secondary",
+            })}
             onClick={onCopyLink}
           >
             <Link2 className="h-4 w-4" />
@@ -89,7 +99,10 @@ export function EntrySharePanel({
             href={shareLinks.x}
             target="_blank"
             rel="noreferrer"
-            className="btn-secondary justify-center gap-2 px-4"
+            className={buttonClassName({
+              className: "justify-center gap-2 px-4",
+              variant: "secondary",
+            })}
           >
             <FaXTwitter className="h-4 w-4" />
             {t("entry.actions.sharePlatformX")}
@@ -99,7 +112,10 @@ export function EntrySharePanel({
             href={shareLinks.facebook}
             target="_blank"
             rel="noreferrer"
-            className="btn-secondary justify-center gap-2 px-4"
+            className={buttonClassName({
+              className: "justify-center gap-2 px-4",
+              variant: "secondary",
+            })}
           >
             <FaFacebookF className="h-4 w-4" />
             {t("entry.actions.sharePlatformFacebook")}
@@ -109,7 +125,10 @@ export function EntrySharePanel({
             href={shareLinks.linkedin}
             target="_blank"
             rel="noreferrer"
-            className="btn-secondary justify-center gap-2 px-4"
+            className={buttonClassName({
+              className: "justify-center gap-2 px-4",
+              variant: "secondary",
+            })}
           >
             <FaLinkedinIn className="h-4 w-4" />
             {t("entry.actions.sharePlatformLinkedIn")}

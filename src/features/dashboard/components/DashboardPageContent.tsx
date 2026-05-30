@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 
 import { logout } from "@/actions/auth";
 import { AppPageIntro } from "@/components/AppPageIntro";
+import { buttonClassName } from "@/components/Button";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
 import { DashboardPracticePanel } from "@/features/dashboard/components/DashboardPracticePanel";
 import { DashboardRecentExercisesSection } from "@/features/dashboard/components/DashboardRecentExercisesSection";
@@ -52,7 +53,14 @@ export async function DashboardPageContent({
         actions={
           <form action={logout}>
             <input type="hidden" name="redirectTo" value={dashboardPath} />
-            <button className="btn-secondary px-6">{copy.signOut}</button>
+            <button
+              className={buttonClassName({
+                className: "px-6",
+                variant: "secondary",
+              })}
+            >
+              {copy.signOut}
+            </button>
           </form>
         }
         breadcrumbs={[

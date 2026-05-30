@@ -181,7 +181,7 @@ function AdminSubmissionReviewPanel({
     return (
       <div
         className={surfacePanelClassName({
-          rounded: "3xl",
+          rounded: "lg",
           variant: "subtle",
           className:
             "flex min-h-[20rem] items-center justify-center p-8 text-center",
@@ -200,7 +200,7 @@ function AdminSubmissionReviewPanel({
   return (
     <div
       className={surfacePanelClassName({
-        rounded: "3xl",
+        rounded: "lg",
         variant: "elevated",
         shadow: "float",
         className:
@@ -244,7 +244,7 @@ function AdminSubmissionReviewPanel({
 
         <form
           action={deleteSubmission}
-          className="rounded-lg border border-rose-200/80 bg-rose-50/70 p-5 dark:border-rose-900/40 dark:bg-rose-950/20"
+          className="rounded-lg border border-danger/25 bg-danger/5 p-5 dark:bg-danger/10"
           onSubmit={(event) => {
             if (!window.confirm(copy.deleteConfirm)) {
               event.preventDefault();
@@ -265,10 +265,10 @@ function AdminSubmissionReviewPanel({
 
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="space-y-2">
-              <p className="text-sm font-semibold text-rose-900 dark:text-rose-100">
+              <p className="text-sm font-semibold text-danger">
                 {copy.deleteTitle}
               </p>
-              <p className="text-sm leading-6 text-rose-700 dark:text-rose-200">
+              <p className="text-sm leading-6 text-danger">
                 {copy.deleteDescription}
               </p>
             </div>
@@ -276,7 +276,7 @@ function AdminSubmissionReviewPanel({
             <Button
               type="submit"
               variant="secondary"
-              className="border-rose-200 bg-surface text-rose-700 hover:bg-rose-50 dark:border-rose-900/40 dark:bg-rose-950/30 dark:text-rose-200 dark:hover:bg-rose-950/50"
+              className="border-danger/25 bg-surface text-danger hover:bg-danger/5 dark:bg-danger/10 dark:hover:bg-danger/15"
             >
               {copy.removeSubmission}
             </Button>
@@ -325,7 +325,7 @@ export function AdminSubmissionReviewWorkspace({
 
   return (
     <div className="space-y-5">
-      <div className="rounded-xl border border-line/80 bg-elevated/70 p-4 text-sm leading-6 text-muted">
+      <div className="rounded-lg border border-line/80 bg-elevated/70 p-4 text-sm leading-6 text-muted">
         {copy.intro}
       </div>
 

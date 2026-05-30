@@ -39,6 +39,8 @@ export const practiceMessages = defineMessages({
     "practice.deckSelector.group.privateDescription":
       "Practice the entries you save once you are signed in.",
     "practice.filters.title": "Practice setup",
+    "practice.filters.controls": "Filters",
+    "practice.filters.hide": "Hide filters",
     "practice.filters.cards": "items",
     "practice.filters.source": "Practice",
     "practice.filters.scope": "Scope",
@@ -233,6 +235,8 @@ export const practiceMessages = defineMessages({
     "practice.deckSelector.group.privateDescription":
       "Oefen de lemma's die u opslaat zodra u bent ingelogd.",
     "practice.filters.title": "Oefenen instellen",
+    "practice.filters.controls": "Filters",
+    "practice.filters.hide": "Filters verbergen",
     "practice.filters.cards": "items",
     "practice.filters.source": "Oefening",
     "practice.filters.scope": "Bereik",

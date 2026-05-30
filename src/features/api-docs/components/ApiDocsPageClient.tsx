@@ -197,7 +197,7 @@ export function ApiDocsPageClient() {
       <div className="space-y-8 md:space-y-9">
         <SurfacePanel
           as="section"
-          rounded="3xl"
+          rounded="lg"
           variant="elevated"
           className="space-y-5 p-6 md:p-8"
         >
@@ -266,7 +266,7 @@ export function ApiDocsPageClient() {
         <section className="grid gap-6 xl:grid-cols-3">
           <SurfacePanel
             as="article"
-            rounded="3xl"
+            rounded="lg"
             variant="elevated"
             className="space-y-4 p-6 md:p-8"
           >
@@ -281,7 +281,7 @@ export function ApiDocsPageClient() {
 
           <SurfacePanel
             as="article"
-            rounded="3xl"
+            rounded="lg"
             variant="elevated"
             className="space-y-4 p-6 md:p-8"
           >
@@ -296,7 +296,7 @@ export function ApiDocsPageClient() {
 
           <SurfacePanel
             as="article"
-            rounded="3xl"
+            rounded="lg"
             variant="elevated"
             className="space-y-4 p-6 md:p-8"
           >
@@ -310,7 +310,7 @@ export function ApiDocsPageClient() {
 
         <SurfacePanel
           as="section"
-          rounded="3xl"
+          rounded="lg"
           variant="elevated"
           className="overflow-hidden p-2 md:p-4"
         >

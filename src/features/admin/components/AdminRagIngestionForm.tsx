@@ -278,7 +278,7 @@ function StatusDot({ healthy }: { healthy: boolean }) {
     <span
       aria-hidden
       className={`mt-2 inline-block h-2.5 w-2.5 rounded-full ${
-        healthy ? "bg-coptic" : "bg-red-500"
+        healthy ? "bg-coptic" : "bg-danger"
       }`}
     />
   );
@@ -605,12 +605,7 @@ export function AdminRagIngestionForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <SurfacePanel
-        rounded="3xl"
-        variant="subtle"
-        shadow="soft"
-        className="p-5"
-      >
+      <SurfacePanel rounded="lg" variant="subtle" shadow="soft" className="p-5">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
             {copy.systemStatus}
@@ -633,7 +628,7 @@ export function AdminRagIngestionForm() {
         ) : null}
 
         {!statusLoading && ragStatusError ? (
-          <p className="rounded-lg border border-red-200 bg-red-50/80 px-4 py-3 text-sm text-red-700 shadow-sm dark:border-red-950 dark:bg-red-950/30 dark:text-red-300">
+          <p className="rounded-lg border border-danger/25 bg-danger/5 px-4 py-3 text-sm text-danger shadow-sm dark:bg-danger/10">
             {ragStatusError}
           </p>
         ) : null}
@@ -657,12 +652,7 @@ export function AdminRagIngestionForm() {
         ) : null}
       </SurfacePanel>
 
-      <SurfacePanel
-        rounded="3xl"
-        variant="subtle"
-        shadow="soft"
-        className="p-5"
-      >
+      <SurfacePanel rounded="lg" variant="subtle" shadow="soft" className="p-5">
         <div className="grid gap-4 md:grid-cols-2">
           <label className="space-y-2">
             <span className="text-sm font-semibold text-ink">
@@ -804,7 +794,7 @@ export function AdminRagIngestionForm() {
       {bulkJsonState?.results &&
       bulkJsonState.results.some((result) => !result.success) ? (
         <SurfacePanel
-          rounded="3xl"
+          rounded="lg"
           variant="subtle"
           shadow="soft"
           className="border-warning/35 bg-accent-soft p-4 text-xs text-accent-strong dark:text-accent"
@@ -825,12 +815,7 @@ export function AdminRagIngestionForm() {
         </SurfacePanel>
       ) : null}
 
-      <SurfacePanel
-        rounded="3xl"
-        variant="subtle"
-        shadow="soft"
-        className="p-5"
-      >
+      <SurfacePanel rounded="lg" variant="subtle" shadow="soft" className="p-5">
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
             {copy.logs}
@@ -896,7 +881,7 @@ export function AdminRagIngestionForm() {
 
       {state?.success && state.chunkStats ? (
         <SurfacePanel
-          rounded="3xl"
+          rounded="lg"
           variant="subtle"
           shadow="soft"
           className="p-5 text-ink"

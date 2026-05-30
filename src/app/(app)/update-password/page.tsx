@@ -76,7 +76,7 @@ export default async function UpdatePasswordPage({
       <AuthFlashNoticeCleaner />
 
       <div className="mx-auto max-w-xl">
-        <SurfacePanel rounded="3xl" className="p-8 md:p-10">
+        <SurfacePanel rounded="lg" className="p-8 md:p-10">
           <form className="space-y-6 text-ink">
             <FormField
               htmlFor="password"

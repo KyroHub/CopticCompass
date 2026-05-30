@@ -12,6 +12,7 @@ import { useState, useTransition } from "react";
 
 import { updatePasswordFromDashboard } from "@/actions/auth";
 import { Badge } from "@/components/Badge";
+import { buttonClassName } from "@/components/Button";
 import { FormField } from "@/components/FormField";
 import { useLanguage } from "@/components/LanguageProvider";
 import { StatusNotice } from "@/components/StatusNotice";
@@ -177,7 +178,11 @@ function PasswordSettingsForm({
         {copy.account.passwordHint}
       </p>
 
-      <button type="submit" className="btn-primary px-6" disabled={isPending}>
+      <button
+        type="submit"
+        className={buttonClassName({ className: "px-6" })}
+        disabled={isPending}
+      >
         {isPending
           ? copy.account.updatePasswordPending
           : copy.account.updatePasswordIdle}
@@ -211,10 +216,19 @@ function DeleteProfileNotice() {
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <Link href={getContactPath(language)} className="btn-primary px-6">
+        <Link
+          href={getContactPath(language)}
+          className={buttonClassName({ className: "px-6" })}
+        >
           {copy.account.requestDeletion}
         </Link>
-        <Link href={getPrivacyPath(language)} className="btn-secondary px-6">
+        <Link
+          href={getPrivacyPath(language)}
+          className={buttonClassName({
+            className: "px-6",
+            variant: "secondary",
+          })}
+        >
           {copy.account.reviewPrivacy}
         </Link>
       </div>
@@ -239,7 +253,7 @@ export function AccountSettingsPanel({
   const audiencePreferences = getAudiencePreferences(audienceContact, language);
 
   return (
-    <SurfacePanel rounded="3xl" className="overflow-hidden p-0">
+    <SurfacePanel rounded="lg" className="overflow-hidden p-0">
       <div className="border-b border-line px-6 py-5">
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
           {copy.account.eyebrow}

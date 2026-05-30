@@ -150,7 +150,7 @@ export function AdminContentReleaseCard({
   return (
     <SurfacePanel
       as="article"
-      rounded="3xl"
+      rounded="lg"
       variant="elevated"
       className="p-6 md:p-8"
     >

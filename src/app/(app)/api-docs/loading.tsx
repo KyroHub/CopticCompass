@@ -37,7 +37,7 @@ export default function Loading() {
       ]}
       skeleton={
         <div className="space-y-6">
-          <SurfacePanel rounded="3xl" className="space-y-5 p-6 md:p-8">
+          <SurfacePanel rounded="lg" className="space-y-5 p-6 md:p-8">
             <div className="flex flex-wrap gap-3">
               <LoadingBlock className="h-11 w-40" />
               <LoadingBlock className="h-11 w-36" />
@@ -53,7 +53,7 @@ export default function Loading() {
             <LoadingBlock className="h-4 w-4/5" />
           </SurfacePanel>
 
-          <SurfacePanel rounded="3xl" className="space-y-4 p-6 md:p-8">
+          <SurfacePanel rounded="lg" className="space-y-4 p-6 md:p-8">
             <LoadingBlock className="h-8 w-56" />
             <LoadingBlock className="h-[32rem] w-full" />
           </SurfacePanel>

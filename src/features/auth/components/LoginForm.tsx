@@ -83,7 +83,7 @@ export function LoginForm({
       <AuthFlashNoticeCleaner />
 
       <div className="max-w-xl mx-auto">
-        <SurfacePanel rounded="3xl" className="p-8 md:p-10">
+        <SurfacePanel rounded="lg" className="p-8 md:p-10">
           <form className="space-y-6 text-ink">
             {redirectTo && (
               <input type="hidden" name="redirectTo" value={redirectTo} />

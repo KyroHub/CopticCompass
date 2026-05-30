@@ -50,7 +50,7 @@ export const dictionaryMessages = defineMessages({
     "dict.ttsStop": "Stop pronunciation",
     "dict.ttsDisclaimer": "Computer-generated pronunciation.",
     "dict.ttsVoice": "Voice:",
-    "dict.ttsMode": "TTS Mode:",
+    "dict.ttsMode": "Speech Mode:",
     "dict.ttsModeStandard": "Standard (Browser)",
     "dict.ttsModePremium": "Premium (AI)",
 
@@ -193,6 +193,7 @@ export const dictionaryMessages = defineMessages({
 
     "analytics.back": "Back to Dictionary Search",
     "analytics.filter": "Filter Analytics",
+    "analytics.etymologyFilterLabel": "Etymology",
     "analytics.filterEtymology": "Filter Etymology",
     "analytics.filterEtymologyAll": "All Etymologies",
     "analytics.filterEtymologyEgy": "Egyptian Only",
@@ -276,7 +277,7 @@ export const dictionaryMessages = defineMessages({
     "dict.ttsStop": "Uitspraak stoppen",
     "dict.ttsDisclaimer": "Door de computer gegenereerde uitspraak.",
     "dict.ttsVoice": "Stem:",
-    "dict.ttsMode": "TTS-modus:",
+    "dict.ttsMode": "Spraakmodus:",
     "dict.ttsModeStandard": "Standaard (browser)",
     "dict.ttsModePremium": "Premium (AI)",
 
@@ -420,6 +421,7 @@ export const dictionaryMessages = defineMessages({
 
     "analytics.back": "Terug naar woordenboek",
     "analytics.filter": "Analytics filteren",
+    "analytics.etymologyFilterLabel": "Etymologie",
     "analytics.filterEtymology": "Etymologie filteren",
     "analytics.filterEtymologyAll": "Alle etymologieën",
     "analytics.filterEtymologyEgy": "Alleen Egyptisch",

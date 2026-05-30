@@ -90,7 +90,8 @@ export function PageHeader({
 
       <h1
         className={cx(
-          "pb-2 font-extrabold tracking-tight",
+          "font-extrabold tracking-tight",
+          description ? "pb-2" : "pb-0",
           TITLE_SIZE_CLASSES[size],
           TITLE_TONE_CLASSES[tone],
           titleClassName,

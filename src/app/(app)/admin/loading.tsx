@@ -36,7 +36,7 @@ export default function Loading() {
             <SurfacePanel
               key={cardIndex}
               as="section"
-              rounded="3xl"
+              rounded="lg"
               className="space-y-5 p-6 md:p-8"
             >
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">

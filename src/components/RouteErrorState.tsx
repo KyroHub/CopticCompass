@@ -59,7 +59,7 @@ export function RouteErrorState({
         align="left"
       />
 
-      <SurfacePanel rounded="3xl" className="space-y-6 p-6 md:p-8">
+      <SurfacePanel rounded="lg" className="space-y-6 p-6 md:p-8">
         <StatusNotice
           tone="error"
           size="comfortable"

@@ -769,7 +769,7 @@ export function FloatingAiAssistantPanel({
                       className: cx(
                         "h-8 gap-1.5 px-2 text-xs",
                         selectedReaction === "dislike" &&
-                          "border-rose-500 bg-rose-50 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300",
+                          "border-danger/35 bg-danger/5 text-danger dark:bg-danger/10",
                       ),
                     })}
                   >
@@ -1697,12 +1697,12 @@ export function FloatingAiAssistantPanel({
               className="border-t border-line/80 bg-surface/90 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-xl"
             >
               {error ? (
-                <p className="mb-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-300">
+                <p className="mb-2 rounded-lg border border-danger/25 bg-danger/5 px-3 py-2 text-xs text-danger dark:bg-danger/10">
                   {error.message || copy.requestFailed}
                 </p>
               ) : null}
               {ocrError ? (
-                <p className="mb-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-700 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-300">
+                <p className="mb-2 rounded-lg border border-danger/25 bg-danger/5 px-3 py-2 text-xs text-danger dark:bg-danger/10">
                   {ocrError}
                 </p>
               ) : null}
@@ -1805,7 +1805,7 @@ export function FloatingAiAssistantPanel({
                         size: "sm",
                         variant: "secondary",
                         className:
-                          "h-8 w-8 border-rose-200 px-0 text-rose-700 hover:bg-rose-50 dark:border-rose-900/60 dark:text-rose-300 dark:hover:bg-rose-950/30",
+                          "h-8 w-8 border-danger/25 px-0 text-danger hover:bg-danger/5 dark:hover:bg-danger/10",
                       })}
                     >
                       <X className="h-3.5 w-3.5" />

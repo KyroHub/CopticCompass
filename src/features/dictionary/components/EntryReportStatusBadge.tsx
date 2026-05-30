@@ -14,12 +14,11 @@ type EntryReportStatusBadgeProps = {
 };
 
 const STATUS_CLASSES: Record<EntryReportStatus, string> = {
-  open: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/20 dark:text-amber-300",
+  open: "border-warning/25 bg-warning/10 text-warning",
   reviewed:
     "border-accent/25 bg-accent-soft text-accent-strong dark:text-accent",
   resolved: "border-coptic/20 bg-coptic-soft text-coptic",
-  dismissed:
-    "border-stone-200 bg-stone-100 text-stone-600 dark:border-stone-700 dark:bg-stone-800 dark:text-stone-300",
+  dismissed: "border-line bg-elevated text-muted",
 };
 
 export function EntryReportStatusBadge({

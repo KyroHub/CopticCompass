@@ -113,7 +113,7 @@ export function CreateContentReleaseForm({
   return (
     <details
       ref={detailsRef}
-      className="group overflow-hidden rounded-xl border border-line bg-surface/82 shadow-sm"
+      className="group overflow-hidden rounded-lg border border-line bg-surface/82 shadow-sm"
       open={totalCandidates === 0}
     >
       <summary className="flex cursor-pointer list-none items-start justify-between gap-4 p-6 [&::-webkit-details-marker]:hidden md:p-7">

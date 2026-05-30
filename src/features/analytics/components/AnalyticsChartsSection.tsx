@@ -103,7 +103,7 @@ export function AnalyticsChartsSection({
             </>
           }
           footer={
-            <div className="mt-auto rounded-2xl border border-line bg-elevated/65 px-4 py-3 shadow-sm">
+            <div className="mt-auto rounded-lg border border-line bg-elevated/65 px-4 py-3 shadow-sm">
               <div className="mb-2 flex items-center justify-between text-sm text-[rgb(var(--accent-strong))]">
                 <span>{t("analytics.verbalNouns")}</span>
                 <span className="font-bold">{stats.verbalNouns}</span>

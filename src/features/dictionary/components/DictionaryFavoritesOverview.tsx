@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { Badge } from "@/components/Badge";
+import { buttonClassName } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { SurfacePanel } from "@/components/SurfacePanel";
 import {
@@ -54,12 +55,10 @@ export function DictionaryFavoritesOverview({
   return (
     <section className="space-y-6">
       <div>
-        <h3 className="text-2xl font-bold tracking-tight text-stone-800 dark:text-stone-200">
+        <h3 className="text-2xl font-bold tracking-tight text-ink">
           {copy.dictionary.title}
         </h3>
-        <p className="mt-2 text-stone-600 dark:text-stone-400">
-          {copy.dictionary.description}
-        </p>
+        <p className="mt-2 text-muted">{copy.dictionary.description}</p>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -68,13 +67,11 @@ export function DictionaryFavoritesOverview({
           [copy.dictionary.availableEntries, availableFavorites.length],
           [copy.dictionary.missingEntries, missingFavorites],
         ].map(([label, value]) => (
-          <SurfacePanel key={label} rounded="2xl" className="p-5">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-stone-500 dark:text-stone-400">
+          <SurfacePanel key={label} rounded="lg" className="p-5">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
               {label}
             </p>
-            <p className="mt-3 text-3xl font-semibold text-stone-900 dark:text-stone-100">
-              {value}
-            </p>
+            <p className="mt-3 text-3xl font-semibold text-ink">{value}</p>
           </SurfacePanel>
         ))}
       </div>
@@ -99,7 +96,7 @@ export function DictionaryFavoritesOverview({
             return (
               <SurfacePanel
                 key={`${favorite.user_id}:${favorite.entry_id}`}
-                rounded="3xl"
+                rounded="lg"
                 className="p-6 md:p-7"
               >
                 <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
@@ -136,16 +133,16 @@ export function DictionaryFavoritesOverview({
                     </h4>
 
                     {meaningPreview ? (
-                      <p className="mt-3 max-w-3xl text-base leading-7 text-stone-700 dark:text-stone-300">
+                      <p className="mt-3 max-w-3xl text-base leading-7 text-ink">
                         {meaningPreview}
                       </p>
                     ) : (
-                      <p className="mt-3 max-w-3xl text-base leading-7 text-stone-600 dark:text-stone-400">
+                      <p className="mt-3 max-w-3xl text-base leading-7 text-muted">
                         {copy.dictionary.removedNotice}
                       </p>
                     )}
 
-                    <p className="mt-4 text-sm text-stone-500 dark:text-stone-400">
+                    <p className="mt-4 text-sm text-muted">
                       {copy.dictionary.savedOnPrefix} {savedDate}
                     </p>
                   </div>
@@ -154,7 +151,7 @@ export function DictionaryFavoritesOverview({
                     <div className="flex shrink-0">
                       <Link
                         href={getEntryPath(entry.id, language)}
-                        className="btn-primary px-5"
+                        className={buttonClassName({ className: "px-5" })}
                       >
                         {copy.dictionary.viewEntry}
                       </Link>

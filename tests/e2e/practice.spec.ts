@@ -50,7 +50,9 @@ test("mobile practice setup can collapse after selecting a card type", async ({
   await setupToggle.click();
   await expect(setupToggle).toHaveAttribute("aria-expanded", "true");
 
-  await page.getByRole("button", { name: "Meaning → Coptic" }).click();
+  await page.getByRole("button", { name: "Filters" }).click();
+  await page.getByRole("button", { name: /Prompt type/ }).click();
+  await page.getByRole("option", { name: "Meaning → Coptic" }).click();
   await expect(setupToggle).toContainText("selected");
 
   await setupToggle.click();

@@ -25,7 +25,7 @@ export function DashboardRecentExerciseDisclosure({
   return (
     <details
       className={surfacePanelClassName({
-        rounded: "3xl",
+        rounded: "lg",
         variant: "elevated",
         className: "group overflow-hidden",
       })}

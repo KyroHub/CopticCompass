@@ -31,7 +31,7 @@ const GLOSS_SIZE_CLASSES: Record<LinguisticGlossSize, string> = {
 };
 
 const LINGUISTIC_GLOSS_BASE_CLASS_NAME =
-  "small-caps inline-flex items-baseline whitespace-nowrap font-sans font-semibold leading-none text-stone-500 dark:text-stone-400";
+  "small-caps inline-flex items-baseline whitespace-nowrap font-sans font-semibold leading-none text-muted";
 
 function formatLinguisticGlossCode(code: string) {
   return code.trim().toLocaleLowerCase();

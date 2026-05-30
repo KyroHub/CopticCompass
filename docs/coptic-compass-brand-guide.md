@@ -462,15 +462,46 @@ Primary navigation should emphasize the platform pillars:
 - Publications
 - Grammar
 - Dictionary
+- Practice
 - Shenute AI
 
-Dictionary owns related tools such as Search, Practice, and Analytics rather
-than exposing each tool as a separate top-level item.
+Practice is a cross-pillar learning workflow that connects dictionary review,
+grammar prompts, spaced repetition, and learner progress. It should appear as a
+first-class product surface alongside Dictionary and Grammar rather than as a
+subtool of either one.
+
+Dictionary owns reference-oriented tools such as Search and dictionary
+Analytics. If analytics later expands beyond dictionary data into learning or
+platform analytics, its navigation placement should be revisited.
 
 Contact, account, dashboard, and admin surfaces should feel connected to the
 same brand without overpowering learning and reference tasks. In the website
 header, Contact and authentication belong with the right-side utility actions
 rather than the main platform-pillar group.
+
+### Filtering And Discovery Controls
+
+Filtering should use a shared responsive filter-bar pattern rather than
+page-specific control clusters. Search remains visually primary; filters sit
+below it in a collapsible block so users can reduce scroll fatigue after they
+have refined the page. Expanded filter bars show compact trigger buttons with
+the filter name, current value, and active state. On desktop, filter triggers
+open contained dropdown menus. On mobile, triggers may use a horizontal rail,
+and the same triggers open a tap-friendly sheet or full-width popover so the
+control model stays consistent across breakpoints.
+
+Use this pattern for result narrowing in Dictionary, Analytics, Publications,
+and admin list surfaces. Keep segmented controls for 2-3 primary modes, not for
+large filter sets. Keep native selects for ordinary form fields where the user
+is filling out data rather than refining a result set.
+
+Filter bars should provide:
+
+- A clear label and active-filter count.
+- A single clear/reset action when any filter is active.
+- Trigger labels that fit at mobile widths without wrapping awkwardly.
+- Keyboard support for opening, closing, and moving through menu options.
+- Visible active states that do not rely on color alone.
 
 ### AI Experience
 

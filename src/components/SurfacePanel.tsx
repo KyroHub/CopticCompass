@@ -4,7 +4,7 @@ import type { HTMLAttributes } from "react";
 
 type SurfacePanelVariant = "default" | "subtle" | "elevated";
 type SurfacePanelShadow = "soft" | "panel" | "float";
-type SurfacePanelRounded = "lg" | "xl" | "2xl" | "3xl";
+type SurfacePanelRounded = "lg";
 type SurfacePanelTag = "article" | "div" | "section";
 
 type SurfacePanelClassNameOptions = {
@@ -29,15 +29,12 @@ const SHADOW_CLASSES: Record<SurfacePanelShadow, string> = {
 
 const ROUNDED_CLASSES: Record<SurfacePanelRounded, string> = {
   lg: "rounded-lg",
-  xl: "rounded-xl",
-  "2xl": "rounded-lg",
-  "3xl": "rounded-xl",
 };
 
 export function surfacePanelClassName({
   className,
   interactive = false,
-  rounded = "2xl",
+  rounded = "lg",
   shadow = "panel",
   variant = "default",
 }: SurfacePanelClassNameOptions = {}) {
@@ -64,7 +61,7 @@ export function SurfacePanel({
   as = "div",
   className,
   interactive = false,
-  rounded = "2xl",
+  rounded = "lg",
   shadow = "panel",
   variant = "default",
   ...props

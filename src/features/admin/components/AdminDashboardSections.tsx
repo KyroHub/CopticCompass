@@ -3,6 +3,8 @@ import { surfacePanelClassName } from "@/components/SurfacePanel";
 import {
   adminNavChipClassName,
   adminQueueLinkClassName,
+  adminStickyPanelClassName,
+  adminSummaryPanelClassName,
 } from "@/features/admin/components/adminControlStyles";
 import {
   AdminContentReleasesList,
@@ -472,7 +474,7 @@ function formatAdminNumber(value: number, language: Language) {
 
 function AdminDatabaseErrorState({ message }: { message: string }) {
   return (
-    <div className="rounded-xl border border-danger/25 bg-rose-50 p-8 text-center font-bold text-danger dark:bg-rose-950/20">
+    <div className="rounded-lg border border-danger/25 bg-danger/5 p-8 text-center font-bold text-danger dark:bg-danger/10">
       {message}
     </div>
   );
@@ -561,7 +563,7 @@ export function AdminWorkspaceQuickJump({
   const modeDescription = copy.descriptions[mode];
 
   return (
-    <nav className="app-sticky-panel mb-6 rounded-xl border border-line bg-surface/85 p-3 shadow-soft backdrop-blur-xl dark:shadow-black/20">
+    <nav className={adminStickyPanelClassName({ className: "mb-6" })}>
       <p className="mb-2 text-xs leading-5 text-muted">{modeDescription}</p>
 
       <div className="flex flex-wrap gap-2">
@@ -619,7 +621,7 @@ export function AdminReviewInboxSummary({
   ] as const;
 
   return (
-    <section className="rounded-xl border border-line bg-surface/88 p-5 shadow-soft backdrop-blur-md dark:shadow-black/20">
+    <section className={adminSummaryPanelClassName()}>
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="space-y-3">
           <div className="space-y-2">
@@ -683,7 +685,7 @@ export function AdminCommunicationsDesk({
     audience.metrics.subscribedAudienceContactsCount;
 
   return (
-    <section className="rounded-xl border border-line bg-surface/88 p-5 shadow-soft backdrop-blur-md dark:shadow-black/20">
+    <section className={adminSummaryPanelClassName()}>
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="space-y-3">
           <div className="space-y-2">
@@ -705,7 +707,7 @@ export function AdminCommunicationsDesk({
       <div className="mt-4 grid gap-3 md:grid-cols-4">
         <div
           className={surfacePanelClassName({
-            rounded: "2xl",
+            rounded: "lg",
             variant: "subtle",
             className: "p-3",
           })}
@@ -723,7 +725,7 @@ export function AdminCommunicationsDesk({
 
         <div
           className={surfacePanelClassName({
-            rounded: "2xl",
+            rounded: "lg",
             variant: "subtle",
             className: "p-3",
           })}
@@ -741,7 +743,7 @@ export function AdminCommunicationsDesk({
 
         <div
           className={surfacePanelClassName({
-            rounded: "2xl",
+            rounded: "lg",
             variant: "subtle",
             className: "p-3",
           })}
@@ -759,7 +761,7 @@ export function AdminCommunicationsDesk({
 
         <div
           className={surfacePanelClassName({
-            rounded: "2xl",
+            rounded: "lg",
             variant: "subtle",
             className: "p-3",
           })}
@@ -790,7 +792,7 @@ export function AdminCommunicationsDesk({
 
         <div
           className={surfacePanelClassName({
-            rounded: "2xl",
+            rounded: "lg",
             variant: "elevated",
             className: "p-5",
           })}
@@ -805,8 +807,7 @@ export function AdminCommunicationsDesk({
             </span>
             <span
               className={cx(
-                audience.metrics.resendSyncErrorCount > 0 &&
-                  "text-rose-600 dark:text-rose-300",
+                audience.metrics.resendSyncErrorCount > 0 && "text-danger",
               )}
             >
               {copy.syncErrors}:{" "}
@@ -874,7 +875,7 @@ export function AdminSystemHealthSummary({
   ).length;
 
   return (
-    <section className="rounded-xl border border-line bg-surface/88 p-5 shadow-soft backdrop-blur-md dark:shadow-black/20">
+    <section className={adminSummaryPanelClassName()}>
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="space-y-3">
           <div className="space-y-2">
@@ -899,8 +900,7 @@ export function AdminSystemHealthSummary({
         <p
           className={cx(
             "text-xs font-semibold uppercase tracking-[0.18em] text-muted",
-            overview.failedNotificationCount > 0 &&
-              "text-rose-600 dark:text-rose-300",
+            overview.failedNotificationCount > 0 && "text-danger",
           )}
         >
           {copy.failedNotifications}:{" "}
@@ -911,7 +911,7 @@ export function AdminSystemHealthSummary({
       <div className="mt-4 grid gap-3 md:grid-cols-3">
         <div
           className={surfacePanelClassName({
-            rounded: "2xl",
+            rounded: "lg",
             variant: "subtle",
             className: "p-3",
           })}
@@ -932,7 +932,7 @@ export function AdminSystemHealthSummary({
 
         <div
           className={surfacePanelClassName({
-            rounded: "2xl",
+            rounded: "lg",
             variant: "subtle",
             className: "p-3",
           })}
@@ -950,7 +950,7 @@ export function AdminSystemHealthSummary({
 
         <div
           className={surfacePanelClassName({
-            rounded: "2xl",
+            rounded: "lg",
             variant: "subtle",
             className: "p-3",
           })}
@@ -1245,8 +1245,7 @@ export function AdminNotificationsSection({
             <span
               className={cx(
                 "text-xs font-semibold uppercase tracking-[0.16em] text-muted",
-                attentionNotifications.length > 0 &&
-                  "text-rose-600 dark:text-rose-300",
+                attentionNotifications.length > 0 && "text-danger",
               )}
             >
               {copy.attentionLabel}:{" "}
