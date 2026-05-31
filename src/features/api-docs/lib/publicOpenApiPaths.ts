@@ -473,7 +473,7 @@ export function buildPublicOpenApiPaths(context: PublicOpenApiContext) {
         tags: ["OCR"],
         summary: "Proxy an OCR upload",
         description:
-          "Accepts a multipart upload, forwards the first file to the configured OCR_SERVICE_URL, and returns the upstream response body and content type.",
+          "Accepts a multipart upload, forwards the first file to the configured OCR upstream, and returns the upstream response body and content type.",
         operationId: "proxyOcrUpload",
         parameters: [
           {
@@ -527,7 +527,8 @@ export function buildPublicOpenApiPaths(context: PublicOpenApiContext) {
             },
           },
           "502": {
-            description: "OCR upstream failed or no upload field was accepted.",
+            description:
+              "OCR upstream failed or the configured upstream upload field was not accepted.",
             content: {
               "application/json": {
                 schema: {

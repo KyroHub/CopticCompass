@@ -3,6 +3,7 @@
 import { Badge } from "@/components/Badge";
 import { useLanguage } from "@/components/LanguageProvider";
 import { SurfacePanel } from "@/components/SurfacePanel";
+import { AdminErrorDisclosure } from "@/features/admin/components/AdminErrorDisclosure";
 import {
   formatLocalizedNotificationAggregateType,
   formatLocalizedNotificationEventType,
@@ -23,6 +24,7 @@ const adminNotificationEventCardCopy = {
     createdOn: "Created on",
     lastError: "Last error",
     latestDeliveryStatus: "Latest delivery status",
+    notificationFailed: "This notification did not deliver.",
     processedOn: "Processed on",
     providerMessageId: "Provider message ID",
     recipient: "Recipient",
@@ -32,6 +34,7 @@ const adminNotificationEventCardCopy = {
     createdOn: "Aangemaakt op",
     lastError: "Laatste fout",
     latestDeliveryStatus: "Laatste leveringsstatus",
+    notificationFailed: "Deze melding werd niet bezorgd.",
     processedOn: "Verwerkt op",
     providerMessageId: "Providerbericht-ID",
     recipient: "Ontvanger",
@@ -113,10 +116,12 @@ export function AdminNotificationEventCard({
       ) : null}
 
       {event.status === "failed" && event.last_error ? (
-        <div className="rounded-lg border border-danger/25 bg-danger/5 px-5 py-4 text-sm leading-7 text-danger dark:bg-danger/10">
-          <span className="font-semibold">{copy.lastError}:</span>{" "}
-          {event.last_error}
-        </div>
+        <AdminErrorDisclosure
+          language={language}
+          message={copy.notificationFailed}
+          technicalDetails={event.last_error}
+          title={copy.lastError}
+        />
       ) : (
         <div className="rounded-lg border border-line bg-elevated px-5 py-4 text-sm leading-7 text-muted">
           {copy.latestDeliveryStatus}:{" "}

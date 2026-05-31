@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useLanguage } from "@/components/LanguageProvider";
 import { pageShellAccents } from "@/components/PageShell";
 import { RouteErrorState } from "@/components/RouteErrorState";
+import { AdminTechnicalDetails } from "@/features/admin/components/AdminErrorDisclosure";
 import { adminRouteCopy } from "@/features/admin/lib/adminRouteCopy";
 import { getDashboardPath } from "@/lib/locale";
 
@@ -29,7 +30,19 @@ export default function Error({
     <RouteErrorState
       title={copy.errorTitle}
       description={copy.errorDescription}
-      details={copy.errorDetails}
+      details={
+        <>
+          <p>{copy.errorDetails}</p>
+          <AdminTechnicalDetails
+            details={{
+              digest: error.digest,
+              message: error.message,
+              name: error.name,
+            }}
+            language={language}
+          />
+        </>
+      }
       noticeTitle={copy.errorNoticeTitle}
       tone="brand"
       primaryHref={getDashboardPath(language)}

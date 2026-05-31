@@ -36,6 +36,8 @@ type DictionarySearchRequestOptions = {
   selectedPartOfSpeech: DictionaryPartOfSpeechFilter;
 };
 
+type DictionarySearchFetchError = "initial" | "more" | null;
+
 /**
  * Builds the public dictionary search URL for the current query, filters, and
  * page boundary without leaking default values into the request string.
@@ -106,6 +108,9 @@ export function useDictionarySearch({
   const [preferenceUserId, setPreferenceUserId] = useState<string | null>(null);
   const [totalMatches, setTotalMatches] = useState(0);
   const [initialSearchStateReady, setInitialSearchStateReady] = useState(false);
+  const [fetchError, setFetchError] =
+    useState<DictionarySearchFetchError>(null);
+  const [retryNonce, setRetryNonce] = useState(0);
   const deferredQuery = useDeferredValue(query);
   const activeSearchKeyRef = useRef("");
   const hasDeepLinkedQueryRef = useRef(false);
@@ -229,6 +234,7 @@ export function useDictionarySearch({
     const requestKey = resultsKey;
     activeSearchKeyRef.current = requestKey;
     queueMicrotask(() => {
+      setFetchError(null);
       setLoading(true);
       setLoadingMore(false);
     });
@@ -261,6 +267,7 @@ export function useDictionarySearch({
 
         queueMicrotask(() => {
           setDictionaryLength(page.totalEntries);
+          setFetchError(null);
           setFilteredResults(page.entries);
           setHasMoreResults(page.hasMore);
           setTotalMatches(page.totalMatches);
@@ -277,6 +284,7 @@ export function useDictionarySearch({
 
         queueMicrotask(() => {
           setDictionaryLength(0);
+          setFetchError("initial");
           setFilteredResults([]);
           setHasMoreResults(false);
           setTotalMatches(0);
@@ -305,6 +313,7 @@ export function useDictionarySearch({
     exactMatch,
     initialSearchStateReady,
     resultsKey,
+    retryNonce,
     searchPath,
     selectedDialect,
     selectedPartOfSpeech,
@@ -317,6 +326,7 @@ export function useDictionarySearch({
 
     const requestKey = resultsKey;
     queueMicrotask(() => {
+      setFetchError(null);
       setLoadingMore(true);
     });
 
@@ -344,6 +354,7 @@ export function useDictionarySearch({
 
         queueMicrotask(() => {
           setDictionaryLength(page.totalEntries);
+          setFetchError(null);
           setFilteredResults((previousResults) =>
             activeSearchKeyRef.current === requestKey
               ? [...previousResults, ...page.entries]
@@ -354,6 +365,11 @@ export function useDictionarySearch({
         });
       } catch (error) {
         console.warn("Dictionary results could not be extended.", error);
+        if (activeSearchKeyRef.current === requestKey) {
+          queueMicrotask(() => {
+            setFetchError("more");
+          });
+        }
       } finally {
         if (activeSearchKeyRef.current === requestKey) {
           queueMicrotask(() => {
@@ -377,6 +393,11 @@ export function useDictionarySearch({
     selectedDialect,
     selectedPartOfSpeech,
   ]);
+
+  const retrySearch = useCallback(() => {
+    setFetchError(null);
+    setRetryNonce((current) => current + 1);
+  }, []);
 
   const handleKeyboardAppend = useCallback(
     (char: string) => {
@@ -452,6 +473,7 @@ export function useDictionarySearch({
   return {
     dictionaryLength,
     exactMatch,
+    fetchError,
     filteredResults,
     handleKeyboardAppend,
     handleKeyboardBackspace,
@@ -463,6 +485,7 @@ export function useDictionarySearch({
     loadingMore,
     query,
     resultsKey,
+    retrySearch,
     searchInputRef,
     selectedDialect,
     selectedPartOfSpeech,

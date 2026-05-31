@@ -503,6 +503,9 @@ Filter bars should provide:
 - Keyboard support for opening, closing, and moving through menu options.
 - Visible active states that do not rely on color alone.
 
+Implementation-specific layout, CTA, filter, and mobile interaction patterns
+live in `docs/ui-guide.md`.
+
 ### AI Experience
 
 Shenute AI should be presented as a study assistant. It can help explain,

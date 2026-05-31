@@ -67,6 +67,8 @@ type AnalyticsChartsCalloutProps = {
   title: string;
 };
 
+type AnalyticsDrilldownFetchError = "initial" | "more" | null;
+
 function getEtymologyFilterLabel(
   etymology: EtymologyFilter,
   t: ReturnType<typeof useLanguage>["t"],
@@ -283,6 +285,8 @@ export default function AnalyticsPageClient({
   const [hasMoreSlideOverResults, setHasMoreSlideOverResults] = useState(false);
   const [isSlideOverLoading, setSlideOverLoading] = useState(false);
   const [isSlideOverLoadingMore, setSlideOverLoadingMore] = useState(false);
+  const [slideOverFetchError, setSlideOverFetchError] =
+    useState<AnalyticsDrilldownFetchError>(null);
   const [shouldRenderCharts, setShouldRenderCharts] = useState(false);
   const activeDrilldownKeyRef = useRef("");
 
@@ -317,6 +321,7 @@ export default function AnalyticsPageClient({
         setHasMoreSlideOverResults(false);
         setSlideOverLoading(false);
         setSlideOverLoadingMore(false);
+        setSlideOverFetchError(null);
       });
       return;
     }
@@ -330,6 +335,7 @@ export default function AnalyticsPageClient({
     });
     activeDrilldownKeyRef.current = requestKey;
     queueMicrotask(() => {
+      setSlideOverFetchError(null);
       setSlideOverLoading(true);
       setSlideOverLoadingMore(false);
     });
@@ -359,6 +365,7 @@ export default function AnalyticsPageClient({
         }
 
         setSlideOverDictionaryLength(page.totalEntries);
+        setSlideOverFetchError(null);
         setSlideOverResults(page.entries);
         setSlideOverTotalMatches(page.totalMatches);
         setHasMoreSlideOverResults(page.hasMore);
@@ -373,6 +380,7 @@ export default function AnalyticsPageClient({
         }
 
         setSlideOverDictionaryLength(0);
+        setSlideOverFetchError("initial");
         setSlideOverResults([]);
         setSlideOverTotalMatches(0);
         setHasMoreSlideOverResults(false);
@@ -407,6 +415,7 @@ export default function AnalyticsPageClient({
 
     const activeSlideOverFilter = slideOverFilter;
     const requestKey = activeDrilldownKeyRef.current;
+    setSlideOverFetchError(null);
     setSlideOverLoadingMore(true);
 
     async function loadNextPage() {
@@ -430,6 +439,7 @@ export default function AnalyticsPageClient({
         }
 
         setSlideOverDictionaryLength(page.totalEntries);
+        setSlideOverFetchError(null);
         setSlideOverResults((previousResults) =>
           activeDrilldownKeyRef.current === requestKey
             ? [...previousResults, ...page.entries]
@@ -442,6 +452,9 @@ export default function AnalyticsPageClient({
           "Analytics drilldown results could not be extended.",
           error,
         );
+        if (activeDrilldownKeyRef.current === requestKey) {
+          setSlideOverFetchError("more");
+        }
       } finally {
         if (activeDrilldownKeyRef.current === requestKey) {
           setSlideOverLoadingMore(false);
@@ -486,6 +499,24 @@ export default function AnalyticsPageClient({
       title={t("analytics.visualBreakdowns" as TranslationKey)}
     />
   );
+  let slideOverErrorMessage: string | null = null;
+  if (slideOverFetchError === "initial") {
+    slideOverErrorMessage = t(
+      "analytics.drilldownUnavailable" as TranslationKey,
+    );
+  } else if (slideOverFetchError === "more") {
+    slideOverErrorMessage = t(
+      "analytics.drilldownMoreUnavailable" as TranslationKey,
+    );
+  }
+  const retrySlideOverResults =
+    slideOverFetchError === "more"
+      ? loadMoreSlideOverResults
+      : () => {
+          if (slideOverFilter) {
+            setSlideOverFilter({ ...slideOverFilter });
+          }
+        };
 
   return (
     <PageShell
@@ -597,6 +628,9 @@ export default function AnalyticsPageClient({
           loading={Boolean(slideOverFilter) && isSlideOverLoading}
           loadingMore={isSlideOverLoadingMore}
           onLoadMore={loadMoreSlideOverResults}
+          onRetry={retrySlideOverResults}
+          errorActionLabel={t("dict.retrySearch" as TranslationKey)}
+          errorMessage={slideOverErrorMessage}
           query=""
           selectedDialect={selectedDialect}
           selectedPartOfSpeech="ALL"

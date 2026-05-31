@@ -24,6 +24,25 @@ The repository includes a production-integrated AI workflow called Shenute AI, p
   - provider selection from request body (`inferenceProvider`)
   - retry/fallback for transient failures
   - fallback path when Hugging Face is rate-limited
+- Public failures use the shared error payload shape
+  `{ success: false, code, error, requestId? }`. Provider exceptions, token
+  names, stack traces, and raw upstream messages stay in server logs.
+
+### Public Error Responses
+
+Public API routes should map failures through `src/lib/errors.ts`:
+
+- `toPublicError` maps known app error codes and unknown thrown errors to
+  localized public copy.
+- `jsonErrorResponse` returns the stable JSON error shape with `Cache-Control:
+no-store` and a generated request id for server-side failures.
+- Raw `error.message`, environment variable names, provider debug text, and
+  database details should not be returned to public clients.
+
+Guardrail tests in `src/app/errorHandling.guardrails.test.ts` catch common
+regressions such as `alert(`, raw `error.message` rendering, direct
+`payload.error` rendering, and environment variable names in non-technical UI
+copy.
 
 ### THOTH AI Credits
 
@@ -55,6 +74,9 @@ This list documents THOTH AI's external knowledge context. The Coptic Compass ru
   - client uploads file to `/api/ocr`
   - app forwards to `OCR_SERVICE_URL`
   - upstream body and content-type are returned to client
+- Public OCR failures return `{ success: false, code, error, requestId? }`
+  with friendly copy only. Upstream statuses, field-candidate retries, and
+  environment details stay in server logs.
 - Optional controls:
   - query `?lang=<code>` (for example `cop`)
   - `OCR_UPLOAD_FIELD` to match upstream form-field conventions
@@ -73,6 +95,10 @@ This list documents THOTH AI's external knowledge context. The Coptic Compass ru
   - generate embeddings via selected provider
   - normalize embedding dimensions for DB compatibility
   - insert into `public.coptic_documents`
+- Admin-facing operational failures should show calm summary copy first and put
+  raw provider/database details behind the shared admin technical-details
+  disclosure. Do not render raw operational error strings directly as the main
+  notice.
 
 ### Embedding Dimensions
 
@@ -207,6 +233,8 @@ Checks:
 - apply latest Supabase migrations (`npm run db:push`)
 - verify `submissions` schema is up to date (including soft-delete support)
 - verify admin account/role and session are valid
+- open the technical-details disclosure for the raw Supabase/provider message;
+  keep the primary notice user-readable
 
 ### RAG insert fails with vector dimension mismatch
 
@@ -224,11 +252,13 @@ Checks:
 - verify `OCR_SERVICE_URL`
 - set `OCR_UPLOAD_FIELD` if upstream expects non-default form field names
 - test OCR endpoint directly: `POST /api/ocr?lang=cop` with a sample image/PDF
+- confirm the user-facing response uses a stable `code`; check server logs for
+  upstream status or upload-field diagnostics
 
 ### Local dev server repeatedly exits
 
 Checks:
 
-- ensure Node version matches `.nvmrc` and `package.json` engines (`>=22.13.0 <23`)
+- ensure Node version matches `.nvmrc`, `.node-version`, and `package.json` engines (`22.13.x`)
 - remove stale lock file (`.next/dev/lock`) and restart
-- run focused lint/type checks for touched files when Turbopack output is noisy
+- run focused lint/type checks for touched files when dev-server output is noisy

@@ -5,6 +5,7 @@ import { ChevronDown } from "lucide-react";
 import { Badge } from "@/components/Badge";
 import { useLanguage } from "@/components/LanguageProvider";
 import { SurfacePanel } from "@/components/SurfacePanel";
+import { AdminErrorDisclosure } from "@/features/admin/components/AdminErrorDisclosure";
 import {
   formatContentReleaseAudienceSegment,
   formatContentReleaseLocaleMode,
@@ -25,6 +26,7 @@ const adminContentReleaseCardCopy = {
     broadcast: "Broadcast",
     createdOn: "Created on",
     deliveryCounts: "Delivery counts",
+    deliveryError: "Delivery could not complete for this release.",
     deliveryFinishedOn: "Delivery finished on",
     deliveryLog: "Delivery log",
     deliveryRequestedOn: "Delivery requested on",
@@ -59,6 +61,7 @@ const adminContentReleaseCardCopy = {
     broadcast: "Broadcast",
     createdOn: "Aangemaakt op",
     deliveryCounts: "Leveringsaantallen",
+    deliveryError: "Levering kon niet worden afgerond voor deze release.",
     deliveryFinishedOn: "Levering afgerond op",
     deliveryLog: "Leveringslog",
     deliveryRequestedOn: "Levering aangevraagd op",
@@ -321,9 +324,13 @@ export function AdminContentReleaseCard({
       </div>
 
       {release.last_delivery_error ? (
-        <div className="mb-6 rounded-lg border border-warning/35 bg-accent-soft px-5 py-4 text-sm text-accent-strong dark:text-accent">
-          {release.last_delivery_error}
-        </div>
+        <AdminErrorDisclosure
+          className="mb-6"
+          language={language}
+          message={copy.deliveryError}
+          technicalDetails={release.last_delivery_error}
+          tone="warning"
+        />
       ) : null}
 
       <div className="mb-6 grid gap-4 lg:grid-cols-2">

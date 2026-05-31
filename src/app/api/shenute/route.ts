@@ -18,6 +18,11 @@ import {
   recordDistillationExample,
   formatNMTForDistillation,
 } from "@/lib/distillation";
+import {
+  getPublicErrorMessage,
+  jsonErrorResponse,
+  type AppErrorCode,
+} from "@/lib/errors";
 import { getGeminiModel } from "@/lib/gemini";
 import { createHfChatCompletion, type HfChatMessage } from "@/lib/hf";
 import {
@@ -122,6 +127,13 @@ type PageContext = {
   path?: string;
   title?: string;
   url?: string;
+};
+
+type ShenuteChatRequestPayload = {
+  id?: unknown;
+  inferenceProvider?: unknown;
+  messages: UIMessage[];
+  pageContext?: unknown;
 };
 
 type ContextDoc = {
@@ -383,24 +395,24 @@ function createStaticAssistantStream(responseText: string) {
   return createUIMessageStreamResponse({ stream });
 }
 
-function createJsonErrorResponse(
-  error: string,
+function createShenuteErrorResponse(
+  code: AppErrorCode,
   status: number,
   headers?: HeadersInit,
 ) {
-  return new Response(JSON.stringify({ error }), {
+  return jsonErrorResponse({
+    context: "shenute",
+    error: code,
+    fallbackCode: code,
+    headers,
+    requestIdPrefix: "shenute",
     status,
-    headers: {
-      "Cache-Control": "no-store",
-      "Content-Type": "application/json",
-      ...headers,
-    },
   });
 }
 
 async function getShenuteRateLimitResponse(userId: string) {
   if (!hasAvailableRateLimitProtection()) {
-    return createJsonErrorResponse("Shenute AI is unavailable right now.", 503);
+    return createShenuteErrorResponse("external_service_unavailable", 503);
   }
 
   try {
@@ -415,19 +427,15 @@ async function getShenuteRateLimitResponse(userId: string) {
       return null;
     }
 
-    return createJsonErrorResponse(
-      "Too many Shenute AI requests. Please wait a bit before trying again.",
-      429,
-      {
-        "Retry-After": Math.max(
-          1,
-          Math.ceil(result.retryAfterMs / 1000),
-        ).toString(),
-      },
-    );
+    return createShenuteErrorResponse("rate_limited", 429, {
+      "Retry-After": Math.max(
+        1,
+        Math.ceil(result.retryAfterMs / 1000),
+      ).toString(),
+    });
   } catch (error) {
     console.error("Shenute rate-limit check failed:", error);
-    return createJsonErrorResponse("Shenute AI is unavailable right now.", 503);
+    return createShenuteErrorResponse("external_service_unavailable", 503);
   }
 }
 
@@ -444,7 +452,7 @@ function getShenutePayloadSizeResponse(headers: Headers) {
     return null;
   }
 
-  return createJsonErrorResponse("Shenute AI request is too large.", 413);
+  return createShenuteErrorResponse("validation_failed", 413);
 }
 
 function toPageContext(value: unknown): PageContext {
@@ -558,25 +566,14 @@ export async function POST(req: Request) {
     }
 
     if (!hasSupabaseRuntimeEnv()) {
-      return new Response(
-        JSON.stringify({
-          error: "Shenute AI is unavailable right now.",
-        }),
-        {
-          status: 503,
-          headers: { "Content-Type": "application/json" },
-        },
-      );
+      return createShenuteErrorResponse("external_service_unavailable", 503);
     }
 
     const supabase = await createClient();
     const authenticatedUser = await getAuthenticatedUser(supabase);
 
     if (!authenticatedUser) {
-      return createJsonErrorResponse(
-        "Sign in required to use Shenute AI.",
-        401,
-      );
+      return createShenuteErrorResponse("auth_required", 401);
     }
 
     const rateLimitResponse = await getShenuteRateLimitResponse(
@@ -586,16 +583,18 @@ export async function POST(req: Request) {
       return rateLimitResponse;
     }
 
-    const payload: {
-      id?: unknown;
-      inferenceProvider?: unknown;
-      messages: UIMessage[];
-      pageContext?: unknown;
-    } = await req.json();
+    let payload: ShenuteChatRequestPayload;
+
+    try {
+      payload = (await req.json()) as ShenuteChatRequestPayload;
+    } catch {
+      return createShenuteErrorResponse("validation_failed", 400);
+    }
+
     const { messages } = payload;
 
     if (!Array.isArray(messages) || messages.length === 0) {
-      return createJsonErrorResponse("No messages provided.", 400);
+      return createShenuteErrorResponse("validation_failed", 400);
     }
 
     const queryProvider = toOptionalInferenceProvider(
@@ -920,11 +919,13 @@ ${contextText || "No additional retrieval context was found."}
 
       return result.toUIMessageStreamResponse({
         onError: (error) => {
-          if (error instanceof Error) {
-            return error.message;
-          }
+          console.error("Gemini streaming failed:", error);
 
-          return "Unknown Gemini streaming error.";
+          return getPublicErrorMessage(
+            "external_service_unavailable",
+            "en",
+            "shenute",
+          );
         },
       });
     }
@@ -1023,11 +1024,13 @@ ${contextText || "No additional retrieval context was found."}
 
           return fallbackResult.toUIMessageStreamResponse({
             onError: (error) => {
-              if (error instanceof Error) {
-                return error.message;
-              }
+              console.error("Gemini fallback streaming failed:", error);
 
-              return "Unknown Gemini fallback streaming error.";
+              return getPublicErrorMessage(
+                "external_service_unavailable",
+                "en",
+                "shenute",
+              );
             },
           });
         } catch (geminiFallbackError) {
@@ -1080,25 +1083,11 @@ ${contextText || "No additional retrieval context was found."}
         }
       }
 
-      return new Response(
-        JSON.stringify({
-          error:
-            "Hugging Face is currently rate-limited. Please retry in a moment or switch provider.",
-        }),
-        {
-          status: 429,
-          headers: { "Content-Type": "application/json" },
-        },
-      );
+      return createShenuteErrorResponse("rate_limited", 429);
     }
   } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Unknown AI error.";
     console.error("AI API Error:", error);
 
-    return new Response(JSON.stringify({ error: errorMessage }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+    return createShenuteErrorResponse("external_service_unavailable", 500);
   }
 }

@@ -255,7 +255,10 @@ export function buildPublicOpenApiComponents(context: PublicOpenApiContext) {
               ocrUnavailable: {
                 value: {
                   success: false,
-                  error: "OCR_SERVICE_URL is not configured.",
+                  code: "external_service_unavailable",
+                  error:
+                    "OCR could not read this image right now. Please try again.",
+                  requestId: "ocr_00000000-0000-4000-8000-000000000000",
                 },
               },
             },
@@ -938,17 +941,27 @@ export function buildPublicOpenApiComponents(context: PublicOpenApiContext) {
       },
       OcrProxyError: {
         type: "object",
-        required: ["success", "error"],
+        required: ["success", "code", "error"],
         properties: {
           success: {
             type: "boolean",
             enum: [false],
           },
+          code: {
+            type: "string",
+            enum: [
+              "external_service_unavailable",
+              "rate_limited",
+              "validation_failed",
+            ],
+          },
           error: {
             type: "string",
           },
-          upstreamStatus: {
-            type: "integer",
+          requestId: {
+            type: "string",
+            description:
+              "Present on server-side OCR proxy failures for support correlation.",
           },
         },
         additionalProperties: false,

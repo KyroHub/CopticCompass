@@ -1,5 +1,4 @@
-import { NextResponse } from "next/server";
-
+import { jsonErrorResponse, type AppErrorCode } from "@/lib/errors";
 import {
   consumeOcrRateLimit,
   getOcrContentLengthFailure,
@@ -17,6 +16,11 @@ const OCR_UPLOAD_FIELD_FALLBACKS = [
   "photo",
   "files",
 ];
+
+type OcrErrorCode = Extract<
+  AppErrorCode,
+  "external_service_unavailable" | "rate_limited" | "validation_failed"
+>;
 
 function getUploadFieldCandidates(incomingFieldName: string) {
   const preferred = process.env.OCR_UPLOAD_FIELD?.trim();
@@ -37,8 +41,48 @@ function isUnexpectedFieldErrorMessage(value: string) {
   );
 }
 
-function getSafeUpstreamFailureMessage(status: number) {
-  return `OCR upstream request failed with status ${status}.`;
+function createOcrErrorResponse(options: {
+  code: OcrErrorCode;
+  error?: string;
+  retryAfterMs?: number;
+  status: number;
+}) {
+  const headers = new Headers({
+    "Cache-Control": "no-store",
+  });
+  const retryAfter = getRetryAfterSeconds(options.retryAfterMs);
+
+  if (retryAfter) {
+    headers.set("Retry-After", retryAfter);
+  }
+
+  return jsonErrorResponse({
+    context: "ocr",
+    error: options.code,
+    fallbackCode: options.code,
+    headers,
+    publicMessage: options.error,
+    requestIdPrefix: "ocr",
+    status: options.status,
+  });
+}
+
+function getOcrUpstreamFailure(status: number): {
+  code: OcrErrorCode;
+  status: number;
+} {
+  if (status === 429) {
+    return { code: "rate_limited", status: 429 };
+  }
+
+  if (status === 400 || status === 413 || status === 415) {
+    return {
+      code: "validation_failed",
+      status: status === 413 ? 413 : 400,
+    };
+  }
+
+  return { code: "external_service_unavailable", status: 502 };
 }
 
 function buildTargetUrl(
@@ -101,154 +145,143 @@ function getFirstFileEntry(formData: FormData) {
   return null;
 }
 
-function ocrProtectionResponse(failure: {
-  message: string;
-  retryAfterMs?: number;
-  status: 413 | 429 | 503;
-}) {
-  const headers = new Headers({
-    "Cache-Control": "no-store",
-  });
-  const retryAfter = getRetryAfterSeconds(failure.retryAfterMs);
-
-  if (retryAfter) {
-    headers.set("Retry-After", retryAfter);
-  }
-
-  return NextResponse.json(
-    {
-      success: false,
-      error: failure.message,
-    },
-    {
-      status: failure.status,
-      headers,
-    },
-  );
-}
-
 export async function POST(request: Request) {
-  const ocrServiceUrl = process.env.OCR_SERVICE_URL;
-  if (!ocrServiceUrl) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: "OCR_SERVICE_URL is not configured.",
-      },
-      { status: 503 },
-    );
-  }
-
-  const contentLengthFailure = getOcrContentLengthFailure(request.headers);
-  if (contentLengthFailure) {
-    return ocrProtectionResponse(contentLengthFailure);
-  }
-
-  const rateLimitFailure = await consumeOcrRateLimit();
-  if (rateLimitFailure) {
-    return ocrProtectionResponse(rateLimitFailure);
-  }
-
-  let formData: FormData;
   try {
-    formData = await request.formData();
-  } catch {
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Expected multipart/form-data payload.",
-      },
-      { status: 400 },
-    );
-  }
-
-  const fileEntry = getFirstFileEntry(formData);
-  if (!fileEntry) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: "No file found in multipart request.",
-      },
-      { status: 400 },
-    );
-  }
-
-  const uploadSizeFailure = getOcrUploadSizeFailure(fileEntry.file.size);
-  if (uploadSizeFailure) {
-    return ocrProtectionResponse(uploadSizeFailure);
-  }
-
-  const targetUrl = buildTargetUrl(request.url, ocrServiceUrl, formData);
-  const uploadFieldCandidates = getUploadFieldCandidates(fileEntry.key);
-  const passthroughTextFields = collectForwardableTextFields(
-    formData,
-    new Set<string>([fileEntry.key, "lang"]),
-  );
-
-  let lastFailureMessage = "OCR upstream request failed.";
-
-  for (const uploadField of uploadFieldCandidates) {
-    const upstreamFormData = new FormData();
-    upstreamFormData.append(uploadField, fileEntry.file, fileEntry.file.name);
-
-    for (const field of passthroughTextFields) {
-      upstreamFormData.append(field.key, field.value);
+    const ocrServiceUrl = process.env.OCR_SERVICE_URL;
+    if (!ocrServiceUrl) {
+      return createOcrErrorResponse({
+        code: "external_service_unavailable",
+        status: 503,
+      });
     }
 
-    const upstreamResponse = await fetch(targetUrl.toString(), {
-      method: "POST",
-      body: upstreamFormData,
-    });
+    const contentLengthFailure = getOcrContentLengthFailure(request.headers);
+    if (contentLengthFailure) {
+      return createOcrErrorResponse({
+        code: contentLengthFailure.code,
+        error: contentLengthFailure.message,
+        retryAfterMs: contentLengthFailure.retryAfterMs,
+        status: contentLengthFailure.status,
+      });
+    }
 
-    if (!upstreamResponse.ok) {
-      const upstreamErrorText = await upstreamResponse.text();
-      lastFailureMessage = getSafeUpstreamFailureMessage(
-        upstreamResponse.status,
-      );
+    const rateLimitFailure = await consumeOcrRateLimit();
+    if (rateLimitFailure) {
+      return createOcrErrorResponse({
+        code: rateLimitFailure.code,
+        error: rateLimitFailure.message,
+        retryAfterMs: rateLimitFailure.retryAfterMs,
+        status: rateLimitFailure.status,
+      });
+    }
 
-      if (isUnexpectedFieldErrorMessage(upstreamErrorText)) {
-        continue;
+    let formData: FormData;
+    try {
+      formData = await request.formData();
+    } catch {
+      return createOcrErrorResponse({
+        code: "validation_failed",
+        status: 400,
+      });
+    }
+
+    const fileEntry = getFirstFileEntry(formData);
+    if (!fileEntry) {
+      return createOcrErrorResponse({
+        code: "validation_failed",
+        status: 400,
+      });
+    }
+
+    const uploadSizeFailure = getOcrUploadSizeFailure(fileEntry.file.size);
+    if (uploadSizeFailure) {
+      return createOcrErrorResponse({
+        code: uploadSizeFailure.code,
+        error: uploadSizeFailure.message,
+        status: uploadSizeFailure.status,
+      });
+    }
+
+    const targetUrl = buildTargetUrl(request.url, ocrServiceUrl, formData);
+    const uploadFieldCandidates = getUploadFieldCandidates(fileEntry.key);
+    const passthroughTextFields = collectForwardableTextFields(
+      formData,
+      new Set<string>([fileEntry.key, "lang"]),
+    );
+
+    let lastFailure: { code: OcrErrorCode; status: number } = {
+      code: "external_service_unavailable",
+      status: 502,
+    };
+    let sawUploadFieldRejection = false;
+
+    for (const uploadField of uploadFieldCandidates) {
+      const upstreamFormData = new FormData();
+      upstreamFormData.append(uploadField, fileEntry.file, fileEntry.file.name);
+
+      for (const field of passthroughTextFields) {
+        upstreamFormData.append(field.key, field.value);
       }
 
-      console.error("OCR upstream request failed", {
+      let upstreamResponse: Response;
+      try {
+        upstreamResponse = await fetch(targetUrl.toString(), {
+          method: "POST",
+          body: upstreamFormData,
+        });
+      } catch (error) {
+        console.error("OCR upstream request failed:", error);
+        return createOcrErrorResponse({
+          code: "external_service_unavailable",
+          status: 502,
+        });
+      }
+
+      if (!upstreamResponse.ok) {
+        const upstreamErrorText = await upstreamResponse.text();
+
+        if (isUnexpectedFieldErrorMessage(upstreamErrorText)) {
+          sawUploadFieldRejection = true;
+          continue;
+        }
+
+        lastFailure = getOcrUpstreamFailure(upstreamResponse.status);
+
+        console.error("OCR upstream request failed", {
+          status: upstreamResponse.status,
+          statusText: upstreamResponse.statusText,
+        });
+
+        return createOcrErrorResponse(lastFailure);
+      }
+
+      const responseHeaders = new Headers();
+      const contentType = upstreamResponse.headers.get("content-type");
+      if (contentType) {
+        responseHeaders.set("content-type", contentType);
+      }
+      responseHeaders.set("x-ocr-proxy", "coptic-compass");
+
+      const responseBody = await upstreamResponse.arrayBuffer();
+      return new Response(responseBody, {
         status: upstreamResponse.status,
-        statusText: upstreamResponse.statusText,
+        headers: responseHeaders,
       });
-
-      return NextResponse.json(
-        {
-          success: false,
-          error: lastFailureMessage,
-          upstreamStatus: upstreamResponse.status,
-        },
-        {
-          status:
-            upstreamResponse.status >= 400 && upstreamResponse.status < 600
-              ? upstreamResponse.status
-              : 502,
-        },
-      );
     }
 
-    const responseHeaders = new Headers();
-    const contentType = upstreamResponse.headers.get("content-type");
-    if (contentType) {
-      responseHeaders.set("content-type", contentType);
-    }
-    responseHeaders.set("x-ocr-proxy", "coptic-compass");
-
-    const responseBody = await upstreamResponse.arrayBuffer();
-    return new Response(responseBody, {
-      status: upstreamResponse.status,
-      headers: responseHeaders,
+    console.error("OCR upstream rejected all upload field candidates", {
+      uploadFieldCandidates,
+    });
+    return createOcrErrorResponse(
+      sawUploadFieldRejection
+        ? { code: "external_service_unavailable", status: 502 }
+        : lastFailure,
+    );
+  } catch (error) {
+    console.error("OCR API failed:", error);
+    return createOcrErrorResponse({
+      code: "external_service_unavailable",
+      status: 500,
     });
   }
-
-  return NextResponse.json(
-    {
-      success: false,
-      error: `${lastFailureMessage} Tried upload fields: ${uploadFieldCandidates.join(", ")}. Set OCR_UPLOAD_FIELD in environment to match the OCR backend.`,
-    },
-    { status: 502 },
-  );
 }

@@ -7,6 +7,7 @@ import type { SyncAudienceContactsState } from "@/actions/admin/states";
 import { Button } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { StatusNotice } from "@/components/StatusNotice";
+import { AdminErrorDisclosure } from "@/features/admin/components/AdminErrorDisclosure";
 
 const syncAudienceContactsFormCopy = {
   en: {
@@ -33,10 +34,14 @@ export function SyncAudienceContactsForm() {
         {isPending ? copy.syncing : copy.sync}
       </Button>
 
-      {state?.message ? (
-        <StatusNotice tone={state.success ? "success" : "error"} align="left">
+      {state?.message && state.success ? (
+        <StatusNotice tone="success" align="left">
           {state.message}
         </StatusNotice>
+      ) : null}
+
+      {state?.message && !state.success ? (
+        <AdminErrorDisclosure language={language} message={state.message} />
       ) : null}
     </form>
   );

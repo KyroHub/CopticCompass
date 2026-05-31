@@ -6,6 +6,7 @@ import {
   adminStickyPanelClassName,
   adminSummaryPanelClassName,
 } from "@/features/admin/components/adminControlStyles";
+import { AdminErrorDisclosure } from "@/features/admin/components/AdminErrorDisclosure";
 import {
   AdminContentReleasesList,
   AdminContactMessagesList,
@@ -36,7 +37,7 @@ const adminDashboardSectionsCopy = {
   en: {
     audience: {
       dbError:
-        "Database Error: Could not load audience contacts. Make sure you've run the latest SQL setup script.",
+        "Audience contacts could not load right now. Refresh the admin workspace, and check the database setup if this keeps happening.",
       description:
         "Track who has opted into release emails before you start sending lesson or publication announcements. The list keeps actionable contacts in full and shows a recent inactive window below them.",
       emptyDescription:
@@ -82,7 +83,7 @@ const adminDashboardSectionsCopy = {
       active: "Active",
       answered: "Answered",
       dbError:
-        "Database Error: Could not load contact messages. Make sure you've run the latest SQL setup script.",
+        "Contact messages could not load right now. Refresh the admin workspace, and check the database setup if this keeps happening.",
       description:
         "Triage public contact messages, keep track of replies, and note who wants future updates.",
       emptyDescription:
@@ -99,7 +100,7 @@ const adminDashboardSectionsCopy = {
     },
     entryReports: {
       dbError:
-        "Database Error: Could not load dictionary entry reports. Make sure you've run the latest SQL setup script.",
+        "Dictionary reports could not load right now. Refresh the admin workspace, and check the database setup if this keeps happening.",
       description:
         "Review flagged lemmas, inspect the current published meaning, and move each report through your inbox.",
       emptyDescription:
@@ -121,7 +122,7 @@ const adminDashboardSectionsCopy = {
         "Failures and still-queued notifications stay at the top.",
       attentionLabel: "Needs attention",
       dbError:
-        "Database Error: Could not load notification activity. Make sure you've run the latest SQL setup script.",
+        "Notification activity could not load right now. Refresh the admin workspace, and check the database setup if this keeps happening.",
       description:
         "Use this as a reference area for delivery health: failed or queued events first, then a bounded recent success log beneath.",
       emptyDescription:
@@ -175,7 +176,7 @@ const adminDashboardSectionsCopy = {
       active: "active",
       candidates: "Candidates",
       dbError:
-        "Database Error: Could not load content releases. Make sure you've run the latest SQL setup script.",
+        "Release drafts could not load right now. Refresh the admin workspace, and check the database setup if this keeps happening.",
       description:
         "Build snapshot-based announcement drafts for published lessons and publications. The list below shows the latest release activity window so the workspace stays lightweight.",
       emptyDescription:
@@ -213,7 +214,7 @@ const adminDashboardSectionsCopy = {
     },
     submissions: {
       dbError:
-        "Database Error: Could not load submissions. Make sure you've run the SQL setup script.",
+        "Exercise submissions could not load right now. Refresh the admin workspace, and check the database setup if this keeps happening.",
       description:
         "Review translation work, assign a score, and return feedback to students.",
       needsReview: "Needs review",
@@ -248,7 +249,7 @@ const adminDashboardSectionsCopy = {
   nl: {
     audience: {
       dbError:
-        "Databasefout: publiekscontacten konden niet worden geladen. Controleer of u het nieuwste SQL-installatiescript hebt uitgevoerd.",
+        "Publiekscontacten konden nu niet worden geladen. Vernieuw de adminwerkruimte en controleer de database-inrichting als dit blijft gebeuren.",
       description:
         "Volg wie zich heeft aangemeld voor release-e-mails voordat u les- of publicatieaankondigingen verstuurt. De lijst toont actiegerichte contacten volledig en plaatst een recent inactief venster daaronder.",
       emptyDescription:
@@ -294,7 +295,7 @@ const adminDashboardSectionsCopy = {
       active: "Actief",
       answered: "Beantwoord",
       dbError:
-        "Databasefout: contactberichten konden niet worden geladen. Controleer of u het nieuwste SQL-installatiescript hebt uitgevoerd.",
+        "Contactberichten konden nu niet worden geladen. Vernieuw de adminwerkruimte en controleer de database-inrichting als dit blijft gebeuren.",
       description:
         "Behandel openbare contactberichten, houd antwoorden bij en noteer wie toekomstige updates wil ontvangen.",
       emptyDescription:
@@ -311,7 +312,7 @@ const adminDashboardSectionsCopy = {
     },
     entryReports: {
       dbError:
-        "Databasefout: woordenboekmeldingen konden niet worden geladen. Controleer of u het nieuwste SQL-installatiescript hebt uitgevoerd.",
+        "Woordenboekmeldingen konden nu niet worden geladen. Vernieuw de adminwerkruimte en controleer de database-inrichting als dit blijft gebeuren.",
       description:
         "Beoordeel gemarkeerde lemma's, controleer de huidige gepubliceerde betekenis en verwerk elk rapport in uw inbox.",
       emptyDescription:
@@ -333,7 +334,7 @@ const adminDashboardSectionsCopy = {
         "Mislukte en nog wachtrijstaande meldingen blijven bovenaan.",
       attentionLabel: "Vraagt aandacht",
       dbError:
-        "Databasefout: meldingsactiviteit kon niet worden geladen. Controleer of u het nieuwste SQL-installatiescript hebt uitgevoerd.",
+        "Meldingsactiviteit kon nu niet worden geladen. Vernieuw de adminwerkruimte en controleer de database-inrichting als dit blijft gebeuren.",
       description:
         "Gebruik dit als referentiegebied voor leveringsstatus: mislukte of wachtrijstaande events eerst, daarna een begrensd recent succeslog.",
       emptyDescription:
@@ -387,7 +388,7 @@ const adminDashboardSectionsCopy = {
       active: "actief",
       candidates: "Kandidaten",
       dbError:
-        "Databasefout: releaseconcepten konden niet worden geladen. Controleer of u het nieuwste SQL-installatiescript hebt uitgevoerd.",
+        "Releaseconcepten konden nu niet worden geladen. Vernieuw de adminwerkruimte en controleer de database-inrichting als dit blijft gebeuren.",
       description:
         "Maak snapshotgebaseerde aankondigingsconcepten voor gepubliceerde lessen en publicaties. De lijst hieronder toont de nieuwste release-activiteit zodat de werkruimte licht blijft.",
       emptyDescription:
@@ -425,7 +426,7 @@ const adminDashboardSectionsCopy = {
     },
     submissions: {
       dbError:
-        "Databasefout: inzendingen konden niet worden geladen. Controleer of u het SQL-installatiescript hebt uitgevoerd.",
+        "Inzendingen konden nu niet worden geladen. Vernieuw de adminwerkruimte en controleer de database-inrichting als dit blijft gebeuren.",
       description:
         "Beoordeel vertaalwerk, geef een score en stuur feedback terug naar studenten.",
       needsReview: "Te beoordelen",
@@ -472,11 +473,22 @@ function formatAdminNumber(value: number, language: Language) {
   return value.toLocaleString(language === "nl" ? "nl-BE" : "en-US");
 }
 
-function AdminDatabaseErrorState({ message }: { message: string }) {
+function AdminDatabaseErrorState({
+  details,
+  language,
+  message,
+}: {
+  details: unknown;
+  language: Language;
+  message: string;
+}) {
   return (
-    <div className="rounded-lg border border-danger/25 bg-danger/5 p-8 text-center font-bold text-danger dark:bg-danger/10">
-      {message}
-    </div>
+    <AdminErrorDisclosure
+      className="p-5"
+      language={language}
+      message={message}
+      technicalDetails={details}
+    />
   );
 }
 
@@ -997,7 +1009,11 @@ export function AdminSubmissionsSection({
       defaultOpen
     >
       {submissions.error ? (
-        <AdminDatabaseErrorState message={copy.dbError} />
+        <AdminDatabaseErrorState
+          details={submissions.error}
+          language={language}
+          message={copy.dbError}
+        />
       ) : (
         <AdminSubmissionsList submissions={submissions.items} />
       )}
@@ -1040,7 +1056,13 @@ export function AdminAudienceSection({
   } = splitAdminVisibleItems(audience.items);
   const audienceContent = (() => {
     if (audience.error) {
-      return <AdminDatabaseErrorState message={copy.dbError} />;
+      return (
+        <AdminDatabaseErrorState
+          details={audience.error}
+          language={language}
+          message={copy.dbError}
+        />
+      );
     }
 
     if (audience.items.length === 0) {
@@ -1111,7 +1133,13 @@ export function AdminReleasesSection({
   const actionableCount = countActionableContentReleases(contentReleases.items);
   const releasesContent = (() => {
     if (contentReleases.error) {
-      return <AdminDatabaseErrorState message={copy.dbError} />;
+      return (
+        <AdminDatabaseErrorState
+          details={contentReleases.error}
+          language={language}
+          message={copy.dbError}
+        />
+      );
     }
 
     if (contentReleases.items.length === 0) {
@@ -1166,7 +1194,13 @@ export function AdminContactInboxSection({
   const openMessageCount = countOpenContactMessages(contactMessages.items);
   const contactMessagesContent = (() => {
     if (contactMessages.error) {
-      return <AdminDatabaseErrorState message={copy.dbError} />;
+      return (
+        <AdminDatabaseErrorState
+          details={contactMessages.error}
+          language={language}
+          message={copy.dbError}
+        />
+      );
     }
 
     if (contactMessages.items.length === 0) {
@@ -1226,7 +1260,13 @@ export function AdminNotificationsSection({
   } = splitAdminVisibleItems(historyNotifications);
   const notificationsContent = (() => {
     if (notifications.error) {
-      return <AdminDatabaseErrorState message={copy.dbError} />;
+      return (
+        <AdminDatabaseErrorState
+          details={notifications.error}
+          language={language}
+          message={copy.dbError}
+        />
+      );
     }
 
     if (notifications.items.length === 0) {
@@ -1349,7 +1389,13 @@ export function AdminEntryReportsSection({
   );
   const entryReportsContent = (() => {
     if (entryReports.error) {
-      return <AdminDatabaseErrorState message={copy.dbError} />;
+      return (
+        <AdminDatabaseErrorState
+          details={entryReports.error}
+          language={language}
+          message={copy.dbError}
+        />
+      );
     }
 
     if (entryReports.items.length === 0) {

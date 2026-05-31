@@ -7,6 +7,7 @@ import type { SendContentReleaseState } from "@/actions/admin/states";
 import { buttonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { StatusNotice } from "@/components/StatusNotice";
+import { AdminErrorDisclosure } from "@/features/admin/components/AdminErrorDisclosure";
 import type { ContentReleaseRow } from "@/features/communications/lib/releases";
 
 const sendContentReleaseFormCopy = {
@@ -75,10 +76,14 @@ export function SendContentReleaseForm({
           {isPending ? copy.resuming : copy.resume}
         </button>
 
-        {state?.message ? (
-          <StatusNotice tone={state.success ? "success" : "error"} align="left">
+        {state?.message && state.success ? (
+          <StatusNotice tone="success" align="left">
             {state.message}
           </StatusNotice>
+        ) : null}
+
+        {state?.message && !state.success ? (
+          <AdminErrorDisclosure language={language} message={state.message} />
         ) : null}
       </form>
     );
@@ -112,10 +117,14 @@ export function SendContentReleaseForm({
         {isPending ? copy.queueing : copy.queue}
       </button>
 
-      {state?.message ? (
-        <StatusNotice tone={state.success ? "success" : "error"} align="left">
+      {state?.message && state.success ? (
+        <StatusNotice tone="success" align="left">
           {state.message}
         </StatusNotice>
+      ) : null}
+
+      {state?.message && !state.success ? (
+        <AdminErrorDisclosure language={language} message={state.message} />
       ) : null}
     </form>
   );

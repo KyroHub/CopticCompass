@@ -1,6 +1,5 @@
-import { NextResponse } from "next/server";
-
 import { getProfileRole } from "@/features/profile/lib/server/queries";
+import { jsonErrorResponse, type AppErrorCode } from "@/lib/errors";
 import {
   ingestShenuteFeedbackLearningSignal,
   type ShenuteFeedbackEmbeddingProvider,
@@ -9,6 +8,7 @@ import {
 } from "@/lib/rag/shenuteFeedbackIngestion";
 import { getAuthenticatedUser } from "@/lib/supabase/authQueries";
 import { hasSupabaseRuntimeEnv } from "@/lib/supabase/config";
+import { isMissingSupabaseTableError } from "@/lib/supabase/errors";
 import { createClient } from "@/lib/supabase/server";
 import {
   hasLengthInRange,
@@ -29,6 +29,16 @@ type FeedbackRequestPayload = {
   signal?: unknown;
   userMessageId?: unknown;
 };
+
+function createFeedbackErrorResponse(code: AppErrorCode, status: number) {
+  return jsonErrorResponse({
+    context: "feedback",
+    error: code,
+    fallbackCode: code,
+    requestIdPrefix: "feedback",
+    status,
+  });
+}
 
 function toProvider(value: unknown): ShenuteFeedbackEmbeddingProvider {
   if (value === "gemini") {
@@ -113,26 +123,21 @@ function toPageContext(value: unknown): ShenuteFeedbackPageContext | undefined {
 export async function POST(request: Request) {
   try {
     if (!hasSupabaseRuntimeEnv()) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Shenute feedback is unavailable right now.",
-        },
-        { status: 503 },
-      );
+      return createFeedbackErrorResponse("storage_unavailable", 503);
     }
 
-    const body = (await request.json()) as FeedbackRequestPayload;
+    let body: FeedbackRequestPayload;
+
+    try {
+      body = (await request.json()) as FeedbackRequestPayload;
+    } catch {
+      return createFeedbackErrorResponse("validation_failed", 400);
+    }
+
     const signal = toSignal(body.signal);
 
     if (!signal) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Invalid feedback signal.",
-        },
-        { status: 400 },
-      );
+      return createFeedbackErrorResponse("validation_failed", 400);
     }
 
     const prompt = normalizeMultiline(
@@ -146,26 +151,14 @@ export async function POST(request: Request) {
       !hasLengthInRange(prompt, { min: 1, max: 12000 }) ||
       !hasLengthInRange(assistantResponse, { min: 1, max: 24000 })
     ) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Prompt or assistant response payload is invalid.",
-        },
-        { status: 400 },
-      );
+      return createFeedbackErrorResponse("validation_failed", 400);
     }
 
     const supabase = await createClient();
     const user = await getAuthenticatedUser(supabase);
 
     if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "You must be signed in to send feedback.",
-        },
-        { status: 401 },
-      );
+      return createFeedbackErrorResponse("auth_required", 401);
     }
 
     const role = await getProfileRole(supabase, user.id);
@@ -176,23 +169,11 @@ export async function POST(request: Request) {
         : undefined;
 
     if (signal === "admin_feedback" && !isAdmin) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Only admins can submit written prompt feedback.",
-        },
-        { status: 403 },
-      );
+      return createFeedbackErrorResponse("permission_denied", 403);
     }
 
     if (signal === "admin_feedback" && !feedbackText) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Written admin feedback is required.",
-        },
-        { status: 400 },
-      );
+      return createFeedbackErrorResponse("validation_failed", 400);
     }
 
     const pageContext = toPageContext(body.pageContext);
@@ -229,17 +210,16 @@ export async function POST(request: Request) {
 
     if (insertError) {
       console.error("Failed to persist Shenute feedback event:", insertError);
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Could not store feedback right now.",
-        },
-        { status: 500 },
+      const storageUnavailable = isMissingSupabaseTableError(insertError);
+
+      return createFeedbackErrorResponse(
+        storageUnavailable ? "storage_unavailable" : "unexpected",
+        storageUnavailable ? 503 : 500,
       );
     }
 
     let ragIngested = false;
-    let ragWarning: string | undefined;
+    let ragWarning = false;
 
     try {
       await ingestShenuteFeedbackLearningSignal({
@@ -256,33 +236,28 @@ export async function POST(request: Request) {
       });
       ragIngested = true;
     } catch (ragIngestionError) {
-      ragWarning =
-        ragIngestionError instanceof Error
-          ? ragIngestionError.message
-          : "Unknown RAG ingestion error.";
+      ragWarning = true;
       console.error(
         "Failed to ingest Shenute feedback into RAG:",
         ragIngestionError,
       );
     }
 
-    return NextResponse.json({
-      ragIngested,
-      ...(ragWarning ? { ragWarning } : {}),
-      success: true,
-    });
+    return Response.json(
+      {
+        ragIngested,
+        ...(ragWarning ? { ragWarning: true } : {}),
+        success: true,
+      },
+      {
+        headers: {
+          "Cache-Control": "no-store",
+        },
+      },
+    );
   } catch (error) {
     console.error("Shenute feedback API failed:", error);
 
-    return NextResponse.json(
-      {
-        success: false,
-        error:
-          error instanceof Error
-            ? error.message
-            : "Unknown Shenute feedback error.",
-      },
-      { status: 500 },
-    );
+    return createFeedbackErrorResponse("unexpected", 500);
   }
 }

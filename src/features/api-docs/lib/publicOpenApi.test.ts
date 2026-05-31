@@ -67,6 +67,22 @@ describe("public OpenAPI document", () => {
     expect(document.components.schemas).toHaveProperty("DictionarySearchPage");
     expect(document.components.schemas).toHaveProperty("ShenuteRequest");
     expect(document.components.schemas).toHaveProperty("OcrUploadRequest");
+    const ocrProxyErrorSchema = document.components.schemas.OcrProxyError as {
+      additionalProperties?: boolean;
+      properties: Record<string, { enum?: string[]; type?: string }>;
+      required?: string[];
+    };
+
+    expect(ocrProxyErrorSchema.additionalProperties).toBe(false);
+    expect((ocrProxyErrorSchema.required ?? []).sort()).toEqual(
+      ["code", "error", "success"].sort(),
+    );
+    expect(ocrProxyErrorSchema.properties.code.enum).toEqual([
+      "external_service_unavailable",
+      "rate_limited",
+      "validation_failed",
+    ]);
+    expect(ocrProxyErrorSchema.properties).not.toHaveProperty("upstreamStatus");
     const dictionaryClientEntrySchema = document.components.schemas
       .DictionaryClientEntry as {
       additionalProperties?: boolean;

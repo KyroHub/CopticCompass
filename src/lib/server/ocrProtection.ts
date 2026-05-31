@@ -1,3 +1,4 @@
+import { getPublicErrorMessage, type AppErrorCode } from "@/lib/errors";
 import {
   consumeRateLimit,
   getClientRateLimitIdentifier,
@@ -12,6 +13,10 @@ const OCR_RATE_LIMIT = 8;
 const OCR_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
 
 type OcrProtectionFailure = {
+  code: Extract<
+    AppErrorCode,
+    "external_service_unavailable" | "rate_limited" | "validation_failed"
+  >;
   message: string;
   retryAfterMs?: number;
   status: 413 | 429 | 503;
@@ -40,6 +45,7 @@ export function getOcrUploadSizeFailure(
   }
 
   return {
+    code: "validation_failed",
     status: 413,
     message: `OCR uploads are limited to ${formatBytes(OCR_MAX_UPLOAD_BYTES)}.`,
   };
@@ -63,8 +69,13 @@ export function getOcrContentLengthFailure(
 export async function consumeOcrRateLimit(): Promise<OcrProtectionFailure | null> {
   if (!hasAvailableRateLimitProtection()) {
     return {
+      code: "external_service_unavailable",
       status: 503,
-      message: "OCR is temporarily unavailable.",
+      message: getPublicErrorMessage(
+        "external_service_unavailable",
+        "en",
+        "ocr",
+      ),
     };
   }
 
@@ -82,15 +93,21 @@ export async function consumeOcrRateLimit(): Promise<OcrProtectionFailure | null
     }
 
     return {
+      code: "rate_limited",
       status: 429,
       retryAfterMs: result.retryAfterMs,
-      message: "Too many OCR requests. Please wait a bit before trying again.",
+      message: getPublicErrorMessage("rate_limited", "en", "ocr"),
     };
   } catch (error) {
     console.error("OCR rate-limit check failed:", error);
     return {
+      code: "external_service_unavailable",
       status: 503,
-      message: "OCR is temporarily unavailable.",
+      message: getPublicErrorMessage(
+        "external_service_unavailable",
+        "en",
+        "ocr",
+      ),
     };
   }
 }

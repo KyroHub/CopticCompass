@@ -6,12 +6,14 @@ import {
   isValidProfileFullName,
   normalizeProfileFullName,
 } from "@/features/profile/lib/profileValidation";
+import { getPublicErrorMessage } from "@/lib/errors";
 import { revalidateDashboardPaths } from "@/lib/server/revalidation";
 import { getAuthenticatedServerContext } from "@/lib/supabase/auth";
 import {
   getSupabaseRuntimeEnv,
   hasSupabaseRuntimeEnv,
 } from "@/lib/supabase/config";
+import { getFormLanguage } from "@/lib/validation";
 
 type ProfileUpdateState =
   | { success: true }
@@ -108,13 +110,21 @@ function parseProfileUpdateFields(options: {
 export async function updateProfile(
   formData: FormData,
 ): Promise<ProfileUpdateState> {
+  const language = getFormLanguage(formData);
+
   if (!hasSupabaseRuntimeEnv()) {
-    return { success: false, error: "Supabase environment missing." };
+    return {
+      success: false,
+      error: getPublicErrorMessage("storage_unavailable", language, "profile"),
+    };
   }
 
   const storageOrigin = resolveSupabaseStorageOrigin();
   if (!storageOrigin) {
-    return { success: false, error: "Supabase environment missing." };
+    return {
+      success: false,
+      error: getPublicErrorMessage("storage_unavailable", language, "profile"),
+    };
   }
 
   const authContext = await getAuthenticatedServerContext();
@@ -140,7 +150,18 @@ export async function updateProfile(
     .eq("id", user.id);
 
   if (error) {
-    return { success: false, error: error.message };
+    console.error("Failed to update profile", {
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+      userId: user.id,
+    });
+
+    return {
+      success: false,
+      error: getPublicErrorMessage("unexpected", language, "profile"),
+    };
   }
 
   revalidateDashboardPaths();

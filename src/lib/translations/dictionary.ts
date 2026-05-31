@@ -35,6 +35,11 @@ export const dictionaryMessages = defineMessages({
     "dict.loadingMore": "Loading more results",
     "dict.noMatch": "No distinct forms match your query.",
     "dict.tryFuzzy": "Try adjusting the fuzzy search or removing filters.",
+    "dict.searchUnavailable":
+      "Dictionary results could not load right now. Please try again.",
+    "dict.loadMoreUnavailable":
+      "More dictionary results could not load right now.",
+    "dict.retrySearch": "Try again",
     "dict.exactMatch": "Exact Match",
     "dict.clearSearch": "Clear search",
     "dict.keyboardToggle": "Toggle Coptic keyboard",
@@ -206,6 +211,10 @@ export const dictionaryMessages = defineMessages({
     "analytics.mobileChartsDescription":
       "Interactive charts load on demand so the page stays fast and responsive during the initial visit.",
     "analytics.loadCharts": "Load Charts",
+    "analytics.drilldownUnavailable":
+      "These analytics details could not load right now. Please try again.",
+    "analytics.drilldownMoreUnavailable":
+      "More analytics details could not load right now.",
     "analytics.totalRoots": "Total Roots",
     "analytics.meaningUnknown": "Meaning Unknown",
     "analytics.meaningUncertain": "Meaning Uncertain",
@@ -262,6 +271,11 @@ export const dictionaryMessages = defineMessages({
     "dict.noMatch": "Geen unieke vormen komen overeen met uw zoekopdracht.",
     "dict.tryFuzzy":
       "Probeer de fuzzyzoekfunctie aan te passen of filters te verwijderen.",
+    "dict.searchUnavailable":
+      "Woordenboekresultaten konden nu niet worden geladen. Probeer opnieuw.",
+    "dict.loadMoreUnavailable":
+      "Meer woordenboekresultaten konden nu niet worden geladen.",
+    "dict.retrySearch": "Opnieuw proberen",
     "dict.exactMatch": "Exacte overeenkomst",
     "dict.clearSearch": "Zoekopdracht wissen",
     "dict.keyboardToggle": "Koptisch toetsenbord wisselen",
@@ -434,6 +448,10 @@ export const dictionaryMessages = defineMessages({
     "analytics.mobileChartsDescription":
       "Interactieve grafieken laden op aanvraag, zodat de pagina snel en soepel blijft bij het eerste bezoek.",
     "analytics.loadCharts": "Grafieken laden",
+    "analytics.drilldownUnavailable":
+      "Deze analyticsdetails konden nu niet worden geladen. Probeer opnieuw.",
+    "analytics.drilldownMoreUnavailable":
+      "Meer analyticsdetails konden nu niet worden geladen.",
     "analytics.totalRoots": "Totaal aantal wortels",
     "analytics.meaningUnknown": "Betekenis onbekend",
     "analytics.meaningUncertain": "Betekenis onzeker",

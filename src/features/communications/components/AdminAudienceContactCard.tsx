@@ -3,6 +3,7 @@
 import { Badge } from "@/components/Badge";
 import { useLanguage } from "@/components/LanguageProvider";
 import { SurfacePanel } from "@/components/SurfacePanel";
+import { AdminErrorDisclosure } from "@/features/admin/components/AdminErrorDisclosure";
 import {
   getAudienceLocaleLabel,
   getAudienceSourceLabel,
@@ -23,10 +24,12 @@ const adminAudienceContactCardCopy = {
     paused: "Paused",
     ready: "Ready",
     resendError: "Resend error",
+    resendNeedsAttention: "Needs attention",
     resendPending: "Resend pending",
     resendStatus: "Resend status",
     resendSynced: "Resend synced",
     subscribed: "Subscribed",
+    syncErrorMessage: "Resend could not sync this contact.",
   },
   nl: {
     books: "Boeken",
@@ -39,10 +42,12 @@ const adminAudienceContactCardCopy = {
     paused: "Gepauzeerd",
     ready: "Klaar",
     resendError: "Resend-fout",
+    resendNeedsAttention: "Vraagt aandacht",
     resendPending: "Resend in wachtrij",
     resendStatus: "Resend-status",
     resendSynced: "Resend gesynchroniseerd",
     subscribed: "Geabonneerd",
+    syncErrorMessage: "Resend kon dit contact niet synchroniseren.",
   },
 } as const;
 
@@ -165,9 +170,20 @@ export function AdminAudienceContactCard({
         </div>
         <div>
           <dt className="font-semibold text-ink">{copy.resendStatus}</dt>
-          <dd>{syncState?.last_error ?? copy.ready}</dd>
+          <dd>
+            {syncState?.last_error ? copy.resendNeedsAttention : copy.ready}
+          </dd>
         </div>
       </dl>
+
+      {syncState?.last_error ? (
+        <AdminErrorDisclosure
+          language={language}
+          message={copy.syncErrorMessage}
+          technicalDetails={syncState.last_error}
+          tone="warning"
+        />
+      ) : null}
     </SurfacePanel>
   );
 }

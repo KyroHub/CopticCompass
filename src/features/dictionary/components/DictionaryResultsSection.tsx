@@ -6,6 +6,7 @@ import { Badge } from "@/components/Badge";
 import { buttonClassName } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { useLanguage } from "@/components/LanguageProvider";
+import { StatusNotice } from "@/components/StatusNotice";
 import {
   getPartOfSpeechFilterLabel,
   type DialectFilter,
@@ -18,11 +19,14 @@ import DictionaryEntryCard from "./DictionaryEntry";
 
 type DictionaryResultsSectionProps = {
   dictionaryLength: number;
+  errorActionLabel?: string;
+  errorMessage?: string | null;
   filteredResults: DictionaryClientEntry[];
   hasMoreResults?: boolean;
   loading: boolean;
   loadingMore?: boolean;
   onLoadMore?: () => void;
+  onRetry?: () => void;
   query: string;
   selectedDialect: DialectFilter;
   selectedPartOfSpeech: DictionaryPartOfSpeechFilter;
@@ -32,11 +36,14 @@ type DictionaryResultsSectionProps = {
 
 export function DictionaryResultsSection({
   dictionaryLength,
+  errorActionLabel,
+  errorMessage,
   filteredResults,
   hasMoreResults = false,
   loading,
   loadingMore = false,
   onLoadMore,
+  onRetry,
   query,
   selectedDialect,
   selectedPartOfSpeech,
@@ -140,7 +147,30 @@ export function DictionaryResultsSection({
         </div>
       )}
 
-      {!loading && filteredResults.length === 0 && (
+      {!loading && errorMessage ? (
+        <StatusNotice
+          tone="error"
+          align="left"
+          className="mb-6"
+          title={errorMessage}
+          actions={
+            onRetry && errorActionLabel ? (
+              <button
+                type="button"
+                className={buttonClassName({
+                  className: "w-full sm:w-auto",
+                  variant: "secondary",
+                })}
+                onClick={onRetry}
+              >
+                {errorActionLabel}
+              </button>
+            ) : null
+          }
+        />
+      ) : null}
+
+      {!loading && !errorMessage && filteredResults.length === 0 && (
         <EmptyState
           title={t("dict.noMatch")}
           description={t("dict.tryFuzzy")}

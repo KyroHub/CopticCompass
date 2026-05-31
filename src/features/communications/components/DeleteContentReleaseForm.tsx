@@ -7,7 +7,7 @@ import { deleteContentReleaseDraft } from "@/actions/admin";
 import type { DeleteContentReleaseState } from "@/actions/admin/states";
 import { Button } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
-import { StatusNotice } from "@/components/StatusNotice";
+import { AdminErrorDisclosure } from "@/features/admin/components/AdminErrorDisclosure";
 import {
   isContentReleaseDeletableStatus,
   type ContentReleaseRow,
@@ -101,9 +101,7 @@ export function DeleteContentReleaseForm({
       </div>
 
       {state?.message && !state.success ? (
-        <StatusNotice tone="error" align="left">
-          {state.message}
-        </StatusNotice>
+        <AdminErrorDisclosure language={language} message={state.message} />
       ) : null}
     </form>
   );

@@ -12,6 +12,7 @@ import { PageShell, pageShellAccents } from "@/components/PageShell";
 import { StatusNotice } from "@/components/StatusNotice";
 import { SurfacePanel } from "@/components/SurfacePanel";
 import { getLocalizedHomePath } from "@/lib/locale";
+import { getPublicOcrErrorMessage } from "@/lib/ocrErrors";
 
 const OCR_COPY = {
   en: {
@@ -95,11 +96,7 @@ export default function OCRPage() {
       const extractedText = await processOCRImage(formData);
       setResult(extractedText);
     } catch (processingError) {
-      setError(
-        processingError instanceof Error
-          ? processingError.message
-          : copy.fallbackError,
-      );
+      setError(getPublicOcrErrorMessage(processingError, language));
     } finally {
       setLoading(false);
     }

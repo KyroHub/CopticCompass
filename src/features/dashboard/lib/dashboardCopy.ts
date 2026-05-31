@@ -147,9 +147,9 @@ const DASHBOARD_COPY = {
       updatedSuccess: "Profile updated successfully!",
       selectImageError: "You must select an image to upload.",
       uploadUnavailableError:
-        "Database connection disabled. Cannot upload file.",
-      uploadUnknownError: "Unknown upload error occurred",
-      updateFailed: "Failed to update profile.",
+        "Profile image uploads are temporarily unavailable.",
+      uploadUnknownError: "Could not upload this image right now.",
+      updateFailed: "Could not update your profile right now.",
     },
     submissions: {
       scoreLabel: "Score",
@@ -314,9 +314,9 @@ const DASHBOARD_COPY = {
       updatedSuccess: "Profiel succesvol bijgewerkt!",
       selectImageError: "U moet een afbeelding selecteren om te uploaden.",
       uploadUnavailableError:
-        "Databaseverbinding uitgeschakeld. Bestand uploaden is niet mogelijk.",
-      uploadUnknownError: "Er is een onbekende uploadfout opgetreden",
-      updateFailed: "Profiel bijwerken mislukt.",
+        "Profielfoto's uploaden is tijdelijk niet beschikbaar.",
+      uploadUnknownError: "Deze afbeelding kon nu niet worden geupload.",
+      updateFailed: "Uw profiel kon nu niet worden bijgewerkt.",
     },
     submissions: {
       scoreLabel: "Score",

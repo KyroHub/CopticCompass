@@ -9,7 +9,7 @@ import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
 import { FormField } from "@/components/FormField";
 import { useLanguage } from "@/components/LanguageProvider";
-import { StatusNotice } from "@/components/StatusNotice";
+import { AdminErrorDisclosure } from "@/features/admin/components/AdminErrorDisclosure";
 import {
   CONTENT_RELEASE_AUDIENCE_SEGMENTS,
   CONTENT_RELEASE_LOCALE_MODES,
@@ -334,9 +334,7 @@ export function CreateContentReleaseForm({
         </div>
 
         {state?.error ? (
-          <StatusNotice tone="error" align="left">
-            {state.error}
-          </StatusNotice>
+          <AdminErrorDisclosure language={language} message={state.error} />
         ) : null}
       </form>
     </details>

@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable react-hooks/set-state-in-effect -- Shenute uses imperative chat scroll and restoration state that is not compiler-clean yet. */
+
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import {
@@ -77,7 +79,9 @@ import {
   type ShenuteReactionSignal,
 } from "@/features/shenute/shared";
 import { cx } from "@/lib/classes";
+import { getPublicErrorMessage, isAppErrorCode } from "@/lib/errors";
 import { getContributorsPath, getLocalizedHomePath } from "@/lib/locale";
+import { getPublicOcrErrorMessage } from "@/lib/ocrErrors";
 import { createClient } from "@/lib/supabase/client";
 import { useOptionalAuthGate } from "@/lib/supabase/useOptionalAuthGate";
 
@@ -96,6 +100,13 @@ type FeedbackStateByMessage = Record<
     status: "error" | "pending" | "success";
   }
 >;
+
+type FeedbackResponsePayload = {
+  code?: unknown;
+  ragIngested?: boolean;
+  ragWarning?: boolean;
+  success?: boolean;
+};
 
 type MessageActionStateByMessage = Record<
   string,
@@ -158,6 +169,8 @@ const SHENUTE_COPY = {
       "Could not resolve prompt/response for this feedback.",
     feedbackSaved: "Thanks for the feedback.",
     feedbackSavedWithRag: "Thanks, this helps improve Shenute.",
+    feedbackSavedLearningDelayed:
+      "Thanks for the feedback. The learning sync will catch up later.",
     feedbackSaveFailed: "Could not save feedback.",
     feedbackSaving: "Saving feedback...",
     feedbackSignIn: "Sign in to send feedback.",
@@ -180,6 +193,7 @@ const SHENUTE_COPY = {
     savingHistory: "Saving...",
     savedHistory: "Conversation saved.",
     saveHistoryFailed: "Could not save this conversation.",
+    historyUnavailable: "Conversation history could not load right now.",
     autosaveHint: "Conversations save automatically to your account.",
     autosaveStatus: "Saved to your account.",
     unsavedChanges: "Unsaved changes. Saving automatically...",
@@ -220,10 +234,11 @@ const SHENUTE_COPY = {
     providerThoth: "Best answer",
     providerThothDescription: "The strongest default for Coptology questions.",
     ragWarning: "Saved, but the learning sync warned:",
-    rateLimit: "Rate limit reached. Please try again later.",
+    rateLimit: "Shenute is busy right now. Please wait a moment and try again.",
     regenerateResponse: "Regenerate",
     remove: "Remove",
-    requestFailed: "AI request failed.",
+    requestFailed:
+      "Shenute is having trouble answering right now. Please try again in a moment.",
     responseActions: "Response actions",
     responseFeedbackActions: "Feedback",
     responseReviseActions: "Revise answer",
@@ -298,6 +313,8 @@ const SHENUTE_COPY = {
       "De prompt en het antwoord voor deze feedback konden niet worden bepaald.",
     feedbackSaved: "Bedankt voor uw feedback.",
     feedbackSavedWithRag: "Bedankt, dit helpt Shenute te verbeteren.",
+    feedbackSavedLearningDelayed:
+      "Bedankt voor uw feedback. De leersynchronisatie wordt later bijgewerkt.",
     feedbackSaveFailed: "Feedback kon niet worden opgeslagen.",
     feedbackSaving: "Feedback opslaan...",
     feedbackSignIn: "Meld u aan om feedback te verzenden.",
@@ -322,6 +339,7 @@ const SHENUTE_COPY = {
     savingHistory: "Opslaan...",
     savedHistory: "Gesprek opgeslagen.",
     saveHistoryFailed: "Dit gesprek kon niet worden opgeslagen.",
+    historyUnavailable: "Gespreksgeschiedenis kon nu niet worden geladen.",
     autosaveHint: "Gesprekken worden automatisch in uw account opgeslagen.",
     autosaveStatus: "Opgeslagen in uw account.",
     unsavedChanges: "Niet-opgeslagen wijzigingen. Automatisch opslaan...",
@@ -363,10 +381,11 @@ const SHENUTE_COPY = {
     providerThothDescription:
       "De sterkste standaard voor Koptologische vragen.",
     ragWarning: "Opgeslagen, maar de leersynchronisatie waarschuwde:",
-    rateLimit: "De limiet is bereikt. Probeer het later opnieuw.",
+    rateLimit: "Shenute is nu bezet. Wacht even en probeer het opnieuw.",
     regenerateResponse: "Opnieuw genereren",
     remove: "Verwijderen",
-    requestFailed: "AI-verzoek mislukt.",
+    requestFailed:
+      "Shenute heeft nu moeite met antwoorden. Probeer het zo opnieuw.",
     responseActions: "Antwoordacties",
     responseFeedbackActions: "Feedback",
     responseReviseActions: "Antwoord aanpassen",
@@ -724,12 +743,40 @@ function getErrorStatusCode(error: unknown): number | undefined {
   return undefined;
 }
 
-function getShenuteErrorMessage(error: unknown, copy: ShenuteCopy) {
+function getStructuredErrorCode(error: unknown) {
+  if (!error || typeof error !== "object") {
+    return null;
+  }
+
+  const candidate = error as { code?: unknown; message?: unknown };
+  if (isAppErrorCode(candidate.code)) {
+    return candidate.code;
+  }
+
+  if (typeof candidate.message !== "string") {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(candidate.message) as { code?: unknown };
+    return isAppErrorCode(parsed.code) ? parsed.code : null;
+  } catch {
+    return null;
+  }
+}
+
+function getShenuteErrorMessage(
+  error: unknown,
+  copy: ShenuteCopy,
+  language: ShenuteLanguage,
+) {
   const status = getErrorStatusCode(error);
+  const structuredCode = getStructuredErrorCode(error);
   const message = error instanceof Error ? error.message : String(error ?? "");
   const normalizedMessage = message.toLowerCase();
 
   if (
+    structuredCode === "rate_limited" ||
     status === 429 ||
     normalizedMessage.includes("429") ||
     normalizedMessage.includes("rate limit")
@@ -738,6 +785,7 @@ function getShenuteErrorMessage(error: unknown, copy: ShenuteCopy) {
   }
 
   if (
+    structuredCode === "auth_required" ||
     status === 401 ||
     normalizedMessage.includes("401") ||
     normalizedMessage.includes("unauthorized") ||
@@ -746,7 +794,29 @@ function getShenuteErrorMessage(error: unknown, copy: ShenuteCopy) {
     return copy.accessRequired;
   }
 
-  return message || copy.requestFailed;
+  if (structuredCode === "validation_failed") {
+    return getPublicErrorMessage("validation_failed", language, "shenute");
+  }
+
+  return copy.requestFailed;
+}
+
+function getFeedbackErrorMessage(
+  payload: FeedbackResponsePayload,
+  copy: ShenuteCopy,
+  language: ShenuteLanguage,
+) {
+  return isAppErrorCode(payload.code)
+    ? getPublicErrorMessage(payload.code, language, "feedback")
+    : copy.feedbackSaveFailed;
+}
+
+async function readFeedbackResponsePayload(response: Response) {
+  try {
+    return (await response.json()) as FeedbackResponsePayload;
+  } catch {
+    return { success: false } satisfies FeedbackResponsePayload;
+  }
 }
 
 function getFeedbackStatusClass(status: "error" | "pending" | "success") {
@@ -1443,6 +1513,7 @@ export default function ShenuteAI() {
       try {
         const response = await fetch("/api/shenute/history");
         if (!response.ok) {
+          setTemporaryHistoryActionStatus(copy.historyUnavailable);
           setHasRestoredHistory(true);
           return;
         }
@@ -1479,7 +1550,7 @@ export default function ShenuteAI() {
           }
         }
       } catch {
-        // ignore restore failures
+        setTemporaryHistoryActionStatus(copy.historyUnavailable);
       } finally {
         setHasRestoredHistory(true);
       }
@@ -1490,6 +1561,7 @@ export default function ShenuteAI() {
     hasRestoredHistory,
     isAuthenticated,
     isReady,
+    copy.historyUnavailable,
     scrollTranscriptToBottom,
     setMessages,
   ]);
@@ -1531,6 +1603,8 @@ export default function ShenuteAI() {
           }
           lastSavedMessageSignatureRef.current = savedSignature;
           setAutosaveStatus(copy.autosaveStatus);
+        } else {
+          setTemporaryHistoryActionStatus(copy.saveHistoryFailed);
         }
       });
     }, 1000);
@@ -1541,6 +1615,7 @@ export default function ShenuteAI() {
     typedMessages,
     currentMessageSignature,
     copy.autosaveStatus,
+    copy.saveHistoryFailed,
     hasUnsavedConversationChanges,
     hasRestoredHistory,
     isLoading,
@@ -1597,6 +1672,7 @@ export default function ShenuteAI() {
       );
 
       if (!response.ok) {
+        setTemporaryHistoryActionStatus(copy.historyUnavailable);
         return { success: false };
       }
 
@@ -1608,6 +1684,7 @@ export default function ShenuteAI() {
       };
 
       if (!payload.success || !payload.sessionId) {
+        setTemporaryHistoryActionStatus(copy.historyUnavailable);
         return { success: false };
       }
 
@@ -1630,6 +1707,7 @@ export default function ShenuteAI() {
 
       return { success: true, sessionId: payload.sessionId };
     } catch {
+      setTemporaryHistoryActionStatus(copy.historyUnavailable);
       return { success: false };
     } finally {
       setSessionLoadingId(null);
@@ -1933,11 +2011,7 @@ export default function ShenuteAI() {
           .filter((part) => part.length > 0)
           .join("\n\n");
       } catch (ocrProcessingError) {
-        setOcrError(
-          ocrProcessingError instanceof Error
-            ? ocrProcessingError.message
-            : copy.ocrFailed,
-        );
+        setOcrError(getPublicOcrErrorMessage(ocrProcessingError, language));
         setOcrPending(false);
         return;
       } finally {
@@ -2214,22 +2288,24 @@ export default function ShenuteAI() {
         }),
       });
 
-      const payload = (await response.json()) as {
-        error?: string;
-        ragIngested?: boolean;
-        ragWarning?: string;
-        success?: boolean;
-      };
+      const payload = await readFeedbackResponsePayload(response);
 
       if (!response.ok || !payload.success) {
-        throw new Error(payload.error ?? copy.feedbackSaveFailed);
+        setFeedbackStateByMessage((current) => ({
+          ...current,
+          [options.assistantMessage.id]: {
+            message: getFeedbackErrorMessage(payload, copy, language),
+            status: "error",
+          },
+        }));
+        return false;
       }
 
       let successMessage: string = copy.feedbackSaved;
       if (payload.ragIngested) {
         successMessage = copy.feedbackSavedWithRag;
       } else if (payload.ragWarning) {
-        successMessage = `${copy.ragWarning} ${payload.ragWarning}`;
+        successMessage = copy.feedbackSavedLearningDelayed;
       }
 
       setFeedbackStateByMessage((current) => ({
@@ -2241,14 +2317,11 @@ export default function ShenuteAI() {
       }));
 
       return true;
-    } catch (feedbackError) {
+    } catch {
       setFeedbackStateByMessage((current) => ({
         ...current,
         [options.assistantMessage.id]: {
-          message:
-            feedbackError instanceof Error
-              ? feedbackError.message
-              : copy.feedbackSaveFailed,
+          message: copy.feedbackSaveFailed,
           status: "error",
         },
       }));
@@ -3427,7 +3500,7 @@ export default function ShenuteAI() {
                 ) : null}
                 {error ? (
                   <StatusNotice tone="error" align="left">
-                    {getShenuteErrorMessage(error, copy)}
+                    {getShenuteErrorMessage(error, copy, language)}
                   </StatusNotice>
                 ) : null}
                 {ocrError ? (

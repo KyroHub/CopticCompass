@@ -34,6 +34,10 @@ export function ProfileForm({
     type: "success" | "error";
   } | null>(null);
   const supabase = createClient();
+  const knownUploadErrorMessages = new Set<string>([
+    copy.profile.selectImageError,
+    copy.profile.uploadUnavailableError,
+  ]);
 
   async function handleAvatarUpload(
     event: React.ChangeEvent<HTMLInputElement>,
@@ -79,9 +83,12 @@ export function ProfileForm({
       setTimeout(() => setStatus(null), 3000);
     } catch (error: unknown) {
       const errorMessage =
-        error instanceof Error
+        error instanceof Error && knownUploadErrorMessages.has(error.message)
           ? error.message
           : copy.profile.uploadUnknownError;
+      if (errorMessage === copy.profile.uploadUnknownError) {
+        console.warn("Profile avatar upload failed.", error);
+      }
       setStatus({ message: errorMessage, type: "error" });
     } finally {
       setIsUploading(false);
@@ -90,6 +97,7 @@ export function ProfileForm({
 
   async function handleSubmit(formData: FormData) {
     setStatus(null);
+    formData.set("locale", language);
     if (pendingAvatarStoragePath && avatarUrl) {
       formData.set("avatar_url", avatarUrl);
     }
@@ -182,6 +190,7 @@ export function ProfileForm({
       </div>
 
       <form action={handleSubmit} className="w-full flex-1 space-y-6 text-ink">
+        <input type="hidden" name="locale" value={language} />
         <FormField htmlFor="full_name" label={copy.profile.fullNameLabel}>
           <input
             id="full_name"

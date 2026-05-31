@@ -8,6 +8,7 @@ import { buttonClassName } from "@/components/Button";
 import { FormField } from "@/components/FormField";
 import { useLanguage } from "@/components/LanguageProvider";
 import { StatusNotice } from "@/components/StatusNotice";
+import { AdminErrorDisclosure } from "@/features/admin/components/AdminErrorDisclosure";
 
 const sendContentReleasePreviewFormCopy = {
   en: {
@@ -81,10 +82,14 @@ export function SendContentReleasePreviewForm({
 
       <p className="text-sm text-muted">{copy.description}</p>
 
-      {state?.message ? (
-        <StatusNotice tone={state.success ? "success" : "error"} align="left">
+      {state?.message && state.success ? (
+        <StatusNotice tone="success" align="left">
           {state.message}
         </StatusNotice>
+      ) : null}
+
+      {state?.message && !state.success ? (
+        <AdminErrorDisclosure language={language} message={state.message} />
       ) : null}
     </form>
   );

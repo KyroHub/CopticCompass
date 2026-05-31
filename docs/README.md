@@ -14,6 +14,7 @@ working details.
 | Practice feature              | [Practice Feature Guide](./practice.md)                               |
 | API, AI, OCR, and RAG flows   | [API, AI, and Data Workflows](./api-and-workflows.md)                 |
 | Brand, copy, and assets       | [Coptic Compass Brand Book](./coptic-compass-brand-guide.md)          |
+| UI implementation patterns    | [Coptic Compass UI Guide](./ui-guide.md)                              |
 | Dutch UI and content copy     | [Dutch Localization Style Guide](./dutch-localization-style-guide.md) |
 | Shenute distillation datasets | [Shenute Distillation Pipeline](./distillation.md)                    |
 
@@ -30,6 +31,8 @@ working details.
 - Put public API, AI provider, OCR, RAG, and communications workflow details in
   `api-and-workflows.md`.
 - Put product voice, visual identity, and public copy posture in the brand book.
+- Put page rhythm, buttons, filters, control surfaces, mobile scroll-fatigue
+  rules, and contributor UI checklists in `ui-guide.md`.
 - Put Dutch terminology and localization rules in the localization guide.
 
 When a change spans multiple docs, prefer one detailed source of truth and short

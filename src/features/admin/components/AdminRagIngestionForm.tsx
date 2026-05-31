@@ -7,6 +7,7 @@ import { buttonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { StatusNotice } from "@/components/StatusNotice";
 import { SurfacePanel } from "@/components/SurfacePanel";
+import { AdminErrorDisclosure } from "@/features/admin/components/AdminErrorDisclosure";
 import { readJsonResponse, summarizeResponseText } from "@/lib/response";
 import type { Language } from "@/types/i18n";
 
@@ -345,6 +346,8 @@ export function AdminRagIngestionForm() {
   const [liveLogs, setLiveLogs] = useState<DashboardLogEntry[]>([]);
   const bulkLogs = collectBulkLogs(bulkJsonState);
   const dashboardLogs = collectDashboardLogs(state?.logs, bulkLogs, liveLogs);
+  const failedBulkJsonResults =
+    bulkJsonState?.results?.filter((result) => !result.success) ?? [];
 
   const loadRagStatus = useCallback(async () => {
     setStatusLoading(true);
@@ -628,9 +631,11 @@ export function AdminRagIngestionForm() {
         ) : null}
 
         {!statusLoading && ragStatusError ? (
-          <p className="rounded-lg border border-danger/25 bg-danger/5 px-4 py-3 text-sm text-danger shadow-sm dark:bg-danger/10">
-            {ragStatusError}
-          </p>
+          <AdminErrorDisclosure
+            language={language}
+            message={copy.loadError}
+            technicalDetails={ragStatusError}
+          />
         ) : null}
 
         {!statusLoading && !ragStatusError && ragStatus ? (
@@ -761,15 +766,19 @@ export function AdminRagIngestionForm() {
       ) : null}
 
       {state?.error ? (
-        <StatusNotice tone="error" align="left">
-          {state.error}
-        </StatusNotice>
+        <AdminErrorDisclosure
+          language={language}
+          message={copy.uploadError}
+          technicalDetails={state.error}
+        />
       ) : null}
 
       {bulkJsonState?.error ? (
-        <StatusNotice tone="error" align="left">
-          {bulkJsonState.error}
-        </StatusNotice>
+        <AdminErrorDisclosure
+          language={language}
+          message={copy.jsonError}
+          technicalDetails={bulkJsonState.error}
+        />
       ) : null}
 
       {bulkJsonState?.message ? (
@@ -791,28 +800,27 @@ export function AdminRagIngestionForm() {
         </StatusNotice>
       ) : null}
 
-      {bulkJsonState?.results &&
-      bulkJsonState.results.some((result) => !result.success) ? (
-        <SurfacePanel
-          rounded="lg"
-          variant="subtle"
-          shadow="soft"
-          className="border-warning/35 bg-accent-soft p-4 text-xs text-accent-strong dark:text-accent"
-        >
-          <p className="mb-2 font-semibold">
-            {copy.partialFailures}: {copy.failedJsonSources}
-          </p>
-          <ul className="mt-2 list-disc space-y-1 pl-5">
-            {bulkJsonState.results
-              .filter((result) => !result.success)
-              .slice(0, 5)
-              .map((result) => (
-                <li key={result.sourcePath}>
-                  {result.sourcePath}: {result.error ?? copy.unknownError}
-                </li>
-              ))}
-          </ul>
-        </SurfacePanel>
+      {failedBulkJsonResults.length > 0 ? (
+        <AdminErrorDisclosure
+          language={language}
+          message={
+            <div>
+              <p className="font-semibold">
+                {copy.partialFailures}: {copy.failedJsonSources}
+              </p>
+              <ul className="mt-2 list-disc space-y-1 pl-5 text-xs">
+                {failedBulkJsonResults.slice(0, 5).map((result) => (
+                  <li key={result.sourcePath}>{result.sourcePath}</li>
+                ))}
+              </ul>
+            </div>
+          }
+          technicalDetails={failedBulkJsonResults.map((result) => ({
+            error: result.error ?? copy.unknownError,
+            sourcePath: result.sourcePath,
+          }))}
+          tone="warning"
+        />
       ) : null}
 
       <SurfacePanel rounded="lg" variant="subtle" shadow="soft" className="p-5">

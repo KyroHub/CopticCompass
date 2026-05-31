@@ -181,8 +181,10 @@ infrastructure:
 
 Public-facing documentation is part of the product surface. Keep `README.md`,
 the docs in `docs/`, and README screenshots in `public/readme` aligned with the
-current brand assets, typography, and product vocabulary. The brand book is the
-source of truth for naming, logo usage, and public copy posture.
+current brand assets, typography, product vocabulary, and UI patterns. The brand
+book is the source of truth for naming, logo usage, and public copy posture.
+The UI guide is the source of truth for implementation-level page rhythm,
+control surfaces, CTA behavior, and mobile layout conventions.
 
 ## Testing Strategy
 
@@ -190,13 +192,21 @@ Current testing layers:
 
 - unit and integration-style coverage with Vitest in `src/**/*.test.ts`
 - end-to-end smoke coverage with Playwright in `tests/e2e`
+- source guardrails for routing/layout and raw error disclosure regressions
 - CI enforcement in `.github/workflows/ci.yml`
 
 Where a domain has enough behavior to justify it, prefer smaller domain-specific test files over one giant catch-all harness. The admin action tests now follow that pattern with shared helpers plus separate release, moderation, and audience test files.
 
+Error-handling changes should include focused coverage for public copy mapping,
+API JSON error payloads, and UI disclosure behavior. The guardrail tests should
+continue catching obvious raw-error leaks, including direct `error.message`
+rendering, direct `payload.error` rendering, `alert(` usage, and environment
+variable names outside technical/developer surfaces.
+
 CI currently runs:
 
 - formatting check
+- dead-code check with Knip
 - lint
 - Vitest
 - production build

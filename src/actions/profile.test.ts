@@ -165,4 +165,34 @@ describe("profile action", () => {
 
     expect(updateMock).not.toHaveBeenCalled();
   });
+
+  it("does not return raw storage errors to the profile UI", async () => {
+    const { updateProfile } = await loadProfileModule({
+      updateError: {
+        message:
+          "raw database constraint failure: SUPABASE_SERVICE_ROLE_KEY missing",
+      },
+    });
+
+    const result = await updateProfile(createProfileFormData());
+
+    expect(result).toEqual({
+      success: false,
+      error: "Could not update your profile right now.",
+    });
+    expect(JSON.stringify(result)).not.toContain("SUPABASE_SERVICE_ROLE_KEY");
+    expect(JSON.stringify(result)).not.toContain("raw database");
+  });
+
+  it("returns localized unavailable copy when profile storage is disabled", async () => {
+    const { updateProfile } = await loadProfileModule({ hasEnv: false });
+    const formData = createProfileFormData();
+    formData.set("locale", "nl");
+
+    await expect(updateProfile(formData)).resolves.toEqual({
+      success: false,
+      error:
+        "Profielinstellingen zijn tijdelijk niet beschikbaar. Probeer het later opnieuw.",
+    });
+  });
 });

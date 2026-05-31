@@ -28,6 +28,7 @@ function DictionaryPageBody({ searchPath }: DictionaryPageBodyProps) {
   const {
     dictionaryLength,
     exactMatch,
+    fetchError,
     filteredResults,
     handleKeyboardAppend,
     handleKeyboardBackspace,
@@ -39,6 +40,7 @@ function DictionaryPageBody({ searchPath }: DictionaryPageBodyProps) {
     loadingMore,
     query,
     resultsKey,
+    retrySearch,
     searchInputRef,
     selectedDialect,
     selectedPartOfSpeech,
@@ -50,6 +52,12 @@ function DictionaryPageBody({ searchPath }: DictionaryPageBodyProps) {
     visibleQuery,
     totalMatches,
   } = useDictionarySearch({ searchPath });
+  let resultsErrorMessage: string | null = null;
+  if (fetchError === "initial") {
+    resultsErrorMessage = t("dict.searchUnavailable");
+  } else if (fetchError === "more") {
+    resultsErrorMessage = t("dict.loadMoreUnavailable");
+  }
 
   return (
     <PageShell
@@ -128,11 +136,14 @@ function DictionaryPageBody({ searchPath }: DictionaryPageBodyProps) {
       <DictionaryResultsSection
         key={resultsKey}
         dictionaryLength={dictionaryLength}
+        errorActionLabel={t("dict.retrySearch")}
+        errorMessage={resultsErrorMessage}
         filteredResults={filteredResults}
         hasMoreResults={hasMoreResults}
         loading={loading}
         loadingMore={loadingMore}
         onLoadMore={loadMoreResults}
+        onRetry={fetchError === "more" ? loadMoreResults : retrySearch}
         query={visibleQuery}
         selectedDialect={selectedDialect}
         selectedPartOfSpeech={selectedPartOfSpeech}

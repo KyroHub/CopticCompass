@@ -34,7 +34,12 @@ Important:
 
 ## Environment Variable Reference
 
-The complete placeholder set lives in `.env.example`. The list below highlights the most important variables by subsystem.
+The baseline local template lives in `.env.example`. The list below highlights
+the most important variables by subsystem. Deployment-provided variables such as
+`VERCEL_URL`, `VERCEL_ENV`, `VERCEL_PROJECT_PRODUCTION_URL`, `NODE_ENV`, and
+rarely changed optional tuning knobs may not need local placeholders. When a new
+manual environment variable becomes required for local development or rollout,
+add it to `.env.example` and this guide together.
 
 ### Core App and Supabase
 
@@ -60,6 +65,9 @@ In production, set `NEXT_PUBLIC_SITE_URL` and `SITE_URL` to `https://www.copticc
 - `GEMINI_EMBEDDING_OUTPUT_DIMENSION` (default `3072`)
 - `HF_TOKEN`
 - `HF_CHAT_MODEL` (optional)
+- `HF_CHAT_TIMEOUT_MS` (optional)
+- `HF_CHAT_MAX_RETRIES` (optional)
+- `HF_CHAT_RETRY_BASE_MS` (optional)
 - `HF_EMBEDDING_MODEL` (optional)
 - `THOTH_API_KEY`
 - `THOTH_BASE_URL`
@@ -72,6 +80,7 @@ In production, set `OPENROUTER_HTTP_REFERER` to `https://www.copticcompass.com` 
 
 - `OCR_SERVICE_URL`
 - `OCR_UPLOAD_FIELD`
+- `OCR_MAX_UPLOAD_BYTES`
 
 ### RAG Ingestion Tuning
 
@@ -82,6 +91,11 @@ In production, set `OPENROUTER_HTTP_REFERER` to `https://www.copticcompass.com` 
 - `RAG_DB_INSERT_MAX_RETRIES`
 - `RAG_RETRY_BASE_MS`
 - `RAG_VECTOR_DIMENSIONS`
+- `RAG_THOTH_ENABLED`
+- `RAG_THOTH_PROOFCHECK_REQUIRED`
+- `RAG_THOTH_CHUNK_INPUT_LIMIT`
+- `RAG_THOTH_JSON_SAMPLE_LIMIT`
+- `RAG_THOTH_RECONCILE_TEXT_LIMIT`
 
 ### Embedding Network Retry Tuning
 
@@ -91,6 +105,29 @@ In production, set `OPENROUTER_HTTP_REFERER` to `https://www.copticcompass.com` 
 - `OPENROUTER_EMBEDDING_TIMEOUT_MS`
 - `OPENROUTER_EMBEDDING_MAX_RETRIES`
 - `OPENROUTER_EMBEDDING_RETRY_BASE_MS`
+
+### Shenute Feedback and Translation Helpers
+
+- `CHAT_FEEDBACK_THOTH_REFINEMENT_ENABLED`
+- `CHAT_FEEDBACK_THOTH_INPUT_LIMIT`
+- `NMT_TRANSLATOR_SPACE`
+- `NMT_TRANSLATOR_TIMEOUT_MS`
+
+### Distillation Pipeline
+
+The distillation scripts also use:
+
+- `DISTILL_EXTRACT_PAGE_SIZE`
+- `DISTILL_TEACHER_MAX_RETRIES`
+- `DISTILL_TEACHER_RETRY_BASE_MS`
+- `DISTILL_TEACHER_RETRY_MAX_MS`
+- `DISTILL_TEACHER_TIMEOUT_MS`
+
+See `docs/distillation.md` for the pipeline-specific workflow.
+
+### Observability
+
+- `SCALABILITY_LOGGING`
 
 ## Supabase Webhooks & Background Work
 

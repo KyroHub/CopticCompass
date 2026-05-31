@@ -1,5 +1,7 @@
 "use client";
 
+/* eslint-disable react-hooks/set-state-in-effect -- Floating Shenute uses existing timer-driven chat state that is not compiler-clean yet. */
+
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import {
@@ -66,6 +68,8 @@ import {
   type ShenuteReactionSignal,
 } from "@/features/shenute/shared";
 import { cx } from "@/lib/classes";
+import { getPublicErrorMessage, isAppErrorCode } from "@/lib/errors";
+import { getPublicOcrErrorMessage } from "@/lib/ocrErrors";
 import { createClient } from "@/lib/supabase/client";
 import { useOptionalAuthGate } from "@/lib/supabase/useOptionalAuthGate";
 import type { Language } from "@/types/i18n";
@@ -198,12 +202,14 @@ const floatingShenuteCopy = {
     providerThothDescription: "The strongest default for Coptology questions.",
     ragWarning: "RAG ingest warning:",
     removeImage: "Remove",
-    requestFailed: "Request failed.",
+    requestFailed:
+      "Shenute is having trouble answering right now. Please try again in a moment.",
     responseFeedbackActions: "Feedback",
     responseUseActions: "Use answer",
     runningOcr: "Running OCR...",
     saved: "Saved.",
     savedRag: "Saved and added to RAG learning.",
+    savedLearningDelayed: "Saved. The learning sync will catch up later.",
     savingFeedback: "Saving feedback...",
     selectedForOcrAlt: "Selected for OCR",
     send: "Send",
@@ -280,12 +286,15 @@ const floatingShenuteCopy = {
       "De sterkste standaard voor koptologische vragen.",
     ragWarning: "RAG-invoerwaarschuwing:",
     removeImage: "Verwijderen",
-    requestFailed: "Verzoek mislukt.",
+    requestFailed:
+      "Shenute heeft nu moeite met antwoorden. Probeer het zo opnieuw.",
     responseFeedbackActions: "Feedback",
     responseUseActions: "Antwoord gebruiken",
     runningOcr: "OCR uitvoeren...",
     saved: "Opgeslagen.",
     savedRag: "Opgeslagen en toegevoegd aan RAG-leren.",
+    savedLearningDelayed:
+      "Opgeslagen. De leersynchronisatie wordt later bijgewerkt.",
     savingFeedback: "Feedback opslaan...",
     selectedForOcrAlt: "Geselecteerd voor OCR",
     send: "Versturen",
@@ -308,6 +317,34 @@ const floatingShenuteCopy = {
     writeAdminFeedback: "Schrijf adminfeedback voordat u die verstuurt.",
   },
 } as const satisfies Record<Language, Record<string, string>>;
+
+type FloatingShenuteCopy =
+  (typeof floatingShenuteCopy)[keyof typeof floatingShenuteCopy];
+
+type FeedbackResponsePayload = {
+  code?: unknown;
+  ragIngested?: boolean;
+  ragWarning?: boolean;
+  success?: boolean;
+};
+
+function getFeedbackErrorMessage(
+  payload: FeedbackResponsePayload,
+  copy: FloatingShenuteCopy,
+  language: Language,
+) {
+  return isAppErrorCode(payload.code)
+    ? getPublicErrorMessage(payload.code, language, "feedback")
+    : copy.feedbackFailed;
+}
+
+async function readFeedbackResponsePayload(response: Response) {
+  try {
+    return (await response.json()) as FeedbackResponsePayload;
+  } catch {
+    return { success: false } satisfies FeedbackResponsePayload;
+  }
+}
 
 function formatChatHistory(
   messages: ChatMessageLike[],
@@ -1282,11 +1319,7 @@ export function FloatingAiAssistantPanel({
           .filter((part) => part.length > 0)
           .join("\n\n");
       } catch (ocrProcessingError) {
-        setOcrError(
-          ocrProcessingError instanceof Error
-            ? ocrProcessingError.message
-            : copy.ocrFailed,
-        );
+        setOcrError(getPublicOcrErrorMessage(ocrProcessingError, language));
         setOcrPending(false);
         return;
       } finally {
@@ -1376,22 +1409,24 @@ export function FloatingAiAssistantPanel({
         }),
       });
 
-      const payload = (await response.json()) as {
-        error?: string;
-        ragIngested?: boolean;
-        ragWarning?: string;
-        success?: boolean;
-      };
+      const payload = await readFeedbackResponsePayload(response);
 
       if (!response.ok || !payload.success) {
-        throw new Error(payload.error ?? copy.feedbackFailed);
+        setFeedbackStateByMessage((current) => ({
+          ...current,
+          [options.assistantMessage.id]: {
+            message: getFeedbackErrorMessage(payload, copy, language),
+            status: "error",
+          },
+        }));
+        return false;
       }
 
       let successMessage: string = copy.saved;
       if (payload.ragIngested) {
         successMessage = copy.savedRag;
       } else if (payload.ragWarning) {
-        successMessage = `${copy.saved} ${copy.ragWarning} ${payload.ragWarning}`;
+        successMessage = copy.savedLearningDelayed;
       }
 
       setFeedbackStateByMessage((current) => ({
@@ -1403,14 +1438,11 @@ export function FloatingAiAssistantPanel({
       }));
 
       return true;
-    } catch (feedbackError) {
+    } catch {
       setFeedbackStateByMessage((current) => ({
         ...current,
         [options.assistantMessage.id]: {
-          message:
-            feedbackError instanceof Error
-              ? feedbackError.message
-              : copy.feedbackFailed,
+          message: copy.feedbackFailed,
           status: "error",
         },
       }));
@@ -1698,7 +1730,7 @@ export function FloatingAiAssistantPanel({
             >
               {error ? (
                 <p className="mb-2 rounded-lg border border-danger/25 bg-danger/5 px-3 py-2 text-xs text-danger dark:bg-danger/10">
-                  {error.message || copy.requestFailed}
+                  {copy.requestFailed}
                 </p>
               ) : null}
               {ocrError ? (

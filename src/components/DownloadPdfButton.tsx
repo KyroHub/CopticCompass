@@ -6,7 +6,9 @@ import { useState } from "react";
 import { AuthGatedActionButton } from "@/components/AuthGatedActionButton";
 import { buttonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
+import { StatusNotice } from "@/components/StatusNotice";
 import { cx } from "@/lib/classes";
+import { getPublicErrorMessage } from "@/lib/errors";
 import { useOptionalAuthGate } from "@/lib/supabase/useOptionalAuthGate";
 
 import type { jsPDF as JsPdfInstance } from "jspdf";
@@ -30,7 +32,6 @@ const PDF_BUTTON_COPY = {
     footerBrand: "Coptic Compass",
     footerDescriptor: "Digital Coptology Platform",
     footerDownloadedOn: "Downloaded on",
-    errorPrefix: "PDF generation encountered an error:",
   },
   nl: {
     download: "PDF downloaden",
@@ -40,7 +41,6 @@ const PDF_BUTTON_COPY = {
     footerBrand: "Coptic Compass",
     footerDescriptor: "Digitaal Koptologieplatform",
     footerDownloadedOn: "Gedownload op",
-    errorPrefix: "Er is een fout opgetreden bij het maken van de pdf:",
   },
 } as const;
 
@@ -71,6 +71,7 @@ export function DownloadPdfButton({
   const { language } = useLanguage();
   const authGate = useOptionalAuthGate();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [pdfError, setPdfError] = useState<string | null>(null);
   const copy = PDF_BUTTON_COPY[language];
 
   const handleDownload = async () => {
@@ -78,8 +79,10 @@ export function DownloadPdfButton({
       return;
     }
 
+    setPdfError(null);
     const targetElement = document.getElementById(targetId);
     if (!targetElement) {
+      setPdfError(getPublicErrorMessage("unexpected", language, "pdf"));
       return;
     }
 
@@ -194,9 +197,8 @@ export function DownloadPdfButton({
 
       pdf.save(fileName);
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Unknown error";
       console.error("PDF Generation failed", err);
-      alert(`${copy.errorPrefix} ${errorMessage}`);
+      setPdfError(getPublicErrorMessage("unexpected", language, "pdf"));
     } finally {
       if (afterCapture) {
         await afterCapture();
@@ -207,26 +209,36 @@ export function DownloadPdfButton({
   };
 
   return (
-    <AuthGatedActionButton
-      wrapperClassName={wrapperClassName}
-      className={cx(
-        buttonClassName({ className, variant: "secondary" }),
-        isGenerating && "opacity-70",
-      )}
-      disabled={isGenerating}
-      isAuthenticated={authGate.isAuthenticated}
-      isReady={authGate.isReady}
-      lockedContent={
-        <>
-          <Lock className="h-4 w-4" />
-          {copy.download}
-        </>
-      }
-      lockedMessage={copy.loginPrompt}
-      onClick={handleDownload}
-    >
-      <Download className={`h-4 w-4 ${isGenerating ? "animate-bounce" : ""}`} />
-      {isGenerating ? copy.generating : copy.download}
-    </AuthGatedActionButton>
+    <div className={cx("flex flex-col items-stretch gap-2", wrapperClassName)}>
+      <AuthGatedActionButton
+        wrapperClassName="w-full min-w-0 sm:w-auto"
+        className={cx(
+          buttonClassName({ className, variant: "secondary" }),
+          isGenerating && "opacity-70",
+        )}
+        disabled={isGenerating}
+        isAuthenticated={authGate.isAuthenticated}
+        isReady={authGate.isReady}
+        lockedContent={
+          <>
+            <Lock className="h-4 w-4" />
+            {copy.download}
+          </>
+        }
+        lockedMessage={copy.loginPrompt}
+        onClick={handleDownload}
+      >
+        <Download
+          className={`h-4 w-4 ${isGenerating ? "animate-bounce" : ""}`}
+        />
+        {isGenerating ? copy.generating : copy.download}
+      </AuthGatedActionButton>
+
+      {pdfError ? (
+        <StatusNotice tone="error" align="left" className="text-xs">
+          {pdfError}
+        </StatusNotice>
+      ) : null}
+    </div>
   );
 }

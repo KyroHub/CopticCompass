@@ -38,7 +38,7 @@ npx playwright install --with-deps chromium
 
 ## Repository Workflows
 
-Before making structural changes, read [docs/architecture.md](./docs/architecture.md) for the current routing, feature, action, and shared-infrastructure layout.
+Before making structural changes, read [docs/architecture.md](./docs/architecture.md) for the current routing, feature, action, and shared-infrastructure layout. For visible interface work, also read [docs/ui-guide.md](./docs/ui-guide.md).
 
 ### App, UI, and Routing Changes
 
@@ -53,6 +53,8 @@ Public pages live under `/en` and `/nl`, and the legacy non-localized routes red
 Dictionary search pages use `/en/dictionary` and `/nl/dictionary`. Individual dictionary entries use `/en/entry/<id>` and `/nl/entry/<id>` as the canonical route shape; do not add localized `/dictionary/<id>` entry pages unless the routing model is intentionally changed.
 
 If your change touches auth, dashboard, admin review, profile avatars, or contact email, make sure `.env.local` is populated first.
+
+For visible UI changes, keep page intros, action groups, filters, panels, and mobile behavior aligned with [docs/ui-guide.md](./docs/ui-guide.md).
 
 ### Grammar Content Changes
 
@@ -134,6 +136,12 @@ If you changed routing, auth, redirects, metadata, dashboard/admin flows, or maj
 npm run test:e2e:local
 ```
 
+If you changed API or UI error handling, add or update focused tests for public
+error copy, API JSON error payloads, and any admin technical-details disclosure.
+The repo also includes guardrail tests that flag common raw-error leaks such as
+direct `error.message` rendering, direct `payload.error` rendering, `alert(`,
+and environment variable names in non-technical UI copy.
+
 ## Style Guidelines
 
 - Preserve Coptic spelling and dialect notation exactly unless the change is intentional
@@ -142,4 +150,5 @@ npm run test:e2e:local
 - Flag uncertain readings or reconstructions clearly in the PR description
 - Keep UI additions consistent with the academic and reference-focused character of the app
 - Keep English and Dutch user-facing copy aligned when editing localized content
+- Follow the UI guidance in `docs/ui-guide.md` for page rhythm, controls, mobile behavior, and shared primitives
 - Follow the Dutch localization guidance in `docs/dutch-localization-style-guide.md` for tone, terminology, and product naming

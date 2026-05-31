@@ -1,5 +1,6 @@
 "use server";
 
+import { getPublicErrorMessage } from "@/lib/errors";
 import {
   consumeOcrRateLimit,
   getOcrUploadSizeFailure,
@@ -59,7 +60,11 @@ function isUnexpectedFieldErrorMessage(value: string) {
 }
 
 function getSafeOcrFailureMessage(status: number) {
-  return `OCR service failed with status ${status}.`;
+  if (status === 400 || status === 413 || status === 415) {
+    return getPublicErrorMessage("validation_failed", "en", "ocr");
+  }
+
+  return getPublicErrorMessage("external_service_unavailable", "en", "ocr");
 }
 
 function stripHtml(input: string) {
@@ -143,13 +148,15 @@ function getUploadedOcrFile(formData: FormData): File {
     return fallback;
   }
 
-  throw new Error("No valid file uploaded.");
+  throw new Error(getPublicErrorMessage("validation_failed", "en", "ocr"));
 }
 
 function createOcrTargetUrl() {
   const ocrServiceUrl = process.env.OCR_SERVICE_URL;
   if (!ocrServiceUrl) {
-    throw new Error("OCR_SERVICE_URL is not configured.");
+    throw new Error(
+      getPublicErrorMessage("external_service_unavailable", "en", "ocr"),
+    );
   }
 
   const targetUrl = new URL(ocrServiceUrl);
@@ -215,7 +222,11 @@ export async function processOCRImage(formData: FormData): Promise<string> {
 
   const targetUrl = createOcrTargetUrl();
   const uploadFieldCandidates = getOcrUploadFieldCandidates();
-  let lastFailureMessage = "OCR request failed.";
+  let lastFailureMessage = getPublicErrorMessage(
+    "external_service_unavailable",
+    "en",
+    "ocr",
+  );
   let sawSuccessfulResponse = false;
 
   for (const uploadField of uploadFieldCandidates) {
@@ -244,7 +255,5 @@ export async function processOCRImage(formData: FormData): Promise<string> {
     return "";
   }
 
-  throw new Error(
-    `${lastFailureMessage} Tried OCR upload fields: ${uploadFieldCandidates.join(", ")}. Set OCR_UPLOAD_FIELD in .env.local to match your OCR backend.`,
-  );
+  throw new Error(lastFailureMessage);
 }

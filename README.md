@@ -3,7 +3,7 @@
 
   <h3>A trusted digital Coptology platform.</h3>
 
-  <p>Publications · Grammar · Dictionary · Public APIs · Shenute AI</p>
+  <p>Publications · Grammar · Dictionary · Practice · Public APIs · Shenute AI</p>
 
   <div>
     <a href="https://www.copticcompass.com"><img src="https://img.shields.io/badge/Live_Site-www.copticcompass.com-C08329?style=flat-square" alt="Live Site"></a>
@@ -14,12 +14,13 @@
 
 ---
 
-**Coptic Compass** brings together a searchable dictionary, structured grammar lessons, publications, Shenute AI, public APIs, and private learning workspaces for Coptic language study and research.
+**Coptic Compass** brings together a searchable dictionary, structured grammar lessons, cross-pillar practice, publications, Shenute AI, public APIs, and private learning workspaces for Coptic language study and research.
 
 ## Features
 
 - **Searchable Dictionary:** 6,500+ normalized checked-in entries with Coptic, English, Dutch, and Greek-context lookup. Includes dialect forms, lexical relations, canonical entry pages, and a built-in virtual keyboard.
 - **Interactive Grammar Lessons:** Reading and study modes with exercises, footnotes, and concept glossaries linked directly to dictionary sources.
+- **Practice:** Spaced-repetition review for dictionary forms, grammar prompts, mixed daily study, and saved entries.
 - **Shenute AI Assistant:** OCR-assisted image prompts backed by pgvector RAG, integrating THOTH AI, OpenRouter, Gemini, and Hugging Face.
 - **Public APIs:** Read-only grammar and dictionary JSON endpoints plus OpenAPI documentation for developers and educators.
 - **Student & Instructor Workspaces:** Private dashboards for progress tracking, exercise submissions, reviews, and notifications.
@@ -127,6 +128,7 @@ For deep dives into the technical architecture, environment setup, API surfaces,
 
 - [Architecture & Workflows](docs/architecture.md)
 - [Coptic Compass Brand Book](docs/coptic-compass-brand-guide.md)
+- [UI Guide](docs/ui-guide.md)
 - [Dictionary JSON Guide](docs/dictionary-json.md)
 - [Environment & Deployment Setup](docs/environment-setup.md)
 - [API, AI, and Data Workflows](docs/api-and-workflows.md)
