@@ -21,6 +21,10 @@ A clear and concise description of any alternative solutions or features you've 
 
 How would this feature help students, linguists, or developers interacting with the Coptic language?
 
+## Architecture or Data Notes
+
+If you have an implementation in mind, which feature area would own it? Mention any new route, API, data source, server action, or shared infrastructure need.
+
 ## Additional context
 
 Add any other context, screenshots, or mockups about the feature request here.

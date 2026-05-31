@@ -1,45 +1,21 @@
-import { jsonErrorResponse, type AppErrorCode } from "@/lib/errors";
+import { jsonErrorResponse } from "@/lib/errors";
 import {
   consumeOcrRateLimit,
   getOcrContentLengthFailure,
   getOcrUploadSizeFailure,
   getRetryAfterSeconds,
 } from "@/lib/server/ocrProtection";
+import {
+  buildOcrTargetUrl,
+  collectForwardableOcrTextFields,
+  getFirstOcrFileEntry,
+  getOcrUploadFieldCandidates,
+  getOcrUpstreamFailure,
+  isUnexpectedOcrUploadFieldError,
+  type OcrErrorCode,
+} from "@/lib/server/ocrService";
 
 export const runtime = "nodejs";
-
-const OCR_UPLOAD_FIELD_FALLBACKS = [
-  "file",
-  "image",
-  "upload",
-  "document",
-  "photo",
-  "files",
-];
-
-type OcrErrorCode = Extract<
-  AppErrorCode,
-  "external_service_unavailable" | "rate_limited" | "validation_failed"
->;
-
-function getUploadFieldCandidates(incomingFieldName: string) {
-  const preferred = process.env.OCR_UPLOAD_FIELD?.trim();
-  const candidates = [
-    preferred,
-    incomingFieldName,
-    ...OCR_UPLOAD_FIELD_FALLBACKS,
-  ].filter((value): value is string => Boolean(value && value.length > 0));
-
-  return Array.from(new Set(candidates));
-}
-
-function isUnexpectedFieldErrorMessage(value: string) {
-  const normalized = value.toLowerCase();
-  return (
-    normalized.includes("multererror: unexpected field") ||
-    normalized.includes("unexpected field")
-  );
-}
 
 function createOcrErrorResponse(options: {
   code: OcrErrorCode;
@@ -65,84 +41,6 @@ function createOcrErrorResponse(options: {
     requestIdPrefix: "ocr",
     status: options.status,
   });
-}
-
-function getOcrUpstreamFailure(status: number): {
-  code: OcrErrorCode;
-  status: number;
-} {
-  if (status === 429) {
-    return { code: "rate_limited", status: 429 };
-  }
-
-  if (status === 400 || status === 413 || status === 415) {
-    return {
-      code: "validation_failed",
-      status: status === 413 ? 413 : 400,
-    };
-  }
-
-  return { code: "external_service_unavailable", status: 502 };
-}
-
-function buildTargetUrl(
-  requestUrl: string,
-  ocrServiceUrl: string,
-  formData: FormData,
-) {
-  const incomingUrl = new URL(requestUrl);
-  const targetUrl = new URL(ocrServiceUrl);
-
-  for (const [key, value] of incomingUrl.searchParams.entries()) {
-    if (key.toLowerCase() === "lang") {
-      continue;
-    }
-
-    targetUrl.searchParams.set(key, value);
-  }
-
-  const formLang = formData.get("lang");
-  const queryLang = incomingUrl.searchParams.get("lang");
-  const lang =
-    (typeof queryLang === "string" && queryLang.trim().length > 0
-      ? queryLang.trim()
-      : null) ??
-    (typeof formLang === "string" && formLang.trim().length > 0
-      ? formLang.trim()
-      : null) ??
-    "cop";
-
-  targetUrl.searchParams.set("lang", lang);
-  return targetUrl;
-}
-
-function collectForwardableTextFields(
-  formData: FormData,
-  excludedKeys: Set<string>,
-) {
-  const fields: Array<{ key: string; value: string }> = [];
-
-  for (const [key, value] of formData.entries()) {
-    if (excludedKeys.has(key)) {
-      continue;
-    }
-
-    if (typeof value === "string") {
-      fields.push({ key, value });
-    }
-  }
-
-  return fields;
-}
-
-function getFirstFileEntry(formData: FormData) {
-  for (const [key, value] of formData.entries()) {
-    if (value instanceof File && value.size > 0) {
-      return { key, file: value };
-    }
-  }
-
-  return null;
 }
 
 export async function POST(request: Request) {
@@ -185,7 +83,7 @@ export async function POST(request: Request) {
       });
     }
 
-    const fileEntry = getFirstFileEntry(formData);
+    const fileEntry = getFirstOcrFileEntry(formData);
     if (!fileEntry) {
       return createOcrErrorResponse({
         code: "validation_failed",
@@ -202,9 +100,13 @@ export async function POST(request: Request) {
       });
     }
 
-    const targetUrl = buildTargetUrl(request.url, ocrServiceUrl, formData);
-    const uploadFieldCandidates = getUploadFieldCandidates(fileEntry.key);
-    const passthroughTextFields = collectForwardableTextFields(
+    const targetUrl = buildOcrTargetUrl({
+      formData,
+      ocrServiceUrl,
+      requestUrl: request.url,
+    });
+    const uploadFieldCandidates = getOcrUploadFieldCandidates(fileEntry.key);
+    const passthroughTextFields = collectForwardableOcrTextFields(
       formData,
       new Set<string>([fileEntry.key, "lang"]),
     );
@@ -240,7 +142,7 @@ export async function POST(request: Request) {
       if (!upstreamResponse.ok) {
         const upstreamErrorText = await upstreamResponse.text();
 
-        if (isUnexpectedFieldErrorMessage(upstreamErrorText)) {
+        if (isUnexpectedOcrUploadFieldError(upstreamErrorText)) {
           sawUploadFieldRejection = true;
           continue;
         }

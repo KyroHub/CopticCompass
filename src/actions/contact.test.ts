@@ -124,7 +124,7 @@ async function loadContactModule(options?: {
   vi.doMock("@/lib/supabase/serviceRole", () => ({
     createServiceRoleClient: createServiceRoleClientMock,
   }));
-  vi.doMock("@/lib/communications/optInRequests", () => ({
+  vi.doMock("@/features/communications/lib/server/optInRequests", () => ({
     buildAudienceOptInConfirmationUrl: buildAudienceOptInConfirmationUrlMock,
     createAudienceOptInRequest: createAudienceOptInRequestMock,
   }));

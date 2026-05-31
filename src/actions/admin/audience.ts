@@ -3,7 +3,7 @@
 import {
   hasResendAudienceEnv,
   syncStoredAudienceContactToResend,
-} from "@/lib/communications/resend";
+} from "@/features/communications/lib/server/resend";
 import { redactEmailAddress } from "@/lib/privacy";
 import { revalidateAdminPaths } from "@/lib/server/revalidation";
 

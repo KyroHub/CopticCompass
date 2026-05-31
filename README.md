@@ -64,7 +64,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 This repo is organized around a few clear layers:
 
-- `src/app` owns routes, route handlers, metadata, and app shell entry points.
+- `src/app` owns thin routes, route handlers, metadata, and app shell entry points.
 - `src/features` owns feature-specific UI, hooks, server helpers, and logic.
 - `src/actions` owns shared server actions used by forms and client mutations.
 - `src/lib` owns shared infrastructure such as Supabase wiring, locale helpers, metadata, and validation.
@@ -72,6 +72,10 @@ This repo is organized around a few clear layers:
 - `public/data` owns the generated or checked-in datasets consumed by the app and public API.
 - `supabase` owns SQL migrations and Edge Functions.
 - `tests/e2e` owns the Playwright smoke tests used in CI.
+
+For structural changes, treat [docs/architecture.md](docs/architecture.md) as
+the source of truth. Product logic should default to `src/features/<feature>`;
+`src/lib` is only for infrastructure that is genuinely shared across features.
 
 ## Common Commands
 

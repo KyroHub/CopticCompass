@@ -1,8 +1,8 @@
-import { FloatingAiAssistant } from "@/components/FloatingAiAssistant";
 import { Footer } from "@/components/Footer";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import { Navbar } from "@/components/Navbar";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { FloatingAiAssistant } from "@/features/shenute/components/FloatingAiAssistant";
 import type { Language } from "@/types/i18n";
 
 import type { ReactNode } from "react";

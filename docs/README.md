@@ -21,7 +21,8 @@ working details.
 ## Editing Guidance
 
 - Keep `README.md` short and public-facing.
-- Put implementation placement rules in `architecture.md`.
+- Put implementation placement rules and feature-boundary decisions in
+  `architecture.md`.
 - Put runtime setup, secrets, deploy, and webhook details in
   `environment-setup.md`.
 - Put dictionary field conventions in `dictionary-json.md`; other docs should
@@ -37,3 +38,6 @@ working details.
 
 When a change spans multiple docs, prefer one detailed source of truth and short
 cross-links from the rest.
+
+For code-placement changes, update `architecture.md` first and keep
+`CONTRIBUTING.md` plus the pull request template aligned with the same rule.

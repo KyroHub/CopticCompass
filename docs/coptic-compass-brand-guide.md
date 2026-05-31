@@ -603,7 +603,7 @@ Secondary brand surfaces currently use shared product tokens in:
 - `src/components/RouteErrorState.tsx`
 - `src/components/RouteLoadingState.tsx`
 - `src/components/NotFoundPage.tsx`
-- `src/components/FloatingAiAssistantPanel.tsx`
+- `src/features/shenute/components/FloatingAiAssistantPanel.tsx`
 - `src/lib/communications/mailBrand.ts`
 
 Communication and public documentation surfaces currently use the brand in:

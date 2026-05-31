@@ -1,10 +1,11 @@
 import { hasAudienceSubscriptions } from "@/features/communications/lib/communications";
-import { syncStoredAudienceContactToResend } from "@/lib/communications/resend";
 import { isLanguage, type Language } from "@/lib/i18n";
 import { redactEmailAddress } from "@/lib/privacy";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 import { normalizeWhitespace } from "@/lib/validation";
 import type { Tables, TablesInsert } from "@/types/supabase";
+
+import { syncStoredAudienceContactToResend } from "./resend";
 
 type AudienceContactInsert = TablesInsert<"audience_contacts">;
 type AudienceContactRow = Tables<"audience_contacts">;

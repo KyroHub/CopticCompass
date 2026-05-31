@@ -58,7 +58,7 @@ async function loadFeedbackRoute(options?: LoadFeedbackRouteOptions) {
   vi.doMock("@/features/profile/lib/server/queries", () => ({
     getProfileRole: getProfileRoleMock,
   }));
-  vi.doMock("@/lib/rag/shenuteFeedbackIngestion", () => ({
+  vi.doMock("@/features/shenute/lib/server/feedbackIngestion", () => ({
     ingestShenuteFeedbackLearningSignal:
       ingestShenuteFeedbackLearningSignalMock,
   }));

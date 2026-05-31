@@ -1,7 +1,7 @@
 "use server";
 
+import { syncAudienceContact } from "@/features/communications/lib/server/audience";
 import { getProfile } from "@/features/profile/lib/server/queries";
-import { syncAudienceContact } from "@/lib/communications/audience";
 import type { Language } from "@/lib/i18n";
 import {
   revalidateAdminPaths,

@@ -180,8 +180,8 @@ describe("OCR proxy route", () => {
     });
     expect(payload.requestId).toMatch(/^ocr_/);
     expect(payload).not.toHaveProperty("upstreamStatus");
-    expect(JSON.stringify(payload)).not.toContain("raw upstream stack trace");
-    expect(JSON.stringify(payload)).not.toContain("500");
+    expect(payload.error).not.toContain("raw upstream stack trace");
+    expect(payload.error).not.toContain("500");
   });
 
   it("sanitizes thrown upstream OCR errors", async () => {

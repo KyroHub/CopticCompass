@@ -40,6 +40,28 @@ npx playwright install --with-deps chromium
 
 Before making structural changes, read [docs/architecture.md](./docs/architecture.md) for the current routing, feature, action, and shared-infrastructure layout. For visible interface work, also read [docs/ui-guide.md](./docs/ui-guide.md).
 
+### Architecture Checklist
+
+Before adding or moving code, make sure the change follows the Coptic Compass
+feature-oriented architecture:
+
+- keep `src/app` pages and route handlers thin; route files should orchestrate,
+  not own product workflows
+- place feature UI, hooks, helpers, domain logic, and feature-owned server
+  modules under `src/features/<feature>`
+- put server-only feature queries, route implementations, provider
+  orchestration, and persistence helpers under
+  `src/features/<feature>/lib/server`
+- keep `src/actions` focused on form/client mutation entry points; move growing
+  implementation details into feature-owned modules
+- use `src/lib` only for genuine cross-feature infrastructure, not
+  feature-specific business logic
+- keep generated JSON/data artifacts in `public/data` or source content under
+  `src/content`, not embedded in application logic
+
+If your PR changes placement rules or establishes a new pattern, update
+[docs/architecture.md](./docs/architecture.md) in the same PR.
+
 ### App, UI, and Routing Changes
 
 Run the app locally with:
@@ -106,6 +128,7 @@ Please keep PRs focused and explain:
 
 - what changed
 - why it changed
+- which architecture layer or feature owns the new behavior
 - whether the update is editorial, lexical, technical, visual, or schema-related
 - any source or scholarly rationale behind dictionary or grammar edits
 - any required environment variables, migrations, or follow-up steps
@@ -147,6 +170,8 @@ and environment variable names in non-technical UI copy.
 - Preserve Coptic spelling and dialect notation exactly unless the change is intentional
 - Prefer small, reviewable commits over broad unrelated changes
 - Prefer feature-owned modules over adding new cross-feature megafiles; query logic usually belongs under `src/features/*/lib/server`
+- Keep route files, page files, and `src/actions` entry points thin when a feature-owned helper can carry the implementation
+- Do not add feature-specific workflow logic to `src/lib`; reserve it for shared infrastructure
 - Flag uncertain readings or reconstructions clearly in the PR description
 - Keep UI additions consistent with the academic and reference-focused character of the app
 - Keep English and Dutch user-facing copy aligned when editing localized content

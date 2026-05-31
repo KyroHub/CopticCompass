@@ -96,7 +96,7 @@ async function loadShenuteRoute(options?: LoadShenuteRouteOptions) {
     }),
     streamText: vi.fn(),
   }));
-  vi.doMock("@/actions/vectorSearch", () => ({
+  vi.doMock("@/features/shenute/lib/server/retrieval", () => ({
     searchCopticDocuments: vi.fn().mockResolvedValue([]),
     searchVocabularyByKeywords: vi.fn().mockResolvedValue([]),
   }));

@@ -77,7 +77,7 @@ async function loadOptInModule(options?: {
     })),
   });
 
-  vi.doMock("@/lib/communications/audience", () => ({
+  vi.doMock("@/features/communications/lib/server/audience", () => ({
     syncAudienceContact: syncAudienceContactMock,
   }));
   vi.doMock("@/lib/supabase/serviceRole", () => ({

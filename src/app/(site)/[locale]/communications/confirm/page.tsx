@@ -5,7 +5,7 @@ import { buttonClassName } from "@/components/Button";
 import { PageHeader } from "@/components/PageHeader";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
 import { SurfacePanel } from "@/components/SurfacePanel";
-import { confirmAudienceOptInRequest } from "@/lib/communications/optInRequests";
+import { confirmAudienceOptInRequest } from "@/features/communications/lib/server/optInRequests";
 import { getTranslation } from "@/lib/i18n";
 import type { TranslationKey } from "@/lib/i18n";
 import { getContactPath, getLocalizedHomePath } from "@/lib/locale";

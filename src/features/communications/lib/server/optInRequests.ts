@@ -1,6 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
 
-import { syncAudienceContact } from "@/lib/communications/audience";
 import { isLanguage, type Language } from "@/lib/i18n";
 import { getLocalizedPath } from "@/lib/locale";
 import { assertServerOnly } from "@/lib/server/assertServerOnly";
@@ -8,6 +7,8 @@ import { getSiteUrl, siteConfig } from "@/lib/site";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 import { normalizeWhitespace } from "@/lib/validation";
 import type { Tables, TablesInsert, TablesUpdate } from "@/types/supabase";
+
+import { syncAudienceContact } from "./audience";
 
 type AudienceOptInRequestRow = Tables<"audience_opt_in_requests">;
 type AudienceOptInRequestSource = AudienceOptInRequestRow["source"];

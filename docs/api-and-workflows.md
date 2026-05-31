@@ -14,6 +14,16 @@ This document outlines the technical details for Coptic Compass's AI capabilitie
 
 The repository includes a production-integrated AI workflow called Shenute AI, plus a server-side OCR proxy and admin-facing RAG ingestion tools.
 
+Implementation placement follows the architecture guide:
+
+- app route files under `src/app/api` stay thin and delegate to feature or
+  shared server helpers
+- Shenute chat, retrieval, feedback, and history implementations live under
+  `src/features/shenute/lib/server`
+- admin RAG route implementations live under `src/features/admin/lib/server`
+- OCR proxy infrastructure shared by the API route, server action, and RAG
+  ingestion lives in `src/lib/server/ocrService.ts`
+
 ### Shenute API (`/api/shenute`)
 
 - Endpoint: `POST /api/shenute`
@@ -191,6 +201,8 @@ Implementation references:
 
 - `src/lib/communications/mailBrand.ts` centralizes the communication brand
   name, descriptor, public URL, and email color tokens.
+- `src/features/communications/lib/server` owns audience sync, double opt-in
+  requests, and Resend contact synchronization.
 - `src/features/communications/components/AudienceOptInConfirmationEmail.tsx`
   renders the audience opt-in confirmation email.
 - `src/features/contact/components/ContactEmailTemplate.tsx` renders owner

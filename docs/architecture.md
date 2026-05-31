@@ -15,6 +15,32 @@ The app is a Next.js App Router project with a feature-oriented structure:
 - `supabase` owns SQL migrations and Edge Functions.
 - `tests/e2e` owns Playwright smoke coverage.
 
+## Architecture Contract
+
+This repository follows the Coptic Compass feature-oriented architecture. New
+code should preserve these boundaries:
+
+- `src/app` is the route layer. Page files and route handlers should parse route
+  inputs, set route config, call feature helpers, and return UI or responses.
+  Avoid putting business rules, provider orchestration, or large data-fetching
+  workflows directly in route files.
+- `src/features/<feature>` is the default home for product logic. Feature UI,
+  hooks, display helpers, domain utilities, and feature-owned server code belong
+  here.
+- `src/features/<feature>/lib/server` is the default home for server-only
+  feature queries, route-handler implementations, provider orchestration, and
+  persistence workflows.
+- `src/actions` is for server-action entry points triggered by forms or client
+  mutations. Keep actions focused; when logic grows, move the implementation
+  into a feature-owned module and let the action delegate to it.
+- `src/lib` is shared infrastructure only. Add code here only when it is
+  genuinely cross-feature, such as locale helpers, metadata builders, Supabase
+  setup, security headers, OCR proxy infrastructure, validation, or notification
+  transport.
+
+If a module starts to mix route parsing, UI layout, provider calls, persistence,
+and domain decisions, split it before adding more behavior.
+
 ## Routing Model
 
 The route tree is intentionally split into two main groups:
@@ -50,6 +76,10 @@ Use `src/app` for:
 
 Pages should stay thin when possible. Prefer fetching or assembling view data in feature-owned helpers instead of growing large route files.
 
+API route handlers should usually be thin adapters too. The preferred pattern is
+to keep route config (`runtime`, `maxDuration`, etc.) in `src/app/api/.../route.ts`
+and delegate the implementation to `src/features/<feature>/lib/server/...`.
+
 ### 2. Feature Layer
 
 Use `src/features/<feature>` for domain-specific code.
@@ -70,6 +100,9 @@ Examples:
 - public API documentation, Swagger UI wiring, and the combined OpenAPI document live under `src/features/api-docs`
 - analytics dashboards and linguistic drill-downs live under `src/features/analytics`
 - admin dashboard presentation, workspace modes, and queue UI live under `src/features/admin`
+- admin RAG route implementations live under `src/features/admin/lib/server`
+- Shenute UI, chat orchestration, retrieval, feedback, and history logic live under `src/features/shenute`
+- audience preferences, opt-in requests, Resend sync, and content releases live under `src/features/communications`
 
 This is the default home for new product logic.
 
@@ -92,6 +125,10 @@ Admin action domains currently include:
 
 Keep `src/actions/admin.ts` as a thin public entrypoint, not a new logic hub.
 
+Compatibility shims in `src/actions` are acceptable during refactors, but the
+domain implementation should remain feature-owned once a feature boundary
+exists.
+
 ### 4. Shared Infrastructure
 
 Use `src/lib` for cross-feature utilities that are genuinely shared.
@@ -102,6 +139,7 @@ Examples:
 - metadata and SEO helpers
 - structured data builders
 - communication brand constants and notification email shells
+- OCR proxy infrastructure shared by routes, actions, and ingestion workflows
 - CSP and security headers
 - Supabase client/server wiring
 - validation helpers
@@ -173,6 +211,8 @@ infrastructure:
 
 - audience preferences, content releases, and release email builders live under
   `src/features/communications`
+- server-side audience sync, double opt-in requests, and Resend contact sync
+  live under `src/features/communications/lib/server`
 - contact-message email templates live under `src/features/contact`
 - shared notification dispatch, queueing, and generic branded fallback HTML live
   under `src/lib/notifications`
@@ -228,6 +268,9 @@ When adding new code, use these defaults:
 - Generated grammar dataset: `public/data/grammar/v1/...`
 - Migration or Edge Function work: `supabase/...`
 
+Before creating a new shared helper, ask whether the helper would still make
+sense if the feature were removed. If the answer is no, keep it in the feature.
+
 ## Conventions Worth Preserving
 
 - Prefer feature-owned modules over new cross-feature megafiles.
@@ -237,6 +280,19 @@ When adding new code, use these defaults:
 - Treat `public/data` as generated or checked-in data, not the place for new business logic.
 - Use compatibility shims only as temporary migration tools, then remove them once imports are updated.
 - Add tests for behavior that affects routing, metadata, structured data, or public API contracts.
+
+## Contributor Architecture Checklist
+
+Use this quick review before opening a PR that adds or moves code:
+
+- Does every new file live in the narrowest layer that can own it?
+- Are `src/app` pages and route handlers still thin?
+- Did feature-specific logic stay out of `src/lib`?
+- Did server-only feature logic go under `src/features/<feature>/lib/server`?
+- Did server actions stay focused on mutation/action boundaries?
+- Are SEO, metadata, sitemap, and structured-data changes using shared helpers?
+- Are generated JSON/data artifacts kept out of business logic?
+- Did tests cover changed public routes, APIs, metadata, or persistence behavior?
 
 ## Typical Request Flow
 

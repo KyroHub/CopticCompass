@@ -6,16 +6,16 @@ import {
   AudienceOptInConfirmationEmail,
   getAudienceOptInConfirmationSubject,
 } from "@/features/communications/components/AudienceOptInConfirmationEmail";
+import {
+  buildAudienceOptInConfirmationUrl,
+  createAudienceOptInRequest,
+} from "@/features/communications/lib/server/optInRequests";
 import { ContactEmailTemplate } from "@/features/contact/components/ContactEmailTemplate";
 import {
   getContactInquiryLabel,
   isContactInquiryValue,
 } from "@/features/contact/lib/contact";
 import type { ContactInquiryValue } from "@/features/contact/lib/contact";
-import {
-  buildAudienceOptInConfirmationUrl,
-  createAudienceOptInRequest,
-} from "@/lib/communications/optInRequests";
 import { queueLoggedNotificationEmail } from "@/lib/notifications/events";
 import { redactEmailAddress } from "@/lib/privacy";
 import {

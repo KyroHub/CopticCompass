@@ -11,6 +11,11 @@ import {
   OPENROUTER_EMBEDDING_MODEL,
   generateOpenRouterEmbeddings,
 } from "@/lib/openrouter";
+import {
+  extractOcrResponseText,
+  getOcrUploadFieldCandidates,
+  isUnexpectedOcrUploadFieldError,
+} from "@/lib/server/ocrService";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 import { createThothChatCompletion } from "@/lib/thoth";
 import type { Json } from "@/types/supabase";
@@ -39,26 +44,6 @@ const RETRY_BASE_MS = Number(process.env.RAG_RETRY_BASE_MS ?? "1500");
 const RAG_VECTOR_DIMENSIONS = Number(
   process.env.RAG_VECTOR_DIMENSIONS ?? "768",
 );
-const OCR_UPLOAD_FIELD_FALLBACKS = [
-  "file",
-  "image",
-  "upload",
-  "document",
-  "photo",
-  "files",
-];
-const OCR_TEXT_LIKE_KEYS = [
-  "text",
-  "extracted_text",
-  "ocr_text",
-  "output",
-  "content",
-  "transcript",
-  "transcription",
-  "result",
-  "data",
-  "message",
-];
 const RAG_THOTH_ENABLED = process.env.RAG_THOTH_ENABLED !== "false";
 const RAG_THOTH_PROOFCHECK_REQUIRED =
   process.env.RAG_THOTH_PROOFCHECK_REQUIRED !== "false";
@@ -368,23 +353,6 @@ function buildMissingCopticDocumentsTableError() {
   ].join(" ");
 }
 
-function getOcrUploadFieldCandidates() {
-  const preferred = process.env.OCR_UPLOAD_FIELD?.trim();
-  const candidates = [preferred, ...OCR_UPLOAD_FIELD_FALLBACKS].filter(
-    (value): value is string => Boolean(value && value.length > 0),
-  );
-
-  return Array.from(new Set(candidates));
-}
-
-function isUnexpectedFieldErrorMessage(value: string) {
-  const normalized = value.toLowerCase();
-  return (
-    normalized.includes("multererror: unexpected field") ||
-    normalized.includes("unexpected field")
-  );
-}
-
 function stripHtml(input: string) {
   return input
     .replace(/<br\s*\/?>/gi, "\n")
@@ -395,47 +363,6 @@ function stripHtml(input: string) {
     .replace(/&lt;/gi, "<")
     .replace(/&gt;/gi, ">")
     .trim();
-}
-
-function normalizeCandidateText(input: string) {
-  return stripHtml(input).replace(/\s+/g, " ").trim();
-}
-
-function collectTextCandidates(payload: unknown, depth = 0): string[] {
-  if (depth > 6 || payload === null || typeof payload === "undefined") {
-    return [];
-  }
-
-  if (typeof payload === "string") {
-    const normalized = normalizeCandidateText(payload);
-    return normalized ? [normalized] : [];
-  }
-
-  if (Array.isArray(payload)) {
-    return payload.flatMap((entry) => collectTextCandidates(entry, depth + 1));
-  }
-
-  if (typeof payload !== "object") {
-    return [];
-  }
-
-  const record = payload as Record<string, unknown>;
-  const collected: string[] = [];
-
-  for (const [key, value] of Object.entries(record)) {
-    const loweredKey = key.toLowerCase();
-    if (OCR_TEXT_LIKE_KEYS.includes(loweredKey) && typeof value === "string") {
-      const normalized = normalizeCandidateText(value);
-      if (normalized) {
-        collected.push(normalized);
-      }
-      continue;
-    }
-
-    collected.push(...collectTextCandidates(value, depth + 1));
-  }
-
-  return collected;
 }
 
 function normalizeWhitespace(value: string) {
@@ -1560,11 +1487,6 @@ function getExpectedVectorDimensionsFromInsertError(message: string) {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
-function extractOcrText(payload: unknown): string {
-  const candidates = collectTextCandidates(payload);
-  return candidates.find((candidate) => candidate.length > 0) ?? "";
-}
-
 async function runOcr(file: File): Promise<string> {
   const ocrServiceUrl = process.env.OCR_SERVICE_URL;
   if (!ocrServiceUrl) {
@@ -1600,7 +1522,7 @@ async function runOcr(file: File): Promise<string> {
           const errorText = await response.text();
           lastFailureMessage = `OCR service failed: ${response.status} ${errorText}`;
 
-          if (isUnexpectedFieldErrorMessage(errorText)) {
+          if (isUnexpectedOcrUploadFieldError(errorText)) {
             break;
           }
 
@@ -1617,10 +1539,7 @@ async function runOcr(file: File): Promise<string> {
 
         sawSuccessfulResponse = true;
 
-        const contentType = response.headers.get("content-type") ?? "";
-        const extractedText = contentType.includes("application/json")
-          ? extractOcrText(await response.json())
-          : extractOcrText(await response.text());
+        const extractedText = await extractOcrResponseText(response);
 
         if (!extractedText) {
           break;

@@ -581,7 +581,7 @@ function mockAdminDependencies(
   vi.doMock("@/lib/supabase/functions", () => ({
     invokeSupabaseEdgeFunction: invokeSupabaseEdgeFunctionMock,
   }));
-  vi.doMock("@/lib/communications/resend", () => ({
+  vi.doMock("@/features/communications/lib/server/resend", () => ({
     hasResendAudienceEnv: vi.fn(() => options.hasResendAudienceEnv ?? true),
     syncStoredAudienceContactToResend: syncStoredAudienceContactToResendMock,
   }));
