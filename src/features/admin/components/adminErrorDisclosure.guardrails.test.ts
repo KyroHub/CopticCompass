@@ -5,8 +5,18 @@ import { describe, expect, it } from "vitest";
 
 const ADMIN_OPERATIONAL_ERROR_UI_FILES = [
   "src/app/(app)/admin/error.tsx",
+  "src/features/admin/components/adminDashboardSectionsCopy.ts",
+  "src/features/admin/components/AdminAudienceSection.tsx",
+  "src/features/admin/components/AdminCommunicationsDesk.tsx",
   "src/features/admin/components/AdminDashboardSections.tsx",
+  "src/features/admin/components/AdminNotificationsSection.tsx",
+  "src/features/admin/components/AdminRagKnowledgeSection.tsx",
   "src/features/admin/components/AdminRagIngestionForm.tsx",
+  "src/features/admin/components/AdminReleasesSection.tsx",
+  "src/features/admin/components/AdminReviewInboxSummary.tsx",
+  "src/features/admin/components/AdminReviewQueueSections.tsx",
+  "src/features/admin/components/AdminSystemHealthSummary.tsx",
+  "src/features/admin/components/AdminWorkspaceQuickJump.tsx",
   "src/features/communications/components/AdminAudienceContactCard.tsx",
   "src/features/communications/components/AdminContentReleaseCard.tsx",
   "src/features/communications/components/CreateContentReleaseForm.tsx",
