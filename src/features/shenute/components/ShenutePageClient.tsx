@@ -6,35 +6,26 @@ import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import {
   ArrowDownToLine,
-  ArrowRight,
-  BookOpenCheck,
-  Brain,
   Camera,
   Clock3,
   Copy,
   CornerDownRight,
-  FlaskConical,
   ImagePlus,
   LoaderCircle,
   MessageSquarePlus,
   MoreHorizontal,
   RotateCcw,
-  Save,
   SendHorizontal,
   SlidersHorizontal,
-  Sparkles,
   Square,
   ThumbsDown,
   ThumbsUp,
-  Trash2,
   UserRound,
   Volume2,
   XCircle,
-  Zap,
 } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
@@ -64,13 +55,13 @@ import {
   type ShenuteReactionSignal,
 } from "@/features/shenute/shared";
 import { cx } from "@/lib/classes";
-import { getContributorsPath, getLocalizedHomePath } from "@/lib/locale";
+import { getLocalizedHomePath } from "@/lib/locale";
 import { getPublicOcrErrorMessage } from "@/lib/ocrErrors";
 import { createClient } from "@/lib/supabase/client";
 import { useOptionalAuthGate } from "@/lib/supabase/useOptionalAuthGate";
 
+import { ShenuteAnswerStylePanel } from "./ShenuteAnswerStylePanel";
 import {
-  SHENUTE_ADAPTIVE_DIALOG_CLASS,
   SHENUTE_DIALOG_BACKDROP_CLASS,
   SHENUTE_ICON_CLASS,
   SHENUTE_INLINE_ACTION_BUTTON_CLASS,
@@ -90,7 +81,6 @@ import {
   closeOpenResponseDetails,
   closeOpenUtilityDetails,
   formatFileSize,
-  formatSessionTimestamp,
   getChatMessagesSignature,
   getFeedbackErrorMessage,
   getFeedbackStatusClass,
@@ -105,6 +95,17 @@ import {
   saveChatHistoryOnline,
   type SavedChatSession,
 } from "./shenuteClientUtils";
+import { ShenuteConversationActionsPanel } from "./ShenuteConversationActionsPanel";
+import { SHENUTE_COPY } from "./shenuteCopy";
+import { ShenuteCopyFallbackDialog } from "./ShenuteCopyFallbackDialog";
+import {
+  getShenuteProviderOptions,
+  getShenuteStarterPrompts,
+} from "./shenuteOptions";
+import { ShenuteSavedSessionsPanel } from "./ShenuteSavedSessionsPanel";
+import { ShenuteThinkingIndicator } from "./ShenuteThinkingIndicator";
+import { ShenuteWelcomePanel } from "./ShenuteWelcomePanel";
+import { useShenuteTranscriptChrome } from "./useShenuteTranscriptChrome";
 
 type MobileUtilitySheet = "actions" | "history" | null;
 
@@ -127,301 +128,6 @@ type MessageActionStateByMessage = Record<
 const MESSAGE_INPUT_MIN_HEIGHT = 44;
 const MESSAGE_INPUT_MOBILE_MAX_HEIGHT = 128;
 const MESSAGE_INPUT_MAX_HEIGHT = 160;
-const UTILITY_CHROME_COLLAPSE_DELTA = 12;
-const UTILITY_CHROME_EXPAND_DELTA = 20;
-const UTILITY_CHROME_BOTTOM_THRESHOLD = 120;
-
-const SHENUTE_COPY = {
-  en: {
-    accessRequired: "Please sign in to access Shenute AI.",
-    addImage: "Add Image",
-    adminNotePlaceholder:
-      "Admin only: add corrected guidance tied to this prompt and response.",
-    adminNoteSummary: "Admin learning note",
-    aiMode: "Answer style",
-    aiModeDescription: "Choose how Shenute should balance depth and speed.",
-    answerStyleControls: "Change answer style",
-    assistantLabel: "Shenute",
-    attachmentHelp:
-      "Shenute will read this image with OCR when you send your message.",
-    attachmentName: "File",
-    attachmentReady: "Image ready for OCR",
-    attachmentSize: "Size",
-    cameraCapture: "Capture Image",
-    cameraClose: "Close Camera",
-    cameraFrameFailed: "Could not capture camera frame.",
-    cameraImageFailed: "Could not capture image from camera.",
-    cameraNotReady: "Camera is not ready.",
-    cameraPreview: "Camera preview",
-    cameraNotSupported: "Camera is not supported on this device/browser.",
-    cameraStillLoading: "Camera feed is not ready yet. Try again.",
-    cameraSource: "camera",
-    cancelResponse: "Stop response",
-    closeMenu: "Close menu",
-    closeAnswerStyleControls: "Close answer style controls",
-    copiedResponse: "Copied.",
-    conversationActions: "Conversation actions",
-    conversationHistory: "Conversation history",
-    copyResponse: "Copy",
-    copyResponseFailed: "Could not copy response.",
-    copyResponseManual: "Copy manually.",
-    copyResponseManualHint:
-      "Clipboard access is blocked in this browser. Select the response text below and copy it manually.",
-    creditsLinkDescription:
-      "Credits, technical notes, and research acknowledgements now live on the Contributors page.",
-    creditsLinkTitle: "Credits and technical notes",
-    creditsShort: "Credits",
-    dangerZone: "Danger zone",
-    dislike: "Not helpful",
-    feedbackPromptMissing:
-      "Could not resolve prompt/response for this feedback.",
-    feedbackSaved: "Thanks for the feedback.",
-    feedbackSavedWithRag: "Thanks, this helps improve Shenute.",
-    feedbackSavedLearningDelayed:
-      "Thanks for the feedback. The learning sync will catch up later.",
-    feedbackSaveFailed: "Could not save feedback.",
-    feedbackSaving: "Saving feedback...",
-    feedbackSignIn: "Sign in to send feedback.",
-    feedbackSignInInline: "Sign in to mark responses helpful.",
-    expandControls: "Show chat controls",
-    imageAttached: "Image attached",
-    imageOcrContext: "[Image OCR Context]",
-    intro:
-      "Ask about Coptic vocabulary, grammar, translation, and manuscript context without leaving the shared app workspace.",
-    jumpToLatest: "Latest",
-    like: "Helpful",
-    noTextExtracted: "No text extracted from the selected image.",
-    ocrFailed: "OCR failed for the selected image.",
-    pageContextBadge: "Page context",
-    placeholder: "Ask about a Coptic word, grammar rule, or attached image...",
-    placeholderImage: "Ask about this image...",
-    placeholderShort: "Ask Shenute...",
-    saveHistory: "Save now",
-    saveHistorySaved: "Saved",
-    savingHistory: "Saving...",
-    savedHistory: "Conversation saved.",
-    saveHistoryFailed: "Could not save this conversation.",
-    historyUnavailable: "Conversation history could not load right now.",
-    autosaveHint: "Conversations save automatically to your account.",
-    autosaveStatus: "Saved to your account.",
-    unsavedChanges: "Unsaved changes. Saving automatically...",
-    clearConversation: "Delete conversation",
-    clearConversationConfirm:
-      "Delete this Shenute conversation? Saved copies will be removed from your account.",
-    clearConversationFailed: "Could not delete this conversation.",
-    clearingConversation: "Deleting conversation...",
-    conversationCleared: "Conversation deleted.",
-    continuePrompt: "Please continue your previous response.",
-    continueResponse: "Continue answer",
-    newConversation: "Start new chat",
-    newConversationStarted: "New chat started.",
-    thinking: "Thinking",
-    thinkingComposing: "Composing answer",
-    thinkingElapsed: "Elapsed",
-    thinkingInitial: "Preparing answer",
-    thinkingLong: "Still working",
-    thinkingLongHint: "Larger Coptic questions can take a moment.",
-    thinkingSearching: "Checking sources",
-    loadSession: "Load",
-    currentSession: "Current",
-    loadingSession: "Loading session...",
-    sessionCount: "sessions",
-    sessionDateMissing: "No timestamp",
-    sessionUnsavedBadge: "Unsaved",
-    providerGemini: "Fast answer",
-    providerGeminiDescription:
-      "Use Gemini's own pretrained knowledge with retrieval as optional support.",
-    providerGeminiNmt: "Fast answer (RAG + NMT)",
-    providerGeminiNmtDescription:
-      "Gemini with strict retrieved-context grounding plus NMT translation hints.",
-    providerHf: "Experimental",
-    providerHfDescription: "A lighter experimental pass for comparison.",
-    providerOpenRouter: "Reasoned answer",
-    providerOpenRouterDescription:
-      "More step-by-step structure for harder questions.",
-    providerThoth: "Best answer",
-    providerThothDescription: "The strongest default for Coptology questions.",
-    ragWarning: "Saved, but the learning sync warned:",
-    rateLimit: "Shenute is busy right now. Please wait a moment and try again.",
-    regenerateResponse: "Regenerate",
-    remove: "Remove",
-    requestFailed:
-      "Shenute is having trouble answering right now. Please try again in a moment.",
-    responseActions: "Response actions",
-    responseFeedbackActions: "Feedback",
-    responseReviseActions: "Revise answer",
-    responseUseActions: "Use answer",
-    runningOcr: "Running OCR...",
-    selectCopyText: "Select text",
-    sendMessage: "Send message",
-    selectedImageAlt: "Selected for OCR",
-    submitAdminNote: "Send admin note",
-    starterPromptsTitle: "Try asking Shenute",
-    starterPromptGrammar: "Explain how the Bohairic definite article works.",
-    starterPromptImage: "Help me read a Coptic manuscript image.",
-    starterPromptTranslate:
-      "Translate “Jesus Christ is risen” into Bohairic Coptic.",
-    title: "Shenute AI",
-    uploadSource: "upload",
-    useCamera: "Use Camera",
-    userLabel: "You",
-    viewNmtCredits: "View NMT credits",
-    viewShenuteCredits: "View Shenute credits",
-    welcomeDescription:
-      "Start with a word, a grammar question, or an image attachment and Shenute AI will keep the conversation grounded in your Coptology work.",
-    welcomeTitle: "Welcome to Shenute AI",
-    writeAdminFeedback: "Write admin feedback before sending.",
-    play: "Speak",
-    stop: "Stop",
-  },
-  nl: {
-    accessRequired: "Meld u aan om Shenute AI te gebruiken.",
-    addImage: "Afbeelding toevoegen",
-    adminNotePlaceholder:
-      "Alleen voor beheerders: voeg gecorrigeerde uitleg toe bij deze prompt en dit antwoord.",
-    adminNoteSummary: "Leer-notitie voor beheerder",
-    aiMode: "Antwoordstijl",
-    aiModeDescription: "Kies hoe Shenute diepgang en snelheid moet afwegen.",
-    answerStyleControls: "Antwoordstijl wijzigen",
-    assistantLabel: "Shenute",
-    attachmentHelp:
-      "Shenute leest deze afbeelding met OCR wanneer u uw bericht verzendt.",
-    attachmentName: "Bestand",
-    attachmentReady: "Afbeelding klaar voor OCR",
-    attachmentSize: "Grootte",
-    cameraCapture: "Afbeelding vastleggen",
-    cameraClose: "Camera sluiten",
-    cameraFrameFailed: "Het camerabeeld kon niet worden vastgelegd.",
-    cameraImageFailed:
-      "De afbeelding kon niet vanuit de camera worden vastgelegd.",
-    cameraNotReady: "De camera is nog niet klaar.",
-    cameraPreview: "Cameravoorbeeld",
-    cameraNotSupported:
-      "De camera wordt niet ondersteund op dit apparaat of in deze browser.",
-    cameraStillLoading: "De camerafeed is nog niet klaar. Probeer het opnieuw.",
-    cameraSource: "camera",
-    cancelResponse: "Antwoord stoppen",
-    closeMenu: "Menu sluiten",
-    closeAnswerStyleControls: "Antwoordstijl sluiten",
-    copiedResponse: "Gekopieerd.",
-    conversationActions: "Gespreksacties",
-    conversationHistory: "Gespreksgeschiedenis",
-    copyResponse: "Kopiëren",
-    copyResponseFailed: "Kopiëren is mislukt.",
-    copyResponseManual: "Handmatig kopiëren.",
-    copyResponseManualHint:
-      "Klembordtoegang is geblokkeerd in deze browser. Selecteer de antwoordtekst hieronder en kopieer die handmatig.",
-    creditsLinkDescription:
-      "Credits, technische notities en onderzoeksvermeldingen staan nu op de bijdragerspagina.",
-    creditsLinkTitle: "Credits en technische notities",
-    creditsShort: "Credits",
-    dangerZone: "Risicozone",
-    dislike: "Niet behulpzaam",
-    feedbackPromptMissing:
-      "De prompt en het antwoord voor deze feedback konden niet worden bepaald.",
-    feedbackSaved: "Bedankt voor uw feedback.",
-    feedbackSavedWithRag: "Bedankt, dit helpt Shenute te verbeteren.",
-    feedbackSavedLearningDelayed:
-      "Bedankt voor uw feedback. De leersynchronisatie wordt later bijgewerkt.",
-    feedbackSaveFailed: "Feedback kon niet worden opgeslagen.",
-    feedbackSaving: "Feedback opslaan...",
-    feedbackSignIn: "Meld u aan om feedback te verzenden.",
-    feedbackSignInInline: "Meld u aan om antwoorden als behulpzaam te markeren",
-    expandControls: "Chatbediening tonen",
-    imageAttached: "Afbeelding toegevoegd",
-    imageOcrContext: "[Image OCR Context]",
-    intro:
-      "Stel vragen over Koptische woordenschat, grammatica, vertaling en manuscriptcontext zonder de gedeelde werkruimte te verlaten.",
-    jumpToLatest: "Nieuwste",
-    like: "Behulpzaam",
-    noTextExtracted:
-      "Er is geen tekst uit de geselecteerde afbeelding gehaald.",
-    ocrFailed: "OCR is mislukt voor de geselecteerde afbeelding.",
-    pageContextBadge: "Pagina-context",
-    placeholder:
-      "Vraag naar een Koptisch woord, een grammaticaregel of een toegevoegde afbeelding...",
-    placeholderImage: "Vraag naar deze afbeelding...",
-    placeholderShort: "Vraag Shenute...",
-    saveHistory: "Nu opslaan",
-    saveHistorySaved: "Opgeslagen",
-    savingHistory: "Opslaan...",
-    savedHistory: "Gesprek opgeslagen.",
-    saveHistoryFailed: "Dit gesprek kon niet worden opgeslagen.",
-    historyUnavailable: "Gespreksgeschiedenis kon nu niet worden geladen.",
-    autosaveHint: "Gesprekken worden automatisch in uw account opgeslagen.",
-    autosaveStatus: "Opgeslagen in uw account.",
-    unsavedChanges: "Niet-opgeslagen wijzigingen. Automatisch opslaan...",
-    clearConversation: "Gesprek verwijderen",
-    clearConversationConfirm:
-      "Dit Shenute-gesprek verwijderen? Opgeslagen kopieën worden uit uw account verwijderd.",
-    clearConversationFailed: "Dit gesprek kon niet worden verwijderd.",
-    clearingConversation: "Gesprek verwijderen...",
-    conversationCleared: "Gesprek verwijderd.",
-    continuePrompt: "Ga verder met uw vorige antwoord.",
-    continueResponse: "Antwoord vervolgen",
-    newConversation: "Nieuwe chat starten",
-    newConversationStarted: "Nieuwe chat gestart.",
-    thinking: "Denkt na",
-    thinkingComposing: "Antwoord opstellen",
-    thinkingElapsed: "Verstreken",
-    thinkingInitial: "Antwoord voorbereiden",
-    thinkingLong: "Nog bezig",
-    thinkingLongHint: "Grotere Koptische vragen kunnen even duren.",
-    thinkingSearching: "Bronnen controleren",
-    loadSession: "Laden",
-    currentSession: "Huidig",
-    loadingSession: "Sessieweergave laden...",
-    sessionCount: "sessies",
-    sessionDateMissing: "Geen tijdstempel",
-    sessionUnsavedBadge: "Niet opgeslagen",
-    providerGemini: "Snel antwoord",
-    providerGeminiDescription:
-      "Gebruik Gemini's eigen voorkennis met opgehaalde context als optionele steun.",
-    providerGeminiNmt: "Snel antwoord (RAG + NMT)",
-    providerGeminiNmtDescription:
-      "Gemini met strikte contextverankering en NMT-vertaalsuggesties.",
-    providerHf: "Experimenteel",
-    providerHfDescription: "Een lichtere experimentele vergelijking.",
-    providerOpenRouter: "Uitgewerkt antwoord",
-    providerOpenRouterDescription:
-      "Meer stapsgewijze structuur voor moeilijkere vragen.",
-    providerThoth: "Beste antwoord",
-    providerThothDescription:
-      "De sterkste standaard voor Koptologische vragen.",
-    ragWarning: "Opgeslagen, maar de leersynchronisatie waarschuwde:",
-    rateLimit: "Shenute is nu bezet. Wacht even en probeer het opnieuw.",
-    regenerateResponse: "Opnieuw genereren",
-    remove: "Verwijderen",
-    requestFailed:
-      "Shenute heeft nu moeite met antwoorden. Probeer het zo opnieuw.",
-    responseActions: "Antwoordacties",
-    responseFeedbackActions: "Feedback",
-    responseReviseActions: "Antwoord aanpassen",
-    responseUseActions: "Antwoord gebruiken",
-    runningOcr: "OCR uitvoeren...",
-    selectCopyText: "Tekst selecteren",
-    sendMessage: "Bericht verzenden",
-    selectedImageAlt: "Geselecteerd voor OCR",
-    submitAdminNote: "Beheerdersnotitie sturen",
-    starterPromptsTitle: "Probeer Shenute",
-    starterPromptGrammar: "Leg uit hoe het Bohairische bepaald lidwoord werkt.",
-    starterPromptImage: "Help me een Koptische manuscriptfoto te lezen.",
-    starterPromptTranslate:
-      "Vertaal “Jezus Christus is opgestaan” naar Bohairisch-Koptisch.",
-    title: "Shenute AI",
-    uploadSource: "upload",
-    useCamera: "Camera gebruiken",
-    userLabel: "U",
-    viewNmtCredits: "Bekijk NMT-credits",
-    viewShenuteCredits: "Bekijk Shenute-credits",
-    welcomeDescription:
-      "Begin met een woord, een grammaticavraag of een afbeelding. Shenute AI houdt het gesprek verbonden met uw Koptologiewerk.",
-    welcomeTitle: "Welkom bij Shenute AI",
-    writeAdminFeedback: "Schrijf beheerdersfeedback voordat u die verstuurt.",
-    play: "Spreken",
-    stop: "Stop",
-  },
-} as const;
 
 export default function ShenutePageClient() {
   const { language, t } = useLanguage();
@@ -458,10 +164,7 @@ export default function ShenutePageClient() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const captureCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const cameraStreamRef = useRef<MediaStream | null>(null);
-  const transcriptScrollRef = useRef<HTMLDivElement | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const shenuteSessionIdRef = useRef(crypto.randomUUID());
-  const lastTranscriptScrollTopRef = useRef(0);
 
   const { isAuthenticated, isReady, user } = useOptionalAuthGate();
   const [selectedReactionByMessage, setSelectedReactionByMessage] = useState<
@@ -515,10 +218,6 @@ export default function ShenutePageClient() {
     null,
   );
   const [thinkingElapsedSeconds, setThinkingElapsedSeconds] = useState(0);
-  const [isTranscriptAtBottom, setIsTranscriptAtBottom] = useState(true);
-  const [isMobileViewport, setIsMobileViewport] = useState(false);
-  const [isUtilityChromeCollapsed, setIsUtilityChromeCollapsed] =
-    useState(false);
   const isLoading = status !== "ready";
   const isShenuteAccessBlocked = isReady && !isAuthenticated;
   const typedMessages = useMemo(
@@ -547,72 +246,10 @@ export default function ShenutePageClient() {
     Boolean(activeSessionId) ||
     typedMessages.length > 0 ||
     hasConversationDraft;
-  const starterPrompts = useMemo(
-    () => [
-      {
-        icon: Sparkles,
-        prompt: copy.starterPromptTranslate,
-      },
-      {
-        icon: BookOpenCheck,
-        prompt: copy.starterPromptGrammar,
-      },
-      {
-        icon: ImagePlus,
-        prompt: copy.starterPromptImage,
-      },
-    ],
-    [
-      copy.starterPromptGrammar,
-      copy.starterPromptImage,
-      copy.starterPromptTranslate,
-    ],
-  );
+  const starterPrompts = useMemo(() => getShenuteStarterPrompts(copy), [copy]);
   const providerOptions = useMemo(
-    () => [
-      {
-        description: copy.providerThothDescription,
-        icon: Sparkles,
-        label: copy.providerThoth,
-        value: "thoth" as const,
-      },
-      {
-        description: copy.providerGeminiDescription,
-        icon: Zap,
-        label: copy.providerGemini,
-        value: "gemini" as const,
-      },
-      {
-        description: copy.providerGeminiNmtDescription,
-        icon: Zap,
-        label: copy.providerGeminiNmt,
-        value: "gemini_nmt" as const,
-      },
-      {
-        description: copy.providerOpenRouterDescription,
-        icon: Brain,
-        label: copy.providerOpenRouter,
-        value: "openrouter" as const,
-      },
-      {
-        description: copy.providerHfDescription,
-        icon: FlaskConical,
-        label: copy.providerHf,
-        value: "hf" as const,
-      },
-    ],
-    [
-      copy.providerGemini,
-      copy.providerGeminiDescription,
-      copy.providerGeminiNmt,
-      copy.providerGeminiNmtDescription,
-      copy.providerHf,
-      copy.providerHfDescription,
-      copy.providerOpenRouter,
-      copy.providerOpenRouterDescription,
-      copy.providerThoth,
-      copy.providerThothDescription,
-    ],
+    () => getShenuteProviderOptions(copy),
+    [copy],
   );
   const selectedProviderOption =
     providerOptions.find((option) => option.value === inferenceProvider) ??
@@ -674,9 +311,7 @@ export default function ShenutePageClient() {
   } else if (typedMessages.length > 0) {
     historyStatusDotClassName = "bg-coptic";
   }
-  const shouldKeepUtilityChromeExpanded =
-    !isMobileViewport ||
-    typedMessages.length === 0 ||
+  const forceUtilityChromeExpanded =
     isAnswerStylePanelOpen ||
     isHistorySaving ||
     Boolean(sessionStatus) ||
@@ -689,112 +324,22 @@ export default function ShenutePageClient() {
     cameraOpen ||
     ocrPending;
 
-  const updateTranscriptScrollState = useCallback(() => {
-    const transcript = transcriptScrollRef.current;
-    if (!transcript) {
-      lastTranscriptScrollTopRef.current = 0;
-      setIsTranscriptAtBottom(true);
-      setIsUtilityChromeCollapsed(false);
-      return;
-    }
-
-    const distanceFromBottom =
-      transcript.scrollHeight - transcript.scrollTop - transcript.clientHeight;
-    const nextIsAtBottom = distanceFromBottom < 96;
-    const scrollDelta =
-      transcript.scrollTop - lastTranscriptScrollTopRef.current;
-    lastTranscriptScrollTopRef.current = transcript.scrollTop;
-
-    setIsTranscriptAtBottom((current) =>
-      current === nextIsAtBottom ? current : nextIsAtBottom,
-    );
-
-    if (
-      nextIsAtBottom ||
-      shouldKeepUtilityChromeExpanded ||
-      document.querySelector("details[open]")
-    ) {
-      setIsUtilityChromeCollapsed(false);
-      return;
-    }
-
-    if (
-      scrollDelta < -UTILITY_CHROME_COLLAPSE_DELTA &&
-      distanceFromBottom > UTILITY_CHROME_BOTTOM_THRESHOLD
-    ) {
-      setIsUtilityChromeCollapsed(true);
-      return;
-    }
-
-    if (scrollDelta > UTILITY_CHROME_EXPAND_DELTA) {
-      setIsUtilityChromeCollapsed(false);
-    }
-  }, [shouldKeepUtilityChromeExpanded]);
-
-  const scrollTranscriptToBottom = useCallback(
-    (behavior: ScrollBehavior = "smooth") => {
-      const transcript = transcriptScrollRef.current;
-      if (transcript) {
-        lastTranscriptScrollTopRef.current = Math.max(
-          0,
-          transcript.scrollHeight - transcript.clientHeight,
-        );
-        transcript.scrollTo({
-          top: transcript.scrollHeight,
-          behavior,
-        });
-      } else {
-        messagesEndRef.current?.scrollIntoView({
-          block: "end",
-          behavior,
-        });
-      }
-
-      setIsTranscriptAtBottom(true);
-      setIsUtilityChromeCollapsed(false);
-    },
-    [],
-  );
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(max-width: 639px)");
-    const updateViewportState = () => {
-      const isMobile = mediaQuery.matches;
-      setIsMobileViewport(isMobile);
-
-      if (!isMobile) {
-        setIsUtilityChromeCollapsed(false);
-      }
-    };
-
-    updateViewportState();
-    mediaQuery.addEventListener("change", updateViewportState);
-
-    return () => {
-      mediaQuery.removeEventListener("change", updateViewportState);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (shouldKeepUtilityChromeExpanded) {
-      setIsUtilityChromeCollapsed(false);
-    }
-  }, [shouldKeepUtilityChromeExpanded]);
-
-  useEffect(() => {
-    if (typedMessages.length === 0 || isLoading) {
-      setIsUtilityChromeCollapsed(false);
-    }
-  }, [isLoading, typedMessages.length]);
-
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      const transcript = transcriptScrollRef.current;
-      lastTranscriptScrollTopRef.current = transcript?.scrollTop ?? 0;
-    });
-
-    return () => window.cancelAnimationFrame(frame);
-  }, [hasRestoredHistory, isMobileViewport, typedMessages.length]);
+  const {
+    isMobileViewport,
+    isTranscriptAtBottom,
+    isUtilityChromeCollapsed,
+    messagesEndRef,
+    scrollTranscriptToBottom,
+    setIsTranscriptAtBottom,
+    setIsUtilityChromeCollapsed,
+    transcriptScrollRef,
+    updateTranscriptScrollState,
+  } = useShenuteTranscriptChrome({
+    forceUtilityChromeExpanded,
+    hasRestoredHistory,
+    isLoading,
+    typedMessagesLength: typedMessages.length,
+  });
 
   useEffect(() => {
     if (typedMessages.length === messages.length) {
@@ -972,28 +517,6 @@ export default function ShenutePageClient() {
   }, [isAuthenticated, user?.id]);
 
   useEffect(() => {
-    if (typedMessages.length === 0) {
-      setIsTranscriptAtBottom(true);
-      return;
-    }
-
-    if (!isTranscriptAtBottom) {
-      return;
-    }
-
-    const frame = window.requestAnimationFrame(() => {
-      scrollTranscriptToBottom("smooth");
-    });
-
-    return () => window.cancelAnimationFrame(frame);
-  }, [
-    isLoading,
-    isTranscriptAtBottom,
-    scrollTranscriptToBottom,
-    typedMessages.length,
-  ]);
-
-  useEffect(() => {
     if (hasRestoredHistory || !isReady || !isAuthenticated) {
       return;
     }
@@ -1070,6 +593,7 @@ export default function ShenutePageClient() {
     copy.historyUnavailable,
     scrollTranscriptToBottom,
     setMessages,
+    setIsTranscriptAtBottom,
   ]);
 
   useEffect(() => {
@@ -1890,154 +1414,6 @@ export default function ShenutePageClient() {
     }));
   }
 
-  function closeUtilitySurface(element: HTMLElement | null) {
-    closeContainingDetails(element);
-    setMobileUtilitySheet(null);
-  }
-
-  function renderSavedSessionsContent({
-    onClose,
-    showMobileHeader = true,
-  }: {
-    onClose?: () => void;
-    showMobileHeader?: boolean;
-  } = {}) {
-    return (
-      <>
-        {showMobileHeader ? (
-          <ShenuteSurfaceHeader
-            closeLabel={copy.closeMenu}
-            className="mb-3 sm:hidden"
-            onClose={(event) => {
-              closeUtilitySurface(event.currentTarget);
-              onClose?.();
-            }}
-          >
-            {copy.conversationHistory}
-          </ShenuteSurfaceHeader>
-        ) : null}
-        <div aria-label={copy.conversationHistory} className="grid gap-2">
-          {sessions.map((session) => {
-            const isActive = session.id === activeSessionId;
-            const formattedSessionDate = formatSessionTimestamp(
-              session.updated_at,
-              language,
-              copy.sessionDateMissing,
-            );
-
-            return (
-              <button
-                key={session.id}
-                type="button"
-                onClick={(event) => {
-                  closeUtilitySurface(event.currentTarget);
-                  onClose?.();
-                  void loadShenuteSession(session.id);
-                }}
-                disabled={isActive}
-                className={cx(
-                  "flex w-full flex-col gap-1 rounded-lg border px-3 py-2.5 text-left text-sm transition",
-                  isActive
-                    ? "border-coptic/55 bg-coptic-soft text-ink"
-                    : "border-line bg-surface text-ink hover:border-accent/35 hover:bg-elevated",
-                )}
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <span className="min-w-0 truncate font-semibold">
-                    {session.title || copy.conversationHistory}
-                  </span>
-                  <span
-                    className={cx(
-                      "shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold",
-                      isActive
-                        ? "bg-surface/80 text-coptic"
-                        : "bg-elevated text-muted",
-                    )}
-                  >
-                    {isActive ? copy.currentSession : copy.loadSession}
-                  </span>
-                </div>
-                <div className="flex flex-wrap items-center gap-2 text-xs text-muted">
-                  <Clock3 className={SHENUTE_ICON_CLASS.meta} />
-                  <span>{formattedSessionDate}</span>
-                  {isActive && hasUnsavedConversationChanges ? (
-                    <span className="rounded-full bg-accent-soft px-2 py-0.5 font-semibold text-accent-strong dark:text-accent">
-                      {copy.sessionUnsavedBadge}
-                    </span>
-                  ) : null}
-                </div>
-                {sessionLoadingId === session.id ? (
-                  <p className="text-xs text-muted">{copy.loadingSession}</p>
-                ) : null}
-              </button>
-            );
-          })}
-        </div>
-      </>
-    );
-  }
-
-  function renderConversationActionsContent(onClose?: () => void) {
-    return (
-      <>
-        <ShenuteActionButton
-          onClick={(event) => {
-            closeUtilitySurface(event.currentTarget);
-            onClose?.();
-            handleSaveHistory();
-          }}
-          disabled={
-            typedMessages.length === 0 ||
-            isLoading ||
-            isHistorySaving ||
-            !hasUnsavedConversationChanges
-          }
-          icon={<Save className={SHENUTE_ICON_CLASS.action} />}
-        >
-          {saveButtonLabel}
-        </ShenuteActionButton>
-        <Link
-          href={`${getContributorsPath(language)}#shenute-ai-credits`}
-          onClick={(event) => {
-            closeUtilitySurface(event.currentTarget);
-            onClose?.();
-          }}
-          className={buttonClassName({
-            fullWidth: true,
-            className: cx("mt-2", SHENUTE_MENU_ACTION_BUTTON_CLASS),
-            size: "sm",
-            variant: "secondary",
-          })}
-        >
-          <BookOpenCheck className={SHENUTE_ICON_CLASS.action} />
-          {copy.creditsShort}
-          <ArrowRight className={cx("ml-auto", SHENUTE_ICON_CLASS.action)} />
-        </Link>
-        <div className="my-2 border-t border-line pt-2">
-          <ShenuteActionGroupLabel className="mb-2">
-            {copy.dangerZone}
-          </ShenuteActionGroupLabel>
-          <ShenuteActionButton
-            onClick={(event) => {
-              closeUtilitySurface(event.currentTarget);
-              onClose?.();
-              void clearCurrentConversation();
-            }}
-            disabled={
-              isLoading ||
-              isHistorySaving ||
-              (!activeSessionId && typedMessages.length === 0)
-            }
-            className="border-danger/25 text-danger hover:bg-danger/5 dark:hover:bg-danger/10"
-            icon={<Trash2 className={SHENUTE_ICON_CLASS.action} />}
-          >
-            {copy.clearConversation}
-          </ShenuteActionButton>
-        </div>
-      </>
-    );
-  }
-
   return (
     <PageShell
       className="app-page-shell min-h-[calc(100dvh-4.75rem)] px-3 pb-3 pt-3 md:min-h-screen md:px-10 md:pb-20 md:pt-10"
@@ -2209,9 +1585,18 @@ export default function ShenutePageClient() {
                           </p>
                         ) : null}
                         <div className="max-h-[min(24rem,calc(100dvh-14rem))] overflow-y-auto pr-1">
-                          {renderSavedSessionsContent({
-                            showMobileHeader: false,
-                          })}
+                          <ShenuteSavedSessionsPanel
+                            activeSessionId={activeSessionId}
+                            copy={copy}
+                            hasUnsavedConversationChanges={
+                              hasUnsavedConversationChanges
+                            }
+                            language={language}
+                            onLoadSession={loadShenuteSession}
+                            sessionLoadingId={sessionLoadingId}
+                            sessions={sessions}
+                            showMobileHeader={false}
+                          />
                         </div>
                       </div>
                     </details>
@@ -2323,7 +1708,20 @@ export default function ShenutePageClient() {
                     <MoreHorizontal className={SHENUTE_ICON_CLASS.action} />
                   </summary>
                   <div className="absolute right-0 top-full z-50 mt-2 hidden w-64 rounded-lg border border-line bg-surface p-2 shadow-panel group-open:block">
-                    {renderConversationActionsContent()}
+                    <ShenuteConversationActionsPanel
+                      activeSessionId={activeSessionId}
+                      copy={copy}
+                      hasUnsavedConversationChanges={
+                        hasUnsavedConversationChanges
+                      }
+                      isHistorySaving={isHistorySaving}
+                      isLoading={isLoading}
+                      language={language}
+                      onClearConversation={clearCurrentConversation}
+                      onSaveHistory={handleSaveHistory}
+                      saveButtonLabel={saveButtonLabel}
+                      typedMessagesCount={typedMessages.length}
+                    />
                   </div>
                 </details>
               </div>
@@ -2358,52 +1756,12 @@ export default function ShenutePageClient() {
             />
           </button>
           {typedMessages.length === 0 ? (
-            <div className="min-h-0 flex-1 overflow-y-auto border-b border-line bg-elevated/55 p-4 md:p-5">
-              <div className="mx-auto flex w-full max-w-5xl flex-col gap-3">
-                <div className="flex items-center gap-3">
-                  <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-coptic-soft text-2xl text-coptic shadow-sm">
-                    <span className="font-coptic leading-none">Ϣ</span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h2 className="truncate text-base font-semibold leading-6 text-ink md:text-lg">
-                      {copy.welcomeTitle}
-                    </h2>
-                    <p className="hidden max-w-2xl truncate text-sm text-muted lg:block">
-                      {copy.welcomeDescription}
-                    </p>
-                  </div>
-                </div>
-                <div>
-                  <ShenuteActionGroupLabel className="mb-2">
-                    {copy.starterPromptsTitle}
-                  </ShenuteActionGroupLabel>
-                  <div className="grid gap-2 md:grid-cols-3">
-                    {starterPrompts.map((starterPrompt) => {
-                      const Icon = starterPrompt.icon;
-
-                      return (
-                        <button
-                          key={starterPrompt.prompt}
-                          type="button"
-                          onClick={() => {
-                            handleStarterPrompt(starterPrompt.prompt);
-                          }}
-                          disabled={isLoading || isShenuteAccessBlocked}
-                          className="group flex min-h-12 w-full items-start gap-3 rounded-lg border border-line bg-surface/85 px-3 py-2.5 text-left text-sm font-medium leading-5 text-ink shadow-sm transition hover:border-coptic/35 hover:bg-coptic-soft/45 disabled:cursor-not-allowed disabled:opacity-60 md:min-h-14 md:py-3"
-                        >
-                          <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-elevated text-muted transition group-hover:bg-coptic-soft group-hover:text-coptic">
-                            <Icon className={SHENUTE_ICON_CLASS.action} />
-                          </span>
-                          <span className="min-w-0">
-                            {starterPrompt.prompt}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            </div>
+            <ShenuteWelcomePanel
+              copy={copy}
+              isDisabled={isLoading || isShenuteAccessBlocked}
+              onSelectPrompt={handleStarterPrompt}
+              starterPrompts={starterPrompts}
+            />
           ) : (
             <div
               ref={transcriptScrollRef}
@@ -2931,62 +2289,13 @@ export default function ShenutePageClient() {
               })}
 
               {isLoading ? (
-                <div className="mr-auto flex w-full max-w-full gap-2 sm:max-w-[52rem] sm:gap-3">
-                  <div
-                    className={cx(
-                      "mt-6 hidden h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold shadow-sm sm:flex",
-                      getMessageAvatarClassName("assistant"),
-                    )}
-                  >
-                    <span className="font-coptic text-base leading-none">
-                      Ϣ
-                    </span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="mb-1 px-1 text-xs font-semibold uppercase tracking-[0.14em] text-muted">
-                      {copy.assistantLabel}
-                    </p>
-                    <div
-                      aria-live="polite"
-                      className="rounded-lg rounded-bl-sm border border-line bg-surface/95 px-3 py-2.5 shadow-soft ring-1 ring-line/60 sm:px-4 sm:py-3"
-                    >
-                      <div className="flex min-w-0 items-center gap-2">
-                        <span
-                          aria-hidden="true"
-                          className="relative flex h-2.5 w-2.5 shrink-0"
-                        >
-                          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-coptic/40" />
-                          <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-coptic" />
-                        </span>
-                        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-ink">
-                          {thinkingStatusMessage}
-                        </span>
-                        <span
-                          aria-label={`${copy.thinkingElapsed} ${thinkingElapsedLabel}`}
-                          className="inline-flex shrink-0 items-center gap-1 rounded-full bg-elevated px-2 py-0.5 text-xs font-semibold text-muted"
-                        >
-                          <Clock3 className={SHENUTE_ICON_CLASS.meta} />
-                          {thinkingElapsedLabel}
-                        </span>
-                      </div>
-                      <div className="mt-2 flex min-w-0 items-center gap-2">
-                        <span
-                          aria-hidden="true"
-                          className="flex shrink-0 items-center gap-1"
-                        >
-                          <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-coptic delay-100" />
-                          <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-coptic delay-200" />
-                          <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-coptic delay-300" />
-                        </span>
-                        <p className="min-w-0 flex-1 truncate text-xs text-muted">
-                          {thinkingElapsedSeconds >= 20
-                            ? copy.thinkingLongHint
-                            : selectedProviderOption.label}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <ShenuteThinkingIndicator
+                  copy={copy}
+                  selectedProviderLabel={selectedProviderOption.label}
+                  thinkingElapsedLabel={thinkingElapsedLabel}
+                  thinkingElapsedSeconds={thinkingElapsedSeconds}
+                  thinkingStatusMessage={thinkingStatusMessage}
+                />
               ) : null}
               <div ref={messagesEndRef} aria-hidden="true" />
             </div>
@@ -3288,52 +2597,12 @@ export default function ShenutePageClient() {
       </SurfacePanel>
 
       {copyFallbackText ? (
-        <>
-          <button
-            type="button"
-            aria-hidden="true"
-            tabIndex={-1}
-            className={cx(SHENUTE_DIALOG_BACKDROP_CLASS, "z-[80]")}
-            onClick={() => setCopyFallbackText(null)}
-          />
-          <div
-            role="dialog"
-            aria-labelledby="shenute-copy-fallback-title"
-            className={cx(
-              SHENUTE_ADAPTIVE_DIALOG_CLASS,
-              "z-[90] sm:w-[min(32rem,calc(100vw_-_2rem))] sm:p-4",
-            )}
-          >
-            <ShenuteSurfaceHeader
-              closeLabel={copy.closeMenu}
-              onClose={() => setCopyFallbackText(null)}
-              titleId="shenute-copy-fallback-title"
-            >
-              {copy.copyResponseManual}
-            </ShenuteSurfaceHeader>
-            <p className="mt-2 text-xs leading-5 text-muted">
-              {copy.copyResponseManualHint}
-            </p>
-            <textarea
-              ref={copyFallbackTextareaRef}
-              readOnly
-              value={copyFallbackText}
-              rows={8}
-              onFocus={(event) => event.currentTarget.select()}
-              className="mt-3 max-h-[45dvh] min-h-36 w-full resize-none rounded-lg border border-line bg-elevated px-3 py-2 font-coptic text-sm leading-6 text-ink shadow-inner outline-none focus:border-coptic/55 focus:ring-2 focus:ring-coptic/25"
-            />
-            <ShenuteActionButton
-              actionClassName="h-10 justify-center"
-              onClick={() => {
-                copyFallbackTextareaRef.current?.focus();
-                copyFallbackTextareaRef.current?.select();
-              }}
-              className="mt-3"
-            >
-              {copy.selectCopyText}
-            </ShenuteActionButton>
-          </div>
-        </>
+        <ShenuteCopyFallbackDialog
+          copy={copy}
+          fallbackText={copyFallbackText}
+          onClose={() => setCopyFallbackText(null)}
+          textareaRef={copyFallbackTextareaRef}
+        />
       ) : null}
 
       {mobileUtilitySheet ? (
@@ -3361,103 +2630,52 @@ export default function ShenutePageClient() {
                 ? copy.conversationHistory
                 : copy.conversationActions}
             </ShenuteSurfaceHeader>
-            {mobileUtilitySheet === "history"
-              ? renderSavedSessionsContent({
-                  onClose: () => setMobileUtilitySheet(null),
-                  showMobileHeader: false,
-                })
-              : renderConversationActionsContent(() =>
-                  setMobileUtilitySheet(null),
-                )}
+            {mobileUtilitySheet === "history" ? (
+              <ShenuteSavedSessionsPanel
+                activeSessionId={activeSessionId}
+                copy={copy}
+                hasUnsavedConversationChanges={hasUnsavedConversationChanges}
+                language={language}
+                onClose={() => setMobileUtilitySheet(null)}
+                onLoadSession={loadShenuteSession}
+                sessionLoadingId={sessionLoadingId}
+                sessions={sessions}
+                showMobileHeader={false}
+              />
+            ) : (
+              <ShenuteConversationActionsPanel
+                activeSessionId={activeSessionId}
+                copy={copy}
+                hasUnsavedConversationChanges={hasUnsavedConversationChanges}
+                isHistorySaving={isHistorySaving}
+                isLoading={isLoading}
+                language={language}
+                onClearConversation={clearCurrentConversation}
+                onClose={() => setMobileUtilitySheet(null)}
+                onSaveHistory={handleSaveHistory}
+                saveButtonLabel={saveButtonLabel}
+                typedMessagesCount={typedMessages.length}
+              />
+            )}
           </div>
         </>
       ) : null}
 
       {isAnswerStylePanelOpen ? (
-        <>
-          <button
-            type="button"
-            aria-hidden="true"
-            tabIndex={-1}
-            className={cx(
-              SHENUTE_DIALOG_BACKDROP_CLASS,
-              "z-[60] sm:bg-transparent sm:backdrop-blur-0",
-            )}
-            onClick={() => setIsAnswerStylePanelOpen(false)}
-          />
-          <div
-            id="shenute-answer-style-panel"
-            role="dialog"
-            aria-labelledby="shenute-answer-style-label"
-            className={cx(
-              SHENUTE_ADAPTIVE_DIALOG_CLASS,
-              "z-[70] sm:w-[min(28rem,calc(100vw_-_2rem))] sm:p-3",
-            )}
-          >
-            <ShenuteSurfaceHeader
-              closeLabel={copy.closeAnswerStyleControls}
-              onClose={() => setIsAnswerStylePanelOpen(false)}
-              titleId="shenute-answer-style-label"
-            >
-              {copy.aiMode}
-            </ShenuteSurfaceHeader>
-            <p className="mt-1 text-xs leading-5 text-muted">
-              {copy.aiModeDescription}
-            </p>
-            <div
-              role="radiogroup"
-              aria-labelledby="shenute-answer-style-label"
-              className="mt-3 grid gap-2 sm:grid-cols-2"
-            >
-              {providerOptions.map((option) => {
-                const Icon = option.icon;
-                const isActive = option.value === inferenceProvider;
-
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    role="radio"
-                    aria-checked={isActive}
-                    aria-label={`${option.label}. ${option.description}`}
-                    onClick={() => {
-                      setIsUtilityChromeCollapsed(false);
-                      setInferenceProvider(option.value);
-                      setIsAnswerStylePanelOpen(false);
-                    }}
-                    disabled={isLoading || isShenuteAccessBlocked}
-                    className={cx(
-                      "flex min-h-11 items-center gap-2 rounded-lg border px-3 py-2 text-left transition disabled:cursor-not-allowed disabled:opacity-60",
-                      isActive
-                        ? "border-coptic/55 bg-coptic-soft text-ink shadow-sm"
-                        : "border-line bg-surface/80 text-muted hover:border-accent/35 hover:bg-elevated hover:text-ink",
-                    )}
-                  >
-                    <span
-                      className={cx(
-                        "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg",
-                        isActive
-                          ? "bg-coptic text-paper"
-                          : "bg-elevated text-muted",
-                      )}
-                    >
-                      <Icon className={SHENUTE_ICON_CLASS.panel} />
-                    </span>
-                    <span className="min-w-0 text-sm font-semibold leading-5">
-                      {option.label}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-            <p className="mt-3 rounded-lg border border-line bg-elevated px-3 py-2 text-xs leading-5 text-muted">
-              <span className="font-semibold text-ink">
-                {selectedProviderOption.label}:
-              </span>{" "}
-              {selectedProviderOption.description}
-            </p>
-          </div>
-        </>
+        <ShenuteAnswerStylePanel
+          copy={copy}
+          inferenceProvider={inferenceProvider}
+          isLoading={isLoading}
+          isShenuteAccessBlocked={isShenuteAccessBlocked}
+          onClose={() => setIsAnswerStylePanelOpen(false)}
+          onSelectProvider={(provider) => {
+            setIsUtilityChromeCollapsed(false);
+            setInferenceProvider(provider);
+            setIsAnswerStylePanelOpen(false);
+          }}
+          providerOptions={providerOptions}
+          selectedProviderOption={selectedProviderOption}
+        />
       ) : null}
     </PageShell>
   );
