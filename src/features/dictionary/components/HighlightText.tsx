@@ -14,7 +14,7 @@ import type { ReactNode } from "react";
 
 type FormSymbol = "-" | "=" | "†" | "~";
 export type FormSymbolTooltips = Partial<Record<FormSymbol, string>>;
-type GrammarAbbreviationTooltips = Partial<Record<string, string>>;
+export type GrammarAbbreviationTooltips = Partial<Record<string, string>>;
 
 const COPTIC_LEGACY_CHAR_CLASS = "\\u03E2-\\u03EF";
 const COPTIC_CHAR_CLASS = `${COPTIC_LEGACY_CHAR_CLASS}\\u2C80-\\u2CFF`;
