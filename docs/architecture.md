@@ -41,6 +41,48 @@ code should preserve these boundaries:
 If a module starts to mix route parsing, UI layout, provider calls, persistence,
 and domain decisions, split it before adding more behavior.
 
+## Readable Feature Decomposition
+
+Feature modules should be split by responsibility once a surface grows beyond a
+single simple workflow. The preferred pattern is an orchestration shell that
+passes typed data and callbacks into focused components, hooks, or server
+helpers.
+
+Use these boundaries when decomposing larger files:
+
+- UI shells wire data, auth state, selected modes, and feature sections.
+- Components own one visible section or interaction surface.
+- Hooks own one stateful behavior, such as filters, provider selection,
+  attachments, keyboard shortcuts, session progression, scrolling, or mutation
+  submission.
+- Server modules own one pipeline stage, query family, provider integration, or
+  persistence concern.
+- Schema and validation modules are grouped by domain shape, such as common,
+  grammar, dictionary, AI, forms, meanings, relations, or inflections.
+
+Recent established patterns:
+
+- Admin dashboard sections are feature components behind an
+  `AdminDashboardSections` orchestration layer.
+- Practice keeps `PracticePageClient` as the page shell and moves deck filters,
+  session progression, review submission, shortcuts, setup, cards, answer
+  context, and completion UI into named hooks/components.
+- Admin RAG ingestion keeps the public ingestion entry point stable while source
+  readers, OCR reconciliation, chunking, embeddings, persistence, JSON-source
+  ingestion, and logging live in separate modules.
+- Dictionary entry rendering keeps `DictionaryEntry` as a composition layer and
+  renders heading, meanings, morphology, relations, dialect forms, and notes
+  through semantic components.
+- Public OpenAPI and dictionary validation files keep stable public entry
+  points while schema and validation groups live in smaller modules.
+- Shenute keeps the route and client shell stable while conversation,
+  composer, messages, attachments, provider controls, session sidebar, and the
+  floating Shenute surface live in feature-owned components and hooks.
+
+Do not split code only to reduce line count. Split where the extracted name
+matches a real product or technical responsibility and makes future changes
+safer.
+
 ## Routing Model
 
 The route tree is intentionally split into two main groups:
@@ -276,6 +318,10 @@ sense if the feature were removed. If the answer is no, keep it in the feature.
 - Prefer feature-owned modules over new cross-feature megafiles.
 - Keep page files and route handlers thin when extraction improves clarity.
 - Split large client containers into orchestration plus smaller layout or interaction helpers once multiple modes, panels, or drill-down behaviors accumulate.
+- Split large server workflows by pipeline stage or data boundary instead of
+  hiding source reading, provider calls, persistence, and logging in one file.
+- Keep schema, validation, and OpenAPI modules grouped by domain shape or public
+  contract section.
 - Keep SEO logic centralized in shared helpers.
 - Treat `public/data` as generated or checked-in data, not the place for new business logic.
 - Use compatibility shims only as temporary migration tools, then remove them once imports are updated.
@@ -290,6 +336,8 @@ Use this quick review before opening a PR that adds or moves code:
 - Did feature-specific logic stay out of `src/lib`?
 - Did server-only feature logic go under `src/features/<feature>/lib/server`?
 - Did server actions stay focused on mutation/action boundaries?
+- Did large UI, hook, schema, validation, or pipeline files stay split by named
+  responsibility?
 - Are SEO, metadata, sitemap, and structured-data changes using shared helpers?
 - Are generated JSON/data artifacts kept out of business logic?
 - Did tests cover changed public routes, APIs, metadata, or persistence behavior?

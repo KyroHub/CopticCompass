@@ -10,8 +10,6 @@ import {
 
 import type { ShenuteProvider } from "@/features/shenute/shared";
 
-import type { ShenuteCopy } from "./shenuteCopy";
-
 export type ShenuteProviderOption = {
   description: string;
   icon: LucideIcon;
@@ -19,13 +17,32 @@ export type ShenuteProviderOption = {
   value: ShenuteProvider;
 };
 
+export type ShenuteProviderOptionsCopy = {
+  providerGemini: string;
+  providerGeminiDescription: string;
+  providerGeminiNmt: string;
+  providerGeminiNmtDescription: string;
+  providerHf: string;
+  providerHfDescription: string;
+  providerOpenRouter: string;
+  providerOpenRouterDescription: string;
+  providerThoth: string;
+  providerThothDescription: string;
+};
+
 export type ShenuteStarterPrompt = {
   icon: LucideIcon;
   prompt: string;
 };
 
+type ShenuteStarterPromptsCopy = {
+  starterPromptGrammar: string;
+  starterPromptImage: string;
+  starterPromptTranslate: string;
+};
+
 export function getShenuteStarterPrompts(
-  copy: ShenuteCopy,
+  copy: ShenuteStarterPromptsCopy,
 ): ShenuteStarterPrompt[] {
   return [
     {
@@ -44,7 +61,7 @@ export function getShenuteStarterPrompts(
 }
 
 export function getShenuteProviderOptions(
-  copy: ShenuteCopy,
+  copy: ShenuteProviderOptionsCopy,
 ): ShenuteProviderOption[] {
   return [
     {

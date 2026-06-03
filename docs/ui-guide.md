@@ -323,6 +323,8 @@ Before merging a UI change, ask:
 - Are labels clear to non-technical users?
 - Does the page avoid card-on-card decoration?
 - Do controls fit at mobile widths without overflow?
+- If the surface gained several panels, modes, or state transitions, is the
+  page client still a shell with feature-owned components/hooks?
 - Is the same workflow coherent in English and Dutch?
 - Did the change pass formatting, linting, typechecking, tests, and smoke
   coverage when relevant?

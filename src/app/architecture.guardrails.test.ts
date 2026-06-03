@@ -50,9 +50,11 @@ const delegatedRouteContracts = [
   },
 ] as const;
 
-const formerSharedFeatureModules = [
+const retiredFeatureModulePaths = [
   "src/components/FloatingAiAssistant.tsx",
   "src/components/FloatingAiAssistantPanel.tsx",
+  "src/features/shenute/components/FloatingAiAssistant.tsx",
+  "src/features/shenute/components/FloatingAiAssistantPanel.tsx",
   "src/lib/communications/audience.ts",
   "src/lib/communications/optInRequests.ts",
   "src/lib/communications/resend.ts",
@@ -63,8 +65,8 @@ const featureOwnedModules = [
   "src/features/communications/lib/server/audience.ts",
   "src/features/communications/lib/server/optInRequests.ts",
   "src/features/communications/lib/server/resend.ts",
-  "src/features/shenute/components/FloatingAiAssistant.tsx",
-  "src/features/shenute/components/FloatingAiAssistantPanel.tsx",
+  "src/features/shenute/components/FloatingShenute.tsx",
+  "src/features/shenute/components/FloatingShenutePanel.tsx",
   "src/features/shenute/lib/server/feedbackIngestion.ts",
 ] as const;
 
@@ -86,8 +88,8 @@ describe("Coptic Compass architecture guardrails", () => {
     }
   });
 
-  it("keeps feature-specific modules out of shared infrastructure", () => {
-    for (const relativePath of formerSharedFeatureModules) {
+  it("keeps retired feature-specific module paths absent", () => {
+    for (const relativePath of retiredFeatureModulePaths) {
       expect(projectFileExists(relativePath), relativePath).toBe(false);
     }
   });

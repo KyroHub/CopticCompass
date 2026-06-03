@@ -23,6 +23,8 @@ Explain the problem this PR solves or the improvement it introduces.
 - [ ] Server-only feature code lives under `src/features/<feature>/lib/server` where applicable
 - [ ] `src/actions` changes are focused server-action entry points, not new logic hubs
 - [ ] `src/lib` changes are genuine cross-feature infrastructure
+- [ ] Large UI, hook, schema, validation, or server-pipeline changes are split by named responsibility
+- [ ] New reusable components/hooks stay feature-owned unless they are genuinely shared
 - [ ] Docs were updated if this PR changes an architectural pattern
 
 ## Validation

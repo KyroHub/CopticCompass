@@ -2,7 +2,7 @@ import { Footer } from "@/components/Footer";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import { Navbar } from "@/components/Navbar";
 import { ThemeProvider } from "@/components/ThemeProvider";
-import { FloatingAiAssistant } from "@/features/shenute/components/FloatingAiAssistant";
+import { FloatingShenute } from "@/features/shenute/components/FloatingShenute";
 import type { Language } from "@/types/i18n";
 
 import type { ReactNode } from "react";
@@ -39,7 +39,7 @@ export function AppFrame({
           <Navbar />
           <main className="flex-1">{children}</main>
           <Footer />
-          <FloatingAiAssistant />
+          <FloatingShenute />
         </div>
       </LanguageProvider>
     </ThemeProvider>

@@ -62,6 +62,28 @@ feature-oriented architecture:
 If your PR changes placement rules or establishes a new pattern, update
 [docs/architecture.md](./docs/architecture.md) in the same PR.
 
+### Readability and Scalability Expectations
+
+Treat readability as part of the architecture, not as optional cleanup after a
+feature ships. Contributors should avoid growing monoliths that mix UI layout,
+state transitions, provider calls, data fetching, persistence, and domain
+decisions in one file.
+
+- keep route pages, API handlers, and large client files as orchestration shells
+  that wire smaller pieces together
+- split UI by semantic workflow sections, not by arbitrary line count
+- extract hooks when stateful behavior has a clear name, such as filters,
+  attachment state, keyboard shortcuts, selected provider, session state,
+  scrolling, or submission lifecycle
+- split server pipelines by responsibility, such as source reading,
+  reconciliation, chunking, embeddings, persistence, and logging
+- keep feature-specific components, hooks, types, and helpers inside
+  `src/features/<feature>` instead of creating broad shared files
+- keep shared helpers small and infrastructure-focused; avoid `src/lib`
+  megafiles that quietly become product-logic hubs
+- when touching an already-large module, leave it easier to navigate unless the
+  change is strictly a small data or copy correction
+
 ### App, UI, and Routing Changes
 
 Run the app locally with:
@@ -129,6 +151,7 @@ Please keep PRs focused and explain:
 - what changed
 - why it changed
 - which architecture layer or feature owns the new behavior
+- how large files stayed decomposed or were split by responsibility
 - whether the update is editorial, lexical, technical, visual, or schema-related
 - any source or scholarly rationale behind dictionary or grammar edits
 - any required environment variables, migrations, or follow-up steps
@@ -171,6 +194,8 @@ and environment variable names in non-technical UI copy.
 - Prefer small, reviewable commits over broad unrelated changes
 - Prefer feature-owned modules over adding new cross-feature megafiles; query logic usually belongs under `src/features/*/lib/server`
 - Keep route files, page files, and `src/actions` entry points thin when a feature-owned helper can carry the implementation
+- Avoid component, hook, action, route, or server-pipeline monoliths; split by
+  named responsibility when a file starts carrying several workflows
 - Do not add feature-specific workflow logic to `src/lib`; reserve it for shared infrastructure
 - Flag uncertain readings or reconstructions clearly in the PR description
 - Keep UI additions consistent with the academic and reference-focused character of the app

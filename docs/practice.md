@@ -121,7 +121,12 @@ The important split:
 | Concern                 | File or directory                                         |
 | ----------------------- | --------------------------------------------------------- |
 | Public route            | `src/app/(site)/[locale]/practice/page.tsx`               |
-| Client UI               | `src/features/practice/components/PracticePageClient.tsx` |
+| Client shell            | `src/features/practice/components/PracticePageClient.tsx` |
+| Setup and deck UI       | `StudySetupPanel.tsx`, `DeckPickerDialog.tsx`             |
+| Session progress UI     | `PracticeProgressPanel.tsx`, `CompletionPanel.tsx`        |
+| Card and answer UI      | `FlashcardFace.tsx`, `TypedAnswerPractice.tsx`            |
+| Answer context UI       | `AnswerContextPanel.tsx`                                  |
+| Client state hooks      | `src/features/practice/hooks/usePractice*.ts`             |
 | Server page data        | `src/features/practice/lib/server/pageData.ts`            |
 | Server actions          | `src/actions/practice.ts`                                 |
 | Persistence queries     | `src/features/practice/lib/server/queries.ts`             |
@@ -136,6 +141,22 @@ The important split:
 The product namespace is Practice. The term `flashcard` remains valid inside
 the card-generation layer where it describes an actual prompt/answer card,
 template, scheduler card, or grammar flashcard seed.
+
+### Client Composition
+
+`PracticePageClient` should remain a wiring shell for page data, selected deck,
+mode, review state, and persistence callbacks. Keep reusable interaction logic
+in feature hooks:
+
+- `usePracticeDeckFilters` for deck, mode, and prompt filtering.
+- `usePracticeSession` for current-card progression and reveal/hint state.
+- `usePracticeReviewSubmission` for review mutation lifecycle and persistence
+  feedback.
+- `usePracticeKeyboardShortcuts` for global study shortcuts.
+
+When adding future deck families, study modes, or persistence behavior, prefer a
+new named hook/component over adding another unrelated state branch to the page
+shell.
 
 ## FSRS Scheduling
 

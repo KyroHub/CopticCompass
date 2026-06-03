@@ -76,6 +76,9 @@ This repo is organized around a few clear layers:
 For structural changes, treat [docs/architecture.md](docs/architecture.md) as
 the source of truth. Product logic should default to `src/features/<feature>`;
 `src/lib` is only for infrastructure that is genuinely shared across features.
+As feature surfaces grow, keep routes and page clients as orchestration shells
+and split reusable components, hooks, server pipelines, schemas, and validation
+rules by named responsibility.
 
 ## Common Commands
 

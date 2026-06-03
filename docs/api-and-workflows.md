@@ -110,6 +110,23 @@ This list documents THOTH AI's external knowledge context. The Coptic Compass ru
   disclosure. Do not render raw operational error strings directly as the main
   notice.
 
+Implementation is split by pipeline responsibility:
+
+| Concern                             | Module                                             |
+| ----------------------------------- | -------------------------------------------------- |
+| Public ingestion orchestration      | `src/features/admin/lib/ragIngestion.ts`           |
+| Source file reading                 | `src/features/admin/lib/ragSourceReaders.ts`       |
+| OCR fallback/reconciliation         | `src/features/admin/lib/ragOcrReconciliation.ts`   |
+| Chunking                            | `src/features/admin/lib/ragChunking.ts`            |
+| Embeddings and vector normalization | `src/features/admin/lib/ragEmbeddings.ts`          |
+| Persistence                         | `src/features/admin/lib/ragPersistence.ts`         |
+| Logging and notices                 | `src/features/admin/lib/ragIngestionLogging.ts`    |
+| JSON source ingestion               | `src/features/admin/lib/ragJsonSourceIngestion.ts` |
+
+Keep new provider, source, or persistence behavior in the narrow pipeline module
+that owns it. The public admin routes and response/log shapes should stay
+compatible when internals are refactored.
+
 ### Embedding Dimensions
 
 There are two separate dimension concepts:
@@ -189,6 +206,12 @@ Docs and developer pages:
 - `/api/openapi.json` for the combined public OpenAPI document covering grammar, dictionary, Shenute AI, and OCR
 - `/en/developers`
 - `/nl/developers`
+
+OpenAPI assembly lives in `src/features/api-docs/lib`. Keep
+`publicOpenApiComponents.ts` and `publicOpenApi.ts` as stable entry points, but
+place grouped schemas, parameters, paths, and responses in the adjacent
+`publicOpenApi*` modules. Split by public contract group rather than by file
+length.
 
 ## Communications and Public Docs
 

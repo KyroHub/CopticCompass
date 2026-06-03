@@ -4,9 +4,12 @@ This guide describes how to edit `public/data/dictionary.json` safely. Treat the
 dictionary JSON as a small public API: it is consumed by dictionary pages,
 search, OpenAPI-backed routes, grammar links, and tests.
 
-The TypeScript types in `src/features/dictionary/types.ts` and the validator in
-`src/features/dictionary/lib/dictionaryValidation.ts` are the executable source
-of truth. This document explains the conventions behind those rules.
+The TypeScript types in `src/features/dictionary/types.ts` and the validator
+entry point in `src/features/dictionary/lib/dictionaryValidation.ts` are the
+executable source of truth. The validator is split into adjacent
+`dictionaryValidation*` modules by entry shape, forms, grammar, inflections,
+meanings, relations, and shared helpers. This document explains the conventions
+behind those rules.
 
 ## Contents
 
@@ -734,6 +737,8 @@ page. For inflection changes, check at least:
 
 - `src/features/dictionary/types.ts`
 - `src/features/dictionary/lib/dictionaryValidation.ts`
+- the relevant grouped `src/features/dictionary/lib/dictionaryValidation*.ts`
+  module
 - `src/features/dictionary/lib/entryDisplay.ts`
 - `src/features/dictionary/search.ts`
 - `src/features/dictionary/lib/dictionary.dataset.test.ts`
