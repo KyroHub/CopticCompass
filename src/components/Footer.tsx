@@ -2,7 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FaXTwitter, FaInstagram, FaGithub } from "react-icons/fa6";
+import {
+  FaFacebookF,
+  FaGithub,
+  FaInstagram,
+  FaLinkedinIn,
+  FaXTwitter,
+} from "react-icons/fa6";
 
 import { iconButtonClassName } from "@/components/Button";
 import { cx } from "@/lib/classes";
@@ -10,11 +16,40 @@ import {
   getContactPath,
   getContributorsPath,
   getDevelopersPath,
+  getFaqPath,
   getPrivacyPath,
   getTermsPath,
 } from "@/lib/locale";
 
 import { useLanguage } from "./LanguageProvider";
+
+const socialLinks = [
+  {
+    href: "https://x.com/copticcompass",
+    icon: FaXTwitter,
+    label: "X (Twitter)",
+  },
+  {
+    href: "https://www.instagram.com/copticcompass",
+    icon: FaInstagram,
+    label: "Instagram",
+  },
+  {
+    href: "https://www.linkedin.com/company/coptic-compass",
+    icon: FaLinkedinIn,
+    label: "LinkedIn",
+  },
+  {
+    href: "https://www.facebook.com/61563109659451",
+    icon: FaFacebookF,
+    label: "Facebook",
+  },
+  {
+    href: "https://github.com/KyroHub",
+    icon: FaGithub,
+    label: "GitHub",
+  },
+] as const;
 
 export function Footer() {
   const { language, t } = useLanguage();
@@ -25,6 +60,7 @@ export function Footer() {
   const footerLinks = [
     { href: getPrivacyPath(language), label: t("footer.privacy") },
     { href: getTermsPath(language), label: t("footer.terms") },
+    { href: getFaqPath(language), label: t("footer.faq") },
     { href: getContactPath(language), label: t("nav.contact") },
     { href: getDevelopersPath(language), label: t("footer.developers") },
     { href: getContributorsPath(language), label: t("footer.contributors") },
@@ -60,36 +96,19 @@ export function Footer() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <a
-            href="https://x.com/kyrilloswannes"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={iconButtonClassName()}
-            title="X (Twitter)"
-          >
-            <span className="sr-only">X (Twitter)</span>
-            <FaXTwitter className="h-[18px] w-[18px]" />
-          </a>
-          <a
-            href="https://www.instagram.com/kyrilloswannes/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={iconButtonClassName()}
-            title="Instagram"
-          >
-            <span className="sr-only">Instagram</span>
-            <FaInstagram className="h-[18px] w-[18px]" />
-          </a>
-          <a
-            href="https://github.com/KyroHub"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={iconButtonClassName()}
-            title="GitHub"
-          >
-            <span className="sr-only">GitHub</span>
-            <FaGithub className="h-[18px] w-[18px]" />
-          </a>
+          {socialLinks.map(({ href, icon: Icon, label }) => (
+            <a
+              key={href}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={iconButtonClassName()}
+              title={label}
+            >
+              <span className="sr-only">{label}</span>
+              <Icon className="h-[18px] w-[18px]" />
+            </a>
+          ))}
         </div>
       </div>
     </footer>

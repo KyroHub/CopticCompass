@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { appendSearchAndHash, getPublicLocaleFromPathname } from "./locale";
+import {
+  appendSearchAndHash,
+  getFaqPath,
+  getPublicLocaleFromPathname,
+} from "./locale";
 
 describe("appendSearchAndHash", () => {
   it("preserves both query strings and hashes", () => {
@@ -30,5 +34,13 @@ describe("getPublicLocaleFromPathname", () => {
     expect(getPublicLocaleFromPathname("/login")).toBeNull();
     expect(getPublicLocaleFromPathname("/dashboard")).toBeNull();
     expect(getPublicLocaleFromPathname(null)).toBeNull();
+  });
+});
+
+describe("getFaqPath", () => {
+  it("returns locale-aware FAQ routes and the legacy path", () => {
+    expect(getFaqPath()).toBe("/faq");
+    expect(getFaqPath("en")).toBe("/en/faq");
+    expect(getFaqPath("nl")).toBe("/nl/faq");
   });
 });

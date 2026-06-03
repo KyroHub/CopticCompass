@@ -16,6 +16,7 @@ import type {
   DialectFormVariants,
   LexicalEntry,
 } from "@/features/dictionary/types";
+import { getFaqAnswerPlainText, type FaqItem } from "@/features/faq/lib/faq";
 import {
   buildGrammarLessonSeoDescription,
   buildGrammarLessonSeoTitle,
@@ -30,6 +31,7 @@ import { DEFAULT_LANGUAGE, getTranslation } from "@/lib/i18n";
 import {
   getDictionaryPath,
   getEntryPath,
+  getFaqPath,
   getGrammarPath,
   getLocalizedHomePath,
   getPublicationsPath,
@@ -145,6 +147,10 @@ function getDictionaryUrl(locale: Language) {
 
 function getDictionarySetId(locale: Language) {
   return `${getDictionaryUrl(locale)}#defined-term-set`;
+}
+
+function getFaqUrl(locale: Language) {
+  return absoluteUrl(getFaqPath(locale));
 }
 
 function getGrammarHubUrl(locale: Language) {
@@ -338,6 +344,37 @@ export function createDictionaryPageStructuredData(
       inLanguage: ["cop", "en", "nl", "el"],
     },
   ];
+}
+
+/**
+ * Builds FAQPage structured data from the localized FAQ content rendered on
+ * the public FAQ page.
+ */
+export function createFaqPageStructuredData(
+  items: readonly FaqItem[],
+  locale: Language = DEFAULT_LANGUAGE,
+): JsonLd {
+  const faqUrl = getFaqUrl(locale);
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "@id": `${faqUrl}#faq-page`,
+    url: faqUrl,
+    inLanguage: locale,
+    isPartOf: {
+      "@id": getWebsiteId(locale),
+    },
+    mainEntity: items.map((item) => ({
+      "@type": "Question",
+      "@id": `${faqUrl}#${item.id}`,
+      name: item.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: getFaqAnswerPlainText(item),
+      },
+    })),
+  };
 }
 
 /**

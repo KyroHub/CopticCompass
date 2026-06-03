@@ -39,6 +39,8 @@ describe("sitemap route", () => {
         "https://www.copticcompass.com/en/contributors",
         "https://www.copticcompass.com/nl/analytics",
         "https://www.copticcompass.com/en/contact",
+        "https://www.copticcompass.com/en/faq",
+        "https://www.copticcompass.com/nl/faq",
         "https://www.copticcompass.com/api-docs",
       ]),
     );

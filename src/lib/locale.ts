@@ -84,6 +84,10 @@ export function getContactPath(locale?: Language) {
   return locale ? getLocalizedPath(locale, "/contact") : "/contact";
 }
 
+export function getFaqPath(locale?: Language) {
+  return locale ? getLocalizedPath(locale, "/faq") : "/faq";
+}
+
 export function getShenutePath() {
   return "/shenute";
 }

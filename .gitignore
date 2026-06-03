@@ -73,6 +73,7 @@ blob-report/
 # Document exports
 *.docx
 *.pdf
+*.pptx
 
 # AI/IDE/Editor workspaces
 .vscode/

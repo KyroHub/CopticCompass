@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import type { LexicalEntry } from "@/features/dictionary/types";
+import { getFaqAnswerPlainText, listFaqItems } from "@/features/faq/lib/faq";
 
 import {
   createDefinedTermStructuredData,
   createDictionaryPageStructuredData,
+  createFaqPageStructuredData,
   createWebSiteStructuredData,
 } from "./structuredData";
 
@@ -76,5 +78,35 @@ describe("structured dictionary data", () => {
       name: "ϭⲱⲓⲥ",
       alternateName: ["ϭⲱⲓⲥ", "⳪"],
     });
+  });
+
+  it("builds FAQ page structured data from localized FAQ content", () => {
+    const faqItems = listFaqItems("en");
+    const firstFaqItem = faqItems[0];
+    const data = createFaqPageStructuredData(faqItems, "en");
+    const questions = data.mainEntity as Array<Record<string, unknown>>;
+
+    expect(firstFaqItem).toBeDefined();
+    expect(data).toMatchObject({
+      "@type": "FAQPage",
+      "@id": "https://www.copticcompass.com/en/faq#faq-page",
+      url: "https://www.copticcompass.com/en/faq",
+      inLanguage: "en",
+    });
+    expect(questions).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          "@type": "Question",
+          "@id": `https://www.copticcompass.com/en/faq#${firstFaqItem?.id}`,
+          name: firstFaqItem?.question,
+          acceptedAnswer: expect.objectContaining({
+            "@type": "Answer",
+            text: firstFaqItem
+              ? getFaqAnswerPlainText(firstFaqItem)
+              : undefined,
+          }),
+        }),
+      ]),
+    );
   });
 });

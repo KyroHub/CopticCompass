@@ -227,10 +227,10 @@ usable as a guide for the present.
 At the center of the emblem is the Coptic letter **Ⲭ**. It is the structural and
 conceptual core of the brand, carrying three connected meanings:
 
-- **Ⲭⲏⲙⲓ**: Egypt, the ancient earthly point of origin.
-- **Ⲭⲣⲓⲥⲧⲓⲁⲛⲟⲥ**: the Christian faith and tradition that sustain the Coptic
-  inheritance.
-- **Ⲭⲁⲧⲏⲣ**: compass, naming the brand's role as a guide for those seeking
+- **Ⲭⲏⲙⲓ**: "Egypt", the ancient earthly point of origin.
+- **Ⲭⲣⲓⲥⲧⲓⲁⲛⲟⲥ**: "Christians", the community that carries and sustains the
+  Coptic inheritance.
+- **Ⲭⲁⲧⲏⲣ**: "compass", naming the brand's role as a guide for those seeking
   direction.
 
 The surrounding forms turn the central **Ⲭ** into a celestial instrument. The

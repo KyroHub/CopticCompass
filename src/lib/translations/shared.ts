@@ -27,6 +27,11 @@ export const sharedMessages = defineMessages({
     "nav.analyticsDescription": "Explore dictionary data and patterns.",
     "nav.login": "Sign In",
     "nav.dashboard": "Dashboard",
+    "nav.account": "Account",
+    "nav.openDashboard": "Open dashboard",
+    "nav.authPrompt.title": "Sign in",
+    "nav.authPrompt.description":
+      "Save practice progress, favorites, and account settings.",
 
     "shenute.launcher.open": "Open Shenute AI",
     "shenute.launcher.loading": "Loading Shenute AI...",
@@ -51,6 +56,7 @@ export const sharedMessages = defineMessages({
     "footer.credit": "is independently built and maintained.",
     "footer.privacy": "Privacy Policy",
     "footer.terms": "Terms of Service",
+    "footer.faq": "FAQ",
     "footer.apiDocs": "API Docs",
     "footer.developers": "Developers",
     "footer.contributors": "Contributors",
@@ -78,6 +84,11 @@ export const sharedMessages = defineMessages({
     "nav.analyticsDescription": "Verken woordenboekgegevens en patronen.",
     "nav.login": "Inloggen",
     "nav.dashboard": "Dashboard",
+    "nav.account": "Account",
+    "nav.openDashboard": "Dashboard openen",
+    "nav.authPrompt.title": "Inloggen",
+    "nav.authPrompt.description":
+      "Bewaar uw oefenvoortgang, favorieten en accountinstellingen.",
 
     "shenute.launcher.open": "Shenute AI openen",
     "shenute.launcher.loading": "Shenute AI laden...",
@@ -103,6 +114,7 @@ export const sharedMessages = defineMessages({
     "footer.credit": "wordt onafhankelijk ontwikkeld en beheerd.",
     "footer.privacy": "Privacybeleid",
     "footer.terms": "Gebruiksvoorwaarden",
+    "footer.faq": "FAQ",
     "footer.apiDocs": "API-docs",
     "footer.developers": "Ontwikkelaars",
     "footer.contributors": "Bijdragers",

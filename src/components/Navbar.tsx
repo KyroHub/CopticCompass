@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, BookOpen, ChevronDown, Menu, X } from "lucide-react";
+import { BarChart3, BookOpen, ChevronDown, LogIn, Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -35,17 +35,9 @@ import {
 } from "./navbarLinkStyles";
 import { ThemeToggle } from "./ThemeToggle";
 
-type NavbarAuthLinkProps = {
-  dashboardHref: string;
-  dashboardLabel: string;
-  loginHref: string;
-  loginLabel: string;
-  onNavigate?: () => void;
-  pathname: string;
-  variant: NavbarLinkVariant;
-};
+import type { NavbarAuthControlProps } from "./NavbarAuthControl";
 
-type NavbarAuthLinkComponent = ComponentType<NavbarAuthLinkProps>;
+type NavbarAuthControlComponent = ComponentType<NavbarAuthControlProps>;
 
 type NavbarLink = {
   href: string;
@@ -63,10 +55,9 @@ function isActivePath(pathname: string, href: string) {
   return pathname === hrefPathname || pathname.startsWith(`${hrefPathname}/`);
 }
 
-function LazyNavbarAuthLink(props: NavbarAuthLinkProps) {
-  const [AuthLink, setAuthLink] = useState<NavbarAuthLinkComponent | null>(
-    null,
-  );
+function LazyNavbarAuthControl(props: NavbarAuthControlProps) {
+  const [AuthControl, setAuthControl] =
+    useState<NavbarAuthControlComponent | null>(null);
   const hrefPathname = props.loginHref.split("?")[0] ?? props.loginHref;
   const isActive =
     props.pathname === hrefPathname ||
@@ -76,18 +67,42 @@ function LazyNavbarAuthLink(props: NavbarAuthLinkProps) {
     variant: props.variant,
   });
 
-  const loadAuthLink = useCallback(() => {
-    if (AuthLink) {
+  const loadAuthControl = useCallback(() => {
+    if (AuthControl) {
       return;
     }
 
-    void import("./NavbarAuthLink").then((module) => {
-      setAuthLink(() => module.NavbarAuthLink);
+    void import("./NavbarAuthControl").then((module) => {
+      setAuthControl(() => module.NavbarAuthControl);
     });
-  }, [AuthLink]);
+  }, [AuthControl]);
 
-  if (AuthLink) {
-    return <AuthLink {...props} />;
+  useEffect(() => {
+    loadAuthControl();
+  }, [loadAuthControl]);
+
+  if (AuthControl) {
+    return <AuthControl {...props} />;
+  }
+
+  if (props.variant === "desktop") {
+    return (
+      <Link
+        href={props.loginHref}
+        prefetch={false}
+        onClick={props.onNavigate}
+        onFocus={loadAuthControl}
+        onMouseEnter={loadAuthControl}
+        data-label={props.loginLabel}
+        className={controlButtonClassName({ className: "h-10 w-10 px-0" })}
+        aria-current={isActive ? "page" : undefined}
+        aria-label={props.loginLabel}
+        title={props.loginLabel}
+      >
+        <LogIn className="h-4 w-4" aria-hidden="true" />
+        <span className="sr-only">{props.loginLabel}</span>
+      </Link>
+    );
   }
 
   return (
@@ -95,8 +110,8 @@ function LazyNavbarAuthLink(props: NavbarAuthLinkProps) {
       href={props.loginHref}
       prefetch={false}
       onClick={props.onNavigate}
-      onFocus={loadAuthLink}
-      onMouseEnter={loadAuthLink}
+      onFocus={loadAuthControl}
+      onMouseEnter={loadAuthControl}
       data-label={props.loginLabel}
       className={linkClassName}
       aria-current={isActive ? "page" : undefined}
@@ -329,11 +344,13 @@ export function Navbar() {
           </nav>
 
           <div className="flex items-center justify-end gap-2">
+            <ThemeToggle />
+            <LanguageToggle />
             <nav
-              aria-label="Utility"
+              aria-label={t("nav.account")}
               className="hidden items-center gap-1 xl:flex"
             >
-              <LazyNavbarAuthLink
+              <LazyNavbarAuthControl
                 dashboardHref={dashboardHref}
                 dashboardLabel={t("nav.dashboard")}
                 loginHref={loginHref}
@@ -342,8 +359,6 @@ export function Navbar() {
                 variant="desktop"
               />
             </nav>
-            <ThemeToggle />
-            <LanguageToggle />
             <button
               type="button"
               className={controlButtonClassName({
@@ -460,7 +475,7 @@ export function Navbar() {
             {renderNavbarLink(shenuteLink, "mobile", () =>
               setIsMobileMenuOpen(false),
             )}
-            <LazyNavbarAuthLink
+            <LazyNavbarAuthControl
               dashboardHref={dashboardHref}
               dashboardLabel={t("nav.dashboard")}
               loginHref={loginHref}

@@ -207154,5 +207154,36 @@
       }
     ],
     "etym": "Egy"
+  },
+  {
+    "id": 11468,
+    "headword": "Ⲕⲏⲙⲉ",
+    "dialects": {
+      "A": {
+        "absolute": "Ⲕⲏⲙⲉ"
+      },
+      "S": {
+        "absolute": "Ⲕⲏⲙⲉ"
+      },
+      "B": {
+        "absolute": "Ⲭⲏⲙⲓ"
+      },
+      "F": {
+        "absolute": "Ⲕⲏⲙⲓ"
+      }
+    },
+    "senses": [
+      {
+        "grammar": {
+          "pos": "N",
+          "gender": "BOTH"
+        },
+        "meanings": {
+          "en": ["Egypt"],
+          "nl": ["Egypte"]
+        }
+      }
+    ],
+    "etym": "Egy"
   }
 ]

@@ -14,6 +14,7 @@ import {
   getDevelopersPath,
   getDictionaryPath,
   getEntryPath,
+  getFaqPath,
   getGrammarPath,
   getLocalizedHomePath,
   getPrivacyPath,
@@ -143,6 +144,16 @@ const localizedStaticRoutes: readonly LocalizedStaticRouteConfig[] = [
     sourcePaths: [
       "src/app/(site)/[locale]/contact/page.tsx",
       "src/features/contact/components/ContactPageClient.tsx",
+    ],
+  },
+  {
+    getRoute: getFaqPath,
+    changeFrequency: "yearly",
+    priority: 0.45,
+    sourcePaths: [
+      "src/app/(site)/[locale]/faq/page.tsx",
+      "src/features/faq/components/FaqPageContent.tsx",
+      "src/features/faq/lib/faq.ts",
     ],
   },
   {
