@@ -24,7 +24,7 @@ export type FaqItem = {
   question: string;
 };
 
-export type FaqPageCopy = {
+type FaqPageCopy = {
   description: string;
   items: readonly FaqItem[];
   title: string;
