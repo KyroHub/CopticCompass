@@ -11,5 +11,6 @@
     "supabase/functions/**/*.ts",
     "scripts/**/*.mts"
   ],
+  "ignoreBinaries": ["supabase"],
   "ignoreDependencies": ["tailwindcss"]
 }

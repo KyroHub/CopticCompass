@@ -1,3 +1,4 @@
+import "server-only";
 import { assertServerOnly } from "@/lib/server/assertServerOnly";
 import { getSupabaseServiceRoleEnv } from "@/lib/supabase/config";
 import type { Json } from "@/types/supabase";

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   buildContentSecurityPolicy,
+  buildContentSecurityPolicyReportOnly,
   buildSecurityHeaders,
 } from "./securityHeaders";
 
@@ -70,6 +71,48 @@ describe("securityHeaders", () => {
     );
   });
 
+  it("builds a stricter report-only CSP without inline fallbacks", () => {
+    const policy = buildContentSecurityPolicyReportOnly({
+      contentSecurityPolicyReportUri: "/api/csp-report",
+      nodeEnv: "production",
+      supabaseUrl: "https://project.supabase.co",
+    });
+
+    expect(getDirectiveValue(policy, "script-src")).not.toContain(
+      "'unsafe-inline'",
+    );
+    expect(getDirectiveValue(policy, "style-src")).toBe("'self'");
+    expect(getDirectiveValue(policy, "report-uri")).toBe("/api/csp-report");
+  });
+
+  it("drops unsafe report-only CSP report destinations", () => {
+    const policy = buildContentSecurityPolicyReportOnly({
+      contentSecurityPolicyReportUri: "//collector.example/report",
+      nodeEnv: "production",
+      supabaseUrl: "https://project.supabase.co",
+    });
+
+    expect(getDirectiveValue(policy, "report-uri")).toBeNull();
+  });
+
+  it("keeps nonce-aware script reporting when report-only CSP is enabled", () => {
+    const policy = buildContentSecurityPolicyReportOnly({
+      nodeEnv: "production",
+      nonce: "test-nonce",
+      supabaseUrl: "https://project.supabase.co",
+    });
+
+    expect(getDirectiveValue(policy, "script-src")).toContain(
+      "'nonce-test-nonce'",
+    );
+    expect(getDirectiveValue(policy, "script-src")).toContain(
+      "'strict-dynamic'",
+    );
+    expect(getDirectiveValue(policy, "script-src")).not.toContain(
+      "'unsafe-inline'",
+    );
+  });
+
   it("drops invalid Supabase URLs instead of emitting malformed origins", () => {
     const policy = buildContentSecurityPolicy({
       nodeEnv: "production",
@@ -101,5 +144,22 @@ describe("securityHeaders", () => {
         nodeEnv: "production",
       }).some((header) => header.key === "Content-Security-Policy"),
     ).toBe(false);
+  });
+
+  it("emits report-only CSP only when explicitly enabled", () => {
+    expect(
+      buildSecurityHeaders({
+        includeContentSecurityPolicyReportOnly: false,
+        nodeEnv: "production",
+      }).some((header) => header.key === "Content-Security-Policy-Report-Only"),
+    ).toBe(false);
+
+    const reportOnlyHeader = buildSecurityHeaders({
+      contentSecurityPolicyReportUri: "/api/csp-report",
+      includeContentSecurityPolicyReportOnly: true,
+      nodeEnv: "production",
+    }).find((header) => header.key === "Content-Security-Policy-Report-Only");
+
+    expect(reportOnlyHeader?.value).toContain("report-uri /api/csp-report");
   });
 });

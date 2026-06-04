@@ -1,3 +1,4 @@
+import "server-only";
 import { embedMany } from "ai";
 
 import { getGeminiEmbeddingModel } from "@/lib/gemini";

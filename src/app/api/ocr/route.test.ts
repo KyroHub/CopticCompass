@@ -23,8 +23,10 @@ function restoreEnv() {
 }
 
 function createOcrUploadRequest(options?: {
+  fields?: Record<string, string>;
   file?: File | null;
   headers?: HeadersInit;
+  url?: string;
 }) {
   const formData = new FormData();
 
@@ -36,11 +38,18 @@ function createOcrUploadRequest(options?: {
     );
   }
 
-  return new Request("https://www.copticcompass.com/api/ocr?lang=cop", {
-    method: "POST",
-    body: formData,
-    headers: options?.headers,
-  });
+  for (const [key, value] of Object.entries(options?.fields ?? {})) {
+    formData.set(key, value);
+  }
+
+  return new Request(
+    options?.url ?? "https://www.copticcompass.com/api/ocr?lang=cop",
+    {
+      method: "POST",
+      body: formData,
+      headers: options?.headers,
+    },
+  );
 }
 
 async function loadOcrRoute(options?: LoadOcrRouteOptions) {
@@ -114,6 +123,24 @@ describe("OCR proxy route", () => {
     expect(payload.requestId).toMatch(/^ocr_/);
     expect(JSON.stringify(payload)).not.toContain("OCR_SERVICE_URL");
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects non-HTTPS OCR service URLs before proxying uploads", async () => {
+    const { consumeRateLimitMock, fetchMock, POST } = await loadOcrRoute({
+      ocrServiceUrl: "http://ocr.example/upload",
+    });
+
+    const response = await POST(createOcrUploadRequest());
+    const payload = await response.json();
+
+    expect(response.status).toBe(503);
+    expect(payload).toMatchObject({
+      success: false,
+      code: "external_service_unavailable",
+      error: "OCR could not read this image right now. Please try again.",
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(consumeRateLimitMock).not.toHaveBeenCalled();
   });
 
   it("returns public validation copy for malformed multipart requests", async () => {
@@ -235,5 +262,29 @@ describe("OCR proxy route", () => {
     expect(response.headers.get("x-ocr-proxy")).toBe("coptic-compass");
     expect(response.headers.get("content-type")).toContain("application/json");
     await expect(response.json()).resolves.toEqual({ text: "ⲡⲉ" });
+  });
+
+  it("does not forward unexpected OCR query params or text fields upstream", async () => {
+    const { fetchMock, POST } = await loadOcrRoute();
+
+    await POST(
+      createOcrUploadRequest({
+        fields: {
+          debug: "true",
+          lang: "boh",
+          notes: "do not forward",
+        },
+        url: "https://www.copticcompass.com/api/ocr?lang=cop&debug=true&trace=1",
+      }),
+    );
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [upstreamUrl, init] = fetchMock.mock.calls[0] ?? [];
+
+    expect(upstreamUrl).toBe("https://ocr.example/upload?lang=cop");
+    expect(init?.body).toBeInstanceOf(FormData);
+
+    const forwardedFormData = init?.body as FormData;
+    expect(Array.from(forwardedFormData.keys())).toEqual(["file"]);
   });
 });

@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 const PUBLIC_API_CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
-  "Access-Control-Allow-Headers": "Authorization, Content-Type, If-None-Match",
+  "Access-Control-Allow-Headers": "Content-Type, If-None-Match",
   "Access-Control-Max-Age": "86400",
 } as const;
 

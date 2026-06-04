@@ -1,3 +1,4 @@
+import "server-only";
 import { access, readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 

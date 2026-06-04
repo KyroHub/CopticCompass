@@ -1,3 +1,4 @@
+import "server-only";
 import { createHash, randomBytes } from "node:crypto";
 
 import { isLanguage, type Language } from "@/lib/i18n";

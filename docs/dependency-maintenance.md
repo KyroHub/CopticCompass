@@ -46,6 +46,30 @@ the advisory, identify whether the vulnerable package is production or
 development-only, check whether the affected code path is reachable, and prefer a
 targeted update.
 
+## Audit Posture
+
+CI runs `npm audit --audit-level=high` after `npm ci`. This keeps high and
+critical advisories from slipping into deployable branches while avoiding noisy
+pipeline failures for reviewed moderate upstream findings.
+
+Run a normal `npm audit fix` only on a dedicated maintenance branch, then run the
+full CI suite before merging. Do not force audit fixes that downgrade framework
+packages or jump across unrelated major versions.
+
+As of June 4, 2026, the reviewed moderate findings are tracked through
+Dependabot instead of force-fixed:
+
+- Next.js has a nested PostCSS advisory that should move through the normal Next
+  maintenance track.
+- `brace-expansion` appears in the development dependency tree and should be
+  updated through the owning package chain.
+- `@react-email/components` pulls deprecated subpackages during `npm ci`.
+
+The Supabase CLI is intentionally not kept as an npm `devDependency` while the
+`supabase` npm package has an active critical malware advisory. Migration scripts
+still call `supabase`, but contributors should install the CLI through a trusted
+external channel and keep it on `PATH`.
+
 ## Optional Automation
 
 Leave broad auto-merge disabled. After several quiet weeks of Dependabot PRs, it

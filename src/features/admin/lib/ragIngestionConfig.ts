@@ -1,3 +1,4 @@
+import "server-only";
 export const CHUNK_SIZE = 1600;
 export const CHUNK_OVERLAP = 200;
 export const OCR_MIN_TEXT_LENGTH = 250;

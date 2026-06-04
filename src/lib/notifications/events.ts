@@ -1,3 +1,4 @@
+import "server-only";
 import { mailBrand, mailBrandColors } from "@/lib/communications/mailBrand";
 import { getNotificationEmailEnv } from "@/lib/notifications/config";
 import {

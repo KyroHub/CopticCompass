@@ -1,3 +1,4 @@
+import "server-only";
 import { getPublicErrorMessage, type AppErrorCode } from "@/lib/errors";
 import {
   consumeRateLimit,

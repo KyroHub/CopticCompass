@@ -82,6 +82,19 @@ In production, set `OPENROUTER_HTTP_REFERER` to `https://www.copticcompass.com` 
 - `OCR_UPLOAD_FIELD`
 - `OCR_MAX_UPLOAD_BYTES`
 
+`OCR_SERVICE_URL` must use `https:`. The OCR proxy intentionally ignores
+unexpected query parameters and form fields instead of forwarding them upstream.
+
+### Distributed Rate Limiting
+
+- `UPSTASH_REDIS_REST_URL`
+- `UPSTASH_REDIS_REST_TOKEN`
+- `KV_REST_API_URL`
+- `KV_REST_API_TOKEN`
+
+Use either the Upstash Redis names or the Vercel KV-compatible aliases. In
+production, protected routes fail closed when no shared backend is configured.
+
 ### RAG Ingestion Tuning
 
 - `RAG_EMBEDDING_BATCH_SIZE`
@@ -129,6 +142,26 @@ See `docs/distillation.md` for the pipeline-specific workflow.
 
 - `SCALABILITY_LOGGING`
 
+### Security Headers
+
+- `CSP_REPORT_ONLY`
+- `CSP_REPORT_URI`
+
+Set `CSP_REPORT_ONLY=true` only when you are ready to collect browser reports for
+a stricter, non-enforcing CSP. The enforced CSP keeps `style-src 'unsafe-inline'`
+for Next.js and Tailwind compatibility; report-only mode removes inline script
+and style fallbacks so violations can be reviewed before any enforcement change.
+Use `CSP_REPORT_URI` to point reports at a trusted relative or HTTPS endpoint.
+
+### Avatar Storage
+
+Profile avatars intentionally use a public Supabase Storage bucket because the
+product displays them as public profile media. Anyone with an avatar object URL
+can fetch that image, so users should not treat profile pictures as private
+documents. Uploads are limited at the bucket level to JPEG, PNG, or WebP files up
+to 1 MB, and the profile update action still validates that persisted avatar URLs
+belong to the authenticated user's own avatar path.
+
 ## Supabase Webhooks & Background Work
 
 ### Signup Alert Webhook
@@ -173,7 +206,12 @@ When the dry run matches the intended rollout, apply the pending migrations:
 npm run db:push
 ```
 
-If the Supabase CLI reports that a newer version is available, update it through the same install channel you originally used before important production rollouts when practical.
+The migration scripts expect the Supabase CLI to be available on `PATH`. Install
+it through a trusted external channel rather than adding the `supabase` npm CLI
+package to this dependency tree while its critical malware advisory remains
+active. If the Supabase CLI reports that a newer version is available, update it
+through the same install channel you originally used before important production
+rollouts when practical.
 
 ### Resend Audience Sync
 

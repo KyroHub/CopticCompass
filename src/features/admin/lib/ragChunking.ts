@@ -1,3 +1,4 @@
+import "server-only";
 import { generateText } from "ai";
 
 import { getGeminiModel } from "@/lib/gemini";

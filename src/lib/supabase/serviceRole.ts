@@ -1,3 +1,4 @@
+import "server-only";
 import { createClient } from "@supabase/supabase-js";
 
 import { assertServerOnly } from "@/lib/server/assertServerOnly";
