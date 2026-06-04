@@ -54,8 +54,8 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "@ai-sdk/google": "^3.0.64",
-    "@ai-sdk/react": "^3.0.170",
+    "@ai-sdk/google": "^3.0.80",
+    "@ai-sdk/react": "^3.0.198",
     "@gradio/client": "^2.2.0",
     "@huggingface/inference": "^4.13.15",
     "@opentelemetry/api": "^1.9.1",
