@@ -13,6 +13,10 @@ time. Version-update PRs are grouped for the areas that usually move together:
 - React, React DOM, and their type packages
 - development tooling patch and minor updates
 
+The broad development-tooling group excludes packages that belong to dedicated
+groups, so Next, React, Supabase, and AI SDK updates stay reviewable in their
+own PRs.
+
 Routine Dependabot version updates ignore semver-major updates. Review major
 updates manually with release notes, migration guides, and focused validation.
 

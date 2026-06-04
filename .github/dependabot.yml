@@ -44,6 +44,17 @@ updates:
       dev-tooling:
         applies-to: version-updates
         dependency-type: "development"
+        exclude-patterns:
+          - "@ai-sdk/*"
+          - "@next/*"
+          - "@supabase/*"
+          - "@types/react"
+          - "@types/react-dom"
+          - "ai"
+          - "eslint-config-next"
+          - "next"
+          - "react"
+          - "react-dom"
         update-types:
           - "minor"
           - "patch"
