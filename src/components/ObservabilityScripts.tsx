@@ -1,7 +1,10 @@
 import analyticsPackage from "@vercel/analytics/package.json";
 import speedInsightsPackage from "@vercel/speed-insights/package.json";
 
+import { ConsentGatedObservabilityScripts } from "@/components/ConsentGatedObservabilityScripts";
+import { isAnalyticsConsentRequired } from "@/lib/analyticsConsent";
 import { isVercelObservabilityEnabled } from "@/lib/vercelMonitoring";
+import type { Language } from "@/types/i18n";
 
 type ConfigSection = Record<string, unknown>;
 
@@ -11,6 +14,7 @@ type ScriptDefinition = {
 };
 
 type ObservabilityScriptsProps = {
+  language?: Language;
   nonce?: string | null;
 };
 
@@ -19,6 +23,7 @@ type ObservabilityScriptsProps = {
  * deployments, without pulling their client components into every route chunk.
  */
 export function ObservabilityScripts({
+  language,
   nonce,
 }: ObservabilityScriptsProps = {}) {
   if (!isVercelObservabilityEnabled()) {
@@ -32,21 +37,29 @@ export function ObservabilityScripts({
     clientConfig.speedInsights,
     basePath,
   );
+  const scripts = [analytics, speedInsights] as const;
+
+  if (isAnalyticsConsentRequired()) {
+    return (
+      <ConsentGatedObservabilityScripts
+        language={language}
+        nonce={nonce}
+        scripts={scripts}
+      />
+    );
+  }
 
   return (
     <>
-      <script
-        defer
-        nonce={nonce ?? undefined}
-        src={analytics.src}
-        {...analytics.dataAttributes}
-      />
-      <script
-        defer
-        nonce={nonce ?? undefined}
-        src={speedInsights.src}
-        {...speedInsights.dataAttributes}
-      />
+      {scripts.map((script) => (
+        <script
+          key={script.src}
+          defer
+          nonce={nonce ?? undefined}
+          src={script.src}
+          {...script.dataAttributes}
+        />
+      ))}
     </>
   );
 }

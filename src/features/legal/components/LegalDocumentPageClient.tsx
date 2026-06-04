@@ -7,10 +7,14 @@ import { PageShell, pageShellAccents } from "@/components/PageShell";
 import { SurfacePanel } from "@/components/SurfacePanel";
 import type { LegalDocument } from "@/features/legal/lib/legalDocuments";
 
+import type { ReactNode } from "react";
+
 export function LegalDocumentPageClient({
+  afterSections,
   breadcrumbItems,
   document,
 }: {
+  afterSections?: ReactNode;
   breadcrumbItems: readonly BreadcrumbTrailItem[];
   document: LegalDocument;
 }) {
@@ -52,8 +56,24 @@ export function LegalDocumentPageClient({
                 {section.title}
               </h2>
               <p className="leading-loose text-muted">{section.body}</p>
+              {section.bullets?.length ? (
+                <ul className="mt-4 space-y-2 text-sm leading-6 text-muted">
+                  {section.bullets.map((item) => (
+                    <li key={item} className="flex gap-3">
+                      <span
+                        aria-hidden="true"
+                        className="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-accent/70"
+                      />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </section>
           ))}
+          {afterSections ? (
+            <div className="py-8 last:pb-0">{afterSections}</div>
+          ) : null}
         </SurfacePanel>
 
         <aside className="hidden lg:block">

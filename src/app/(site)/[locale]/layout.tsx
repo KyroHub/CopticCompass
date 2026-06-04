@@ -40,7 +40,7 @@ export default async function SiteLayout({
         <AppFrame initialLanguage={locale} localeRouting>
           {children}
         </AppFrame>
-        <ObservabilityScripts />
+        <ObservabilityScripts language={locale} />
       </body>
     </html>
   );

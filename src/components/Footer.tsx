@@ -11,10 +11,15 @@ import {
 } from "react-icons/fa6";
 
 import { iconButtonClassName } from "@/components/Button";
+import {
+  isAnalyticsConsentRequired,
+  openAnalyticsPreferences,
+} from "@/lib/analyticsConsent";
 import { cx } from "@/lib/classes";
 import {
   getContactPath,
   getContributorsPath,
+  getCookiesPath,
   getDevelopersPath,
   getFaqPath,
   getPrivacyPath,
@@ -45,7 +50,7 @@ const socialLinks = [
     label: "Facebook",
   },
   {
-    href: "https://github.com/KyroHub",
+    href: "https://github.com/KyroHub/CopticCompass",
     icon: FaGithub,
     label: "GitHub",
   },
@@ -59,6 +64,7 @@ export function Footer() {
   const isShenuteRoute = /(^|\/)shenute(?:\/|$)/.test(pathname);
   const footerLinks = [
     { href: getPrivacyPath(language), label: t("footer.privacy") },
+    { href: getCookiesPath(language), label: t("footer.cookies") },
     { href: getTermsPath(language), label: t("footer.terms") },
     { href: getFaqPath(language), label: t("footer.faq") },
     { href: getContactPath(language), label: t("nav.contact") },
@@ -93,6 +99,15 @@ export function Footer() {
                 {link.label}
               </Link>
             ))}
+            {isAnalyticsConsentRequired() ? (
+              <button
+                type="button"
+                onClick={openAnalyticsPreferences}
+                className="cursor-pointer transition-colors hover:text-ink"
+              >
+                {t("footer.cookiePreferences")}
+              </button>
+            ) : null}
           </div>
         </div>
         <div className="flex items-center gap-2">

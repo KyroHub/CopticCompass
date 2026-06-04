@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   appendSearchAndHash,
+  getCookiesPath,
   getFaqPath,
   getPublicLocaleFromPathname,
 } from "./locale";
@@ -42,5 +43,13 @@ describe("getFaqPath", () => {
     expect(getFaqPath()).toBe("/faq");
     expect(getFaqPath("en")).toBe("/en/faq");
     expect(getFaqPath("nl")).toBe("/nl/faq");
+  });
+});
+
+describe("getCookiesPath", () => {
+  it("returns locale-aware cookie policy routes and the legacy path", () => {
+    expect(getCookiesPath()).toBe("/cookies");
+    expect(getCookiesPath("en")).toBe("/en/cookies");
+    expect(getCookiesPath("nl")).toBe("/nl/cookies");
   });
 });

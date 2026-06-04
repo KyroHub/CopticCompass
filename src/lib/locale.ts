@@ -112,6 +112,10 @@ export function getPrivacyPath(locale?: Language) {
   return locale ? getLocalizedPath(locale, "/privacy") : "/privacy";
 }
 
+export function getCookiesPath(locale?: Language) {
+  return locale ? getLocalizedPath(locale, "/cookies") : "/cookies";
+}
+
 export function getTermsPath(locale?: Language) {
   return locale ? getLocalizedPath(locale, "/terms") : "/terms";
 }

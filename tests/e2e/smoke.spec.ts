@@ -114,6 +114,7 @@ test("floating Shenute assistant fades only during active scrolling", async ({
 
   const launcher = page.getByTestId("floating-shenute-launcher");
   await expect(launcher).toBeVisible();
+  await page.mouse.move(12, 12);
 
   const initialOpacity = await launcher.evaluate((element) =>
     Number(window.getComputedStyle(element).opacity),

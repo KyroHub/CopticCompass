@@ -11,6 +11,7 @@ import {
   getAnalyticsPath,
   getContactPath,
   getContributorsPath,
+  getCookiesPath,
   getDevelopersPath,
   getDictionaryPath,
   getEntryPath,
@@ -163,7 +164,17 @@ const localizedStaticRoutes: readonly LocalizedStaticRouteConfig[] = [
     sourcePaths: [
       "src/app/(site)/[locale]/privacy/page.tsx",
       "src/features/legal/lib/legalDocuments.ts",
-      "src/features/legal/components/LegalDocumentPage.tsx",
+      "src/features/legal/components/LegalDocumentPageClient.tsx",
+    ],
+  },
+  {
+    getRoute: getCookiesPath,
+    changeFrequency: "yearly",
+    priority: 0.3,
+    sourcePaths: [
+      "src/app/(site)/[locale]/cookies/page.tsx",
+      "src/features/legal/lib/legalDocuments.ts",
+      "src/features/legal/components/LegalDocumentPageClient.tsx",
     ],
   },
   {
@@ -173,7 +184,7 @@ const localizedStaticRoutes: readonly LocalizedStaticRouteConfig[] = [
     sourcePaths: [
       "src/app/(site)/[locale]/terms/page.tsx",
       "src/features/legal/lib/legalDocuments.ts",
-      "src/features/legal/components/LegalDocumentPage.tsx",
+      "src/features/legal/components/LegalDocumentPageClient.tsx",
     ],
   },
 ];

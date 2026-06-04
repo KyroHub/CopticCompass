@@ -55,11 +55,29 @@ export const sharedMessages = defineMessages({
     "footer.rights": "All rights reserved.",
     "footer.credit": "is independently built and maintained.",
     "footer.privacy": "Privacy Policy",
+    "footer.cookies": "Cookie Policy",
+    "footer.cookiePreferences": "Cookie preferences",
     "footer.terms": "Terms of Service",
     "footer.faq": "FAQ",
     "footer.apiDocs": "API Docs",
     "footer.developers": "Developers",
     "footer.contributors": "Contributors",
+
+    "legal.analyticsPreferences.title": "Analytics preferences",
+    "legal.analyticsPreferences.description":
+      "Control Vercel Analytics and Speed Insights when consent-first analytics is enabled.",
+    "legal.analyticsPreferences.allowLabel": "Allow privacy-focused analytics",
+    "legal.analyticsPreferences.allowDescription":
+      "Used only for aggregate traffic and real-world performance measurement.",
+    "legal.analyticsPreferences.allowedStatus":
+      "Analytics are allowed. Changing this reloads the page.",
+    "legal.analyticsPreferences.blockedStatus":
+      "Analytics are blocked until you allow them.",
+    "legal.analyticsConsentBanner.title": "Analytics preferences",
+    "legal.analyticsConsentBanner.description":
+      "Help us measure aggregate traffic and performance with Vercel Analytics and Speed Insights.",
+    "legal.analyticsConsentBanner.acceptAnalytics": "Accept analytics",
+    "legal.analyticsConsentBanner.essentialOnly": "Essential only",
   },
   nl: {
     "lang.toggle": "Taal wisselen",
@@ -113,10 +131,29 @@ export const sharedMessages = defineMessages({
     "footer.rights": "Alle rechten voorbehouden.",
     "footer.credit": "wordt onafhankelijk ontwikkeld en beheerd.",
     "footer.privacy": "Privacybeleid",
+    "footer.cookies": "Cookiebeleid",
+    "footer.cookiePreferences": "Cookievoorkeuren",
     "footer.terms": "Gebruiksvoorwaarden",
     "footer.faq": "FAQ",
     "footer.apiDocs": "API-docs",
     "footer.developers": "Ontwikkelaars",
     "footer.contributors": "Bijdragers",
+
+    "legal.analyticsPreferences.title": "Analyticsvoorkeuren",
+    "legal.analyticsPreferences.description":
+      "Beheer Vercel Analytics en Speed Insights wanneer analytics met voorafgaande toestemming actief is.",
+    "legal.analyticsPreferences.allowLabel":
+      "Privacyvriendelijke analytics toestaan",
+    "legal.analyticsPreferences.allowDescription":
+      "Alleen gebruikt voor geaggregeerd verkeer en echte prestatiemetingen.",
+    "legal.analyticsPreferences.allowedStatus":
+      "Analytics zijn toegestaan. Een wijziging herlaadt de pagina.",
+    "legal.analyticsPreferences.blockedStatus":
+      "Analytics blijven geblokkeerd totdat u ze toestaat.",
+    "legal.analyticsConsentBanner.title": "Analyticsvoorkeuren",
+    "legal.analyticsConsentBanner.description":
+      "Help ons geaggregeerd verkeer en prestaties te meten met Vercel Analytics en Speed Insights.",
+    "legal.analyticsConsentBanner.acceptAnalytics": "Analytics toestaan",
+    "legal.analyticsConsentBanner.essentialOnly": "Alleen noodzakelijk",
   },
 });

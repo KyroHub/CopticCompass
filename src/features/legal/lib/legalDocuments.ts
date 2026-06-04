@@ -1,6 +1,7 @@
 import type { Language } from "@/types/i18n";
 
 export interface LegalDocumentSection {
+  bullets?: readonly string[];
   title: string;
   body: string;
 }
@@ -36,6 +37,10 @@ const PRIVACY_DOCUMENTS = {
         title: "5. Contact Us",
         body: "If you have any questions or concerns about this Privacy Policy, please contact Coptic Compass through the contact page.",
       },
+      {
+        title: "6. Cookies and Local Storage",
+        body: "Cookies and local storage are described in our Cookie Policy.",
+      },
     ],
   },
   nl: {
@@ -61,6 +66,153 @@ const PRIVACY_DOCUMENTS = {
       {
         title: "5. Contact",
         body: "Als u vragen of zorgen heeft over dit privacybeleid, neem dan contact op met Coptic Compass via de contactpagina.",
+      },
+      {
+        title: "6. Cookies en lokale opslag",
+        body: "Cookies en lokale opslag worden beschreven in ons cookiebeleid.",
+      },
+    ],
+  },
+} as const satisfies Record<Language, LegalDocument>;
+
+const COOKIES_DOCUMENTS = {
+  en: {
+    title: "Cookie Policy",
+    description: "How Coptic Compass uses cookies and browser storage.",
+    sections: [
+      {
+        title: "1. Overview",
+        body: "Coptic Compass keeps its storage footprint small. We use cookies, localStorage, and sessionStorage to keep the site secure, remember user preferences, hand off temporary feature state, and understand production performance. We do not use advertising cookies or behavioral tracking pixels.",
+      },
+      {
+        title: "2. Essential and Authentication Storage",
+        body: "Supabase session cookies are used only for authenticated features and private routes.",
+        bullets: [
+          "Keeps signed-in sessions active.",
+          "Refreshes authentication safely.",
+          "Protects private account, learning, and staff-only areas.",
+          "Is not used for advertising.",
+        ],
+      },
+      {
+        title: "3. Preferences",
+        body: "We store interface preferences so Coptic Compass feels consistent across visits.",
+        bullets: [
+          "Selected language in a first-party cookie and localStorage.",
+          "Theme preference.",
+          "Dictionary text-to-speech settings.",
+          "Layout choices for learning and grammar tools.",
+        ],
+      },
+      {
+        title: "4. Temporary Feature Storage",
+        body: "Shenute AI may use sessionStorage for a short-lived transfer between related Shenute surfaces.",
+        bullets: [
+          "May include temporary context needed to continue a task.",
+          "Is removed after the transfer is complete.",
+          "Is not used to track you across visits.",
+        ],
+      },
+      {
+        title: "5. Analytics and Performance",
+        body: "In production deployments on Vercel, Coptic Compass may load Vercel Web Analytics and Vercel Speed Insights.",
+        bullets: [
+          "Used to understand aggregate traffic and real-world performance.",
+          "Loaded only in production deployments.",
+          "Vercel describes Web Analytics as cookie-free and anonymized.",
+          "Vercel describes Speed Insights as anonymous performance data that is not tied to an individual visitor or IP address.",
+        ],
+      },
+      {
+        title: "6. No Advertising or Behavioral Tracking",
+        body: "Coptic Compass does not use behavioral advertising, ad pixels, or session-replay tools.",
+        bullets: [
+          "No Google Analytics.",
+          "No Hotjar.",
+          "No Microsoft Clarity.",
+          "No Meta Pixel.",
+          "No similar advertising or behavior-tracking pixels.",
+          "If that changes, we will update this policy and add consent controls where required.",
+        ],
+      },
+      {
+        title: "7. Consent Posture",
+        body: "We do not show a cookie banner for storage that is essential, preference-based, or temporary.",
+        bullets: [
+          "The default posture keeps Vercel Analytics and Speed Insights production-only and disclosed here.",
+          "If the stricter consent-first posture is enabled, analytics scripts are blocked until analytics consent is granted.",
+          "Analytics consent is stored as a first-party preference in a cookie and localStorage.",
+        ],
+      },
+    ],
+  },
+  nl: {
+    title: "Cookiebeleid",
+    description: "Hoe Coptic Compass cookies en browseropslag gebruikt.",
+    sections: [
+      {
+        title: "1. Overzicht",
+        body: "Coptic Compass houdt browseropslag bewust beperkt. We gebruiken cookies, localStorage en sessionStorage om de site veilig te houden, gebruikersvoorkeuren te onthouden, tijdelijke functiestatus over te dragen en productieprestaties te begrijpen. We gebruiken geen advertentiecookies of gedragsgerichte trackingpixels.",
+      },
+      {
+        title: "2. Noodzakelijke opslag en authenticatie",
+        body: "Supabase-sessiecookies worden alleen gebruikt voor ingelogde functies en privepagina's.",
+        bullets: [
+          "Houdt ingelogde sessies actief.",
+          "Vernieuwt authenticatie veilig.",
+          "Beschermt privepagina's voor accounts, leren en staffuncties.",
+          "Wordt niet gebruikt voor advertenties.",
+        ],
+      },
+      {
+        title: "3. Voorkeuren",
+        body: "We bewaren interfacevoorkeuren zodat Coptic Compass bij volgende bezoeken consistent aanvoelt.",
+        bullets: [
+          "Gekozen taal in een first-party cookie en localStorage.",
+          "Themavoorkeur.",
+          "Tekst-naar-spraakinstellingen voor het woordenboek.",
+          "Lay-outkeuzes voor leer- en grammaticatools.",
+        ],
+      },
+      {
+        title: "4. Tijdelijke functieopslag",
+        body: "Shenute AI kan sessionStorage gebruiken voor een korte overdracht tussen verwante Shenute-onderdelen.",
+        bullets: [
+          "Kan tijdelijke context bevatten die nodig is om een taak voort te zetten.",
+          "Wordt verwijderd zodra de overdracht is voltooid.",
+          "Wordt niet gebruikt om u over meerdere bezoeken te volgen.",
+        ],
+      },
+      {
+        title: "5. Analytics en prestaties",
+        body: "In productieomgevingen op Vercel kan Coptic Compass Vercel Web Analytics en Vercel Speed Insights laden.",
+        bullets: [
+          "Gebruikt om geaggregeerd verkeer en echte prestaties te begrijpen.",
+          "Alleen geladen in productieomgevingen.",
+          "Vercel beschrijft Web Analytics als cookievrij en geanonimiseerd.",
+          "Vercel beschrijft Speed Insights als anonieme prestatiedata die niet aan een individuele bezoeker of IP-adres is gekoppeld.",
+        ],
+      },
+      {
+        title: "6. Geen advertenties of gedragstracking",
+        body: "Coptic Compass gebruikt geen gedragsgerichte advertenties, advertentiepixels of sessieherhalingstools.",
+        bullets: [
+          "Geen Google Analytics.",
+          "Geen Hotjar.",
+          "Geen Microsoft Clarity.",
+          "Geen Meta Pixel.",
+          "Geen vergelijkbare advertentie- of gedragstrackingpixels.",
+          "Als dat verandert, werken we dit beleid bij en voegen we toestemmingskeuzes toe waar dat vereist is.",
+        ],
+      },
+      {
+        title: "7. Toestemmingsaanpak",
+        body: "We tonen geen cookiebanner voor opslag die noodzakelijk is, voorkeuren onthoudt of tijdelijk is.",
+        bullets: [
+          "De standaardaanpak houdt Vercel Analytics en Speed Insights productiegericht en hier duidelijk beschreven.",
+          "Als de strengere aanpak met voorafgaande toestemming actief is, worden analytics-scripts geblokkeerd totdat analytics-toestemming is gegeven.",
+          "Analytics-toestemming wordt als first-party voorkeur bewaard in een cookie en localStorage.",
+        ],
       },
     ],
   },
@@ -127,6 +279,13 @@ const TERMS_DOCUMENTS = {
  */
 export function getPrivacyDocument(locale: Language): LegalDocument {
   return PRIVACY_DOCUMENTS[locale];
+}
+
+/**
+ * Returns the localized cookie-policy copy rendered on the legal page.
+ */
+export function getCookiesDocument(locale: Language): LegalDocument {
+  return COOKIES_DOCUMENTS[locale];
 }
 
 /**

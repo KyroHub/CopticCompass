@@ -13,7 +13,7 @@ export default function GlobalNotFound() {
         <NotFoundAppFrame preferredLanguage={DEFAULT_LANGUAGE}>
           <NotFoundPage />
         </NotFoundAppFrame>
-        <ObservabilityScripts />
+        <ObservabilityScripts language={DEFAULT_LANGUAGE} />
       </body>
     </html>
   );
