@@ -57,7 +57,7 @@
     "@ai-sdk/google": "^3.0.64",
     "@ai-sdk/react": "^3.0.170",
     "@gradio/client": "^2.2.0",
-    "@huggingface/inference": "^4.13.15",
+    "@huggingface/inference": "^4.13.18",
     "@opentelemetry/api": "^1.9.1",
     "@react-email/components": "^1.0.12",
     "@supabase/ssr": "^0.10.3",
