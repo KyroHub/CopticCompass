@@ -136,6 +136,14 @@ If you change release delivery, audience sync, notification emails, or Supabase 
 - whether a Supabase function deploy is needed
 - whether any follow-up dashboard setup is required
 
+### Dependency Updates
+
+Review Dependabot and manual package updates with
+[docs/dependency-maintenance.md](./docs/dependency-maintenance.md). Patch and
+minor updates are usually low risk after CI passes, but major updates and changes
+touching Next.js, Vercel observability, Supabase auth, privacy, security, email,
+or user data need manual release-note review.
+
 ## Security Policy
 
 Report security issues privately through the Coptic Compass contact page:
