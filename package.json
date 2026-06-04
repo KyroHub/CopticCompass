@@ -81,7 +81,7 @@
     "react-markdown": "^10.1.0",
     "recharts": "^3.8.1",
     "remark-gfm": "^4.0.1",
-    "resend": "^6.12.2",
+    "resend": "^6.12.4",
     "swagger-ui-dist": "^5.32.4",
     "ts-fsrs": "^5.4.1"
   },
