@@ -10,6 +10,7 @@ time. Version-update PRs are grouped for the areas that usually move together:
 - Supabase packages
 - AI SDK packages
 - Next.js and related Next tooling
+- React, React DOM, and their type packages
 - development tooling patch and minor updates
 
 Routine Dependabot version updates ignore semver-major updates. Review major
@@ -28,6 +29,8 @@ Review these updates manually even when CI passes:
 
 - major version updates
 - Next.js, React, Vercel Analytics, or Vercel Speed Insights updates
+- React stack updates where `react` and `react-dom` do not resolve to the same
+  exact version
 - Supabase auth, session, or SSR updates
 - packages that touch privacy, cookies, analytics, security, email delivery, or
   user data
