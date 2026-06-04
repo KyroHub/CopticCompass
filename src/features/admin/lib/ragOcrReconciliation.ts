@@ -1,3 +1,4 @@
+import "server-only";
 import { THOTH_RECONCILE_TEXT_LIMIT } from "./ragIngestionConfig";
 import {
   hasThothAvailable,

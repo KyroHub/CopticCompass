@@ -82,6 +82,7 @@
     "recharts": "^3.8.1",
     "remark-gfm": "^4.0.1",
     "resend": "^6.12.4",
+    "server-only": "0.0.1",
     "swagger-ui-dist": "^5.32.4",
     "ts-fsrs": "^5.4.1"
   },
@@ -101,7 +102,6 @@
     "postcss": "^8.5.15",
     "prettier": "^3.8.3",
     "sharp": "^0.34.5",
-    "supabase": "^2.105.0",
     "tailwindcss": "^4.2.4",
     "typescript": "^5",
     "vite": "^6.4.3",

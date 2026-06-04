@@ -2,8 +2,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 type LoadFeedbackRouteOptions = {
   hasEnv?: boolean;
+  hasRateLimitProtection?: boolean;
   insertError?: unknown;
   ragError?: unknown;
+  rateLimitOk?: boolean;
   role?: "admin" | "student";
   user?: { id: string } | null;
 };
@@ -49,6 +51,13 @@ async function loadFeedbackRoute(options?: LoadFeedbackRouteOptions) {
   const getProfileRoleMock = vi
     .fn()
     .mockResolvedValue(options?.role ?? "student");
+  const consumeRateLimitMock = vi.fn().mockResolvedValue({
+    ok: options?.rateLimitOk ?? true,
+    retryAfterMs: 60_000,
+  });
+  const getUserRateLimitIdentifierMock = vi.fn(
+    (userId: string) => `hashed-${userId}`,
+  );
   const ingestShenuteFeedbackLearningSignalMock = vi.fn(async () => {
     if (options?.ragError) {
       throw options.ragError;
@@ -61,6 +70,13 @@ async function loadFeedbackRoute(options?: LoadFeedbackRouteOptions) {
   vi.doMock("@/features/shenute/lib/server/feedbackIngestion", () => ({
     ingestShenuteFeedbackLearningSignal:
       ingestShenuteFeedbackLearningSignalMock,
+  }));
+  vi.doMock("@/lib/rateLimit", () => ({
+    consumeRateLimit: consumeRateLimitMock,
+    getUserRateLimitIdentifier: getUserRateLimitIdentifierMock,
+    hasAvailableRateLimitProtection: vi.fn(
+      () => options?.hasRateLimitProtection ?? true,
+    ),
   }));
   vi.doMock("@/lib/supabase/authQueries", () => ({
     getAuthenticatedUser: getAuthenticatedUserMock,
@@ -76,9 +92,11 @@ async function loadFeedbackRoute(options?: LoadFeedbackRouteOptions) {
 
   return {
     ...mod,
+    consumeRateLimitMock,
     fromMock,
     getAuthenticatedUserMock,
     getProfileRoleMock,
+    getUserRateLimitIdentifierMock,
     ingestShenuteFeedbackLearningSignalMock,
     insertMock,
   };
@@ -143,7 +161,7 @@ describe("Shenute feedback route", () => {
   });
 
   it("saves feedback when RAG learning warns and reports only a soft warning", async () => {
-    const { POST } = await loadFeedbackRoute({
+    const { consumeRateLimitMock, POST } = await loadFeedbackRoute({
       ragError: new Error("vector store exploded"),
     });
 
@@ -156,7 +174,60 @@ describe("Shenute feedback route", () => {
       ragWarning: true,
       success: true,
     });
+    expect(consumeRateLimitMock).toHaveBeenCalledWith({
+      identifier: "hashed-user-1",
+      limit: 20,
+      namespace: "shenute:feedback",
+      windowMs: 60 * 60 * 1000,
+    });
     expect(JSON.stringify(payload)).not.toContain("vector store exploded");
+  });
+
+  it("rate limits authenticated feedback before storage or RAG ingestion", async () => {
+    const {
+      getProfileRoleMock,
+      ingestShenuteFeedbackLearningSignalMock,
+      insertMock,
+      POST,
+    } = await loadFeedbackRoute({
+      rateLimitOk: false,
+    });
+
+    const response = await POST(createFeedbackRequest());
+    const payload = await response.json();
+
+    expect(response.status).toBe(429);
+    expect(response.headers.get("Retry-After")).toBe("60");
+    expect(payload).toEqual({
+      success: false,
+      code: "rate_limited",
+      error: "Too many attempts. Please wait a moment and try again.",
+    });
+    expect(getProfileRoleMock).not.toHaveBeenCalled();
+    expect(insertMock).not.toHaveBeenCalled();
+    expect(ingestShenuteFeedbackLearningSignalMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps admin feedback allowed but bounded by the same user rate limit", async () => {
+    const { consumeRateLimitMock, insertMock, POST } = await loadFeedbackRoute({
+      role: "admin",
+    });
+
+    const response = await POST(
+      createFeedbackRequest({
+        feedbackText: "This answer should cite a stronger source.",
+        signal: "admin_feedback",
+      }),
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(payload).toMatchObject({
+      ragIngested: true,
+      success: true,
+    });
+    expect(consumeRateLimitMock).toHaveBeenCalledTimes(1);
+    expect(insertMock).toHaveBeenCalledTimes(1);
   });
 
   it("returns public permission copy for non-admin written feedback", async () => {

@@ -1,3 +1,4 @@
+import "server-only";
 import { createThothChatCompletion } from "@/lib/thoth";
 
 import { RAG_THOTH_ENABLED } from "./ragIngestionConfig";

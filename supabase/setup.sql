@@ -563,10 +563,24 @@ on conflict (id) do update
       full_name = coalesce(excluded.full_name, public.profiles.full_name),
       avatar_url = coalesce(excluded.avatar_url, public.profiles.avatar_url);
 
-insert into storage.buckets (id, name, public)
-values ('avatars', 'avatars', true)
+insert into storage.buckets (
+  id,
+  name,
+  public,
+  file_size_limit,
+  allowed_mime_types
+)
+values (
+  'avatars',
+  'avatars',
+  true,
+  1048576,
+  array['image/jpeg', 'image/png', 'image/webp']::text[]
+)
 on conflict (id) do update
-  set public = excluded.public;
+  set public = excluded.public,
+      file_size_limit = excluded.file_size_limit,
+      allowed_mime_types = excluded.allowed_mime_types;
 
 alter table public.profiles enable row level security;
 alter table public.submissions enable row level security;

@@ -1,3 +1,4 @@
+import "server-only";
 import type { RagIngestionLogEntry } from "./ragIngestionTypes";
 
 type IngestionLogStoreEntry = {

@@ -9,6 +9,7 @@ import {
   buildOcrTargetUrl,
   collectForwardableOcrTextFields,
   getFirstOcrFileEntry,
+  getOcrServiceUrlOrThrow,
   getOcrUploadFieldCandidates,
   getOcrUpstreamFailure,
   isUnexpectedOcrUploadFieldError,
@@ -45,8 +46,10 @@ function createOcrErrorResponse(options: {
 
 export async function POST(request: Request) {
   try {
-    const ocrServiceUrl = process.env.OCR_SERVICE_URL;
-    if (!ocrServiceUrl) {
+    let ocrServiceUrl: string;
+    try {
+      ocrServiceUrl = getOcrServiceUrlOrThrow();
+    } catch {
       return createOcrErrorResponse({
         code: "external_service_unavailable",
         status: 503,

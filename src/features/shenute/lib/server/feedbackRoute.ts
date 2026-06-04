@@ -1,5 +1,10 @@
 import { getProfileRole } from "@/features/profile/lib/server/queries";
 import { jsonErrorResponse, type AppErrorCode } from "@/lib/errors";
+import {
+  consumeRateLimit,
+  getUserRateLimitIdentifier,
+  hasAvailableRateLimitProtection,
+} from "@/lib/rateLimit";
 import { getAuthenticatedUser } from "@/lib/supabase/authQueries";
 import { hasSupabaseRuntimeEnv } from "@/lib/supabase/config";
 import { isMissingSupabaseTableError } from "@/lib/supabase/errors";
@@ -29,14 +34,52 @@ type FeedbackRequestPayload = {
   userMessageId?: unknown;
 };
 
-function createFeedbackErrorResponse(code: AppErrorCode, status: number) {
+const SHENUTE_FEEDBACK_RATE_LIMIT = 20;
+const SHENUTE_FEEDBACK_RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+
+function createFeedbackErrorResponse(
+  code: AppErrorCode,
+  status: number,
+  headers?: HeadersInit,
+) {
   return jsonErrorResponse({
     context: "feedback",
     error: code,
     fallbackCode: code,
+    headers,
     requestIdPrefix: "feedback",
     status,
   });
+}
+
+function getRetryAfterSeconds(retryAfterMs: number) {
+  return Math.max(1, Math.ceil(retryAfterMs / 1000)).toString();
+}
+
+async function getFeedbackRateLimitResponse(userId: string) {
+  if (!hasAvailableRateLimitProtection()) {
+    return createFeedbackErrorResponse("external_service_unavailable", 503);
+  }
+
+  try {
+    const result = await consumeRateLimit({
+      identifier: getUserRateLimitIdentifier(userId),
+      limit: SHENUTE_FEEDBACK_RATE_LIMIT,
+      namespace: "shenute:feedback",
+      windowMs: SHENUTE_FEEDBACK_RATE_LIMIT_WINDOW_MS,
+    });
+
+    if (result.ok) {
+      return null;
+    }
+
+    return createFeedbackErrorResponse("rate_limited", 429, {
+      "Retry-After": getRetryAfterSeconds(result.retryAfterMs),
+    });
+  } catch (error) {
+    console.error("Shenute feedback rate-limit check failed:", error);
+    return createFeedbackErrorResponse("external_service_unavailable", 503);
+  }
 }
 
 function toProvider(value: unknown): ShenuteFeedbackEmbeddingProvider {
@@ -158,6 +201,11 @@ export async function handleShenuteFeedbackPost(request: Request) {
 
     if (!user) {
       return createFeedbackErrorResponse("auth_required", 401);
+    }
+
+    const rateLimitResponse = await getFeedbackRateLimitResponse(user.id);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
     }
 
     const role = await getProfileRole(supabase, user.id);

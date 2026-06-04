@@ -9,7 +9,9 @@ type SecurityHeader = {
 };
 
 type SecurityHeadersOptions = {
+  contentSecurityPolicyReportUri?: string | null;
   includeContentSecurityPolicy?: boolean;
+  includeContentSecurityPolicyReportOnly?: boolean;
   nonce?: string | null;
   nodeEnv?: string | null;
   supabaseUrl?: string | null;
@@ -46,6 +48,43 @@ function isProductionEnvironment(nodeEnv?: string | null) {
 }
 
 /**
+ * Reads boolean env flags conservatively so optional hardening must be explicit.
+ */
+function isEnabledFlag(value?: string | null) {
+  return value?.trim().toLowerCase() === "true";
+}
+
+/**
+ * Validates CSP report destinations before placing them in a response header.
+ */
+function getContentSecurityPolicyReportUri(reportUri?: string | null) {
+  const normalizedReportUri = reportUri?.trim();
+  if (!normalizedReportUri) {
+    return null;
+  }
+
+  if (/[\s;]/.test(normalizedReportUri)) {
+    return null;
+  }
+
+  if (
+    normalizedReportUri.startsWith("/") &&
+    !normalizedReportUri.startsWith("//")
+  ) {
+    return normalizedReportUri;
+  }
+
+  try {
+    const parsedReportUri = new URL(normalizedReportUri);
+    return parsedReportUri.protocol === "https:"
+      ? parsedReportUri.toString()
+      : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Deduplicates and joins CSP source values while skipping falsy entries.
  */
 function buildSourceList(...sources: Array<string | null | undefined | false>) {
@@ -57,7 +96,8 @@ function buildSourceList(...sources: Array<string | null | undefined | false>) {
  * falling back to development-friendly allowances when necessary.
  */
 function buildScriptSourceDirective(options: {
-  isProduction: boolean;
+  allowUnsafeEval: boolean;
+  allowUnsafeInline: boolean;
   nonce: string | null;
 }) {
   const scriptNonceSource = options.nonce ? `'nonce-${options.nonce}'` : null;
@@ -70,10 +110,21 @@ function buildScriptSourceDirective(options: {
 
   return `script-src ${buildSourceList(
     "'self'",
-    scriptNonceSource ?? "'unsafe-inline'",
+    scriptNonceSource ?? (options.allowUnsafeInline ? "'unsafe-inline'" : null),
     scriptNonceSource ? "'strict-dynamic'" : null,
     vercelScriptOrigin,
-    options.isProduction ? null : "'unsafe-eval'",
+    options.allowUnsafeEval ? "'unsafe-eval'" : null,
+  )}`;
+}
+
+/**
+ * Builds the `style-src` directive, keeping the enforced policy compatible with
+ * current Next.js/Tailwind output while allowing report-only experiments.
+ */
+function buildStyleSourceDirective(options: { allowUnsafeInline: boolean }) {
+  return `style-src ${buildSourceList(
+    "'self'",
+    options.allowUnsafeInline ? "'unsafe-inline'" : null,
   )}`;
 }
 
@@ -116,8 +167,13 @@ function buildConnectSourceDirective(options: {
 function buildContentSecurityPolicyDirectives(options: {
   isProduction: boolean;
   nonce: string | null;
+  reportOnly: boolean;
+  reportUri: string | null;
   supabaseOrigin: string | null;
 }) {
+  const allowUnsafeInline = !options.reportOnly;
+  const allowUnsafeEval = !options.isProduction && !options.reportOnly;
+
   return [
     "default-src 'self'",
     "base-uri 'self'",
@@ -126,9 +182,13 @@ function buildContentSecurityPolicyDirectives(options: {
     "frame-src 'none'",
     "child-src 'none'",
     "object-src 'none'",
-    buildScriptSourceDirective(options),
+    buildScriptSourceDirective({
+      allowUnsafeEval,
+      allowUnsafeInline,
+      nonce: options.nonce,
+    }),
     "script-src-attr 'none'",
-    "style-src 'self' 'unsafe-inline'",
+    buildStyleSourceDirective({ allowUnsafeInline }),
     "font-src 'self' data:",
     buildImageSourceDirective(options.supabaseOrigin),
     buildConnectSourceDirective(options),
@@ -136,6 +196,7 @@ function buildContentSecurityPolicyDirectives(options: {
     "worker-src 'self' blob:",
     "manifest-src 'self'",
     options.isProduction ? "upgrade-insecure-requests" : null,
+    options.reportUri ? `report-uri ${options.reportUri}` : null,
   ].filter(Boolean);
 }
 
@@ -156,10 +217,60 @@ export function buildContentSecurityPolicy(
   const directives = buildContentSecurityPolicyDirectives({
     isProduction,
     nonce,
+    reportOnly: false,
+    reportUri: null,
     supabaseOrigin,
   });
 
   return directives.join("; ");
+}
+
+/**
+ * Builds a stricter, non-enforcing CSP used to collect browser reports before a
+ * future enforcement change.
+ */
+export function buildContentSecurityPolicyReportOnly(
+  options: SecurityHeadersOptions = {},
+) {
+  const nodeEnv = options.nodeEnv ?? process.env.NODE_ENV;
+  const nonce = options.nonce ?? null;
+  const reportUri = getContentSecurityPolicyReportUri(
+    options.contentSecurityPolicyReportUri ?? process.env.CSP_REPORT_URI,
+  );
+  const supabaseOrigin = getSupabaseOrigin(
+    options.supabaseUrl ?? process.env.NEXT_PUBLIC_SUPABASE_URL,
+  );
+  const isProduction = isProductionEnvironment(nodeEnv);
+  const directives = buildContentSecurityPolicyDirectives({
+    isProduction,
+    nonce,
+    reportOnly: true,
+    reportUri,
+    supabaseOrigin,
+  });
+
+  return directives.join("; ");
+}
+
+/**
+ * Returns the report-only CSP header when the stricter diagnostic mode is
+ * explicitly enabled.
+ */
+export function buildContentSecurityPolicyReportOnlyHeader(
+  options: SecurityHeadersOptions = {},
+): SecurityHeader | null {
+  const includeContentSecurityPolicyReportOnly =
+    options.includeContentSecurityPolicyReportOnly ??
+    isEnabledFlag(process.env.CSP_REPORT_ONLY);
+
+  if (!includeContentSecurityPolicyReportOnly) {
+    return null;
+  }
+
+  return {
+    key: "Content-Security-Policy-Report-Only",
+    value: buildContentSecurityPolicyReportOnly(options),
+  };
 }
 
 /**
@@ -173,6 +284,8 @@ export function buildSecurityHeaders(
   const nodeEnv = options.nodeEnv ?? process.env.NODE_ENV;
   const includeContentSecurityPolicy =
     options.includeContentSecurityPolicy ?? true;
+  const contentSecurityPolicyReportOnlyHeader =
+    buildContentSecurityPolicyReportOnlyHeader(options);
   const headers = [
     includeContentSecurityPolicy
       ? {
@@ -180,6 +293,7 @@ export function buildSecurityHeaders(
           value: buildContentSecurityPolicy(options),
         }
       : null,
+    contentSecurityPolicyReportOnlyHeader,
     {
       key: "Referrer-Policy",
       value: "strict-origin-when-cross-origin",

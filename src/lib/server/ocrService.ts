@@ -1,3 +1,4 @@
+import "server-only";
 import { getPublicErrorMessage, type AppErrorCode } from "@/lib/errors";
 import { assertServerOnly } from "@/lib/server/assertServerOnly";
 
@@ -24,6 +25,8 @@ const OCR_TEXT_LIKE_KEYS = [
   "data",
   "message",
 ];
+const OCR_FORWARDABLE_QUERY_PARAMS = new Set<string>();
+const OCR_FORWARDABLE_TEXT_FIELDS = new Set<string>();
 
 export type OcrErrorCode = Extract<
   AppErrorCode,
@@ -52,7 +55,28 @@ export function getOcrServiceUrlOrThrow() {
     );
   }
 
+  validateOcrServiceUrl(ocrServiceUrl);
   return ocrServiceUrl;
+}
+
+function validateOcrServiceUrl(ocrServiceUrl: string) {
+  let parsedUrl: URL;
+
+  try {
+    parsedUrl = new URL(ocrServiceUrl);
+  } catch {
+    throw new Error(
+      getPublicErrorMessage("external_service_unavailable", "en", "ocr"),
+    );
+  }
+
+  if (parsedUrl.protocol !== "https:") {
+    throw new Error(
+      getPublicErrorMessage("external_service_unavailable", "en", "ocr"),
+    );
+  }
+
+  return parsedUrl;
 }
 
 export function getOcrUploadFieldCandidates(incomingFieldName?: string) {
@@ -106,7 +130,7 @@ function copyOcrTargetSearchParams(targetUrl: URL, incomingUrl: URL | null) {
   }
 
   for (const [key, value] of incomingUrl.searchParams.entries()) {
-    if (key.toLowerCase() !== "lang") {
+    if (OCR_FORWARDABLE_QUERY_PARAMS.has(key.toLowerCase())) {
       targetUrl.searchParams.set(key, value);
     }
   }
@@ -226,7 +250,7 @@ export function buildOcrTargetUrl({
   ocrServiceUrl: string;
   requestUrl?: string;
 }) {
-  const targetUrl = new URL(ocrServiceUrl);
+  const targetUrl = validateOcrServiceUrl(ocrServiceUrl);
   const incomingUrl = requestUrl ? new URL(requestUrl) : null;
 
   copyOcrTargetSearchParams(targetUrl, incomingUrl);
@@ -244,7 +268,10 @@ export function collectForwardableOcrTextFields(
   const fields: Array<{ key: string; value: string }> = [];
 
   for (const [key, value] of formData.entries()) {
-    if (excludedKeys.has(key)) {
+    if (
+      excludedKeys.has(key) ||
+      !OCR_FORWARDABLE_TEXT_FIELDS.has(key.toLowerCase())
+    ) {
       continue;
     }
 

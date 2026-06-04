@@ -1,7 +1,10 @@
 import { type NextRequest } from "next/server";
 
 import { getPublicLocaleFromPathname } from "@/lib/locale";
-import { buildContentSecurityPolicy } from "@/lib/securityHeaders";
+import {
+  buildContentSecurityPolicy,
+  buildContentSecurityPolicyReportOnlyHeader,
+} from "@/lib/securityHeaders";
 import { CSP_NONCE_HEADER } from "@/lib/server/csp";
 import { updateSession } from "@/lib/supabase/proxy";
 
@@ -16,6 +19,8 @@ export async function proxy(request: NextRequest) {
     ? null
     : Buffer.from(crypto.randomUUID()).toString("base64");
   const contentSecurityPolicy = buildContentSecurityPolicy({ nonce });
+  const contentSecurityPolicyReportOnlyHeader =
+    buildContentSecurityPolicyReportOnlyHeader({ nonce });
   const requestHeaders = new Headers(request.headers);
 
   if (nonce) {
@@ -24,6 +29,12 @@ export async function proxy(request: NextRequest) {
 
   const response = await updateSession(request, requestHeaders);
   response.headers.set("Content-Security-Policy", contentSecurityPolicy);
+  if (contentSecurityPolicyReportOnlyHeader) {
+    response.headers.set(
+      contentSecurityPolicyReportOnlyHeader.key,
+      contentSecurityPolicyReportOnlyHeader.value,
+    );
+  }
 
   return response;
 }

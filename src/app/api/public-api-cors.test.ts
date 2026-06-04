@@ -32,6 +32,9 @@ function expectCorsHeaders(response: Response) {
   expect(response.headers.get("Access-Control-Allow-Headers")).toContain(
     "Content-Type",
   );
+  expect(response.headers.get("Access-Control-Allow-Headers")).not.toContain(
+    "Authorization",
+  );
 }
 
 function getRouteGetArgs(path: string): unknown[] {

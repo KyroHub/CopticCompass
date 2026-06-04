@@ -1,6 +1,8 @@
+import "server-only";
 import mammoth from "mammoth";
 
 import {
+  buildOcrTargetUrl,
   extractOcrResponseText,
   getOcrUploadFieldCandidates,
   isUnexpectedOcrUploadFieldError,
@@ -101,8 +103,7 @@ async function runOcr(file: File): Promise<string> {
     return "";
   }
 
-  const targetUrl = new URL(ocrServiceUrl);
-  targetUrl.searchParams.set("lang", "cop");
+  const targetUrl = buildOcrTargetUrl({ ocrServiceUrl });
 
   const uploadFieldCandidates = getOcrUploadFieldCandidates();
   let lastError: unknown;
