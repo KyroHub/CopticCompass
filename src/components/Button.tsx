@@ -13,6 +13,7 @@ type ButtonClassNameOptions = {
 };
 
 type ControlButtonClassNameOptions = {
+  active?: boolean;
   className?: string;
 };
 
@@ -64,16 +65,28 @@ export function buttonClassName({
   );
 }
 
+const CONTROL_BUTTON_ACTIVE_CLASS =
+  "border-coptic/40 bg-coptic-soft text-coptic shadow-sm ring-2 ring-coptic/20 hover:border-coptic/50 hover:bg-coptic-soft hover:text-coptic";
+
 export function controlButtonClassName({
+  active = false,
   className,
 }: ControlButtonClassNameOptions = {}) {
-  return cx(CONTROL_BUTTON_BASE_CLASS, className);
+  return cx(
+    CONTROL_BUTTON_BASE_CLASS,
+    className,
+    active && CONTROL_BUTTON_ACTIVE_CLASS,
+  );
 }
 
 export function iconButtonClassName({
+  active = false,
   className,
 }: ControlButtonClassNameOptions = {}) {
-  return controlButtonClassName({ className: cx("h-10 w-10 px-0", className) });
+  return controlButtonClassName({
+    active,
+    className: cx("h-10 w-10 px-0", className),
+  });
 }
 
 export function Button({

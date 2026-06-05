@@ -359,7 +359,19 @@ export function buildPublicOpenApiPaths(context: PublicOpenApiContext) {
             $ref: "#/components/parameters/DictionaryPartOfSpeechFilter",
           },
           {
+            $ref: "#/components/parameters/DictionaryEtymologyFilter",
+          },
+          {
             $ref: "#/components/parameters/DictionaryExactFilter",
+          },
+          {
+            $ref: "#/components/parameters/DictionaryHasGreekFilter",
+          },
+          {
+            $ref: "#/components/parameters/DictionaryHasInflectionsFilter",
+          },
+          {
+            $ref: "#/components/parameters/DictionaryHasRelatedEntriesFilter",
           },
           {
             $ref: "#/components/parameters/DictionaryLimit",

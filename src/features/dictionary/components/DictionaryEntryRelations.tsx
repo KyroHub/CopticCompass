@@ -26,6 +26,7 @@ type DictionaryEntryRelationsProps = {
   isDetailView: boolean;
   query: string;
   relationRows: DictionaryEntryRelationRow[];
+  showRelations?: boolean;
   t: DictionaryEntryTranslator;
 };
 
@@ -35,9 +36,10 @@ export function DictionaryEntryRelations({
   isDetailView,
   query,
   relationRows,
+  showRelations = isDetailView,
   t,
 }: DictionaryEntryRelationsProps) {
-  if (!isDetailView || relationRows.length === 0) {
+  if (!showRelations || relationRows.length === 0) {
     return null;
   }
 

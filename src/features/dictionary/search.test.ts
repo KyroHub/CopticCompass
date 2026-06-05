@@ -357,6 +357,95 @@ describe("dictionary search", () => {
     });
   });
 
+  it("filters results by advanced etymology and structured data facets", () => {
+    const greekLoanEntry: DictionaryClientEntry = {
+      id: 920,
+      headword: "ⲡⲁⲣⲁⲇⲓⲥⲟⲥ",
+      etym: "Gr",
+      dialects: {
+        B: {
+          absolute: "ⲡⲁⲣⲁⲇⲓⲥⲟⲥ",
+        },
+      },
+      greekContext: { sources: ["παραδεισος"] },
+      senses: [{ grammar: { pos: "N" }, meanings: { en: ["paradise"] } }],
+    };
+    const latinLoanEntry: DictionaryClientEntry = {
+      id: 921,
+      headword: "ⲕⲁⲥⲧⲣⲟⲛ",
+      etym: "Lat",
+      dialects: {
+        B: {
+          absolute: "ⲕⲁⲥⲧⲣⲟⲛ",
+        },
+      },
+      senses: [{ grammar: { pos: "N" }, meanings: { en: ["fort"] } }],
+    };
+    const inflectedEntry: DictionaryClientEntry = {
+      id: 2,
+      headword: "ϯ",
+      etym: "Egy",
+      dialects: {
+        B: {
+          absolute: "ϯ",
+        },
+      },
+      inflections: {
+        imperative: {
+          B: {
+            absolute: ["ⲙⲟⲓ"],
+          },
+        },
+      },
+      senses: [{ grammar: { pos: "V" }, meanings: { en: ["give"] } }],
+    };
+    const dictionary = [
+      lordEntry,
+      greekLoanEntry,
+      latinLoanEntry,
+      inflectedEntry,
+      guideEntry,
+    ];
+    const preparedDictionary = prepareDictionaryForSearch(dictionary);
+
+    expect(
+      searchPreparedDictionaryPage({
+        dictionary,
+        limit: 10,
+        preparedDictionary,
+        selectedEtymology: "Gr",
+      }).entries.map((entry) => entry.id),
+    ).toEqual([920]);
+
+    expect(
+      searchPreparedDictionaryPage({
+        dictionary,
+        hasGreek: true,
+        limit: 10,
+        preparedDictionary,
+      }).entries.map((entry) => entry.id),
+    ).toEqual([17, 920]);
+
+    expect(
+      searchPreparedDictionaryPage({
+        dictionary,
+        hasInflections: true,
+        limit: 10,
+        preparedDictionary,
+      }).entries.map((entry) => entry.id),
+    ).toEqual([2]);
+
+    expect(
+      searchPreparedDictionaryPage({
+        dictionary,
+        hasRelatedEntries: true,
+        limit: 10,
+        preparedDictionary,
+        selectedEtymology: "Egy",
+      }).entries.map((entry) => entry.id),
+    ).toEqual([11146]);
+  });
+
   it("filters by every structured meaning-group grammar value", () => {
     const adjectivalNounEntry: DictionaryClientEntry = {
       id: 2639070627,
@@ -383,7 +472,25 @@ describe("dictionary search", () => {
         },
       ],
     };
-    const dictionary = [adjectivalNounEntry, runEntry];
+    const interjectionEntry: DictionaryClientEntry = {
+      id: 1348979381,
+      headword: "ⲁϩⲁ",
+      etym: "Egy",
+      dialects: {
+        B: {
+          absolute: "ⲁϩⲁ",
+        },
+      },
+      senses: [
+        {
+          grammar: {
+            pos: "INTJ",
+          },
+          meanings: { en: ["aha"] },
+        },
+      ],
+    };
+    const dictionary = [adjectivalNounEntry, interjectionEntry, runEntry];
     const preparedDictionary = prepareDictionaryForSearch(dictionary);
 
     expect(
@@ -400,6 +507,96 @@ describe("dictionary search", () => {
       entries: [{ id: 2639070627 }],
       totalMatches: 1,
     });
+
+    expect(
+      searchPreparedDictionaryPage({
+        dictionary,
+        limit: 10,
+        offset: 0,
+        preparedDictionary,
+        query: "",
+        selectedDialect: "ALL",
+        selectedPartOfSpeech: "INTJ",
+      }),
+    ).toMatchObject({
+      entries: [{ id: 1348979381 }],
+      totalMatches: 1,
+    });
+  });
+
+  it("ranks direct headword matches above meaning-only matches", () => {
+    const headwordMatchEntry: DictionaryClientEntry = {
+      id: 117,
+      headword: "light",
+      etym: "Egy",
+      dialects: {
+        B: {
+          absolute: "light",
+        },
+      },
+      senses: [{ grammar: { pos: "N" }, meanings: { en: ["lamp"] } }],
+    };
+    const meaningMatchEntry: DictionaryClientEntry = {
+      id: 118,
+      headword: "ⲟⲩⲟⲉⲓⲛ",
+      etym: "Egy",
+      dialects: {
+        B: {
+          absolute: "ⲟⲩⲱⲓⲛⲓ",
+        },
+      },
+      senses: [{ grammar: { pos: "N" }, meanings: { en: ["light"] } }],
+    };
+    const dictionary = [meaningMatchEntry, headwordMatchEntry];
+    const preparedDictionary = prepareDictionaryForSearch(dictionary);
+
+    expect(
+      searchPreparedDictionaryPage({
+        dictionary,
+        limit: 10,
+        preparedDictionary,
+        query: "light",
+      }).entries,
+    ).toMatchObject([
+      { id: 117, searchMatch: { exact: true, kind: "headword" } },
+      { id: 118, searchMatch: { exact: true, kind: "meaning" } },
+    ]);
+  });
+
+  it("reports inflection match metadata for inflected-form queries", () => {
+    const giveEntry: DictionaryClientEntry = {
+      id: 2,
+      headword: "ϯ",
+      etym: "Egy",
+      dialects: {
+        B: {
+          absolute: "ϯ",
+          nominal: "ϯ-",
+          pronominal: "ⲧⲏⲓ=",
+          stative: "ⲧⲟⲓ†",
+        },
+      },
+      senses: [{ grammar: { pos: "V" }, meanings: { en: ["give"] } }],
+      inflections: {
+        imperative: {
+          B: {
+            absolute: ["ⲙⲟⲓ"],
+          },
+        },
+      },
+    };
+    const preparedDictionary = prepareDictionaryForSearch([giveEntry]);
+
+    expect(
+      searchPreparedDictionaryPage({
+        dictionary: [giveEntry],
+        limit: 10,
+        preparedDictionary,
+        query: "ⲙⲟⲓ",
+      }).entries,
+    ).toMatchObject([
+      { id: 2, searchMatch: { exact: true, kind: "inflection" } },
+    ]);
   });
 
   it("matches entries by structured plural inflected forms", () => {

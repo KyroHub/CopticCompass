@@ -7,6 +7,7 @@ import { AppPageIntro } from "@/components/AppPageIntro";
 import { buttonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
+import { useDictionaryResultMode } from "@/features/dictionary/hooks/useDictionaryResultMode";
 import { useDictionarySearch } from "@/features/dictionary/hooks/useDictionarySearch";
 import { DEFAULT_DICTIONARY_PRACTICE_DECK_ID } from "@/features/practice/lib/practiceDeckDefaults";
 import {
@@ -15,9 +16,8 @@ import {
   getLocalizedHomePath,
 } from "@/lib/locale";
 
-import { DictionaryFilters } from "./DictionaryFilters";
 import { DictionaryResultsSection } from "./DictionaryResultsSection";
-import { DictionarySearchBar } from "./DictionarySearchBar";
+import { DictionarySearchWorkspace } from "./DictionarySearchWorkspace";
 
 type DictionaryPageBodyProps = {
   searchPath: string;
@@ -25,6 +25,7 @@ type DictionaryPageBodyProps = {
 
 function DictionaryPageBody({ searchPath }: DictionaryPageBodyProps) {
   const { language, t } = useLanguage();
+  const [resultMode, setResultMode] = useDictionaryResultMode();
   const {
     dictionaryLength,
     exactMatch,
@@ -33,7 +34,10 @@ function DictionaryPageBody({ searchPath }: DictionaryPageBodyProps) {
     handleKeyboardAppend,
     handleKeyboardBackspace,
     handleSelectionChange,
+    hasGreek,
+    hasInflections,
     hasMoreResults,
+    hasRelatedEntries,
     isKeyboardOpen,
     loadMoreResults,
     loading,
@@ -43,10 +47,15 @@ function DictionaryPageBody({ searchPath }: DictionaryPageBodyProps) {
     retrySearch,
     searchInputRef,
     selectedDialect,
+    selectedEtymology,
     selectedPartOfSpeech,
     setKeyboardOpen,
+    setHasGreek,
+    setHasInflections,
+    setHasRelatedEntries,
     setQuery,
     setSelectedDialect,
+    setSelectedEtymology,
     setSelectedPartOfSpeech,
     setExactMatch,
     visibleQuery,
@@ -105,31 +114,41 @@ function DictionaryPageBody({ searchPath }: DictionaryPageBodyProps) {
         title={t("dict.title")}
       />
 
-      <div className="app-sticky-panel relative isolate mb-8 flex flex-col gap-3 md:mb-12 md:gap-4">
-        <DictionarySearchBar
+      <div className="app-sticky-panel relative isolate mb-5 md:mb-8">
+        <DictionarySearchWorkspace
+          exactMatch={exactMatch}
+          hasGreek={hasGreek}
+          hasInflections={hasInflections}
+          hasRelatedEntries={hasRelatedEntries}
           isKeyboardOpen={isKeyboardOpen}
           onAppend={handleKeyboardAppend}
           onBackspace={handleKeyboardBackspace}
-          onCloseKeyboard={() => setKeyboardOpen(false)}
+          onClearFilters={() => {
+            setSelectedDialect("ALL");
+            setSelectedPartOfSpeech("ALL");
+            setSelectedEtymology("ALL");
+            setExactMatch(false);
+            setHasGreek(false);
+            setHasInflections(false);
+            setHasRelatedEntries(false);
+          }}
           onQueryChange={setQuery}
           onSelectionChange={handleSelectionChange}
           onToggleKeyboard={() => setKeyboardOpen(!isKeyboardOpen)}
           query={query}
+          resultMode={resultMode}
           searchInputRef={searchInputRef}
-        />
-
-        <DictionaryFilters
-          exactMatch={exactMatch}
-          onClearFilters={() => {
-            setSelectedDialect("ALL");
-            setSelectedPartOfSpeech("ALL");
-            setExactMatch(false);
-          }}
           selectedDialect={selectedDialect}
+          selectedEtymology={selectedEtymology}
           selectedPartOfSpeech={selectedPartOfSpeech}
           setExactMatch={setExactMatch}
+          setHasGreek={setHasGreek}
+          setHasInflections={setHasInflections}
+          setHasRelatedEntries={setHasRelatedEntries}
           setSelectedDialect={setSelectedDialect}
+          setSelectedEtymology={setSelectedEtymology}
           setSelectedPartOfSpeech={setSelectedPartOfSpeech}
+          setResultMode={setResultMode}
         />
       </div>
 
@@ -139,12 +158,22 @@ function DictionaryPageBody({ searchPath }: DictionaryPageBodyProps) {
         errorActionLabel={t("dict.retrySearch")}
         errorMessage={resultsErrorMessage}
         filteredResults={filteredResults}
+        hasActiveFilters={
+          selectedDialect !== "ALL" ||
+          selectedPartOfSpeech !== "ALL" ||
+          selectedEtymology !== "ALL" ||
+          exactMatch ||
+          hasGreek ||
+          hasInflections ||
+          hasRelatedEntries
+        }
         hasMoreResults={hasMoreResults}
         loading={loading}
         loadingMore={loadingMore}
         onLoadMore={loadMoreResults}
         onRetry={fetchError === "more" ? loadMoreResults : retrySearch}
         query={visibleQuery}
+        resultMode={resultMode}
         selectedDialect={selectedDialect}
         selectedPartOfSpeech={selectedPartOfSpeech}
         totalMatches={totalMatches}

@@ -7,14 +7,13 @@ import { buttonClassName } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { useLanguage } from "@/components/LanguageProvider";
 import { StatusNotice } from "@/components/StatusNotice";
-import {
-  getPartOfSpeechFilterLabel,
-  type DialectFilter,
-  type DictionaryPartOfSpeechFilter,
+import type {
+  DialectFilter,
+  DictionaryPartOfSpeechFilter,
 } from "@/features/dictionary/config";
+import type { DictionaryResultMode } from "@/features/dictionary/hooks/useDictionaryResultMode";
 import type { DictionaryClientEntry } from "@/features/dictionary/types";
 
-import DialectSiglum from "./DialectSiglum";
 import DictionaryEntryCard from "./DictionaryEntry";
 
 type DictionaryResultsSectionProps = {
@@ -22,12 +21,14 @@ type DictionaryResultsSectionProps = {
   errorActionLabel?: string;
   errorMessage?: string | null;
   filteredResults: DictionaryClientEntry[];
+  hasActiveFilters?: boolean;
   hasMoreResults?: boolean;
   loading: boolean;
   loadingMore?: boolean;
   onLoadMore?: () => void;
   onRetry?: () => void;
   query: string;
+  resultMode?: DictionaryResultMode;
   selectedDialect: DialectFilter;
   selectedPartOfSpeech: DictionaryPartOfSpeechFilter;
   scrollContainerId?: string;
@@ -39,12 +40,14 @@ export function DictionaryResultsSection({
   errorActionLabel,
   errorMessage,
   filteredResults,
+  hasActiveFilters = false,
   hasMoreResults = false,
   loading,
   loadingMore = false,
   onLoadMore,
   onRetry,
   query,
+  resultMode = "compact",
   selectedDialect,
   selectedPartOfSpeech,
   scrollContainerId,
@@ -111,33 +114,15 @@ export function DictionaryResultsSection({
   return (
     <>
       {!loading && (
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <Badge tone="surface" size="md" className="font-medium">
             {query.trim().length === 0 &&
             selectedPartOfSpeech === "ALL" &&
-            selectedDialect === "ALL"
+            selectedDialect === "ALL" &&
+            !hasActiveFilters
               ? `${t("dict.showing")} ${filteredResults.length} ${t("dict.outOf")} ${dictionaryLength} ${t("dict.entries")}`
               : `${t("dict.found")} ${totalMatches} ${t("dict.results")}`}
           </Badge>
-
-          {(selectedPartOfSpeech !== "ALL" || selectedDialect !== "ALL") && (
-            <div className="flex flex-wrap gap-2 text-xs font-semibold">
-              {selectedPartOfSpeech !== "ALL" && (
-                <Badge tone="neutral" size="xs">
-                  {t("dict.pos")}{" "}
-                  {getPartOfSpeechFilterLabel(selectedPartOfSpeech, t)}
-                </Badge>
-              )}
-              {selectedDialect !== "ALL" && (
-                <Badge tone="accent" size="sm" className="min-h-8">
-                  {t("dict.dialect")}{" "}
-                  <span className="ml-1">
-                    <DialectSiglum siglum={selectedDialect} />
-                  </span>
-                </Badge>
-              )}
-            </div>
-          )}
         </div>
       )}
 
@@ -180,12 +165,13 @@ export function DictionaryResultsSection({
         />
       )}
 
-      <div className="grid gap-6">
+      <div className="grid gap-4 md:gap-5">
         {filteredResults.map((entry) => (
           <DictionaryEntryCard
             key={entry.id}
             entry={entry}
             query={query}
+            resultMode={resultMode}
             selectedDialect={selectedDialect}
           />
         ))}

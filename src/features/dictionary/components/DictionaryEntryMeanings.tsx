@@ -12,6 +12,7 @@ import type {
   getLocalizedGenderedMeanings,
   getLocalizedSenseGroups,
 } from "@/features/dictionary/lib/entryText";
+import { cx } from "@/lib/classes";
 import type { TranslationKey } from "@/lib/i18n";
 
 import DialectSiglum from "./DialectSiglum";
@@ -34,19 +35,26 @@ type DialectMeaningRow = ReturnType<
 >[number];
 
 type DictionaryEntryMeaningsProps = {
+  compactPreview?: boolean;
   dialectMeanings: DialectMeaningRow[];
   genderedMeanings: GenderedMeaningRow[];
   grammarAbbreviationTooltips: GrammarAbbreviationTooltips;
   isDetailView: boolean;
+  limitPreview?: boolean;
   localizedSenseRows: LocalizedSenseRow[];
   query: string;
   t: DictionaryEntryTranslator;
 };
 
-function getMeaningTextClassName(isDetailView: boolean) {
-  return `ml-5 list-disc space-y-1.5 text-ink marker:text-coptic ${
-    isDetailView ? "text-lg md:text-xl" : "text-lg"
-  }`;
+function getMeaningTextClassName(
+  isDetailView: boolean,
+  compactPreview: boolean,
+) {
+  return cx(
+    "ml-5 list-disc text-ink marker:text-coptic",
+    compactPreview ? "space-y-1 text-base" : "space-y-1.5",
+    isDetailView ? "text-lg md:text-xl" : !compactPreview && "text-lg",
+  );
 }
 
 function GenderedMeaningValues({
@@ -136,26 +144,47 @@ function GovernmentMarkerRow({
 }
 
 export function DictionaryEntryMeanings({
+  compactPreview = false,
   dialectMeanings,
   genderedMeanings,
   grammarAbbreviationTooltips,
   isDetailView,
+  limitPreview = compactPreview,
   localizedSenseRows,
   query,
   t,
 }: DictionaryEntryMeaningsProps) {
+  const visibleGenderedMeanings = limitPreview
+    ? genderedMeanings.slice(0, 2)
+    : genderedMeanings;
+  const visibleLocalizedSenseRows = limitPreview
+    ? localizedSenseRows.slice(0, 2).map((group) => ({
+        ...group,
+        genderedRows: group.genderedRows?.slice(0, 2),
+        meanings: group.meanings.slice(0, 2),
+      }))
+    : localizedSenseRows;
+  const visibleDialectMeanings = limitPreview
+    ? dialectMeanings.slice(0, 1).map((dialectMeaning) => ({
+        ...dialectMeaning,
+        meanings: dialectMeaning.meanings.slice(0, 2),
+      }))
+    : dialectMeanings;
+
   return (
     <>
       <h3 className="text-xs font-semibold uppercase tracking-widest text-muted">
         {t("entry.translation")}
       </h3>
-      {genderedMeanings.length > 0 && (
+      {visibleGenderedMeanings.length > 0 && (
         <ul
-          className={`ml-5 list-disc space-y-2 text-ink marker:text-coptic ${
-            isDetailView ? "text-lg md:text-xl" : "text-lg"
-          }`}
+          className={cx(
+            "ml-5 list-disc text-ink marker:text-coptic",
+            compactPreview ? "space-y-1 text-base" : "space-y-2",
+            isDetailView ? "text-lg md:text-xl" : !compactPreview && "text-lg",
+          )}
         >
-          {genderedMeanings.map((row, idx) => (
+          {visibleGenderedMeanings.map((row, idx) => (
             <li key={idx} className="leading-relaxed pl-1">
               <GenderedMeaningValues
                 grammarAbbreviationTooltips={grammarAbbreviationTooltips}
@@ -167,9 +196,9 @@ export function DictionaryEntryMeanings({
           ))}
         </ul>
       )}
-      {localizedSenseRows.length > 0 && (
+      {visibleLocalizedSenseRows.length > 0 && (
         <div className="grid gap-3">
-          {localizedSenseRows.map((group, groupIndex) => {
+          {visibleLocalizedSenseRows.map((group, groupIndex) => {
             const groupGenderedRows = group.genderedRows ?? [];
             const hasMeaningRows =
               groupGenderedRows.length > 0 || group.meanings.length > 0;
@@ -190,7 +219,12 @@ export function DictionaryEntryMeanings({
                   prepGovernment={group.prepGovernment}
                 />
                 {hasMeaningRows && (
-                  <ul className={getMeaningTextClassName(isDetailView)}>
+                  <ul
+                    className={getMeaningTextClassName(
+                      isDetailView,
+                      compactPreview,
+                    )}
+                  >
                     {groupGenderedRows.map((row, idx) => (
                       <li
                         key={`${group.code}-gendered-${idx}`}
@@ -228,9 +262,9 @@ export function DictionaryEntryMeanings({
           })}
         </div>
       )}
-      {dialectMeanings.length > 0 && (
+      {visibleDialectMeanings.length > 0 && (
         <div className="grid gap-3">
-          {dialectMeanings.map((dialectMeaning) => (
+          {visibleDialectMeanings.map((dialectMeaning) => (
             <div
               key={dialectMeaning.sourceLabel}
               className="grid gap-2 border-l-2 border-coptic/25 pl-3"
@@ -246,7 +280,12 @@ export function DictionaryEntryMeanings({
                 ))}
               </div>
               {dialectMeaning.meanings.length > 0 && (
-                <ul className={getMeaningTextClassName(isDetailView)}>
+                <ul
+                  className={getMeaningTextClassName(
+                    isDetailView,
+                    compactPreview,
+                  )}
+                >
                   {dialectMeaning.meanings.map((meaning, idx) => (
                     <li key={idx} className="leading-relaxed pl-1">
                       <HighlightText

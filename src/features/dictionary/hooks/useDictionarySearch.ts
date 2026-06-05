@@ -10,9 +10,13 @@ import {
 
 import {
   DEFAULT_DICTIONARY_DIALECT_FILTER,
+  DEFAULT_DICTIONARY_ETYMOLOGY_FILTER,
   DEFAULT_PART_OF_SPEECH_FILTER,
   isDialectFilter,
+  isDictionaryEtymologyFilter,
+  isDictionaryPartOfSpeechFilter,
   type DialectFilter,
+  type DictionaryEtymologyFilter,
   type DictionaryPartOfSpeechFilter,
 } from "@/features/dictionary/config";
 import {
@@ -29,10 +33,14 @@ type UseDictionarySearchOptions = {
 
 type DictionarySearchRequestOptions = {
   exactMatch: boolean;
+  hasGreek: boolean;
+  hasInflections: boolean;
+  hasRelatedEntries: boolean;
   limit: number;
   offset: number;
   query: string;
   selectedDialect: DialectFilter;
+  selectedEtymology: DictionaryEtymologyFilter;
   selectedPartOfSpeech: DictionaryPartOfSpeechFilter;
 };
 
@@ -46,10 +54,14 @@ function buildDictionarySearchUrl(
   searchPath: string,
   {
     exactMatch,
+    hasGreek,
+    hasInflections,
+    hasRelatedEntries,
     limit,
     offset,
     query,
     selectedDialect,
+    selectedEtymology,
     selectedPartOfSpeech,
   }: DictionarySearchRequestOptions,
 ) {
@@ -68,8 +80,24 @@ function buildDictionarySearchUrl(
     params.set("partOfSpeech", selectedPartOfSpeech);
   }
 
+  if (selectedEtymology !== "ALL") {
+    params.set("etymology", selectedEtymology);
+  }
+
   if (exactMatch) {
     params.set("exact", "true");
+  }
+
+  if (hasGreek) {
+    params.set("hasGreek", "true");
+  }
+
+  if (hasInflections) {
+    params.set("hasInflections", "true");
+  }
+
+  if (hasRelatedEntries) {
+    params.set("hasRelatedEntries", "true");
   }
 
   params.set("limit", String(limit));
@@ -104,7 +132,12 @@ export function useDictionarySearch({
   const [selectedDialect, setSelectedDialectState] = useState<DialectFilter>(
     DEFAULT_DICTIONARY_DIALECT_FILTER,
   );
+  const [selectedEtymology, setSelectedEtymology] =
+    useState<DictionaryEtymologyFilter>(DEFAULT_DICTIONARY_ETYMOLOGY_FILTER);
   const [exactMatch, setExactMatch] = useState<boolean>(false);
+  const [hasGreek, setHasGreek] = useState(false);
+  const [hasInflections, setHasInflections] = useState(false);
+  const [hasRelatedEntries, setHasRelatedEntries] = useState(false);
   const [preferenceUserId, setPreferenceUserId] = useState<string | null>(null);
   const [totalMatches, setTotalMatches] = useState(0);
   const [initialSearchStateReady, setInitialSearchStateReady] = useState(false);
@@ -113,23 +146,66 @@ export function useDictionarySearch({
   const [retryNonce, setRetryNonce] = useState(0);
   const deferredQuery = useDeferredValue(query);
   const activeSearchKeyRef = useRef("");
-  const hasDeepLinkedQueryRef = useRef(false);
+  const hasDeepLinkedSearchStateRef = useRef(false);
 
   useEffect(() => {
     /**
-     * Deep-linked searches hydrate from `?q=` so shared dictionary URLs open
-     * with the intended query and the broadest dialect filter already applied.
+     * Deep-linked searches hydrate from URL params so shared dictionary URLs
+     * open with the intended query, filters, and match behavior already applied.
      */
-    const initialQuery =
+    const searchParams =
       typeof window === "undefined"
-        ? ""
-        : (new URLSearchParams(window.location.search).get("q")?.trim() ?? "");
-    hasDeepLinkedQueryRef.current = initialQuery.length > 0;
+        ? new URLSearchParams()
+        : new URLSearchParams(window.location.search);
+    const initialQuery = searchParams.get("q")?.trim() ?? "";
+    const initialDialect = searchParams.get("dialect");
+    const initialEtymology = searchParams.get("etymology");
+    const initialPartOfSpeech = searchParams.get("partOfSpeech");
+    const initialExactMatch = searchParams.get("exact") === "true";
+    const initialHasGreek = searchParams.get("hasGreek") === "true";
+    const initialHasInflections = searchParams.get("hasInflections") === "true";
+    const initialHasRelatedEntries =
+      searchParams.get("hasRelatedEntries") === "true";
+    const validatedInitialDialect =
+      initialDialect && isDialectFilter(initialDialect) ? initialDialect : null;
+    const validatedInitialEtymology =
+      initialEtymology && isDictionaryEtymologyFilter(initialEtymology)
+        ? initialEtymology
+        : null;
+    const validatedInitialPartOfSpeech =
+      initialPartOfSpeech && isDictionaryPartOfSpeechFilter(initialPartOfSpeech)
+        ? initialPartOfSpeech
+        : null;
+    const hasInitialSearchState =
+      initialQuery.length > 0 ||
+      validatedInitialDialect !== null ||
+      validatedInitialEtymology !== null ||
+      validatedInitialPartOfSpeech !== null ||
+      initialExactMatch ||
+      initialHasGreek ||
+      initialHasInflections ||
+      initialHasRelatedEntries;
 
-    if (initialQuery.length > 0) {
+    hasDeepLinkedSearchStateRef.current = hasInitialSearchState;
+
+    if (hasInitialSearchState) {
       queueMicrotask(() => {
         setQuery(initialQuery);
-        setSelectedDialectState("ALL");
+        if (validatedInitialDialect) {
+          setSelectedDialectState(validatedInitialDialect);
+        } else if (initialQuery.length > 0) {
+          setSelectedDialectState("ALL");
+        }
+        if (validatedInitialPartOfSpeech) {
+          setSelectedPartOfSpeech(validatedInitialPartOfSpeech);
+        }
+        if (validatedInitialEtymology) {
+          setSelectedEtymology(validatedInitialEtymology);
+        }
+        setExactMatch(initialExactMatch);
+        setHasGreek(initialHasGreek);
+        setHasInflections(initialHasInflections);
+        setHasRelatedEntries(initialHasRelatedEntries);
       });
     }
 
@@ -156,7 +232,7 @@ export function useDictionarySearch({
         setPreferenceUserId(nextUserId);
       });
 
-      if (!nextUserId || hasDeepLinkedQueryRef.current) {
+      if (!nextUserId || hasDeepLinkedSearchStateRef.current) {
         return;
       }
 
@@ -223,7 +299,85 @@ export function useDictionarySearch({
    * Force the paginated results list to reset when the effective search state
    * changes so page boundaries do not leak across different filter sets.
    */
-  const resultsKey = `${deferredQuery}\u0000${selectedPartOfSpeech}\u0000${selectedDialect}\u0000${exactMatch}`;
+  const resultsKey = `${deferredQuery}\u0000${selectedPartOfSpeech}\u0000${selectedDialect}\u0000${selectedEtymology}\u0000${exactMatch}\u0000${hasGreek}\u0000${hasInflections}\u0000${hasRelatedEntries}`;
+
+  useEffect(() => {
+    if (!initialSearchStateReady || typeof window === "undefined") {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const trimmedQuery = deferredQuery.trim();
+
+    if (trimmedQuery.length > 0) {
+      params.set("q", trimmedQuery);
+    } else {
+      params.delete("q");
+    }
+
+    if (
+      selectedDialect !== DEFAULT_DICTIONARY_DIALECT_FILTER ||
+      trimmedQuery.length > 0
+    ) {
+      params.set("dialect", selectedDialect);
+    } else {
+      params.delete("dialect");
+    }
+
+    if (selectedPartOfSpeech !== DEFAULT_PART_OF_SPEECH_FILTER) {
+      params.set("partOfSpeech", selectedPartOfSpeech);
+    } else {
+      params.delete("partOfSpeech");
+    }
+
+    if (selectedEtymology !== DEFAULT_DICTIONARY_ETYMOLOGY_FILTER) {
+      params.set("etymology", selectedEtymology);
+    } else {
+      params.delete("etymology");
+    }
+
+    if (exactMatch) {
+      params.set("exact", "true");
+    } else {
+      params.delete("exact");
+    }
+
+    if (hasGreek) {
+      params.set("hasGreek", "true");
+    } else {
+      params.delete("hasGreek");
+    }
+
+    if (hasInflections) {
+      params.set("hasInflections", "true");
+    } else {
+      params.delete("hasInflections");
+    }
+
+    if (hasRelatedEntries) {
+      params.set("hasRelatedEntries", "true");
+    } else {
+      params.delete("hasRelatedEntries");
+    }
+
+    const nextSearch = params.toString();
+    const nextUrl = `${window.location.pathname}${nextSearch ? `?${nextSearch}` : ""}${window.location.hash}`;
+    const currentUrl = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+
+    if (nextUrl !== currentUrl) {
+      window.history.replaceState(null, "", nextUrl);
+    }
+  }, [
+    deferredQuery,
+    exactMatch,
+    hasGreek,
+    hasInflections,
+    hasRelatedEntries,
+    initialSearchStateReady,
+    selectedDialect,
+    selectedEtymology,
+    selectedPartOfSpeech,
+  ]);
 
   useEffect(() => {
     if (!initialSearchStateReady) {
@@ -244,10 +398,14 @@ export function useDictionarySearch({
         const response = await fetch(
           buildDictionarySearchUrl(searchPath, {
             exactMatch,
+            hasGreek,
+            hasInflections,
+            hasRelatedEntries,
             limit: DEFAULT_DICTIONARY_SEARCH_PAGE_SIZE,
             offset: 0,
             query: deferredQuery,
             selectedDialect,
+            selectedEtymology,
             selectedPartOfSpeech,
           }),
           { signal: controller.signal },
@@ -311,11 +469,15 @@ export function useDictionarySearch({
   }, [
     deferredQuery,
     exactMatch,
+    hasGreek,
+    hasInflections,
+    hasRelatedEntries,
     initialSearchStateReady,
     resultsKey,
     retryNonce,
     searchPath,
     selectedDialect,
+    selectedEtymology,
     selectedPartOfSpeech,
   ]);
 
@@ -335,10 +497,14 @@ export function useDictionarySearch({
         const response = await fetch(
           buildDictionarySearchUrl(searchPath, {
             exactMatch,
+            hasGreek,
+            hasInflections,
+            hasRelatedEntries,
             limit: DEFAULT_DICTIONARY_SEARCH_PAGE_SIZE,
             offset: filteredResults.length,
             query: deferredQuery,
             selectedDialect,
+            selectedEtymology,
             selectedPartOfSpeech,
           }),
         );
@@ -384,13 +550,17 @@ export function useDictionarySearch({
     deferredQuery,
     exactMatch,
     filteredResults.length,
+    hasGreek,
     hasMoreResults,
+    hasInflections,
+    hasRelatedEntries,
     initialSearchStateReady,
     loading,
     loadingMore,
     resultsKey,
     searchPath,
     selectedDialect,
+    selectedEtymology,
     selectedPartOfSpeech,
   ]);
 
@@ -478,7 +648,10 @@ export function useDictionarySearch({
     handleKeyboardAppend,
     handleKeyboardBackspace,
     handleSelectionChange,
+    hasGreek,
+    hasInflections,
     hasMoreResults,
+    hasRelatedEntries,
     isKeyboardOpen,
     loadMoreResults,
     loading,
@@ -488,11 +661,16 @@ export function useDictionarySearch({
     retrySearch,
     searchInputRef,
     selectedDialect,
+    selectedEtymology,
     selectedPartOfSpeech,
     setExactMatch,
+    setHasGreek,
+    setHasInflections,
+    setHasRelatedEntries,
     setKeyboardOpen,
     setQuery,
     setSelectedDialect,
+    setSelectedEtymology,
     setSelectedPartOfSpeech,
     totalMatches,
     visibleQuery: deferredQuery,

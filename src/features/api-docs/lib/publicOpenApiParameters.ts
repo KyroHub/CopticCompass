@@ -78,10 +78,23 @@ export function buildPublicOpenApiParameters(context: PublicOpenApiContext) {
       description: "Part-of-speech filter used by the dictionary UI.",
       schema: {
         type: "string",
-        enum: ["ALL", "V", "N", "ADJ", "ADV", "PREP"],
+        enum: ["ALL", "V", "N", "ADJ", "ADV", "INTJ", "PREP"],
         default: "ALL",
       },
       example: "V",
+    },
+    DictionaryEtymologyFilter: {
+      name: "etymology",
+      in: "query",
+      required: false,
+      description:
+        "Etymology or origin filter. `ALL` keeps the default broad search.",
+      schema: {
+        type: "string",
+        enum: ["ALL", "Egy", "Gr", "Lat", "Sem", "Unknown"],
+        default: "ALL",
+      },
+      example: "Gr",
     },
     DictionaryExactFilter: {
       name: "exact",
@@ -89,6 +102,45 @@ export function buildPublicOpenApiParameters(context: PublicOpenApiContext) {
       required: false,
       description:
         "When `true`, whole-token matching is used instead of substring matching.",
+      schema: {
+        type: "string",
+        enum: ["true", "false"],
+        default: "false",
+      },
+      example: "true",
+    },
+    DictionaryHasGreekFilter: {
+      name: "hasGreek",
+      in: "query",
+      required: false,
+      description:
+        "When `true`, restricts results to entries with structured Greek sources or equivalents.",
+      schema: {
+        type: "string",
+        enum: ["true", "false"],
+        default: "false",
+      },
+      example: "true",
+    },
+    DictionaryHasInflectionsFilter: {
+      name: "hasInflections",
+      in: "query",
+      required: false,
+      description:
+        "When `true`, restricts results to entries with structured inflected forms.",
+      schema: {
+        type: "string",
+        enum: ["true", "false"],
+        default: "false",
+      },
+      example: "true",
+    },
+    DictionaryHasRelatedEntriesFilter: {
+      name: "hasRelatedEntries",
+      in: "query",
+      required: false,
+      description:
+        "When `true`, restricts results to entries with structured related entries.",
       schema: {
         type: "string",
         enum: ["true", "false"],

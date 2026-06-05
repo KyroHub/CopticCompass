@@ -173,6 +173,18 @@ export interface DictionaryGreekContext {
   equivalents?: string[];
 }
 
+export type DictionarySearchMatchKind =
+  | "dialect-form"
+  | "greek"
+  | "headword"
+  | "inflection"
+  | "meaning";
+
+export interface DictionarySearchMatch {
+  exact: boolean;
+  kind: DictionarySearchMatchKind;
+}
+
 /**
  * Represents one normalized dictionary entry as consumed by the app and the
  * generated public JSON snapshot.
@@ -212,4 +224,5 @@ export type DictionaryClientEntry = Pick<
   | "senses"
 > & {
   relations?: DictionaryRelationReference[];
+  searchMatch?: DictionarySearchMatch;
 };

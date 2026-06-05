@@ -64,6 +64,7 @@ export const DICTIONARY_PART_OF_SPEECH_FILTER_CODES = [
   "N",
   "ADJ",
   "ADV",
+  "INTJ",
   "PREP",
 ] as const satisfies readonly DictionaryPartOfSpeechCode[];
 
