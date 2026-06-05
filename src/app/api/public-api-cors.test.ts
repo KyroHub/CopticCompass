@@ -179,4 +179,30 @@ describe("public API CORS", () => {
       error: `Search query is too long. Maximum length is ${MAX_DICTIONARY_SEARCH_QUERY_LENGTH} characters.`,
     });
   });
+
+  it("rejects invalid dictionary etymology filters", async () => {
+    const response = await getDictionarySearch(
+      new NextRequest(
+        "https://example.com/api/v1/dictionary/search?etymology=Greek",
+      ),
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "Invalid etymology filter: Greek",
+    });
+  });
+
+  it("rejects invalid dictionary advanced facet flags", async () => {
+    const response = await getDictionarySearch(
+      new NextRequest(
+        "https://example.com/api/v1/dictionary/search?hasGreek=maybe",
+      ),
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "Invalid hasGreek flag: maybe",
+    });
+  });
 });

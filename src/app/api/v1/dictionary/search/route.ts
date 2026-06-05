@@ -1,5 +1,6 @@
 import {
   isDialectFilter,
+  isDictionaryEtymologyFilter,
   isDictionaryPartOfSpeechFilter,
 } from "@/features/dictionary/config";
 import { getDictionarySearchPage } from "@/features/dictionary/lib/dictionary";
@@ -22,7 +23,11 @@ import type { NextRequest } from "next/server";
 export function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const dialect = searchParams.get("dialect");
+  const etymology = searchParams.get("etymology");
   const exact = searchParams.get("exact");
+  const hasGreek = searchParams.get("hasGreek");
+  const hasInflections = searchParams.get("hasInflections");
+  const hasRelatedEntries = searchParams.get("hasRelatedEntries");
   const limit = searchParams.get("limit");
   const offset = searchParams.get("offset");
   const partOfSpeech = searchParams.get("partOfSpeech");
@@ -52,11 +57,31 @@ export function GET(request: NextRequest) {
     );
   }
 
+  if (etymology && !isDictionaryEtymologyFilter(etymology)) {
+    return publicApiJsonResponse(
+      { error: `Invalid etymology filter: ${etymology}` },
+      { status: 400 },
+    );
+  }
+
   if (exact && exact !== "false" && exact !== "true") {
     return publicApiJsonResponse(
       { error: `Invalid exact-match flag: ${exact}` },
       { status: 400 },
     );
+  }
+
+  for (const [name, value] of [
+    ["hasGreek", hasGreek],
+    ["hasInflections", hasInflections],
+    ["hasRelatedEntries", hasRelatedEntries],
+  ] as const) {
+    if (value && value !== "false" && value !== "true") {
+      return publicApiJsonResponse(
+        { error: `Invalid ${name} flag: ${value}` },
+        { status: 400 },
+      );
+    }
   }
 
   const validatedLimit =
@@ -84,14 +109,20 @@ export function GET(request: NextRequest) {
     partOfSpeech && isDictionaryPartOfSpeechFilter(partOfSpeech)
       ? partOfSpeech
       : "ALL";
+  const validatedEtymology =
+    etymology && isDictionaryEtymologyFilter(etymology) ? etymology : "ALL";
 
   return publicApiJsonResponse(
     getDictionarySearchPage({
       exactMatch: exact === "true",
+      hasGreek: hasGreek === "true",
+      hasInflections: hasInflections === "true",
+      hasRelatedEntries: hasRelatedEntries === "true",
       limit: Math.min(validatedLimit, MAX_DICTIONARY_SEARCH_PAGE_SIZE),
       offset: validatedOffset,
       query: trimmedQuery,
       selectedDialect: validatedDialect,
+      selectedEtymology: validatedEtymology,
       selectedPartOfSpeech: validatedPartOfSpeech,
     }),
     {

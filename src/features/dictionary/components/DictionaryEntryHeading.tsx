@@ -19,7 +19,10 @@ import {
   getEntryNounGender,
   getPrimaryEntryPartOfSpeech,
 } from "@/features/dictionary/lib/entryGrammar";
-import type { DictionaryClientEntry } from "@/features/dictionary/types";
+import type {
+  DictionaryClientEntry,
+  DictionarySearchMatchKind,
+} from "@/features/dictionary/types";
 import { antinoou } from "@/lib/fonts";
 import type { TranslationKey } from "@/lib/i18n";
 import { getEntryPath } from "@/lib/locale";
@@ -42,6 +45,14 @@ type EntryDialectSelection = "ALL" | DictionaryDialectCode;
 type DictionaryEntryRelation = NonNullable<
   DictionaryClientEntry["relations"]
 >[number];
+
+const SEARCH_MATCH_LABEL_KEYS = {
+  "dialect-form": "dict.match.dialectForm",
+  greek: "dict.match.greek",
+  headword: "dict.match.headword",
+  inflection: "dict.match.inflection",
+  meaning: "dict.match.meaning",
+} as const satisfies Record<DictionarySearchMatchKind, TranslationKey>;
 
 type DictionaryEntryHeadingProps = {
   actions?: ReactNode;
@@ -220,10 +231,24 @@ export function DictionaryEntryHeading({
         );
       })}
       {primaryDialectKey && (
-        <Badge tone="neutral" size="sm" className={compactBadgeClassName}>
+        <Badge
+          tone="neutral"
+          size="sm"
+          className={`${compactBadgeClassName} gap-1.5`}
+        >
+          <span>{t("dict.dialect")} </span>
           <DialectSiglum siglum={primaryDialectKey} />
         </Badge>
       )}
+      {entry.searchMatch ? (
+        <Badge
+          tone={entry.searchMatch.exact ? "coptic" : "surface"}
+          size="xs"
+          className="min-h-8"
+        >
+          {t(SEARCH_MATCH_LABEL_KEYS[entry.searchMatch.kind])}
+        </Badge>
+      ) : null}
     </>
   );
 

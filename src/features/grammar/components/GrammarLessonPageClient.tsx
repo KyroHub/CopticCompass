@@ -2,7 +2,7 @@
 
 import { ArrowLeft, Layers3 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { flushSync } from "react-dom";
 
 import { BreadcrumbTrail } from "@/components/BreadcrumbTrail";
@@ -44,6 +44,7 @@ import {
   getGrammarPath,
   getLocalizedHomePath,
 } from "@/lib/locale";
+import { useMediaQuery } from "@/lib/useMediaQuery";
 
 type GrammarLessonPageClientProps = {
   lessonBundle: GrammarLessonBundle;
@@ -114,7 +115,7 @@ export function GrammarLessonPageClient({
     () => lessonOutlineSections.map((section) => section.id),
     [lessonOutlineSections],
   );
-  const [canUseStudyMode, setCanUseStudyMode] = useState(false);
+  const canUseStudyMode = useMediaQuery("(min-width: 96rem)");
   const [workspaceMode, setWorkspaceMode] = usePersistentLessonWorkspaceMode(
     lesson.id,
   );
@@ -122,24 +123,6 @@ export function GrammarLessonPageClient({
   const isStudyMode =
     isInteractiveLessonView && hasSemanticSidebar && workspaceMode === "study";
   const isStudyLayoutActive = isStudyMode && canUseStudyMode;
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const mediaQuery = window.matchMedia("(min-width: 96rem)");
-    const syncMediaQuery = () => {
-      setCanUseStudyMode(mediaQuery.matches);
-    };
-
-    syncMediaQuery();
-    mediaQuery.addEventListener("change", syncMediaQuery);
-
-    return () => {
-      mediaQuery.removeEventListener("change", syncMediaQuery);
-    };
-  }, []);
 
   const activeSectionId = useActiveLessonSectionId(lessonOutlineSectionIds);
   const [isLeftRailCollapsed, setIsLeftRailCollapsed] =

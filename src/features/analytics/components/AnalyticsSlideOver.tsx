@@ -4,6 +4,7 @@ import { createPortal } from "react-dom";
 
 import { iconButtonClassName } from "@/components/Button";
 import { cx } from "@/lib/classes";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
 import type { ReactNode } from "react";
 
@@ -24,30 +25,21 @@ export function AnalyticsSlideOver({
   title,
   children,
 }: AnalyticsSlideOverProps) {
-  /**
-   * Lock body scroll while the panel is mounted.
-   */
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [isOpen]);
+  useBodyScrollLock(isOpen);
 
-  /**
-   * Close the panel on Escape while it is open.
-   */
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" && isOpen) {
+    if (!isOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
         onClose();
       }
     };
+
     window.addEventListener("keydown", handleKeyDown);
+
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen, onClose]);
 

@@ -26,6 +26,7 @@ type LinguisticMarker = {
 };
 
 type DictionaryEntryDialectFormsProps = {
+  compact?: boolean;
   entry: DictionaryClientEntry;
   formSymbolTooltips: FormSymbolTooltips;
   mainGenderMarkers: LinguisticMarker[];
@@ -39,6 +40,7 @@ type DictionaryEntryDialectFormsProps = {
 };
 
 export function DictionaryEntryDialectForms({
+  compact = false,
   entry,
   formSymbolTooltips,
   mainGenderMarkers,
@@ -55,11 +57,25 @@ export function DictionaryEntryDialectForms({
   }
 
   return (
-    <div className="mt-7 border-t border-line pt-5">
-      <h4 className="mb-3 text-xs font-semibold uppercase tracking-widest text-muted">
+    <div
+      className={
+        compact
+          ? "mt-4 border-t border-line pt-4"
+          : "mt-7 border-t border-line pt-5"
+      }
+    >
+      <h4
+        className={
+          compact
+            ? "mb-2 text-xs font-semibold uppercase tracking-widest text-muted"
+            : "mb-3 text-xs font-semibold uppercase tracking-widest text-muted"
+        }
+      >
         {t("entry.dialectForms")}
       </h4>
-      <div className="flex flex-wrap gap-3">
+      <div
+        className={compact ? "flex flex-wrap gap-2" : "flex flex-wrap gap-3"}
+      >
         {remainingDialects.map(([dialect, forms]) => {
           const spelling = formatDialectForms(forms, entry.headword);
           const dialectPlurals = getDialectPluralForms(entry, dialect);
@@ -83,7 +99,11 @@ export function DictionaryEntryDialectForms({
               type="button"
               onClick={() => onDialectViewChange(dialect)}
               aria-label={`${t("entry.dialectForms")}: ${dialect} ${dialectAriaSpelling}`}
-              className="flex min-w-0 max-w-full basis-full cursor-pointer select-none items-start gap-3 rounded-lg border border-line bg-elevated/65 px-3 py-2.5 text-left transition-all duration-200 hover:-translate-y-px hover:border-coptic/35 hover:bg-coptic-soft/45 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coptic/30 focus-visible:ring-offset-2 focus-visible:ring-offset-paper sm:basis-auto"
+              className={
+                compact
+                  ? "flex min-w-0 max-w-full basis-full cursor-pointer select-none items-start gap-2 rounded-lg border border-line bg-elevated/65 px-2.5 py-2 text-left transition-all duration-200 hover:-translate-y-px hover:border-coptic/35 hover:bg-coptic-soft/45 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coptic/30 focus-visible:ring-offset-2 focus-visible:ring-offset-paper sm:basis-auto"
+                  : "flex min-w-0 max-w-full basis-full cursor-pointer select-none items-start gap-3 rounded-lg border border-line bg-elevated/65 px-3 py-2.5 text-left transition-all duration-200 hover:-translate-y-px hover:border-coptic/35 hover:bg-coptic-soft/45 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coptic/30 focus-visible:ring-offset-2 focus-visible:ring-offset-paper sm:basis-auto"
+              }
             >
               <span className="inline-flex min-h-7 shrink-0 items-center rounded-md bg-surface px-2.5 py-2 text-[10px] font-bold text-muted">
                 <DialectSiglum focusableTooltip={false} siglum={dialect} />

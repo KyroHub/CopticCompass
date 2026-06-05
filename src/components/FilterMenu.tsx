@@ -15,9 +15,12 @@ import {
   type KeyboardEvent,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
 
 import { buttonClassName } from "@/components/Button";
 import { cx } from "@/lib/classes";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
+import { useMediaQuery } from "@/lib/useMediaQuery";
 
 export type FilterMenuOption = {
   description?: ReactNode;
@@ -33,6 +36,7 @@ type FilterBarProps = {
   className?: string;
   clearLabel?: ReactNode;
   defaultOpen?: boolean | "desktop";
+  icon?: LucideIcon;
   label: ReactNode;
   onClear?: () => void;
 };
@@ -46,6 +50,7 @@ type FilterMenuProps = {
   menuLabel?: ReactNode;
   onChange: (value: string) => void;
   options: readonly FilterMenuOption[];
+  triggerClassName?: string;
   value: string;
   valueLabel: ReactNode;
 };
@@ -65,36 +70,20 @@ export function FilterBar({
   className,
   clearLabel,
   defaultOpen = false,
+  icon: Icon = SlidersHorizontal,
   label,
   onClear,
 }: FilterBarProps) {
   const contentId = useId();
   const hasUserToggledRef = useRef(false);
+  const isDesktopViewport = useMediaQuery("(min-width: 640px)");
   const [isExpanded, setIsExpanded] = useState(defaultOpen === true);
 
   useEffect(() => {
-    if (defaultOpen !== "desktop") {
-      return;
+    if (defaultOpen === "desktop" && !hasUserToggledRef.current) {
+      setIsExpanded(isDesktopViewport);
     }
-
-    const mediaQuery = window.matchMedia("(min-width: 640px)");
-
-    if (!hasUserToggledRef.current) {
-      setIsExpanded(mediaQuery.matches);
-    }
-
-    function handleChange(event: MediaQueryListEvent) {
-      if (!hasUserToggledRef.current) {
-        setIsExpanded(event.matches);
-      }
-    }
-
-    mediaQuery.addEventListener("change", handleChange);
-
-    return () => {
-      mediaQuery.removeEventListener("change", handleChange);
-    };
-  }, [defaultOpen]);
+  }, [defaultOpen, isDesktopViewport]);
 
   function toggleExpanded() {
     hasUserToggledRef.current = true;
@@ -117,10 +106,7 @@ export function FilterBar({
           className="flex min-w-0 flex-1 cursor-pointer select-none items-center justify-between gap-3 rounded-lg px-2 py-1 text-left text-muted transition-colors hover:bg-elevated/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
         >
           <span className="flex min-w-0 items-center gap-2">
-            <SlidersHorizontal
-              className="h-4 w-4 shrink-0"
-              aria-hidden="true"
-            />
+            <Icon className="h-4 w-4 shrink-0" aria-hidden="true" />
             <span className="truncate text-xs font-semibold uppercase tracking-widest">
               {label}
             </span>
@@ -176,13 +162,16 @@ export function FilterMenu({
   menuLabel,
   onChange,
   options,
+  triggerClassName,
   value,
   valueLabel,
 }: FilterMenuProps) {
   const menuId = useId();
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const usesMobileSheet = useMediaQuery("(max-width: 639px)");
   let resolvedMenuLabel: string | undefined;
 
   if (typeof menuLabel === "string") {
@@ -197,7 +186,12 @@ export function FilterMenu({
     }
 
     function handlePointerDown(event: PointerEvent) {
-      if (rootRef.current?.contains(event.target as Node)) {
+      const target = event.target as Node;
+
+      if (
+        rootRef.current?.contains(target) ||
+        menuRef.current?.contains(target)
+      ) {
         return;
       }
 
@@ -226,13 +220,19 @@ export function FilterMenu({
     }
 
     window.requestAnimationFrame(() => {
-      rootRef.current
+      const menuRoot = menuRef.current ?? rootRef.current;
+
+      menuRoot
         ?.querySelector<HTMLButtonElement>(
           `button[data-filter-value="${CSS.escape(value)}"]`,
         )
         ?.focus();
     });
   }, [isOpen, value]);
+
+  useBodyScrollLock(isOpen && usesMobileSheet, {
+    lockDocumentElement: true,
+  });
 
   function handleMenuKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     let direction: 1 | -1 | 0 = 0;
@@ -281,6 +281,90 @@ export function FilterMenu({
     triggerRef.current?.focus();
   }
 
+  const menuSurface = isOpen ? (
+    <>
+      <button
+        type="button"
+        aria-label={closeLabel}
+        className="fixed inset-0 z-[80] cursor-default bg-ink/15 backdrop-blur-[1px] sm:hidden"
+        onClick={() => setIsOpen(false)}
+      />
+      <div
+        ref={menuRef}
+        id={menuId}
+        role="listbox"
+        tabIndex={-1}
+        aria-label={resolvedMenuLabel}
+        onKeyDown={handleMenuKeyDown}
+        className="fixed inset-x-0 bottom-0 z-[90] max-h-[calc(100dvh-4rem)] overflow-y-auto rounded-t-xl border border-line bg-surface p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-panel sm:absolute sm:bottom-auto sm:left-0 sm:right-auto sm:top-full sm:mt-2 sm:w-72 sm:max-h-80 sm:rounded-lg sm:p-2 sm:z-[60]"
+      >
+        <div className="mb-3 flex items-center justify-between gap-3 sm:hidden">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted">
+            {menuLabel ?? label}
+          </p>
+          <button
+            type="button"
+            aria-label={closeLabel}
+            title={closeLabel}
+            className={buttonClassName({
+              className: "h-10 w-10 shrink-0 px-0",
+              size: "sm",
+              variant: "ghost",
+            })}
+            onClick={() => setIsOpen(false)}
+          >
+            <X className="h-5 w-5" aria-hidden="true" />
+          </button>
+        </div>
+
+        <div className="space-y-1">
+          {options.map((option) => {
+            const isSelected = option.value === value;
+
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="option"
+                aria-selected={isSelected}
+                data-filter-value={option.value}
+                disabled={option.disabled}
+                onClick={() => handleSelect(option.value)}
+                className={cx(
+                  "flex min-h-11 w-full items-start gap-3 rounded-lg px-3 py-2 text-left text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-45",
+                  isSelected
+                    ? "bg-accent-soft/75 text-ink dark:bg-accent-soft/25"
+                    : "text-muted hover:bg-elevated hover:text-ink",
+                )}
+              >
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center">
+                  {isSelected ? (
+                    <Check className="h-4 w-4 text-accent-strong dark:text-accent" />
+                  ) : null}
+                </span>
+                <span className="min-w-0">
+                  <span className="block font-semibold">
+                    {option.shortLabel ?? option.label}
+                  </span>
+                  {option.description ? (
+                    <span className="mt-0.5 block text-xs leading-5 text-muted">
+                      {option.description}
+                    </span>
+                  ) : null}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </>
+  ) : null;
+
+  const renderedMenuSurface =
+    menuSurface && usesMobileSheet && typeof document !== "undefined"
+      ? createPortal(menuSurface, document.body)
+      : menuSurface;
+
   return (
     <div ref={rootRef} className={cx("relative shrink-0", className)}>
       <button
@@ -295,6 +379,7 @@ export function FilterMenu({
           active
             ? "border-accent/35 bg-accent-soft/75 text-ink hover:bg-accent-soft dark:bg-accent-soft/25"
             : "border-line bg-surface/88 text-ink hover:border-accent/40 hover:bg-surface",
+          triggerClassName,
         )}
       >
         <span className="flex min-w-0 items-center gap-2">
@@ -319,78 +404,7 @@ export function FilterMenu({
         />
       </button>
 
-      {isOpen ? (
-        <>
-          <button
-            type="button"
-            aria-label={closeLabel}
-            className="fixed inset-0 z-[80] cursor-default bg-ink/10 sm:hidden"
-            onClick={() => setIsOpen(false)}
-          />
-          <div
-            id={menuId}
-            role="listbox"
-            tabIndex={-1}
-            aria-label={resolvedMenuLabel}
-            onKeyDown={handleMenuKeyDown}
-            className="fixed inset-x-3 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-[90] max-h-[min(28rem,calc(100dvh-2rem))] overflow-y-auto rounded-lg border border-line bg-surface p-2 shadow-panel sm:absolute sm:bottom-auto sm:left-0 sm:right-auto sm:top-full sm:mt-2 sm:w-72 sm:max-h-80 sm:z-[60]"
-          >
-            <div className="mb-1 flex items-center justify-between gap-3 px-2 py-1 sm:hidden">
-              <p className="text-xs font-semibold uppercase tracking-widest text-muted">
-                {menuLabel ?? label}
-              </p>
-              <button
-                type="button"
-                className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-muted transition hover:bg-elevated hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
-                onClick={() => setIsOpen(false)}
-              >
-                <X className="h-4 w-4" aria-hidden="true" />
-                <span className="sr-only">{closeLabel}</span>
-              </button>
-            </div>
-
-            <div className="space-y-1">
-              {options.map((option) => {
-                const isSelected = option.value === value;
-
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    role="option"
-                    aria-selected={isSelected}
-                    data-filter-value={option.value}
-                    disabled={option.disabled}
-                    onClick={() => handleSelect(option.value)}
-                    className={cx(
-                      "flex min-h-11 w-full items-start gap-3 rounded-lg px-3 py-2 text-left text-sm transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:cursor-not-allowed disabled:opacity-45",
-                      isSelected
-                        ? "bg-accent-soft/75 text-ink dark:bg-accent-soft/25"
-                        : "text-muted hover:bg-elevated hover:text-ink",
-                    )}
-                  >
-                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center">
-                      {isSelected ? (
-                        <Check className="h-4 w-4 text-accent-strong dark:text-accent" />
-                      ) : null}
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block font-semibold">
-                        {option.shortLabel ?? option.label}
-                      </span>
-                      {option.description ? (
-                        <span className="mt-0.5 block text-xs leading-5 text-muted">
-                          {option.description}
-                        </span>
-                      ) : null}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </>
-      ) : null}
+      {renderedMenuSurface}
     </div>
   );
 }

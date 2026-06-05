@@ -9,30 +9,30 @@ import { antinoou } from "@/lib/fonts";
 
 import CopticKeyboard from "./CopticKeyboard";
 
-import type { RefObject } from "react";
+import type { ReactNode, RefObject } from "react";
 
 type DictionarySearchBarProps = {
   isKeyboardOpen: boolean;
   onAppend: (char: string) => void;
   onBackspace: () => void;
-  onCloseKeyboard: () => void;
   onQueryChange: (value: string) => void;
   onSelectionChange: (start: number | null, end: number | null) => void;
   onToggleKeyboard: () => void;
   query: string;
   searchInputRef: RefObject<HTMLInputElement | null>;
+  trailingControls?: ReactNode;
 };
 
 export function DictionarySearchBar({
   isKeyboardOpen,
   onAppend,
   onBackspace,
-  onCloseKeyboard,
   onQueryChange,
   onSelectionChange,
   onToggleKeyboard,
   query,
   searchInputRef,
+  trailingControls,
 }: DictionarySearchBarProps) {
   const { t } = useLanguage();
 
@@ -84,7 +84,11 @@ export function DictionarySearchBar({
               event.currentTarget.selectionEnd,
             )
           }
-          className={`${antinoou.className} w-full rounded-lg bg-transparent p-4 pl-12 pr-24 text-base text-ink transition-all placeholder:font-sans placeholder:text-muted/65 focus:outline-none focus:ring-2 focus:ring-accent/30 sm:p-6 sm:pl-16 sm:pr-28 sm:text-lg md:text-2xl`}
+          className={cx(
+            antinoou.className,
+            "w-full rounded-lg bg-transparent p-4 pl-12 text-base text-ink transition-all placeholder:font-sans placeholder:text-muted/65 focus:outline-none focus:ring-2 focus:ring-accent/30 sm:p-6 sm:pl-16 sm:text-lg md:text-2xl",
+            trailingControls ? "pr-36 sm:pr-44" : "pr-24 sm:pr-28",
+          )}
         />
 
         <div className="absolute inset-y-0 right-3 flex items-center gap-1.5 sm:right-4 sm:gap-2">
@@ -104,22 +108,24 @@ export function DictionarySearchBar({
             type="button"
             onClick={onToggleKeyboard}
             className={iconButtonClassName({
-              className: cx(
-                "h-9 w-9 border-transparent sm:h-10 sm:w-10",
-                isKeyboardOpen &&
-                  "border-coptic/25 bg-coptic-soft text-coptic hover:border-coptic/35 hover:bg-coptic-soft hover:text-coptic",
-              ),
+              active: isKeyboardOpen,
+              className: "h-9 w-9 border-transparent sm:h-10 sm:w-10",
             })}
-            aria-label={t("dict.keyboardToggle")}
-            title={t("dict.keyboardOpen")}
+            aria-label={
+              isKeyboardOpen ? t("dict.keyboardClose") : t("dict.keyboardOpen")
+            }
+            aria-pressed={isKeyboardOpen}
+            title={
+              isKeyboardOpen ? t("dict.keyboardClose") : t("dict.keyboardOpen")
+            }
           >
             <Keyboard className="h-5 w-5" />
           </button>
+          {trailingControls}
         </div>
 
         <CopticKeyboard
           isOpen={isKeyboardOpen}
-          onClose={onCloseKeyboard}
           onAppend={onAppend}
           onBackspace={onBackspace}
         />

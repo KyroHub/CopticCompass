@@ -156,7 +156,18 @@ export type DictionaryPartOfSpeechFilter =
   | "N"
   | "ADJ"
   | "ADV"
+  | "INTJ"
   | "PREP";
+export const DICTIONARY_ETYMOLOGY_FILTER_CODES = [
+  "ALL",
+  "Egy",
+  "Gr",
+  "Lat",
+  "Sem",
+  "Unknown",
+] as const;
+export type DictionaryEtymologyFilter =
+  (typeof DICTIONARY_ETYMOLOGY_FILTER_CODES)[number];
 
 type DialectOption = {
   value: DialectFilter;
@@ -165,6 +176,11 @@ type DialectOption = {
 
 type PartOfSpeechOption = {
   value: DictionaryPartOfSpeechFilter;
+  labelKey: TranslationKey;
+};
+
+type EtymologyOption = {
+  value: DictionaryEtymologyFilter;
   labelKey: TranslationKey;
 };
 
@@ -189,6 +205,8 @@ const DIALECT_LABEL_KEYS: Record<
 export const DEFAULT_DICTIONARY_DIALECT_FILTER: DialectFilter = "B";
 export const DEFAULT_PART_OF_SPEECH_FILTER: DictionaryPartOfSpeechFilter =
   "ALL";
+export const DEFAULT_DICTIONARY_ETYMOLOGY_FILTER: DictionaryEtymologyFilter =
+  "ALL";
 
 export const dialectFilterOptions = [
   { value: "ALL", labelKey: "dialect.ALL" },
@@ -208,6 +226,15 @@ export const dictionaryPartOfSpeechFilterOptions = [
   })),
 ] as const satisfies readonly PartOfSpeechOption[];
 
+export const dictionaryEtymologyFilterOptions = [
+  { value: "ALL", labelKey: "dict.etymologyAny" },
+  { value: "Egy", labelKey: "dict.etymologyEgyptian" },
+  { value: "Gr", labelKey: "dict.etymologyGreek" },
+  { value: "Lat", labelKey: "dict.etymologyLatin" },
+  { value: "Sem", labelKey: "dict.etymologySemitic" },
+  { value: "Unknown", labelKey: "dict.etymologyUnknown" },
+] as const satisfies readonly EtymologyOption[];
+
 export function getDialectLabelKey(siglum: string): TranslationKey | undefined {
   if (siglum === "La") {
     return DIALECT_LABEL_KEYS.Sl;
@@ -222,17 +249,6 @@ export function getDialectFilterOptionLabel(
 ) {
   const label = translate(DIALECT_LABEL_KEYS[dialect]);
   return dialect === "ALL" ? label : `${label} (${dialect})`;
-}
-
-export function getPartOfSpeechFilterLabel(
-  partOfSpeech: DictionaryPartOfSpeechFilter,
-  translate: (key: TranslationKey) => string,
-) {
-  const option = dictionaryPartOfSpeechFilterOptions.find(
-    (candidate) => candidate.value === partOfSpeech,
-  );
-
-  return option ? translate(option.labelKey) : partOfSpeech;
 }
 
 /**
@@ -265,6 +281,18 @@ export function isDictionaryPartOfSpeechFilter(
   value: string,
 ): value is DictionaryPartOfSpeechFilter {
   return dictionaryPartOfSpeechFilterOptions.some(
+    (option) => option.value === value,
+  );
+}
+
+/**
+ * Validates the public dictionary etymology filter accepted by the dictionary
+ * page and search API.
+ */
+export function isDictionaryEtymologyFilter(
+  value: string,
+): value is DictionaryEtymologyFilter {
+  return dictionaryEtymologyFilterOptions.some(
     (option) => option.value === value,
   );
 }

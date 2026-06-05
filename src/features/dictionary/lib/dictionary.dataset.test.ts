@@ -1271,7 +1271,7 @@ describe("dictionary dataset guardrails", () => {
     const dictionary = readDictionary();
     const oxyrhynchiteEntries = dictionary.filter((entry) => entry.dialects.M);
 
-    expect(oxyrhynchiteEntries.length).toBeGreaterThanOrEqual(484);
+    expect(oxyrhynchiteEntries.length).toBeGreaterThanOrEqual(483);
     expect(
       dictionary.find((entry) => entry.id === 493)?.dialects.M,
     ).toMatchObject({

@@ -18,6 +18,7 @@ import {
   getPracticeDeckPath,
 } from "@/features/practice/lib/practicePageHelpers";
 import { cx } from "@/lib/classes";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
 export function DeckPickerDialog({
   activeDeckId,
@@ -42,6 +43,8 @@ export function DeckPickerDialog({
     () => getDeckPickerGroups(deckOptions),
     [deckOptions],
   );
+
+  useBodyScrollLock(isOpen);
 
   useEffect(() => {
     if (!isOpen) {

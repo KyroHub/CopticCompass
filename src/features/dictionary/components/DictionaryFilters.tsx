@@ -3,7 +3,6 @@
 import { Volume2 } from "lucide-react";
 
 import {
-  FilterBar,
   FilterMenu,
   FilterToggle,
   type FilterMenuOption,
@@ -11,9 +10,11 @@ import {
 import { useLanguage } from "@/components/LanguageProvider";
 import {
   dialectFilterOptions,
+  dictionaryEtymologyFilterOptions,
   dictionaryPartOfSpeechFilterOptions,
   getDialectFilterOptionLabel,
   type DialectFilter,
+  type DictionaryEtymologyFilter,
   type DictionaryPartOfSpeechFilter,
 } from "@/features/dictionary/config";
 import {
@@ -22,14 +23,33 @@ import {
 } from "@/features/dictionary/hooks/useTtsSettings";
 import { type VoiceKey, VOICES } from "@/features/dictionary/lib/copticTts";
 
-type DictionaryFiltersProps = {
+type DictionaryFilterControlsProps = {
   exactMatch: boolean;
-  onClearFilters?: () => void;
   selectedDialect: DialectFilter;
   selectedPartOfSpeech: DictionaryPartOfSpeechFilter;
   setExactMatch: (value: boolean) => void;
   setSelectedDialect: (value: DialectFilter) => void;
   setSelectedPartOfSpeech: (value: DictionaryPartOfSpeechFilter) => void;
+};
+
+type DictionaryPronunciationControlsProps = {
+  selectedDialect: DialectFilter;
+};
+
+type DictionaryAdvancedFiltersProps = {
+  hasGreek: boolean;
+  hasInflections: boolean;
+  hasRelatedEntries: boolean;
+  selectedEtymology: DictionaryEtymologyFilter;
+  setHasGreek: (value: boolean) => void;
+  setHasInflections: (value: boolean) => void;
+  setHasRelatedEntries: (value: boolean) => void;
+  setSelectedEtymology: (value: DictionaryEtymologyFilter) => void;
+};
+
+type DictionaryControlLayoutProps = {
+  controlClassName?: string;
+  triggerClassName?: string;
 };
 
 const voiceEntries = Object.entries(VOICES) as [
@@ -48,23 +68,17 @@ function getSelectedOptionLabel(
   return options.find((option) => option.value === value)?.label ?? value;
 }
 
-export function DictionaryFilters({
+export function DictionaryFilterControls({
+  controlClassName,
   exactMatch,
-  onClearFilters,
   selectedDialect,
   selectedPartOfSpeech,
   setExactMatch,
   setSelectedDialect,
   setSelectedPartOfSpeech,
-}: DictionaryFiltersProps) {
+  triggerClassName,
+}: DictionaryFilterControlsProps & DictionaryControlLayoutProps) {
   const { t } = useLanguage();
-  const { settings, updateSettings, isLoaded } = useTtsSettings();
-
-  const activeFilterCount = [
-    selectedPartOfSpeech !== "ALL",
-    selectedDialect !== "ALL",
-    exactMatch,
-  ].filter(Boolean).length;
   const partOfSpeechOptions: FilterMenuOption[] =
     dictionaryPartOfSpeechFilterOptions.map((option) => ({
       label: t(option.labelKey),
@@ -77,6 +91,132 @@ export function DictionaryFilters({
       value: option.value,
     }),
   );
+
+  return (
+    <>
+      <FilterMenu
+        active={selectedPartOfSpeech !== "ALL"}
+        className={controlClassName}
+        closeLabel={t("dict.hideFilters")}
+        label={cleanFilterLabel(t("dict.pos"))}
+        menuLabel={cleanFilterLabel(t("dict.pos"))}
+        value={selectedPartOfSpeech}
+        valueLabel={getSelectedOptionLabel(
+          partOfSpeechOptions,
+          selectedPartOfSpeech,
+        )}
+        options={partOfSpeechOptions}
+        triggerClassName={triggerClassName}
+        onChange={(value) =>
+          setSelectedPartOfSpeech(value as DictionaryPartOfSpeechFilter)
+        }
+      />
+
+      <FilterMenu
+        active={selectedDialect !== "ALL"}
+        className={controlClassName}
+        closeLabel={t("dict.hideFilters")}
+        label={cleanFilterLabel(t("dict.dialect"))}
+        menuLabel={cleanFilterLabel(t("dict.dialect"))}
+        value={selectedDialect}
+        valueLabel={getSelectedOptionLabel(dialectOptions, selectedDialect)}
+        options={dialectOptions}
+        triggerClassName={triggerClassName}
+        onChange={(value) => setSelectedDialect(value as DialectFilter)}
+      />
+
+      <FilterToggle
+        active={exactMatch}
+        className={controlClassName}
+        label={t("dict.exactMatch")}
+        value={exactMatch}
+        valueLabel={exactMatch ? t("dict.exactMatch") : t("dict.any")}
+        onChange={setExactMatch}
+      />
+    </>
+  );
+}
+
+export function DictionaryAdvancedFilterControls({
+  controlClassName,
+  hasGreek,
+  hasInflections,
+  hasRelatedEntries,
+  selectedEtymology,
+  setHasGreek,
+  setHasInflections,
+  setHasRelatedEntries,
+  setSelectedEtymology,
+  triggerClassName,
+}: DictionaryAdvancedFiltersProps & DictionaryControlLayoutProps) {
+  const { t } = useLanguage();
+  const etymologyOptions: FilterMenuOption[] =
+    dictionaryEtymologyFilterOptions.map((option) => ({
+      label: t(option.labelKey),
+      value: option.value,
+    }));
+
+  return (
+    <>
+      <FilterMenu
+        active={selectedEtymology !== "ALL"}
+        className={controlClassName}
+        closeLabel={t("dict.hideFilters")}
+        label={cleanFilterLabel(t("dict.etymology"))}
+        menuLabel={cleanFilterLabel(t("dict.etymology"))}
+        value={selectedEtymology}
+        valueLabel={getSelectedOptionLabel(etymologyOptions, selectedEtymology)}
+        options={etymologyOptions}
+        triggerClassName={triggerClassName}
+        onChange={(value) =>
+          setSelectedEtymology(value as DictionaryEtymologyFilter)
+        }
+      />
+
+      <FilterToggle
+        active={hasGreek}
+        className={controlClassName}
+        label={t("dict.hasGreek")}
+        value={hasGreek}
+        valueLabel={hasGreek ? t("dict.required") : t("dict.any")}
+        onChange={setHasGreek}
+      />
+
+      <FilterToggle
+        active={hasInflections}
+        className={controlClassName}
+        label={t("dict.hasInflections")}
+        value={hasInflections}
+        valueLabel={hasInflections ? t("dict.required") : t("dict.any")}
+        onChange={setHasInflections}
+      />
+
+      <FilterToggle
+        active={hasRelatedEntries}
+        className={controlClassName}
+        label={t("dict.hasRelatedEntries")}
+        value={hasRelatedEntries}
+        valueLabel={hasRelatedEntries ? t("dict.required") : t("dict.any")}
+        onChange={setHasRelatedEntries}
+      />
+    </>
+  );
+}
+
+export function DictionaryPronunciationControls({
+  controlClassName,
+  selectedDialect,
+  triggerClassName,
+}: DictionaryPronunciationControlsProps & DictionaryControlLayoutProps) {
+  const { t } = useLanguage();
+  const { settings, updateSettings, isLoaded } = useTtsSettings();
+  const showPronunciationSettings =
+    isLoaded && (selectedDialect === "ALL" || selectedDialect === "B");
+
+  if (!showPronunciationSettings) {
+    return null;
+  }
+
   const ttsModeOptions: FilterMenuOption[] = [
     {
       label: t("dict.ttsModeStandard"),
@@ -91,88 +231,41 @@ export function DictionaryFilters({
     label: voice.label,
     value: key,
   }));
-  const showPronunciationFilters =
-    isLoaded && (selectedDialect === "ALL" || selectedDialect === "B");
 
   return (
-    <FilterBar
-      activeCount={activeFilterCount}
-      clearLabel={t("dict.clearFilters")}
-      defaultOpen="desktop"
-      label={t("dict.filters")}
-      onClear={onClearFilters}
-    >
+    <>
       <FilterMenu
-        active={selectedPartOfSpeech !== "ALL"}
+        active={settings.mode === "premium"}
+        className={controlClassName}
         closeLabel={t("dict.hideFilters")}
-        label={cleanFilterLabel(t("dict.pos"))}
-        menuLabel={cleanFilterLabel(t("dict.pos"))}
-        value={selectedPartOfSpeech}
-        valueLabel={getSelectedOptionLabel(
-          partOfSpeechOptions,
-          selectedPartOfSpeech,
-        )}
-        options={partOfSpeechOptions}
-        onChange={(value) =>
-          setSelectedPartOfSpeech(value as DictionaryPartOfSpeechFilter)
-        }
+        icon={Volume2}
+        label={cleanFilterLabel(t("dict.ttsMode"))}
+        menuLabel={cleanFilterLabel(t("dict.ttsMode"))}
+        value={settings.mode}
+        valueLabel={getSelectedOptionLabel(ttsModeOptions, settings.mode)}
+        options={ttsModeOptions}
+        triggerClassName={triggerClassName}
+        onChange={(value) => updateSettings({ mode: value as TtsMode })}
       />
 
-      <FilterMenu
-        active={selectedDialect !== "ALL"}
-        closeLabel={t("dict.hideFilters")}
-        label={cleanFilterLabel(t("dict.dialect"))}
-        menuLabel={cleanFilterLabel(t("dict.dialect"))}
-        value={selectedDialect}
-        valueLabel={getSelectedOptionLabel(dialectOptions, selectedDialect)}
-        options={dialectOptions}
-        onChange={(value) => setSelectedDialect(value as DialectFilter)}
-      />
-
-      <FilterToggle
-        active={exactMatch}
-        label={t("dict.exactMatch")}
-        value={exactMatch}
-        valueLabel={exactMatch ? t("dict.exactMatch") : t("dict.any")}
-        onChange={setExactMatch}
-      />
-
-      {showPronunciationFilters ? (
-        <>
-          <span
-            className="hidden h-11 w-px shrink-0 bg-line sm:block"
-            aria-hidden="true"
-          />
-          <FilterMenu
-            active={settings.mode === "premium"}
-            closeLabel={t("dict.hideFilters")}
-            icon={Volume2}
-            label={cleanFilterLabel(t("dict.ttsMode"))}
-            menuLabel={cleanFilterLabel(t("dict.ttsMode"))}
-            value={settings.mode}
-            valueLabel={getSelectedOptionLabel(ttsModeOptions, settings.mode)}
-            options={ttsModeOptions}
-            onChange={(value) => updateSettings({ mode: value as TtsMode })}
-          />
-
-          {settings.mode === "premium" ? (
-            <FilterMenu
-              active
-              closeLabel={t("dict.hideFilters")}
-              label={cleanFilterLabel(t("dict.ttsVoice"))}
-              menuLabel={cleanFilterLabel(t("dict.ttsVoice"))}
-              value={settings.voice}
-              valueLabel={getSelectedOptionLabel(voiceOptions, settings.voice)}
-              options={voiceOptions}
-              onChange={(value) =>
-                updateSettings({
-                  voice: value as VoiceKey,
-                })
-              }
-            />
-          ) : null}
-        </>
+      {settings.mode === "premium" ? (
+        <FilterMenu
+          active
+          className={controlClassName}
+          closeLabel={t("dict.hideFilters")}
+          label={cleanFilterLabel(t("dict.ttsVoice"))}
+          menuLabel={cleanFilterLabel(t("dict.ttsVoice"))}
+          value={settings.voice}
+          valueLabel={getSelectedOptionLabel(voiceOptions, settings.voice)}
+          options={voiceOptions}
+          triggerClassName={triggerClassName}
+          onChange={(value) =>
+            updateSettings({
+              voice: value as VoiceKey,
+            })
+          }
+        />
       ) : null}
-    </FilterBar>
+    </>
   );
 }

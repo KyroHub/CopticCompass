@@ -118,9 +118,11 @@ function DictionaryApiDescription() {
       {t("apiDocs.dictionaryDescriptionStart")}{" "}
       <code>GET /api/v1/dictionary/search</code>{" "}
       {t("apiDocs.dictionaryDescriptionFilters")} <code>q</code>,{" "}
-      <code>dialect</code>, <code>partOfSpeech</code>, <code>exact</code>,{" "}
-      <code>limit</code>, {t("apiDocs.shenuteDescriptionJoin")}{" "}
-      <code>offset</code>. {t("apiDocs.dictionaryDescriptionIndex")}{" "}
+      <code>dialect</code>, <code>partOfSpeech</code>, <code>etymology</code>,{" "}
+      <code>hasGreek</code>, <code>hasInflections</code>,{" "}
+      <code>hasRelatedEntries</code>, <code>exact</code>, <code>limit</code>,{" "}
+      {t("apiDocs.shenuteDescriptionJoin")} <code>offset</code>.{" "}
+      {t("apiDocs.dictionaryDescriptionIndex")}{" "}
       <code>/api/v1/dictionary/search-index</code>.
     </p>
   );

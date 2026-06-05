@@ -11,6 +11,7 @@ import { cx } from "@/lib/classes";
 
 type SegmentedControlTone = "brand" | "language" | "neutral";
 type SegmentedControlLayout = "scroll" | "wrap";
+type SegmentedControlVariant = "default" | "flush";
 type SegmentedControlBadgeTone =
   | "brand"
   | "danger"
@@ -44,12 +45,19 @@ type SegmentedControlProps = {
   options: readonly SegmentedControlOption[];
   tone?: SegmentedControlTone;
   value: string;
+  variant?: SegmentedControlVariant;
 };
 
 const ACTIVE_TONE_CLASSES: Record<SegmentedControlTone, string> = {
   brand: "bg-surface text-accent-strong shadow-sm ring-1 ring-accent/20",
   language: "bg-surface text-coptic shadow-sm ring-1 ring-coptic/20",
   neutral: "bg-surface text-ink shadow-sm ring-1 ring-line",
+};
+
+const FLUSH_ACTIVE_TONE_CLASSES: Record<SegmentedControlTone, string> = {
+  brand: "bg-accent-soft/75 text-ink dark:bg-accent-soft/25",
+  language: "bg-coptic-soft text-coptic",
+  neutral: "bg-accent-soft/75 text-ink dark:bg-accent-soft/25",
 };
 
 const COUNT_TONE_CLASSES: Record<SegmentedControlTone, string> = {
@@ -73,10 +81,84 @@ const CONTROL_LAYOUT_CLASSES: Record<SegmentedControlLayout, string> = {
   wrap: "flex-wrap overflow-visible",
 };
 
+const FLUSH_CONTROL_LAYOUT_CLASSES: Record<SegmentedControlLayout, string> = {
+  scroll: "overflow-x-auto",
+  wrap: "flex-wrap overflow-hidden",
+};
+
 const OPTION_LAYOUT_CLASSES: Record<SegmentedControlLayout, string> = {
   scroll: "shrink-0",
   wrap: "min-w-[7rem] flex-1 basis-[11rem]",
 };
+
+const FLUSH_OPTION_LAYOUT_CLASSES: Record<SegmentedControlLayout, string> = {
+  scroll: "shrink-0",
+  wrap: "min-w-0 flex-1 basis-0",
+};
+
+function getControlChromeClassName(variant: SegmentedControlVariant) {
+  if (variant === "flush") {
+    return "mt-1 flex h-11 gap-0 overflow-hidden rounded-lg border border-line bg-surface/88 p-0 shadow-sm";
+  }
+
+  return "mt-1 flex gap-1 rounded-lg border border-line bg-elevated/60 p-1 shadow-sm";
+}
+
+function getOptionChromeClassName(variant: SegmentedControlVariant) {
+  if (variant === "flush") {
+    return "rounded-none focus-visible:ring-inset";
+  }
+
+  return "rounded-md";
+}
+
+function getOptionSizeClassName(variant: SegmentedControlVariant) {
+  if (variant === "flush") {
+    return "h-full min-h-0";
+  }
+
+  return "min-h-10";
+}
+
+function getControlLayoutClassName(
+  variant: SegmentedControlVariant,
+  layout: SegmentedControlLayout,
+) {
+  if (variant === "flush") {
+    return FLUSH_CONTROL_LAYOUT_CLASSES[layout];
+  }
+
+  return CONTROL_LAYOUT_CLASSES[layout];
+}
+
+function getOptionLayoutClassName(
+  variant: SegmentedControlVariant,
+  layout: SegmentedControlLayout,
+) {
+  if (variant === "flush") {
+    return FLUSH_OPTION_LAYOUT_CLASSES[layout];
+  }
+
+  return OPTION_LAYOUT_CLASSES[layout];
+}
+
+function getOptionStateClassName(
+  variant: SegmentedControlVariant,
+  isActive: boolean,
+  tone: SegmentedControlTone,
+) {
+  if (isActive) {
+    return variant === "flush"
+      ? FLUSH_ACTIVE_TONE_CLASSES[tone]
+      : ACTIVE_TONE_CLASSES[tone];
+  }
+
+  if (variant === "flush") {
+    return "text-ink hover:bg-surface";
+  }
+
+  return "text-muted hover:bg-surface/70 hover:text-ink";
+}
 
 function getNextEnabledOptionIndex(
   options: readonly SegmentedControlOption[],
@@ -109,6 +191,7 @@ export function SegmentedControl({
   options,
   tone = "language",
   value,
+  variant = "default",
 }: SegmentedControlProps) {
   const labelId = useId();
   const groupRef = useRef<HTMLDivElement | null>(null);
@@ -167,8 +250,8 @@ export function SegmentedControl({
         aria-labelledby={labelId}
         onKeyDown={handleKeyDown}
         className={cx(
-          "mt-1 flex gap-1 rounded-lg border border-line bg-elevated/60 p-1 shadow-sm",
-          CONTROL_LAYOUT_CLASSES[layout],
+          getControlChromeClassName(variant),
+          getControlLayoutClassName(variant, layout),
           controlClassName,
         )}
       >
@@ -188,11 +271,11 @@ export function SegmentedControl({
               disabled={option.disabled}
               onClick={() => onChange(option.value)}
               className={cx(
-                "inline-flex min-h-10 items-center justify-center gap-1.5 rounded-md px-3 py-1.5 text-center text-sm font-semibold leading-tight transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:pointer-events-none disabled:opacity-45",
-                OPTION_LAYOUT_CLASSES[layout],
-                isActive
-                  ? ACTIVE_TONE_CLASSES[tone]
-                  : "text-muted hover:bg-surface/70 hover:text-ink",
+                "inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-center text-sm font-semibold leading-tight transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 disabled:pointer-events-none disabled:opacity-45",
+                getOptionChromeClassName(variant),
+                getOptionSizeClassName(variant),
+                getOptionLayoutClassName(variant, layout),
+                getOptionStateClassName(variant, isActive, tone),
               )}
             >
               {Icon ? (

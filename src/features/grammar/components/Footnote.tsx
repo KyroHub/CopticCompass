@@ -8,6 +8,7 @@ import {
   tooltipArrowClassName,
 } from "@/components/MicroTooltip";
 import { cx } from "@/lib/classes";
+import { useMediaQuery } from "@/lib/useMediaQuery";
 
 import { useGrammarLessonRenderContext } from "./GrammarLessonRenderContext";
 
@@ -19,6 +20,8 @@ type FootnoteProps = {
   align?: FootnoteAlign;
 };
 
+const HOVER_POINTER_MEDIA_QUERY = "(hover: hover) and (pointer: fine)";
+
 export function Footnote({ number, content, align = "center" }: FootnoteProps) {
   const { registerFootnote, renderMode } = useGrammarLessonRenderContext();
   const tooltipId = useId();
@@ -27,7 +30,7 @@ export function Footnote({ number, content, align = "center" }: FootnoteProps) {
   const closeTimeoutRef = useRef<number | null>(null);
 
   const [isOpen, setIsOpen] = useState(false);
-  const [canHover, setCanHover] = useState(false);
+  const canHover = useMediaQuery(HOVER_POINTER_MEDIA_QUERY);
 
   useEffect(() => {
     registerFootnote({ content, number });
@@ -51,24 +54,6 @@ export function Footnote({ number, content, align = "center" }: FootnoteProps) {
       setIsOpen(false);
     }, 80);
   };
-
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const mediaQuery = window.matchMedia("(hover: hover) and (pointer: fine)");
-    const updateHoverCapability = () => {
-      setCanHover(mediaQuery.matches);
-    };
-
-    updateHoverCapability();
-    mediaQuery.addEventListener("change", updateHoverCapability);
-
-    return () => {
-      mediaQuery.removeEventListener("change", updateHoverCapability);
-    };
-  }, []);
 
   useEffect(() => {
     if (!isOpen) {
