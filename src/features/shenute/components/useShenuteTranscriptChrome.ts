@@ -1,10 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { useMediaQuery } from "@/lib/useMediaQuery";
+
 /* eslint-disable react-hooks/set-state-in-effect -- Shenute transcript chrome synchronizes scroll state with browser layout. */
 
 const UTILITY_CHROME_COLLAPSE_DELTA = 12;
 const UTILITY_CHROME_EXPAND_DELTA = 20;
 const UTILITY_CHROME_BOTTOM_THRESHOLD = 120;
+const MOBILE_VIEWPORT_MEDIA_QUERY = "(max-width: 639px)";
 
 type UseShenuteTranscriptChromeOptions = {
   forceUtilityChromeExpanded: boolean;
@@ -22,8 +25,8 @@ export function useShenuteTranscriptChrome({
   const transcriptScrollRef = useRef<HTMLDivElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const lastTranscriptScrollTopRef = useRef(0);
+  const isMobileViewport = useMediaQuery(MOBILE_VIEWPORT_MEDIA_QUERY);
   const [isTranscriptAtBottom, setIsTranscriptAtBottom] = useState(true);
-  const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [isUtilityChromeCollapsed, setIsUtilityChromeCollapsed] =
     useState(false);
   const shouldKeepUtilityChromeExpanded =
@@ -99,23 +102,10 @@ export function useShenuteTranscriptChrome({
   );
 
   useEffect(() => {
-    const mediaQuery = window.matchMedia("(max-width: 639px)");
-    const updateViewportState = () => {
-      const isMobile = mediaQuery.matches;
-      setIsMobileViewport(isMobile);
-
-      if (!isMobile) {
-        setIsUtilityChromeCollapsed(false);
-      }
-    };
-
-    updateViewportState();
-    mediaQuery.addEventListener("change", updateViewportState);
-
-    return () => {
-      mediaQuery.removeEventListener("change", updateViewportState);
-    };
-  }, []);
+    if (!isMobileViewport) {
+      setIsUtilityChromeCollapsed(false);
+    }
+  }, [isMobileViewport]);
 
   useEffect(() => {
     if (shouldKeepUtilityChromeExpanded) {

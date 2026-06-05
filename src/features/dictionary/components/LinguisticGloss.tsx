@@ -32,6 +32,8 @@ const GLOSS_SIZE_CLASSES: Record<LinguisticGlossSize, string> = {
 
 const LINGUISTIC_GLOSS_BASE_CLASS_NAME =
   "small-caps inline-flex items-baseline whitespace-nowrap font-sans font-semibold leading-none text-muted";
+const LINGUISTIC_GLOSS_TOOLTIP_CLASS_NAME =
+  "small-caps whitespace-nowrap font-sans font-semibold leading-none text-muted";
 
 function formatLinguisticGlossCode(code: string) {
   return code.trim().toLocaleLowerCase();
@@ -48,6 +50,17 @@ function getLinguisticGlossClassName(
   );
 }
 
+function getLinguisticGlossTooltipClassName(
+  size: LinguisticGlossSize = "body",
+  className?: string,
+) {
+  return cx(
+    LINGUISTIC_GLOSS_TOOLTIP_CLASS_NAME,
+    GLOSS_SIZE_CLASSES[size],
+    className,
+  );
+}
+
 export function LinguisticGloss({
   className,
   code,
@@ -56,15 +69,18 @@ export function LinguisticGloss({
   size = "body",
 }: LinguisticGlossProps) {
   const displayCode = formatLinguisticGlossCode(code);
-  const resolvedClassName = getLinguisticGlossClassName(size, className);
 
   if (!displayCode) {
     return null;
   }
 
   if (!label) {
+    const resolvedClassName = getLinguisticGlossClassName(size, className);
+
     return <span className={resolvedClassName}>{displayCode}</span>;
   }
+
+  const resolvedClassName = getLinguisticGlossTooltipClassName(size, className);
 
   return (
     <MicroTooltip

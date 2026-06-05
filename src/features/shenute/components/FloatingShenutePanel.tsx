@@ -38,6 +38,7 @@ import { getPublicErrorMessage, isAppErrorCode } from "@/lib/errors";
 import { getPublicOcrErrorMessage } from "@/lib/ocrErrors";
 import { createClient } from "@/lib/supabase/client";
 import { useOptionalAuthGate } from "@/lib/supabase/useOptionalAuthGate";
+import { useMediaQuery } from "@/lib/useMediaQuery";
 import type { Language } from "@/types/i18n";
 
 import { FLOATING_SHENUTE_CONTAINER_CLASS } from "./floatingShenuteClasses";
@@ -72,6 +73,7 @@ const SITE_TITLE_SUFFIX_PATTERN = /\s+\|\s+Coptic Compass$/;
 const MESSAGE_INPUT_MIN_HEIGHT = 40;
 const MESSAGE_INPUT_MOBILE_MAX_HEIGHT = 112;
 const MESSAGE_INPUT_MAX_HEIGHT = 136;
+const MOBILE_VIEWPORT_MEDIA_QUERY = "(max-width: 639px)";
 
 const PAGE_CONTEXT_LABELS: Record<Language, Record<string, string>> = {
   en: {
@@ -442,6 +444,7 @@ export function FloatingShenutePanel({
 }: FloatingShenutePanelProps) {
   const pathname = usePathname();
   const { language, t } = useLanguage();
+  const isMobileViewport = useMediaQuery(MOBILE_VIEWPORT_MEDIA_QUERY);
   const copy = floatingShenuteCopy[language];
   const { isOpen, launcherOpacity, setIsOpen } = useFloatingShenutePanelState({
     initialOpen,
@@ -614,6 +617,7 @@ export function FloatingShenutePanel({
 
   useShenuteTextareaAutosize({
     inputValue,
+    isMobileViewport,
     maxHeight: MESSAGE_INPUT_MAX_HEIGHT,
     minHeight: MESSAGE_INPUT_MIN_HEIGHT,
     mobileMaxHeight: MESSAGE_INPUT_MOBILE_MAX_HEIGHT,

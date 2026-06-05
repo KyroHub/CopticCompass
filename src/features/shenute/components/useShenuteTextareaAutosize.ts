@@ -4,7 +4,7 @@ import type { RefObject } from "react";
 
 type UseShenuteTextareaAutosizeOptions = {
   inputValue: string;
-  isMobileViewport?: boolean;
+  isMobileViewport: boolean;
   maxHeight: number;
   minHeight: number;
   mobileMaxHeight?: number;
@@ -31,12 +31,8 @@ export function useShenuteTextareaAutosize({
     }
 
     textarea.style.height = "auto";
-    const shouldUseMobileMaxHeight =
-      typeof isMobileViewport === "boolean"
-        ? isMobileViewport
-        : window.matchMedia("(max-width: 639px)").matches;
     const resolvedMaxHeight =
-      shouldUseMobileMaxHeight && typeof mobileMaxHeight === "number"
+      isMobileViewport && typeof mobileMaxHeight === "number"
         ? mobileMaxHeight
         : maxHeight;
     textarea.style.height = `${Math.min(

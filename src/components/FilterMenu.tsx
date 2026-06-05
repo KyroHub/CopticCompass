@@ -19,6 +19,8 @@ import { createPortal } from "react-dom";
 
 import { buttonClassName } from "@/components/Button";
 import { cx } from "@/lib/classes";
+import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
+import { useMediaQuery } from "@/lib/useMediaQuery";
 
 export type FilterMenuOption = {
   description?: ReactNode;
@@ -74,31 +76,14 @@ export function FilterBar({
 }: FilterBarProps) {
   const contentId = useId();
   const hasUserToggledRef = useRef(false);
+  const isDesktopViewport = useMediaQuery("(min-width: 640px)");
   const [isExpanded, setIsExpanded] = useState(defaultOpen === true);
 
   useEffect(() => {
-    if (defaultOpen !== "desktop") {
-      return;
+    if (defaultOpen === "desktop" && !hasUserToggledRef.current) {
+      setIsExpanded(isDesktopViewport);
     }
-
-    const mediaQuery = window.matchMedia("(min-width: 640px)");
-
-    if (!hasUserToggledRef.current) {
-      setIsExpanded(mediaQuery.matches);
-    }
-
-    function handleChange(event: MediaQueryListEvent) {
-      if (!hasUserToggledRef.current) {
-        setIsExpanded(event.matches);
-      }
-    }
-
-    mediaQuery.addEventListener("change", handleChange);
-
-    return () => {
-      mediaQuery.removeEventListener("change", handleChange);
-    };
-  }, [defaultOpen]);
+  }, [defaultOpen, isDesktopViewport]);
 
   function toggleExpanded() {
     hasUserToggledRef.current = true;
@@ -186,7 +171,7 @@ export function FilterMenu({
   const rootRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
-  const [usesMobileSheet, setUsesMobileSheet] = useState(false);
+  const usesMobileSheet = useMediaQuery("(max-width: 639px)");
   let resolvedMenuLabel: string | undefined;
 
   if (typeof menuLabel === "string") {
@@ -194,21 +179,6 @@ export function FilterMenu({
   } else if (typeof label === "string") {
     resolvedMenuLabel = label;
   }
-
-  useEffect(() => {
-    const mediaQuery = window.matchMedia("(max-width: 639px)");
-
-    function updateMobileSheetState() {
-      setUsesMobileSheet(mediaQuery.matches);
-    }
-
-    updateMobileSheetState();
-    mediaQuery.addEventListener("change", updateMobileSheetState);
-
-    return () => {
-      mediaQuery.removeEventListener("change", updateMobileSheetState);
-    };
-  }, []);
 
   useEffect(() => {
     if (!isOpen) {
@@ -249,29 +219,6 @@ export function FilterMenu({
       return;
     }
 
-    const mediaQuery = window.matchMedia("(max-width: 639px)");
-
-    if (!mediaQuery.matches) {
-      return;
-    }
-
-    const originalDocumentOverflow = document.documentElement.style.overflow;
-    const originalBodyOverflow = document.body.style.overflow;
-
-    document.documentElement.style.overflow = "hidden";
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.documentElement.style.overflow = originalDocumentOverflow;
-      document.body.style.overflow = originalBodyOverflow;
-    };
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
     window.requestAnimationFrame(() => {
       const menuRoot = menuRef.current ?? rootRef.current;
 
@@ -282,6 +229,10 @@ export function FilterMenu({
         ?.focus();
     });
   }, [isOpen, value]);
+
+  useBodyScrollLock(isOpen && usesMobileSheet, {
+    lockDocumentElement: true,
+  });
 
   function handleMenuKeyDown(event: KeyboardEvent<HTMLDivElement>) {
     let direction: 1 | -1 | 0 = 0;

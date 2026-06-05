@@ -21,6 +21,7 @@ import {
 } from "@/components/MicroTooltip";
 import { cx } from "@/lib/classes";
 import { getLoginPath } from "@/lib/supabase/config";
+import { useMediaQuery } from "@/lib/useMediaQuery";
 
 type AuthGatedActionButtonProps = Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -39,6 +40,7 @@ type AuthGatedActionButtonProps = Omit<
 
 const LOCKED_TOOLTIP_GRACE_MS = 1600;
 const LOCKED_TOOLTIP_AUTO_HIDE_MS = 2400;
+const HOVER_POINTER_MEDIA_QUERY = "(hover: hover) and (pointer: fine)";
 
 export function AuthGatedActionButton({
   children,
@@ -58,11 +60,7 @@ export function AuthGatedActionButton({
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const hideTimerRef = useRef<number | null>(null);
   const suppressNextLockedClickRef = useRef(false);
-  const [canHoverLockedButton, setCanHoverLockedButton] = useState(() =>
-    typeof window !== "undefined"
-      ? window.matchMedia("(hover: hover) and (pointer: fine)").matches
-      : false,
-  );
+  const canHoverLockedButton = useMediaQuery(HOVER_POINTER_MEDIA_QUERY);
   const [isHoveringLockedButton, setIsHoveringLockedButton] = useState(false);
   const [isHoveringLockedTooltip, setIsHoveringLockedTooltip] = useState(false);
   const [uncontrolledLockedOpen, setUncontrolledLockedOpen] = useState(false);
@@ -82,21 +80,7 @@ export function AuthGatedActionButton({
   };
 
   useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const hoverQuery = window.matchMedia("(hover: hover) and (pointer: fine)");
-    const updateHoverCapability = () => {
-      setCanHoverLockedButton(hoverQuery.matches);
-    };
-
-    updateHoverCapability();
-    hoverQuery.addEventListener("change", updateHoverCapability);
-
     return () => {
-      hoverQuery.removeEventListener("change", updateHoverCapability);
-
       if (hideTimerRef.current) {
         window.clearTimeout(hideTimerRef.current);
       }
@@ -147,7 +131,7 @@ export function AuthGatedActionButton({
 
     const showHoverLockedMessage = () => {
       if (!canHoverLockedButton) {
-        setCanHoverLockedButton(true);
+        return;
       }
 
       clearHideTimer();
