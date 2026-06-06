@@ -543,7 +543,7 @@ Use `form: "STA"` for stative. Do not write `valency: "STA"`, because
 
 ### Remaining `UNKNOWN` POS Senses
 
-About 376 senses currently use `pos: "UNKNOWN"`. These are predominantly obscure
+About 370 senses currently use `pos: "UNKNOWN"`. These are predominantly obscure
 Egyptian-heritage words where Crum recorded "meaning unknown". If you
 encounter one of these entries and can determine the part of speech from a
 reliable source, reclassify it and remove the `UNKNOWN` tag. Do not reclassify

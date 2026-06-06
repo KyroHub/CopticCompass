@@ -195,7 +195,7 @@ This runs:
 
 ## Database Tracking Schema
 
-The migration `supabase/migrations/20260417000000_shenute_distillation_pipeline.sql`
+The migration `supabase/migrations/20260417000100_shenute_distillation_pipeline.sql`
 creates tracking/evaluation tables:
 
 - `distill_runs`
