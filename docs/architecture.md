@@ -226,7 +226,9 @@ Main entry points:
 
 - `src/lib/metadata.ts`
 - `src/lib/structuredData.ts`
-- `src/app/sitemap.ts`
+- `src/app/sitemap.xml/route.ts`
+- `src/app/sitemaps/[id]/route.ts`
+- `src/lib/server/sitemaps.ts`
 - `src/app/robots.ts`
 - `src/app/api/og/route.tsx`
 

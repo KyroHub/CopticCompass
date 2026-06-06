@@ -1,9 +1,9 @@
 import StructuredData from "@/components/StructuredData";
 import DictionaryPageClient from "@/features/dictionary/components/DictionaryPageClient";
+import { createDictionaryPageStructuredData } from "@/features/seo/lib/structuredData";
 import { createLocalizedPageMetadata } from "@/lib/metadata";
 import { resolvePublicLocale } from "@/lib/publicLocaleRouting";
 import { siteConfig } from "@/lib/site";
-import { createDictionaryPageStructuredData } from "@/lib/structuredData";
 
 import type { Metadata } from "next";
 

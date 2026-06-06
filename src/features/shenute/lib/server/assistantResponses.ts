@@ -1,9 +1,11 @@
 import { streamText, type UIMessage } from "ai";
 
+import {
+  createHfAssistantText,
+  createOpenRouterAssistantText,
+  createThothAssistantText,
+} from "@/lib/ai/chatCompletions";
 import { getGeminiModel } from "@/lib/gemini";
-import { createHfChatCompletion } from "@/lib/hf";
-import { createOpenRouterChatCompletion } from "@/lib/openrouter";
-import { createThothChatCompletion } from "@/lib/thoth";
 
 import {
   createShenuteErrorResponse,
@@ -34,52 +36,52 @@ type ShenuteAssistantResponseOptions = {
   systemPrompt: string;
 };
 
+/**
+ * Calls OpenRouter in non-streaming mode so reasoning details can be cached
+ * before the text is wrapped back into an AI SDK-compatible stream.
+ */
 async function createOpenRouterAssistantResponse(
   options: Pick<
     ShenuteAssistantResponseOptions,
     "latestMessageText" | "messages" | "shenuteSessionId" | "systemPrompt"
   >,
 ) {
-  const completion = await createOpenRouterChatCompletion(
-    [
-      { role: "system" as const, content: options.systemPrompt },
-      ...toOpenRouterMessages(options.messages, options.shenuteSessionId),
-      ...(options.latestMessageText
-        ? []
-        : [
-            {
-              role: "user" as const,
-              content: "Please answer the latest user request.",
-            },
-          ]),
-    ],
-    { enableReasoning: true },
-  );
+  const { reasoningDetails, responseText } =
+    await createOpenRouterAssistantText(
+      [
+        { role: "system" as const, content: options.systemPrompt },
+        ...toOpenRouterMessages(options.messages, options.shenuteSessionId),
+        ...(options.latestMessageText
+          ? []
+          : [
+              {
+                role: "user" as const,
+                content: "Please answer the latest user request.",
+              },
+            ]),
+      ],
+      {
+        enableReasoning: true,
+        fallbackText:
+          "I could not generate a response from OpenRouter right now.",
+      },
+    );
 
-  const openRouterMessage = completion?.choices?.[0]?.message as
-    | {
-        content?: string | null;
-        reasoning_details?: unknown;
-      }
-    | undefined;
-  const assistantText = openRouterMessage?.content;
-
-  const responseText =
-    typeof assistantText === "string" && assistantText.trim().length > 0
-      ? assistantText
-      : "I could not generate a response from OpenRouter right now.";
-
-  if (typeof openRouterMessage?.reasoning_details !== "undefined") {
+  if (typeof reasoningDetails !== "undefined") {
     cacheReasoningDetails(
       options.shenuteSessionId,
       responseText,
-      openRouterMessage.reasoning_details,
+      reasoningDetails,
     );
   }
 
   return createStaticAssistantStream(responseText);
 }
 
+/**
+ * Uses Gemini's native streaming path and maps provider failures through the
+ * shared Shenute public-error copy.
+ */
 function createGeminiStreamResponse(
   options: Pick<ShenuteAssistantResponseOptions, "messages" | "systemPrompt">,
   logPrefix = "Gemini streaming failed:",
@@ -95,28 +97,32 @@ function createGeminiStreamResponse(
   });
 }
 
+/**
+ * Handles the Hugging Face provider path and falls back to configured Gemini or
+ * OpenRouter providers only for HF rate-limit failures.
+ */
 async function createHuggingFaceResponseWithFallback(
   options: ShenuteAssistantResponseOptions,
 ) {
   try {
-    const completion = await createHfChatCompletion([
-      { role: "system" as const, content: options.systemPrompt },
-      ...toOpenAiMessages(options.messages),
-      ...(options.latestMessageText
-        ? []
-        : [
-            {
-              role: "user" as const,
-              content: "Please answer the latest user request.",
-            },
-          ]),
-    ]);
-
-    const assistantText = completion.choices[0]?.message?.content;
-    const responseText =
-      typeof assistantText === "string" && assistantText.trim().length > 0
-        ? assistantText
-        : "I could not generate a response from Hugging Face right now.";
+    const { responseText } = await createHfAssistantText(
+      [
+        { role: "system" as const, content: options.systemPrompt },
+        ...toOpenAiMessages(options.messages),
+        ...(options.latestMessageText
+          ? []
+          : [
+              {
+                role: "user" as const,
+                content: "Please answer the latest user request.",
+              },
+            ]),
+      ],
+      {
+        fallbackText:
+          "I could not generate a response from Hugging Face right now.",
+      },
+    );
 
     return createStaticAssistantStream(responseText);
   } catch (hfError) {
@@ -155,6 +161,10 @@ async function createHuggingFaceResponseWithFallback(
   }
 }
 
+/**
+ * Routes a Shenute request to the selected provider while normalizing every
+ * provider's output into a UI message stream response.
+ */
 export async function createShenuteAssistantResponse(
   options: ShenuteAssistantResponseOptions,
 ) {
@@ -170,16 +180,12 @@ export async function createShenuteAssistantResponse(
   }
 
   if (options.inferenceProvider === "thoth") {
-    const completion = await createThothChatCompletion({
+    const { responseText } = await createThothAssistantText({
+      fallbackText:
+        "I could not generate a response from Shenute AI Expert right now.",
       query: buildThothQuery(options.systemPrompt, options.messages),
       user: options.authenticatedUserId,
     });
-
-    const responseText =
-      typeof completion.answer === "string" &&
-      completion.answer.trim().length > 0
-        ? completion.answer
-        : "I could not generate a response from Shenute AI Expert right now.";
 
     return createStaticAssistantStream(responseText);
   }

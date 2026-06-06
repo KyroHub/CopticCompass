@@ -1,9 +1,9 @@
-import { buildOpenGraphImageUrl } from "@/features/seo/lib/openGraph";
 import {
   createLanguageAlternates,
   getLocalizedPath,
   getOpenGraphLocale,
 } from "@/lib/locale";
+import { buildOpenGraphImageUrl } from "@/lib/openGraph";
 import { buildPageTitle, siteConfig } from "@/lib/site";
 import type { Language } from "@/types/i18n";
 

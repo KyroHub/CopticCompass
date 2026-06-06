@@ -1,4 +1,7 @@
 import "server-only";
+import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
+import { normalizeWhitespace } from "@/lib/text";
+
 import {
   buildChunkStats,
   proofcheckChunksWithThoth,
@@ -10,7 +13,6 @@ import {
   logIngestion,
   markLiveIngestionDone,
 } from "./ragIngestionLogging";
-import { normalizeWhitespace } from "./ragIngestionUtils";
 import {
   insertRagDocumentChunks,
   prepareRagDocumentUpdate,
@@ -24,8 +26,12 @@ import type {
 } from "./ragIngestionTypes";
 
 export { getRagIngestionLogs };
-export type { RagIngestionLogEntry } from "./ragIngestionTypes";
 
+/**
+ * Runs the full admin RAG ingestion pipeline for one uploaded source: replace
+ * any recent matching source, extract text, chunk/proofcheck it, embed the
+ * chunks, and persist them with progress logs for the admin console.
+ */
 export async function ingestRagFile({
   embeddingProvider = "hf",
   enableOcr,
@@ -41,6 +47,7 @@ export async function ingestRagFile({
   const ingestionId = ingestId ?? crypto.randomUUID();
   const startMs = Date.now();
   const logs: RagIngestionLogEntry[] = [];
+  const serviceRoleClient = createServiceRoleClient();
   logIngestion(
     ingestionId,
     `Started ingestion for ${file.name} with provider=${embeddingProvider}, OCR=${enableOcr}, forceOcr=${forceOcr}.`,
@@ -52,6 +59,7 @@ export async function ingestRagFile({
       ingestionId,
       logs,
       sourceTitle,
+      supabase: serviceRoleClient,
     });
 
     const sourceType = detectSourceType(file);
@@ -196,6 +204,7 @@ export async function ingestRagFile({
       sourceDimensions,
       sourceTitle,
       sourceType,
+      supabase: serviceRoleClient,
       uploadedAt,
       userId,
     });

@@ -18,7 +18,7 @@
 
 ## Features
 
-- **Searchable Dictionary:** 6,500+ normalized checked-in entries with Coptic, English, Dutch, and Greek-context lookup. Includes dialect forms, lexical relations, canonical entry pages, and a built-in virtual keyboard.
+- **Searchable Dictionary:** 6,300+ normalized checked-in entries with Coptic, English, Dutch, and Greek-context lookup. Includes dialect forms, lexical relations, canonical entry pages, and a built-in virtual keyboard.
 - **Interactive Grammar Lessons:** Reading and study modes with exercises, footnotes, and concept glossaries linked directly to dictionary sources.
 - **Practice:** Spaced-repetition review for dictionary forms, grammar prompts, mixed daily study, and saved entries.
 - **Shenute AI Assistant:** OCR-assisted image prompts backed by pgvector RAG, integrating THOTH AI, OpenRouter, Gemini, and Hugging Face.

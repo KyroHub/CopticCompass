@@ -1,11 +1,11 @@
 import StructuredData from "@/components/StructuredData";
 import { LegalDocumentPageClient } from "@/features/legal/components/LegalDocumentPageClient";
 import { getTermsDocument } from "@/features/legal/lib/legalDocuments";
+import { createBreadcrumbStructuredData } from "@/features/seo/lib/structuredData";
 import { getTranslation } from "@/lib/i18n";
 import { getLocalizedHomePath, getTermsPath } from "@/lib/locale";
 import { createLocalizedPageMetadata } from "@/lib/metadata";
 import { resolvePublicLocale } from "@/lib/publicLocaleRouting";
-import { createBreadcrumbStructuredData } from "@/lib/structuredData";
 
 import type { Metadata } from "next";
 

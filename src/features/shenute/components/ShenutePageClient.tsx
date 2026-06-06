@@ -1,37 +1,22 @@
 "use client";
 
-/* eslint-disable react-hooks/set-state-in-effect -- Shenute uses imperative chat scroll and restoration state that is not compiler-clean yet. */
-
-import { useChat } from "@ai-sdk/react";
-import { DefaultChatTransport, type UIMessage } from "ai";
 import {
   ArrowDownToLine,
   Clock3,
   MessageSquarePlus,
   MoreHorizontal,
 } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
-import { processOCRImage } from "@/actions/ocrActions";
 import { BreadcrumbTrail } from "@/components/BreadcrumbTrail";
 import { buttonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
 import { useSpeech } from "@/features/dictionary/hooks/useSpeech";
 import type { ShenuteHandoffPageContext } from "@/features/shenute/handoff";
-import {
-  copyTextToClipboard,
-  formatElapsedTime,
-  getMessageText,
-  getThinkingStatusMessage,
-  type ChatMessageLike,
-  type ShenuteFeedbackSignal,
-  type ShenuteReactionSignal,
-} from "@/features/shenute/shared";
+import type { SavedChatSession } from "@/features/shenute/lib/client/shenuteClientApi";
 import { cx } from "@/lib/classes";
 import { getLocalizedHomePath } from "@/lib/locale";
-import { getPublicOcrErrorMessage } from "@/lib/ocrErrors";
-import { createClient } from "@/lib/supabase/client";
 import { useOptionalAuthGate } from "@/lib/supabase/useOptionalAuthGate";
 
 import { ShenuteAnswerStylePanel } from "./ShenuteAnswerStylePanel";
@@ -47,15 +32,6 @@ import {
 import {
   closeOpenResponseDetails,
   closeOpenUtilityDetails,
-  formatFileSize,
-  getChatMessagesSignature,
-  getFeedbackErrorMessage,
-  getShenuteErrorMessage,
-  normalizeChatMessages,
-  readFeedbackResponsePayload,
-  readShenuteHandoffPayload,
-  saveChatHistoryOnline,
-  type SavedChatSession,
 } from "./shenuteClientUtils";
 import { ShenuteComposer } from "./ShenuteComposer";
 import { ShenuteConversationActionsPanel } from "./ShenuteConversationActionsPanel";
@@ -63,33 +39,39 @@ import { ShenuteConversationShell } from "./ShenuteConversationShell";
 import { SHENUTE_COPY } from "./shenuteCopy";
 import { ShenuteCopyFallbackDialog } from "./ShenuteCopyFallbackDialog";
 import { ShenuteMessageList } from "./ShenuteMessageList";
-import { getShenuteStarterPrompts } from "./shenuteOptions";
 import { ShenuteProviderControls } from "./ShenuteProviderControls";
 import { ShenuteSavedSessionsPanel } from "./ShenuteSavedSessionsPanel";
 import { ShenuteSessionSidebar } from "./ShenuteSessionSidebar";
+import { useShenuteAdminFeedbackAccess } from "./useShenuteAdminFeedbackAccess";
+import { useShenuteFeedbackSubmission } from "./useShenuteFeedbackSubmission";
 import { useShenuteImageAttachment } from "./useShenuteImageAttachment";
+import { useShenuteMessageCopy } from "./useShenuteMessageCopy";
+import { useShenutePageChatRuntime } from "./useShenutePageChatRuntime";
+import {
+  useShenutePageAnswerStyleChrome,
+  useShenutePageAttachmentMenuChrome,
+  useShenutePageCopyFallbackChrome,
+  useShenutePageMobileUtilitySheetChrome,
+  useShenutePageStopResponse,
+  useShenutePageUtilityChromeActions,
+} from "./useShenutePageChrome";
+import { useShenutePageComposerSubmit } from "./useShenutePageComposerSubmit";
+import { useShenutePageConversationActions } from "./useShenutePageConversationActions";
+import {
+  useShenuteHistoryActionStatus,
+  useShenutePageHistoryPersistence,
+  useShenutePageHistoryWorkflow,
+} from "./useShenutePageHistoryPersistence";
+import {
+  getShenutePageMessageSignature,
+  submitShenutePromptKeyDown,
+  useShenutePageViewModel,
+} from "./useShenutePageViewModel";
 import { useShenuteProviderSelection } from "./useShenuteProviderSelection";
+import { useShenuteTemporaryMessageActions } from "./useShenuteTemporaryMessageActions";
 import { useShenuteTextareaAutosize } from "./useShenuteTextareaAutosize";
 import { useShenuteThinkingTimer } from "./useShenuteThinkingTimer";
 import { useShenuteTranscriptChrome } from "./useShenuteTranscriptChrome";
-
-type MobileUtilitySheet = "actions" | "history" | null;
-
-type FeedbackStateByMessage = Record<
-  string,
-  {
-    message: string;
-    status: "error" | "pending" | "success";
-  }
->;
-
-type MessageActionStateByMessage = Record<
-  string,
-  {
-    message: string;
-    status: "error" | "pending" | "success";
-  }
->;
 
 const MESSAGE_INPUT_MIN_HEIGHT = 44;
 const MESSAGE_INPUT_MOBILE_MAX_HEIGHT = 128;
@@ -112,15 +94,14 @@ export default function ShenutePageClient() {
   );
   const [handoffPageContext, setHandoffPageContext] =
     useState<ShenuteHandoffPageContext | null>(null);
-  const [isAnswerStylePanelOpen, setIsAnswerStylePanelOpen] = useState(false);
-  const [mobileUtilitySheet, setMobileUtilitySheet] =
-    useState<MobileUtilitySheet>(null);
-  const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false);
-  const [copyFallbackText, setCopyFallbackText] = useState<string | null>(null);
 
   const attachmentMenuDetailsRef = useRef<HTMLDetailsElement | null>(null);
   const messageInputRef = useRef<HTMLTextAreaElement | null>(null);
   const copyFallbackTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const { copyFallbackText, setCopyFallbackText } =
+    useShenutePageCopyFallbackChrome({
+      textareaRef: copyFallbackTextareaRef,
+    });
   const shenuteSessionIdRef = useRef(crypto.randomUUID());
   const {
     cameraError,
@@ -149,38 +130,64 @@ export default function ShenutePageClient() {
   });
 
   const { isAuthenticated, isReady, user } = useOptionalAuthGate();
-  const [selectedReactionByMessage, setSelectedReactionByMessage] = useState<
-    Record<string, ShenuteReactionSignal>
-  >({});
-  const [adminFeedbackDraftByMessage, setAdminFeedbackDraftByMessage] =
-    useState<Record<string, string>>({});
-  const [feedbackStateByMessage, setFeedbackStateByMessage] =
-    useState<FeedbackStateByMessage>({});
-  const [messageActionStateByMessage, setMessageActionStateByMessage] =
-    useState<MessageActionStateByMessage>({});
-  const [canSubmitAdminFeedback, setCanSubmitAdminFeedback] = useState(false);
-  const isSavingRef = useRef(false);
-  const lastSavedMessageSignatureRef = useRef(getChatMessagesSignature([]));
-
-  const transport = useMemo(
-    () =>
-      new DefaultChatTransport({
-        api: "/api/shenute",
-      }),
+  const getShenuteSessionId = useCallback(
+    () => shenuteSessionIdRef.current,
     [],
+  );
+  const {
+    adminFeedbackDraftByMessage,
+    feedbackStateByMessage,
+    handleAdminFeedbackSubmit,
+    handleReaction,
+    resetFeedbackSubmissionState,
+    selectedReactionByMessage,
+    setAdminFeedbackDraft,
+  } = useShenuteFeedbackSubmission({
+    copy: {
+      promptMissing: copy.feedbackPromptMissing,
+      saveFailed: copy.feedbackSaveFailed,
+      saved: copy.feedbackSaved,
+      savedLearningDelayed: copy.feedbackSavedLearningDelayed,
+      savedWithRag: copy.feedbackSavedWithRag,
+      saving: copy.feedbackSaving,
+      signIn: copy.feedbackSignIn,
+      writeAdminFeedback: copy.writeAdminFeedback,
+    },
+    getShenuteSessionId,
+    inferenceProvider,
+    isAuthenticated,
+    language,
+    pageContext: handoffPageContext,
+  });
+  const {
+    messageActionStateByMessage,
+    resetMessageActionStates,
+    setTemporaryMessageActionState,
+  } = useShenuteTemporaryMessageActions();
+  const handleCopyMessage = useShenuteMessageCopy({
+    copy,
+    onManualCopyRequired: setCopyFallbackText,
+    onSuccessfulCopy: () => setCopyFallbackText(null),
+    setTemporaryMessageActionState,
+  });
+  const canSubmitAdminFeedback = useShenuteAdminFeedbackAccess({
+    isAuthenticated,
+    userId: user?.id,
+  });
+  const isSavingRef = useRef(false);
+  const [lastSavedMessageSignature, setLastSavedMessageSignature] = useState(
+    getShenutePageMessageSignature([]),
   );
 
   const {
-    messages,
-    setMessages,
-    sendMessage,
-    regenerate,
-    stop: stopChatResponse,
-    status,
     error,
-  } = useChat({
-    transport,
-  });
+    regenerate,
+    sendMessage,
+    setHistoryMessages,
+    status,
+    stopChatResponse,
+    typedMessages,
+  } = useShenutePageChatRuntime();
 
   const {
     speakMixed,
@@ -196,111 +203,67 @@ export default function ShenutePageClient() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [sessionLoadingId, setSessionLoadingId] = useState<string | null>(null);
   const [hasRestoredHistory, setHasRestoredHistory] = useState(false);
-  const [historyActionStatus, setHistoryActionStatus] = useState<string | null>(
-    null,
-  );
+  const { historyActionStatus, setTemporaryHistoryActionStatus } =
+    useShenuteHistoryActionStatus();
   const isLoading = status !== "ready";
   const thinkingElapsedSeconds = useShenuteThinkingTimer(isLoading);
   const isShenuteAccessBlocked = isReady && !isAuthenticated;
-  const typedMessages = useMemo(
-    () => normalizeChatMessages(messages as ChatMessageLike[]),
-    [messages],
-  );
-  const currentMessageSignature = useMemo(
-    () => getChatMessagesSignature(typedMessages),
-    [typedMessages],
-  );
-  const hasUnsavedConversationChanges =
-    typedMessages.length > 0 &&
-    currentMessageSignature !== lastSavedMessageSignatureRef.current;
-  const hasConversationDraft =
-    inputValue.trim().length > 0 || Boolean(selectedImage);
-  const selectedImageSizeLabel = selectedImage
-    ? formatFileSize(selectedImage.size, language)
-    : null;
-  const hasPromptContent =
-    inputValue.trim().length > 0 || Boolean(selectedImage);
-  const isComposerDisabled = isLoading || ocrPending || isShenuteAccessBlocked;
-  const canSubmitPrompt = hasPromptContent && !isComposerDisabled;
-  const isAttachmentMenuDisabled = isComposerDisabled;
-  const isComposerBusy = isLoading || ocrPending;
-  const canStartNewConversation =
-    Boolean(activeSessionId) ||
-    typedMessages.length > 0 ||
-    hasConversationDraft;
-  const starterPrompts = useMemo(() => getShenuteStarterPrompts(copy), [copy]);
-  const sessionCountLabel = `${sessions.length} ${copy.sessionCount}`;
-  const thinkingStatusMessage = getThinkingStatusMessage(
-    thinkingElapsedSeconds,
+  const {
+    closeAnswerStylePanel,
+    isAnswerStylePanelOpen,
+    setIsAnswerStylePanelOpen,
+  } = useShenutePageAnswerStyleChrome({
+    isShenuteAccessBlocked,
+  });
+  const {
+    canStartNewConversation,
+    canSubmitPrompt,
+    composerPlaceholder,
+    composerStateLabel,
+    composerStateMeta,
+    composerSubmitLabel,
+    currentMessageSignature,
+    forceUtilityChromeExpanded,
+    handoffContextLabel,
+    hasPromptContent,
+    hasUnsavedConversationChanges,
+    historyStatusDotClassName,
+    historyStatusMessage,
+    isAttachmentMenuDisabled,
+    isComposerBusy,
+    isComposerDisabled,
+    requestErrorMessage,
+    saveButtonLabel,
+    selectedImageSizeLabel,
+    sessionCountLabel,
+    starterPrompts,
+    thinkingElapsedLabel,
+    thinkingStatusMessage,
+  } = useShenutePageViewModel({
+    activeSessionId,
+    autosaveStatus,
+    cameraError,
+    cameraOpen,
     copy,
-  );
-  const thinkingElapsedLabel = formatElapsedTime(thinkingElapsedSeconds);
-  let composerPlaceholder: string = copy.placeholderShort;
-  if (selectedImage) {
-    composerPlaceholder = copy.placeholderImage;
-  }
-
-  let composerStateLabel: string | null = null;
-  if (ocrPending) {
-    composerStateLabel = copy.runningOcr;
-  }
-
-  let composerStateMeta: string | null = null;
-  if (ocrPending && selectedImage) {
-    composerStateMeta = selectedImage.name || copy.imageAttached;
-  }
-
-  let composerSubmitLabel: string = copy.sendMessage;
-  if (isLoading) {
-    composerSubmitLabel = copy.cancelResponse;
-  } else if (ocrPending) {
-    composerSubmitLabel = copy.runningOcr;
-  }
-  const requestErrorMessage = error
-    ? getShenuteErrorMessage(error, copy, language)
-    : null;
-
-  let saveButtonLabel: string = copy.saveHistorySaved;
-  if (isHistorySaving) {
-    saveButtonLabel = copy.savingHistory;
-  } else if (hasUnsavedConversationChanges || typedMessages.length === 0) {
-    saveButtonLabel = copy.saveHistory;
-  }
-
-  let historyStatusMessage: string = autosaveStatus ?? copy.autosaveStatus;
-  if (historyActionStatus) {
-    historyStatusMessage = historyActionStatus;
-  } else if (typedMessages.length === 0) {
-    historyStatusMessage = copy.autosaveHint;
-  } else if (isHistorySaving) {
-    historyStatusMessage = copy.savingHistory;
-  } else if (hasUnsavedConversationChanges) {
-    historyStatusMessage = copy.unsavedChanges;
-  }
-  const handoffContextLabel = handoffPageContext
-    ? handoffPageContext.title.replace(/\s+\|\s+Coptic Compass$/, "").trim() ||
-      handoffPageContext.path
-    : null;
-  let historyStatusDotClassName = "bg-muted/40";
-  if (isLoading) {
-    historyStatusDotClassName = "bg-coptic animate-pulse";
-  } else if (isHistorySaving || hasUnsavedConversationChanges) {
-    historyStatusDotClassName = "bg-warning";
-  } else if (typedMessages.length > 0) {
-    historyStatusDotClassName = "bg-coptic";
-  }
-  const forceUtilityChromeExpanded =
-    isAnswerStylePanelOpen ||
-    isHistorySaving ||
-    Boolean(sessionStatus) ||
-    Boolean(historyActionStatus) ||
-    isShenuteAccessBlocked ||
-    Boolean(shenuteAccessError) ||
-    Boolean(error) ||
-    Boolean(ocrError) ||
-    Boolean(cameraError) ||
-    cameraOpen ||
-    ocrPending;
+    handoffPageContext,
+    historyActionStatus,
+    inputValue,
+    isAnswerStylePanelOpen,
+    isHistorySaving,
+    isLoading,
+    isShenuteAccessBlocked,
+    language,
+    lastSavedMessageSignature,
+    ocrError,
+    ocrPending,
+    requestError: error,
+    selectedImage,
+    sessionsLength: sessions.length,
+    sessionStatus,
+    shenuteAccessError,
+    thinkingElapsedSeconds,
+    typedMessages,
+  });
 
   const {
     isMobileViewport,
@@ -318,103 +281,90 @@ export default function ShenutePageClient() {
     isLoading,
     typedMessagesLength: typedMessages.length,
   });
-
-  useEffect(() => {
-    if (typedMessages.length === messages.length) {
-      return;
-    }
-
-    setMessages(typedMessages as UIMessage[]);
-  }, [messages.length, setMessages, typedMessages]);
-
-  useEffect(() => {
-    if (!isAnswerStylePanelOpen) {
-      return;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsAnswerStylePanelOpen(false);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isAnswerStylePanelOpen]);
-
-  useEffect(() => {
-    if (!mobileUtilitySheet) {
-      return;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setMobileUtilitySheet(null);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [mobileUtilitySheet]);
-
-  useEffect(() => {
-    if (!copyFallbackText) {
-      return;
-    }
-
-    const frame = window.requestAnimationFrame(() => {
-      copyFallbackTextareaRef.current?.focus();
-      copyFallbackTextareaRef.current?.select();
+  const { closeMobileUtilitySheet, mobileUtilitySheet, setMobileUtilitySheet } =
+    useShenutePageMobileUtilitySheetChrome({
+      isMobileViewport,
     });
-
-    return () => window.cancelAnimationFrame(frame);
-  }, [copyFallbackText]);
-
-  useEffect(() => {
-    if (!copyFallbackText) {
-      return;
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setCopyFallbackText(null);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [copyFallbackText]);
-
-  useEffect(() => {
-    if (isShenuteAccessBlocked) {
-      setIsAnswerStylePanelOpen(false);
-    }
-  }, [isShenuteAccessBlocked]);
-
-  useEffect(() => {
-    if (!isMobileViewport) {
-      setMobileUtilitySheet(null);
-    }
-  }, [isMobileViewport]);
-
-  useEffect(() => {
-    if (!isAttachmentMenuOpen) {
-      return;
-    }
-
-    const handlePointerDown = (event: PointerEvent) => {
-      const details = attachmentMenuDetailsRef.current;
-      if (!details || details.contains(event.target as Node)) {
-        return;
-      }
-
-      details.open = false;
-      setIsAttachmentMenuOpen(false);
-    };
-
-    window.addEventListener("pointerdown", handlePointerDown);
-    return () => window.removeEventListener("pointerdown", handlePointerDown);
-  }, [isAttachmentMenuOpen]);
+  const {
+    expandUtilityChrome,
+    handleActionsMobileUtilitySheetToggle,
+    handleAttachmentMenuOpen,
+    handleAnswerStylePanelToggle,
+    handleAnswerStyleProviderSelect,
+    handleHistoryMobileUtilitySheetToggle,
+    handleResponseDetailsToggle,
+    handleUtilityDetailsToggle,
+    prepareNewConversationChrome,
+  } = useShenutePageUtilityChromeActions({
+    closeOpenResponseDetails,
+    closeOpenUtilityDetails,
+    setInferenceProvider,
+    setIsAnswerStylePanelOpen,
+    setIsUtilityChromeCollapsed,
+    setMobileUtilitySheet,
+  });
+  const { handleComposerDetailsToggle } = useShenutePageAttachmentMenuChrome({
+    attachmentMenuDetailsRef,
+    onOpen: handleAttachmentMenuOpen,
+  });
+  const handleStopResponseFromComposer = useShenutePageStopResponse({
+    closeOpenResponseDetails,
+    closeOpenUtilityDetails,
+    messageInputRef,
+    setIsAnswerStylePanelOpen,
+    setIsUtilityChromeCollapsed,
+    setMobileUtilitySheet,
+    stopChatResponse,
+  });
+  const handleFormSubmit = useShenutePageComposerSubmit({
+    accessRequiredMessage: copy.accessRequired,
+    clearSelectedImage,
+    closeOpenResponseDetails,
+    closeOpenUtilityDetails,
+    handoffPageContext,
+    hasPromptContent,
+    imageContextLabel: copy.imageOcrContext,
+    inferenceProvider,
+    inputValue,
+    isComposerDisabled,
+    isShenuteAccessBlocked,
+    language,
+    noTextExtractedMessage: copy.noTextExtracted,
+    scrollTranscriptToBottom,
+    selectedImage,
+    sendMessage,
+    setInputValue,
+    setIsAnswerStylePanelOpen,
+    setIsTranscriptAtBottom,
+    setIsUtilityChromeCollapsed,
+    setMobileUtilitySheet,
+    setOcrError,
+    setOcrPending,
+    setShenuteAccessError,
+  });
+  const {
+    handleContinueConversation,
+    handleMessageInputFocus,
+    handleRegenerateMessage,
+    handleStarterPrompt,
+    scrollToLatestMessage,
+  } = useShenutePageConversationActions({
+    continuePrompt: copy.continuePrompt,
+    handoffPageContext,
+    inferenceProvider,
+    isLoading,
+    isShenuteAccessBlocked,
+    messageInputRef,
+    regenerate,
+    scrollTranscriptToBottom,
+    sendMessage,
+    setInputValue,
+    setIsTranscriptAtBottom,
+    setIsUtilityChromeCollapsed,
+    setShenuteAccessError,
+    shenuteAccessError,
+    typedMessagesLength: typedMessages.length,
+  });
 
   useShenuteTextareaAutosize({
     inputValue,
@@ -425,799 +375,75 @@ export default function ShenutePageClient() {
     textareaRef: messageInputRef,
   });
 
-  useEffect(() => {
-    if (!isAuthenticated || !user?.id) {
-      setCanSubmitAdminFeedback(false);
-      return;
-    }
-
-    const supabase = createClient();
-    if (!supabase) {
-      setCanSubmitAdminFeedback(false);
-      return;
-    }
-
-    let isMounted = true;
-    const loadAdminFeedbackAccess = async () => {
-      try {
-        const { data } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", user.id)
-          .maybeSingle();
-
-        if (!isMounted) {
-          return;
-        }
-
-        setCanSubmitAdminFeedback(data?.role === "admin");
-      } catch {
-        if (isMounted) {
-          setCanSubmitAdminFeedback(false);
-        }
-      }
-    };
-
-    void loadAdminFeedbackAccess();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [isAuthenticated, user?.id]);
-
-  useEffect(() => {
-    if (hasRestoredHistory || !isReady || !isAuthenticated) {
-      return;
-    }
-
-    const handoffPayload = readShenuteHandoffPayload();
-    if (handoffPayload) {
-      const handoffMessages = normalizeChatMessages(handoffPayload.messages);
-      setInferenceProvider(handoffPayload.inferenceProvider);
-      setHandoffPageContext(handoffPayload.pageContext);
-      setMessages(handoffMessages as UIMessage[]);
-      lastSavedMessageSignatureRef.current = getChatMessagesSignature([]);
-      setActiveSessionId(null);
-      shenuteSessionIdRef.current = crypto.randomUUID();
-      setIsTranscriptAtBottom(true);
-      setHasRestoredHistory(true);
-      window.requestAnimationFrame(() => {
-        scrollTranscriptToBottom("auto");
-      });
-      return;
-    }
-
-    const restoreHistory = async () => {
-      try {
-        const response = await fetch("/api/shenute/history");
-        if (!response.ok) {
-          setTemporaryHistoryActionStatus(copy.historyUnavailable);
-          setHasRestoredHistory(true);
-          return;
-        }
-
-        const payload = (await response.json()) as {
-          success: boolean;
-          sessionId?: string;
-          sessions?: Array<SavedChatSession>;
-          messages?: Array<ChatMessageLike>;
-        };
-
-        if (payload.success) {
-          if (Array.isArray(payload.sessions)) {
-            setSessions(payload.sessions);
-          }
-
-          if (payload.sessionId) {
-            shenuteSessionIdRef.current = payload.sessionId;
-            setActiveSessionId(payload.sessionId);
-          }
-
-          if (Array.isArray(payload.messages)) {
-            const restoredMessages = normalizeChatMessages(payload.messages);
-            setHandoffPageContext(null);
-            lastSavedMessageSignatureRef.current =
-              getChatMessagesSignature(restoredMessages);
-            setMessages(restoredMessages as UIMessage[]);
-            setIsTranscriptAtBottom(true);
-            window.requestAnimationFrame(() => {
-              scrollTranscriptToBottom("auto");
-            });
-          } else {
-            lastSavedMessageSignatureRef.current = getChatMessagesSignature([]);
-          }
-        }
-      } catch {
-        setTemporaryHistoryActionStatus(copy.historyUnavailable);
-      } finally {
-        setHasRestoredHistory(true);
-      }
-    };
-
-    void restoreHistory();
-  }, [
-    hasRestoredHistory,
-    isAuthenticated,
-    isReady,
-    copy.historyUnavailable,
-    scrollTranscriptToBottom,
-    setMessages,
-    setIsTranscriptAtBottom,
-    setInferenceProvider,
-  ]);
-
-  useEffect(() => {
-    if (
-      typedMessages.length === 0 ||
-      !isReady ||
-      !isAuthenticated ||
-      !hasRestoredHistory ||
-      isLoading ||
-      !hasUnsavedConversationChanges
-    ) {
-      return;
-    }
-
-    const timer = window.setTimeout(() => {
-      if (isSavingRef.current) {
-        return;
-      }
-
-      const messagesToSave = typedMessages;
-      const savedSignature = currentMessageSignature;
-      isSavingRef.current = true;
-      setIsHistorySaving(true);
-      void saveChatHistoryOnline(
-        messagesToSave,
-        shenuteSessionIdRef.current,
-      ).then((result) => {
-        isSavingRef.current = false;
-        setIsHistorySaving(false);
-        if (result.success) {
-          if (result.sessionId) {
-            shenuteSessionIdRef.current = result.sessionId;
-            setActiveSessionId(result.sessionId);
-          }
-          if (Array.isArray(result.sessions)) {
-            setSessions(result.sessions);
-          }
-          lastSavedMessageSignatureRef.current = savedSignature;
-          setAutosaveStatus(copy.autosaveStatus);
-        } else {
-          setTemporaryHistoryActionStatus(copy.saveHistoryFailed);
-        }
-      });
-    }, 1000);
-
-    const clearTimer = () => window.clearTimeout(timer);
-    return clearTimer;
-  }, [
-    typedMessages,
+  const { handleSaveHistory } = useShenutePageHistoryPersistence({
+    autosaveStatusMessage: copy.autosaveStatus,
     currentMessageSignature,
-    copy.autosaveStatus,
-    copy.saveHistoryFailed,
-    hasUnsavedConversationChanges,
+    failureMessage: copy.saveHistoryFailed,
     hasRestoredHistory,
+    hasUnsavedConversationChanges,
+    isAuthenticated,
+    isHistorySaving,
     isLoading,
     isReady,
-    isAuthenticated,
-  ]);
-
-  function handleSaveHistory() {
-    if (isHistorySaving || !hasUnsavedConversationChanges) {
-      return;
-    }
-
-    const messagesToSave = typedMessages;
-    const savedSignature = currentMessageSignature;
-    setIsHistorySaving(true);
-    isSavingRef.current = true;
-
-    void saveChatHistoryOnline(
-      messagesToSave,
-      shenuteSessionIdRef.current,
-    ).then((result) => {
-      isSavingRef.current = false;
-      setIsHistorySaving(false);
-      if (!result.success) {
-        setTemporaryHistoryActionStatus(copy.saveHistoryFailed);
-        return;
-      }
-
-      if (result.sessionId) {
-        shenuteSessionIdRef.current = result.sessionId;
-        setActiveSessionId(result.sessionId);
-      }
-      if (Array.isArray(result.sessions)) {
-        setSessions(result.sessions);
-      }
-      lastSavedMessageSignatureRef.current = savedSignature;
-      setAutosaveStatus(copy.autosaveStatus);
-      setTemporaryHistoryActionStatus(copy.savedHistory);
-    });
-  }
-
-  async function loadShenuteSession(sessionId: string) {
-    if (!sessionId || sessionId === activeSessionId) {
-      return { success: false };
-    }
-
-    setIsUtilityChromeCollapsed(false);
-    setSessionLoadingId(sessionId);
-    setSessionStatus(copy.loadingSession);
-
-    try {
-      const response = await fetch(
-        `/api/shenute/history?sessionId=${encodeURIComponent(sessionId)}`,
-      );
-
-      if (!response.ok) {
-        setTemporaryHistoryActionStatus(copy.historyUnavailable);
-        return { success: false };
-      }
-
-      const payload = (await response.json()) as {
-        success: boolean;
-        sessionId?: string;
-        sessions?: Array<SavedChatSession>;
-        messages?: Array<ChatMessageLike>;
-      };
-
-      if (!payload.success || !payload.sessionId) {
-        setTemporaryHistoryActionStatus(copy.historyUnavailable);
-        return { success: false };
-      }
-
-      setSessions(
-        Array.isArray(payload.sessions) ? payload.sessions : sessions,
-      );
-      const loadedMessages = Array.isArray(payload.messages)
-        ? normalizeChatMessages(payload.messages)
-        : [];
-      lastSavedMessageSignatureRef.current =
-        getChatMessagesSignature(loadedMessages);
-      setMessages(loadedMessages as UIMessage[]);
-      setHandoffPageContext(null);
-      setActiveSessionId(payload.sessionId);
-      shenuteSessionIdRef.current = payload.sessionId;
-      setIsTranscriptAtBottom(true);
-      window.requestAnimationFrame(() => {
-        scrollTranscriptToBottom("auto");
-      });
-
-      return { success: true, sessionId: payload.sessionId };
-    } catch {
-      setTemporaryHistoryActionStatus(copy.historyUnavailable);
-      return { success: false };
-    } finally {
-      setSessionLoadingId(null);
-      setSessionStatus(null);
-    }
-  }
-
-  function setTemporaryHistoryActionStatus(message: string) {
-    setHistoryActionStatus(message);
-    window.setTimeout(() => {
-      setHistoryActionStatus((current) =>
-        current === message ? null : current,
-      );
-    }, 3000);
-  }
-
-  function resetConversationWorkspace() {
-    stopSpeech();
-    stopCamera();
-    clearSelectedImage();
-    setInputValue("");
-    setOcrError(null);
-    setShenuteAccessError(null);
-    setSelectedReactionByMessage({});
-    setAdminFeedbackDraftByMessage({});
-    setFeedbackStateByMessage({});
-    setMessageActionStateByMessage({});
-    setAutosaveStatus(null);
-    setSessionStatus(null);
-    setSessionLoadingId(null);
-    setHandoffPageContext(null);
-    setIsTranscriptAtBottom(true);
-  }
-
-  async function startNewConversation() {
-    if (isLoading || isHistorySaving || !canStartNewConversation) {
-      return;
-    }
-
-    setIsUtilityChromeCollapsed(false);
-    if (
-      typedMessages.length > 0 &&
-      isAuthenticated &&
-      hasUnsavedConversationChanges
-    ) {
-      setIsHistorySaving(true);
-      isSavingRef.current = true;
-      const result = await saveChatHistoryOnline(
-        typedMessages,
-        shenuteSessionIdRef.current,
-      );
-      isSavingRef.current = false;
-      setIsHistorySaving(false);
-
-      if (!result.success) {
-        setTemporaryHistoryActionStatus(copy.saveHistoryFailed);
-        return;
-      }
-
-      if (Array.isArray(result.sessions)) {
-        setSessions(result.sessions);
-      }
-    }
-
-    resetConversationWorkspace();
-    setMessages([]);
-    lastSavedMessageSignatureRef.current = getChatMessagesSignature([]);
-    setActiveSessionId(null);
-    shenuteSessionIdRef.current = crypto.randomUUID();
-    setTemporaryHistoryActionStatus(copy.newConversationStarted);
-  }
-
-  async function clearCurrentConversation() {
-    if (isLoading) {
-      return;
-    }
-
-    if (!activeSessionId && typedMessages.length === 0) {
-      await startNewConversation();
-      return;
-    }
-
-    if (!window.confirm(copy.clearConversationConfirm)) {
-      return;
-    }
-
-    const sessionIdToClear = activeSessionId;
-    setSessionStatus(copy.clearingConversation);
-
-    try {
-      if (sessionIdToClear && isAuthenticated) {
-        const response = await fetch(
-          `/api/shenute/history?sessionId=${encodeURIComponent(
-            sessionIdToClear,
-          )}`,
-          { method: "DELETE" },
-        );
-
-        if (!response.ok) {
-          throw new Error(copy.clearConversationFailed);
-        }
-      }
-
-      resetConversationWorkspace();
-      setMessages([]);
-      lastSavedMessageSignatureRef.current = getChatMessagesSignature([]);
-      setActiveSessionId(null);
-      if (sessionIdToClear) {
-        setSessions((current) =>
-          current.filter((session) => session.id !== sessionIdToClear),
-        );
-      }
-      shenuteSessionIdRef.current = crypto.randomUUID();
-      setTemporaryHistoryActionStatus(copy.conversationCleared);
-    } catch {
-      setSessionStatus(null);
-      setTemporaryHistoryActionStatus(copy.clearConversationFailed);
-    }
-  }
-
-  const handleFormSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (isShenuteAccessBlocked) {
-      setShenuteAccessError(copy.accessRequired);
-      return;
-    }
-
-    setShenuteAccessError(null);
-
-    if (!hasPromptContent || isComposerDisabled) {
-      return;
-    }
-
-    let composedPrompt = inputValue.trim();
-
-    if (selectedImage) {
-      setOcrPending(true);
-      setOcrError(null);
-
-      try {
-        const ocrFormData = new FormData();
-        ocrFormData.append("file", selectedImage);
-        const ocrText = await processOCRImage(ocrFormData);
-        const trimmedOcrText = ocrText
-          .replace(/\s+/g, " ")
-          .trim()
-          .slice(0, 8000);
-
-        composedPrompt = [
-          composedPrompt,
-          copy.imageOcrContext,
-          `Image: ${selectedImage.name}`,
-          trimmedOcrText,
-        ]
-          .filter((part) => part.length > 0)
-          .join("\n\n");
-      } catch (ocrProcessingError) {
-        setOcrError(getPublicOcrErrorMessage(ocrProcessingError, language));
-        setOcrPending(false);
-        return;
-      } finally {
-        setOcrPending(false);
-      }
-    }
-
-    if (!composedPrompt.trim()) {
-      setOcrError(copy.noTextExtracted);
-      return;
-    }
-
-    setIsTranscriptAtBottom(true);
-    setIsUtilityChromeCollapsed(false);
-    setMobileUtilitySheet(null);
-    setIsAnswerStylePanelOpen(false);
-    closeOpenUtilityDetails();
-    closeOpenResponseDetails();
-    sendMessage(
-      { text: composedPrompt },
-      {
-        body: {
-          inferenceProvider,
-          pageContext: handoffPageContext ?? undefined,
-        },
+    isSavingRef,
+    manualSaveSuccessMessage: copy.savedHistory,
+    setActiveSessionId,
+    setAutosaveStatus,
+    setIsHistorySaving,
+    setLastSavedMessageSignature,
+    setSessions,
+    setTemporaryHistoryActionStatus,
+    shenuteSessionIdRef,
+    typedMessages,
+  });
+  const { clearCurrentConversation, loadShenuteSession, startNewConversation } =
+    useShenutePageHistoryWorkflow({
+      activeSessionId,
+      canStartNewConversation,
+      clearSelectedImage,
+      copy: {
+        clearConversationConfirm: copy.clearConversationConfirm,
+        clearConversationFailed: copy.clearConversationFailed,
+        clearingConversation: copy.clearingConversation,
+        conversationCleared: copy.conversationCleared,
+        historyUnavailable: copy.historyUnavailable,
+        loadingSession: copy.loadingSession,
+        newConversationStarted: copy.newConversationStarted,
+        saveHistoryFailed: copy.saveHistoryFailed,
       },
-    );
-    setInputValue("");
-    clearSelectedImage();
-    window.requestAnimationFrame(() => {
-      scrollTranscriptToBottom("smooth");
+      hasRestoredHistory,
+      hasUnsavedConversationChanges,
+      isAuthenticated,
+      isHistorySaving,
+      isLoading,
+      isReady,
+      isSavingRef,
+      resetFeedbackSubmissionState,
+      resetMessageActionStates,
+      scrollTranscriptToBottom,
+      sessions,
+      setActiveSessionId,
+      setAutosaveStatus,
+      setHandoffPageContext,
+      setHasRestoredHistory,
+      setInferenceProvider,
+      setInputValue,
+      setIsHistorySaving,
+      setIsTranscriptAtBottom,
+      setIsUtilityChromeCollapsed,
+      setLastSavedMessageSignature,
+      setMessages: setHistoryMessages,
+      setOcrError,
+      setSessionLoadingId,
+      setSessionStatus,
+      setSessions,
+      setShenuteAccessError,
+      setTemporaryHistoryActionStatus,
+      shenuteSessionIdRef,
+      stopCamera,
+      stopSpeech,
+      typedMessages,
     });
-  };
-
-  function handlePromptKeyDown(
-    event: React.KeyboardEvent<HTMLTextAreaElement>,
-  ) {
-    if (
-      event.key !== "Enter" ||
-      event.shiftKey ||
-      event.nativeEvent.isComposing
-    ) {
-      return;
-    }
-
-    event.preventDefault();
-    event.currentTarget.form?.requestSubmit();
-  }
-
-  function setTemporaryMessageActionState(
-    messageId: string,
-    message: string,
-    status: "error" | "pending" | "success",
-  ) {
-    setMessageActionStateByMessage((current) => ({
-      ...current,
-      [messageId]: { message, status },
-    }));
-    window.setTimeout(() => {
-      setMessageActionStateByMessage((current) => {
-        if (current[messageId]?.message !== message) {
-          return current;
-        }
-
-        const next = { ...current };
-        delete next[messageId];
-        return next;
-      });
-    }, 2500);
-  }
-
-  async function handleCopyMessage(message: ChatMessageLike) {
-    const text = getMessageText(message);
-    if (!text) {
-      return;
-    }
-
-    try {
-      const didCopy = await copyTextToClipboard(text);
-      if (!didCopy) {
-        throw new Error("Clipboard write failed.");
-      }
-
-      setCopyFallbackText(null);
-      setTemporaryMessageActionState(
-        message.id,
-        copy.copiedResponse,
-        "success",
-      );
-    } catch {
-      setCopyFallbackText(text);
-      setTemporaryMessageActionState(
-        message.id,
-        copy.copyResponseManual,
-        "pending",
-      );
-    }
-  }
-
-  function handleRegenerateMessage(message: ChatMessageLike) {
-    if (isLoading || message.role !== "assistant") {
-      return;
-    }
-
-    setIsTranscriptAtBottom(true);
-    setIsUtilityChromeCollapsed(false);
-    void regenerate({
-      messageId: message.id,
-      body: {
-        inferenceProvider,
-        pageContext: handoffPageContext ?? undefined,
-      },
-    });
-    window.requestAnimationFrame(() => {
-      scrollTranscriptToBottom("smooth");
-    });
-  }
-
-  function handleContinueConversation() {
-    if (isLoading || isShenuteAccessBlocked) {
-      return;
-    }
-
-    setIsTranscriptAtBottom(true);
-    setIsUtilityChromeCollapsed(false);
-    sendMessage(
-      { text: copy.continuePrompt },
-      {
-        body: {
-          inferenceProvider,
-          pageContext: handoffPageContext ?? undefined,
-        },
-      },
-    );
-    window.requestAnimationFrame(() => {
-      scrollTranscriptToBottom("smooth");
-    });
-  }
-
-  function handleStopResponseFromComposer() {
-    stopChatResponse();
-    setIsUtilityChromeCollapsed(false);
-    setMobileUtilitySheet(null);
-    setIsAnswerStylePanelOpen(false);
-    closeOpenUtilityDetails();
-    closeOpenResponseDetails();
-    window.requestAnimationFrame(() => {
-      messageInputRef.current?.focus({ preventScroll: true });
-    });
-  }
-
-  function handleStarterPrompt(prompt: string) {
-    setIsUtilityChromeCollapsed(false);
-    setInputValue(prompt);
-    if (shenuteAccessError) {
-      setShenuteAccessError(null);
-    }
-    window.requestAnimationFrame(() => {
-      messageInputRef.current?.focus();
-    });
-  }
-
-  function scrollToLatestMessage() {
-    setIsUtilityChromeCollapsed(false);
-    scrollTranscriptToBottom("smooth");
-    messageInputRef.current?.focus({ preventScroll: true });
-  }
-
-  function handleMessageInputFocus() {
-    setIsUtilityChromeCollapsed(false);
-    if (typedMessages.length === 0) {
-      return;
-    }
-
-    window.setTimeout(() => {
-      scrollTranscriptToBottom("smooth");
-    }, 160);
-  }
-
-  function handleUtilityDetailsToggle(
-    event: React.SyntheticEvent<HTMLDetailsElement>,
-  ) {
-    if (event.currentTarget.open) {
-      setIsUtilityChromeCollapsed(false);
-      setMobileUtilitySheet(null);
-      setIsAnswerStylePanelOpen(false);
-      closeOpenUtilityDetails(event.currentTarget);
-    }
-  }
-
-  function handleResponseDetailsToggle(
-    event: React.SyntheticEvent<HTMLDetailsElement>,
-  ) {
-    if (event.currentTarget.open) {
-      setIsUtilityChromeCollapsed(false);
-      setMobileUtilitySheet(null);
-      setIsAnswerStylePanelOpen(false);
-      closeOpenUtilityDetails();
-      closeOpenResponseDetails(event.currentTarget);
-    }
-  }
-
-  function handleComposerDetailsToggle(
-    event: React.SyntheticEvent<HTMLDetailsElement>,
-  ) {
-    setIsAttachmentMenuOpen(event.currentTarget.open);
-
-    if (event.currentTarget.open) {
-      setIsUtilityChromeCollapsed(false);
-      setMobileUtilitySheet(null);
-      setIsAnswerStylePanelOpen(false);
-      closeOpenUtilityDetails();
-      closeOpenResponseDetails();
-    }
-  }
-
-  async function submitFeedbackSignal(options: {
-    assistantMessage: ChatMessageLike;
-    feedbackText?: string;
-    promptMessage: ChatMessageLike | null;
-    signal: ShenuteFeedbackSignal;
-  }) {
-    if (!isAuthenticated) {
-      setFeedbackStateByMessage((current) => ({
-        ...current,
-        [options.assistantMessage.id]: {
-          message: copy.feedbackSignIn,
-          status: "error",
-        },
-      }));
-      return false;
-    }
-
-    const assistantResponse = getMessageText(options.assistantMessage);
-    const prompt = options.promptMessage
-      ? getMessageText(options.promptMessage)
-      : "";
-
-    if (!assistantResponse || !prompt) {
-      setFeedbackStateByMessage((current) => ({
-        ...current,
-        [options.assistantMessage.id]: {
-          message: copy.feedbackPromptMissing,
-          status: "error",
-        },
-      }));
-      return false;
-    }
-
-    setFeedbackStateByMessage((current) => ({
-      ...current,
-      [options.assistantMessage.id]: {
-        message: copy.feedbackSaving,
-        status: "pending",
-      },
-    }));
-
-    try {
-      const response = await fetch("/api/shenute/feedback", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          assistantMessageId: options.assistantMessage.id,
-          assistantResponse,
-          shenuteSessionId: shenuteSessionIdRef.current,
-          feedbackText: options.feedbackText,
-          inferenceProvider,
-          pageContext: handoffPageContext ?? undefined,
-          prompt,
-          signal: options.signal,
-          userMessageId: options.promptMessage?.id,
-        }),
-      });
-
-      const payload = await readFeedbackResponsePayload(response);
-
-      if (!response.ok || !payload.success) {
-        setFeedbackStateByMessage((current) => ({
-          ...current,
-          [options.assistantMessage.id]: {
-            message: getFeedbackErrorMessage(payload, copy, language),
-            status: "error",
-          },
-        }));
-        return false;
-      }
-
-      let successMessage: string = copy.feedbackSaved;
-      if (payload.ragIngested) {
-        successMessage = copy.feedbackSavedWithRag;
-      } else if (payload.ragWarning) {
-        successMessage = copy.feedbackSavedLearningDelayed;
-      }
-
-      setFeedbackStateByMessage((current) => ({
-        ...current,
-        [options.assistantMessage.id]: {
-          message: successMessage,
-          status: "success",
-        },
-      }));
-
-      return true;
-    } catch {
-      setFeedbackStateByMessage((current) => ({
-        ...current,
-        [options.assistantMessage.id]: {
-          message: copy.feedbackSaveFailed,
-          status: "error",
-        },
-      }));
-      return false;
-    }
-  }
-
-  async function handleReaction(
-    signal: ShenuteReactionSignal,
-    assistantMessage: ChatMessageLike,
-    promptMessage: ChatMessageLike | null,
-  ) {
-    const success = await submitFeedbackSignal({
-      assistantMessage,
-      promptMessage,
-      signal,
-    });
-
-    if (!success) {
-      return;
-    }
-
-    setSelectedReactionByMessage((current) => ({
-      ...current,
-      [assistantMessage.id]: signal,
-    }));
-  }
-
-  async function handleAdminFeedbackSubmit(
-    assistantMessage: ChatMessageLike,
-    promptMessage: ChatMessageLike | null,
-  ) {
-    const draft =
-      adminFeedbackDraftByMessage[assistantMessage.id]?.trim() ?? "";
-    if (!draft) {
-      setFeedbackStateByMessage((current) => ({
-        ...current,
-        [assistantMessage.id]: {
-          message: copy.writeAdminFeedback,
-          status: "error",
-        },
-      }));
-      return;
-    }
-
-    const success = await submitFeedbackSignal({
-      assistantMessage,
-      feedbackText: draft,
-      promptMessage,
-      signal: "admin_feedback",
-    });
-
-    if (!success) {
-      return;
-    }
-
-    setAdminFeedbackDraftByMessage((current) => ({
-      ...current,
-      [assistantMessage.id]: "",
-    }));
-  }
 
   return (
     <PageShell
@@ -1302,14 +528,7 @@ export default function ShenutePageClient() {
                     aria-haspopup="dialog"
                     aria-label={`${copy.conversationHistory}: ${sessionCountLabel}`}
                     title={copy.conversationHistory}
-                    onClick={() => {
-                      closeOpenUtilityDetails();
-                      setIsUtilityChromeCollapsed(false);
-                      setIsAnswerStylePanelOpen(false);
-                      setMobileUtilitySheet((current) =>
-                        current === "history" ? null : "history",
-                      );
-                    }}
+                    onClick={handleHistoryMobileUtilitySheetToggle}
                     className={buttonClassName({
                       size: "sm",
                       variant: "secondary",
@@ -1360,21 +579,14 @@ export default function ShenutePageClient() {
               <ShenuteProviderControls
                 controlsLabel={copy.answerStyleControls}
                 isOpen={isAnswerStylePanelOpen}
-                onToggle={() => {
-                  closeOpenUtilityDetails();
-                  setIsUtilityChromeCollapsed(false);
-                  setMobileUtilitySheet(null);
-                  setIsAnswerStylePanelOpen((current) => !current);
-                }}
+                onToggle={handleAnswerStylePanelToggle}
               />
               <button
                 type="button"
                 aria-label={copy.newConversation}
                 title={copy.newConversation}
                 onClick={() => {
-                  closeOpenUtilityDetails();
-                  setMobileUtilitySheet(null);
-                  setIsAnswerStylePanelOpen(false);
+                  prepareNewConversationChrome();
                   void startNewConversation();
                 }}
                 disabled={
@@ -1395,14 +607,7 @@ export default function ShenutePageClient() {
                 aria-haspopup="dialog"
                 aria-label={copy.conversationActions}
                 title={copy.conversationActions}
-                onClick={() => {
-                  closeOpenUtilityDetails();
-                  setIsUtilityChromeCollapsed(false);
-                  setIsAnswerStylePanelOpen(false);
-                  setMobileUtilitySheet((current) =>
-                    current === "actions" ? null : "actions",
-                  );
-                }}
+                onClick={handleActionsMobileUtilitySheetToggle}
                 className={buttonClassName({
                   size: "sm",
                   variant: "secondary",
@@ -1456,7 +661,7 @@ export default function ShenutePageClient() {
           type="button"
           aria-label={copy.expandControls}
           title={copy.expandControls}
-          onClick={() => setIsUtilityChromeCollapsed(false)}
+          onClick={expandUtilityChrome}
           className={cx(
             "relative z-30 h-10 items-center gap-2 border-b border-line bg-surface/80 px-3 py-1 text-left text-xs text-muted shadow-sm transition hover:bg-elevated sm:hidden",
             isUtilityChromeCollapsed ? "flex" : "hidden",
@@ -1494,12 +699,7 @@ export default function ShenutePageClient() {
           isSpeaking={isSpeaking}
           messageActionStateByMessage={messageActionStateByMessage}
           messagesEndRef={messagesEndRef}
-          onAdminDraftChange={(messageId, value) => {
-            setAdminFeedbackDraftByMessage((current) => ({
-              ...current,
-              [messageId]: value,
-            }));
-          }}
+          onAdminDraftChange={setAdminFeedbackDraft}
           onAdminFeedbackSubmit={(assistantMessage, promptMessage) => {
             void handleAdminFeedbackSubmit(assistantMessage, promptMessage);
           }}
@@ -1563,7 +763,7 @@ export default function ShenutePageClient() {
           onOpenCamera={() => {
             void openCamera();
           }}
-          onPromptKeyDown={handlePromptKeyDown}
+          onPromptKeyDown={submitShenutePromptKeyDown}
           onStopCamera={stopCamera}
           onStopResponse={handleStopResponseFromComposer}
           onSubmit={handleFormSubmit}
@@ -1595,7 +795,7 @@ export default function ShenutePageClient() {
             aria-hidden="true"
             tabIndex={-1}
             className={cx(SHENUTE_DIALOG_BACKDROP_CLASS, "z-[60] sm:hidden")}
-            onClick={() => setMobileUtilitySheet(null)}
+            onClick={closeMobileUtilitySheet}
           />
           <div
             id="shenute-mobile-utility-sheet"
@@ -1606,7 +806,7 @@ export default function ShenutePageClient() {
             <ShenuteSurfaceHeader
               closeLabel={copy.closeMenu}
               className="mb-3"
-              onClose={() => setMobileUtilitySheet(null)}
+              onClose={closeMobileUtilitySheet}
               titleId="shenute-mobile-utility-title"
             >
               {mobileUtilitySheet === "history"
@@ -1619,7 +819,7 @@ export default function ShenutePageClient() {
                 copy={copy}
                 hasUnsavedConversationChanges={hasUnsavedConversationChanges}
                 language={language}
-                onClose={() => setMobileUtilitySheet(null)}
+                onClose={closeMobileUtilitySheet}
                 onLoadSession={loadShenuteSession}
                 sessionLoadingId={sessionLoadingId}
                 sessions={sessions}
@@ -1634,7 +834,7 @@ export default function ShenutePageClient() {
                 isLoading={isLoading}
                 language={language}
                 onClearConversation={clearCurrentConversation}
-                onClose={() => setMobileUtilitySheet(null)}
+                onClose={closeMobileUtilitySheet}
                 onSaveHistory={handleSaveHistory}
                 saveButtonLabel={saveButtonLabel}
                 typedMessagesCount={typedMessages.length}
@@ -1650,12 +850,8 @@ export default function ShenutePageClient() {
           inferenceProvider={inferenceProvider}
           isLoading={isLoading}
           isShenuteAccessBlocked={isShenuteAccessBlocked}
-          onClose={() => setIsAnswerStylePanelOpen(false)}
-          onSelectProvider={(provider) => {
-            setIsUtilityChromeCollapsed(false);
-            setInferenceProvider(provider);
-            setIsAnswerStylePanelOpen(false);
-          }}
+          onClose={closeAnswerStylePanel}
+          onSelectProvider={handleAnswerStyleProviderSelect}
           providerOptions={providerOptions}
           selectedProviderOption={selectedProviderOption}
         />

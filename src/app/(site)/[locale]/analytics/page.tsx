@@ -2,6 +2,7 @@ import StructuredData from "@/components/StructuredData";
 import AnalyticsPageClient from "@/features/analytics/components/AnalyticsPageClient";
 import { createAnalyticsSnapshots } from "@/features/analytics/lib/analytics";
 import { getDictionaryClientEntries } from "@/features/dictionary/lib/dictionary";
+import { createBreadcrumbStructuredData } from "@/features/seo/lib/structuredData";
 import { getTranslation } from "@/lib/i18n";
 import {
   getAnalyticsPath,
@@ -10,7 +11,6 @@ import {
 } from "@/lib/locale";
 import { createLocalizedPageMetadata } from "@/lib/metadata";
 import { resolvePublicLocale } from "@/lib/publicLocaleRouting";
-import { createBreadcrumbStructuredData } from "@/lib/structuredData";
 
 import type { Metadata } from "next";
 

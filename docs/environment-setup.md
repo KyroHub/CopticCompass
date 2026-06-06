@@ -141,6 +141,16 @@ See `docs/distillation.md` for the pipeline-specific workflow.
 ### Observability
 
 - `SCALABILITY_LOGGING`
+- `NEXT_PUBLIC_ANALYTICS_CONSENT_REQUIRED`
+- `NEXT_PUBLIC_VERCEL_OBSERVABILITY_BASEPATH`
+- `NEXT_PUBLIC_VERCEL_OBSERVABILITY_CLIENT_CONFIG`
+
+`SCALABILITY_LOGGING` enables additional server-side diagnostic logging.
+`NEXT_PUBLIC_ANALYTICS_CONSENT_REQUIRED=true` makes Vercel Analytics and Speed
+Insights wait for the user's stored analytics consent before loading client
+scripts. The optional Vercel observability base path and JSON client config are
+used only in production Vercel deployments to customize the Analytics and Speed
+Insights script sources, endpoints, or data attributes.
 
 ### Security Headers
 
@@ -191,6 +201,21 @@ To enable background release sends in a Supabase project:
 The worker validates its bearer token in code, so callers must send the
 configured bearer auth header.
 
+### Queued Notification Email Delivery
+
+This repo includes a Supabase Edge Function at
+`supabase/functions/process-notification-email` for generic notification emails.
+The Next.js app inserts jobs into `public.notification_email_jobs` and invokes
+the worker with the queued `jobId`.
+
+To enable queued notification email sends in a Supabase project:
+
+1. Set function secrets for `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`,
+   `RESEND_API_KEY`, and `NOTIFICATION_FROM_EMAIL`.
+2. Deploy the function: `supabase functions deploy process-notification-email --project-ref <your-project-ref>`
+3. Make sure the latest notification email migrations have been pushed so
+   `public.notification_email_jobs` exists.
+
 ### Migration Rollout
 
 Supabase migrations live under `supabase/migrations`. Before deployment, compare and preview the linked project state:
@@ -222,7 +247,10 @@ Set these app environment variables where your Next.js server runs:
 - `RESEND_LESSONS_SEGMENT_ID`
 - `RESEND_BOOKS_SEGMENT_ID`
 - `RESEND_GENERAL_SEGMENT_ID`
-- (And optional EN/NL localized segments)
+- Optional localized segment ids:
+  `RESEND_LESSONS_EN_SEGMENT_ID`, `RESEND_LESSONS_NL_SEGMENT_ID`,
+  `RESEND_BOOKS_EN_SEGMENT_ID`, `RESEND_BOOKS_NL_SEGMENT_ID`,
+  `RESEND_GENERAL_EN_SEGMENT_ID`, and `RESEND_GENERAL_NL_SEGMENT_ID`
 
 ### Communication Branding
 

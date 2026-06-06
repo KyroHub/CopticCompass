@@ -1,7 +1,7 @@
 import {
   getPublicSitemapIndexEntries,
   renderSitemapIndexXml,
-} from "@/lib/server/sitemaps";
+} from "@/features/seo/lib/server/sitemaps";
 
 export const runtime = "nodejs";
 export const revalidate = 86400;

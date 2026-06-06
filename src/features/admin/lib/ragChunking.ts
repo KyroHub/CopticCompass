@@ -1,7 +1,18 @@
 import "server-only";
 import { generateText } from "ai";
 
+import {
+  buildGeminiChunkEnrichmentPrompt,
+  buildThothChunkEnrichmentPrompt,
+  buildThothChunkProofcheckPrompt,
+} from "@/lib/ai/prompts/ragIngestion";
 import { getGeminiModel } from "@/lib/gemini";
+import { tryParseJsonFromModelAnswer } from "@/lib/llm";
+import {
+  normalizeWhitespace,
+  splitIntoSemanticSegments,
+  toStringArray,
+} from "@/lib/text";
 
 import {
   CHUNK_OVERLAP,
@@ -12,14 +23,7 @@ import {
   THOTH_CHUNK_INPUT_LIMIT,
 } from "./ragIngestionConfig";
 import { logIngestion } from "./ragIngestionLogging";
-import {
-  hasThothAvailable,
-  normalizeWhitespace,
-  runThothStructuredTask,
-  splitIntoSemanticSegments,
-  toStringArray,
-  tryParseJsonFromModelAnswer,
-} from "./ragIngestionUtils";
+import { hasThothAvailable, runThothStructuredTask } from "./ragIngestionUtils";
 import { buildJsonOrXmlSourceChunks } from "./ragJsonSourceIngestion";
 
 import type {
@@ -59,6 +63,10 @@ function toChunkCategory(value: unknown): ChunkCategory {
   return "document";
 }
 
+/**
+ * Validates model-generated enrichment output before it can influence stored
+ * chunk content or metadata.
+ */
 function normalizeChunkEnrichment(
   value: unknown,
 ): ChunkEnrichmentResult | null {
@@ -143,39 +151,23 @@ function buildEnrichedChunkPayload(
   };
 }
 
+/**
+ * Asks THOTH to turn a raw chunk into retrieval-optimized text plus metadata.
+ * The result is still normalized locally so malformed model output is ignored.
+ */
 async function enrichChunkWithThoth(options: {
   chunkText: string;
   ingestId: string;
   sourceFileName: string;
   userId: string;
 }) {
-  const prompt = `You are THOTH AI optimizing Coptic RAG ingestion.
-Analyze the text chunk below and produce retrieval-optimized structured output.
-
-Return only valid JSON with this schema:
-{
-  "category": "grammar" | "vocabulary" | "document",
-  "rephrasedContent": "clean standalone text for embeddings",
-  "retrievalKeywords": ["keyword1", "keyword2"],
-  "retrievalSummary": "one sentence helping semantic retrieval",
-  "metadata": {
-    "topics": ["..."],
-    "languages": ["Coptic", "English", "German"],
-    "dialect": "Sahidic | Bohairic | Fayyumic | Akhmimic | Unknown",
-    "grammatical_structures": ["..."],
-    "parts_of_speech": ["..."],
-    "has_coptic_examples": true,
-    "linguistic_domain": "syntax | morphology | phonology | lexicography | general"
-  }
-}
-
-File name: ${options.sourceFileName}
-Chunk text:
-${options.chunkText.slice(0, THOTH_CHUNK_INPUT_LIMIT)}`;
-
   const parsed = await runThothStructuredTask({
     ingestId: options.ingestId,
-    prompt,
+    prompt: buildThothChunkEnrichmentPrompt({
+      chunkText: options.chunkText,
+      inputLimit: THOTH_CHUNK_INPUT_LIMIT,
+      sourceFileName: options.sourceFileName,
+    }),
     taskTag: "chunk-enrichment",
     userId: options.userId,
   });
@@ -183,6 +175,10 @@ ${options.chunkText.slice(0, THOTH_CHUNK_INPUT_LIMIT)}`;
   return normalizeChunkEnrichment(parsed);
 }
 
+/**
+ * Applies optional THOTH enrichment to already-structured chunks, preserving
+ * the original chunk whenever THOTH is unavailable or returns unusable JSON.
+ */
 async function applyThothEnrichmentToChunks(options: {
   chunks: RagChunkWithMetadata[];
   fileName: string;
@@ -222,6 +218,10 @@ async function applyThothEnrichmentToChunks(options: {
   return enrichedChunks;
 }
 
+/**
+ * Validates the stricter proofcheck response and clamps quality scores so
+ * downstream metadata has a stable shape.
+ */
 function normalizeThothProofcheckResult(value: unknown) {
   if (!value || typeof value !== "object") {
     return null;
@@ -304,32 +304,14 @@ export async function proofcheckChunksWithThoth(options: {
 
   for (let index = 0; index < options.chunks.length; index += 1) {
     const chunk = options.chunks[index];
-    const prompt = `You are THOTH AI performing mandatory final proof-check before a chunk is inserted into the Coptic knowledge base.
-Rewrite the chunk for maximum retrieval quality while preserving factual meaning.
-Correct OCR artifacts, normalize wording, improve clarity, and keep key Coptic/English/German terminology.
-
-Return only valid JSON with this schema:
-{
-  "rewrittenContent": "final rewritten chunk for best retrieval",
-  "retrievalKeywords": ["keyword1", "keyword2"],
-  "retrievalSummary": "one sentence retrieval intent",
-  "qualityScore": 0.0,
-  "metadataPatch": {
-    "type": "grammar | vocabulary | document",
-    "dialect": "Sahidic | Bohairic | Fayyumic | Akhmimic | Unknown",
-    "topics": ["..."],
-    "languages": ["Coptic", "English", "German"]
-  }
-}
-
-File name: ${options.fileName}
-Existing metadata: ${JSON.stringify(chunk.metadata).slice(0, 1200)}
-Chunk text:
-${chunk.content.slice(0, THOTH_CHUNK_INPUT_LIMIT)}`;
-
     const parsed = await runThothStructuredTask({
       ingestId: options.ingestId,
-      prompt,
+      prompt: buildThothChunkProofcheckPrompt({
+        chunkText: chunk.content,
+        fileName: options.fileName,
+        inputLimit: THOTH_CHUNK_INPUT_LIMIT,
+        metadata: chunk.metadata,
+      }),
       taskTag: "proofcheck",
       userId: options.userId,
     });
@@ -560,30 +542,10 @@ export async function splitIntoChunks(
     try {
       const result = await generateText({
         model: getGeminiModel(),
-        prompt: `You are an expert in Coptic linguistics. Analyze the following text extracted from a document. 
-Identify if this text primarily contains Grammar rules, Vocabulary/Dictionary entries, or just general text.
-Rephrase, translate, or structure the content so it is highly optimized for an AI RAG vector search. If it contains vocabulary, format it distinctly with translations. If it contains grammar, explain the rule clearly and distinctly.
-Output ONLY a valid JSON object matching this schema (do NOT wrap in \`\`\`json):
-{
-  "category": "grammar" | "vocabulary" | "document",
-  "rephrasedContent": "The clean, standalone rephrased text describing the rule, words, or document...",
-  "retrievalKeywords": ["keyword1", "keyword2"],
-  "retrievalSummary": "one sentence helping semantic retrieval",
-  "metadata": { 
-    "topics": ["..."], 
-    "keywords": ["..."],
-    "languages": ["Coptic", "English", "German", ...],
-    "dialect": "Sahidic | Bohairic | Fayyumic | Akhmimic | Unknown",
-    "entities": ["..."],
-    "complexity": "beginner" | "intermediate" | "advanced",
-    "grammatical_structures": ["verb conjugation", "relative clause", ...],
-    "parts_of_speech": ["noun", "verb", "preposition", ...],
-    "has_coptic_examples": true,
-    "linguistic_domain": "syntax" | "morphology" | "phonology" | "lexicography" | "general"
-  }
-}
-Text to analyze:
-${chunkText.slice(0, THOTH_CHUNK_INPUT_LIMIT)}`,
+        prompt: buildGeminiChunkEnrichmentPrompt({
+          chunkText,
+          inputLimit: THOTH_CHUNK_INPUT_LIMIT,
+        }),
       });
 
       const parsed = normalizeChunkEnrichment(

@@ -11,6 +11,10 @@ import {
 import { buildEntryOpenGraphImageUrl } from "@/features/dictionary/lib/entryOpenGraph";
 import { buildEntryPreview } from "@/features/dictionary/lib/entryPreview";
 import { listPublishedGrammarLessonsForEntry } from "@/features/grammar/lib/grammarContentGraph";
+import {
+  createBreadcrumbStructuredData,
+  createDefinedTermStructuredData,
+} from "@/features/seo/lib/structuredData";
 import { getTranslation } from "@/lib/i18n";
 import {
   createLanguageAlternates,
@@ -21,10 +25,6 @@ import {
 import { createPageSocialMetadata, createSocialImage } from "@/lib/metadata";
 import { resolvePublicLocale } from "@/lib/publicLocaleRouting";
 import { siteConfig } from "@/lib/site";
-import {
-  createBreadcrumbStructuredData,
-  createDefinedTermStructuredData,
-} from "@/lib/structuredData";
 
 import type { Metadata } from "next";
 

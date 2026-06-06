@@ -1,6 +1,7 @@
 import { Clock3 } from "lucide-react";
 
 import { buttonClassName } from "@/components/Button";
+import type { SavedChatSession } from "@/features/shenute/lib/client/shenuteClientApi";
 
 import {
   SHENUTE_ICON_CLASS,
@@ -10,7 +11,6 @@ import {
 } from "./ShenuteClientPrimitives";
 import { ShenuteSavedSessionsPanel } from "./ShenuteSavedSessionsPanel";
 
-import type { SavedChatSession } from "./shenuteClientUtils";
 import type { ShenuteCopy } from "./shenuteCopy";
 import type { SyntheticEvent } from "react";
 

@@ -2,69 +2,42 @@ import "server-only";
 import { NextResponse } from "next/server";
 
 import { getRagIngestionLogs } from "@/features/admin/lib/ragIngestion";
-import { getProfileRole } from "@/features/profile/lib/server/queries";
-import { getAuthenticatedUser } from "@/lib/supabase/authQueries";
-import { hasSupabaseRuntimeEnv } from "@/lib/supabase/config";
-import { createClient } from "@/lib/supabase/server";
+import {
+  buildAdminRagLogsAccessFailureResponses,
+  buildAdminRagLogsSuccessResponse,
+  parseAdminRagLogsQuery,
+} from "@/features/admin/lib/server/ragIngestionRouteResponses";
+import { requireAdminRagRouteAccess } from "@/features/admin/lib/server/ragRouteGuards";
 
 export async function handleAdminRagLogsGet(request: Request) {
   try {
-    if (!hasSupabaseRuntimeEnv()) {
+    const access = await requireAdminRagRouteAccess(
+      buildAdminRagLogsAccessFailureResponses(),
+    );
+
+    if (!access.success) {
+      return NextResponse.json(access.response.payload, access.response.init);
+    }
+
+    const parsedQuery = parseAdminRagLogsQuery(request.url);
+    if (!parsedQuery.success) {
       return NextResponse.json(
-        {
-          success: false,
-          error: "RAG ingestion logs are unavailable right now.",
-        },
-        { status: 503 },
+        parsedQuery.response.payload,
+        parsedQuery.response.init,
       );
     }
 
-    const supabase = await createClient();
-    const user = await getAuthenticatedUser(supabase);
-
-    if (!user) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "You must be signed in to view RAG logs.",
-        },
-        { status: 401 },
-      );
-    }
-
-    const role = await getProfileRole(supabase, user.id);
-    if (role !== "admin") {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Only admins can view RAG logs.",
-        },
-        { status: 403 },
-      );
-    }
-
-    const { searchParams } = new URL(request.url);
-    const ingestId = searchParams.get("ingestId")?.trim();
-    const prefix = searchParams.get("prefix") === "1";
-
-    if (!ingestId) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Missing ingestId query parameter.",
-        },
-        { status: 400 },
-      );
-    }
-
-    const logs = getRagIngestionLogs({ ingestId, prefix });
-
-    return NextResponse.json({
-      success: true,
-      ingestId,
-      prefix,
+    const logs = getRagIngestionLogs({
+      ingestId: parsedQuery.ingestId,
+      prefix: parsedQuery.prefix,
+    });
+    const response = buildAdminRagLogsSuccessResponse({
+      ingestId: parsedQuery.ingestId,
+      prefix: parsedQuery.prefix,
       logs,
     });
+
+    return NextResponse.json(response.payload, response.init);
   } catch (error) {
     return NextResponse.json(
       {

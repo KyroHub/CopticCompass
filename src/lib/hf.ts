@@ -1,4 +1,4 @@
-export type HfChatMessage = {
+type HfChatMessage = {
   content: string;
   role: "assistant" | "system" | "user";
 };
@@ -38,6 +38,11 @@ function delay(ms: number) {
   });
 }
 
+/**
+ * Classifies Hugging Face SDK/router failures that are worth retrying. The
+ * upstream clients do not always expose stable status fields, so this keeps a
+ * message-based fallback for common transient transport failures.
+ */
 function shouldRetryNetworkError(error: unknown): boolean {
   const message =
     error instanceof Error
@@ -103,6 +108,11 @@ function retryDelayForChatAttempt(error: unknown, attempt: number): number {
   return HF_CHAT_RETRY_BASE_MS * attempt;
 }
 
+/**
+ * Calls HF feature extraction with an explicit timeout and bounded retries.
+ * Embedding requests can return provider-level retry signals or hang on large
+ * batches, so the wrapper keeps retry policy local to the embedding adapter.
+ */
 async function featureExtractionWithRetry(
   inputs: string | string[],
 ): Promise<unknown> {
@@ -155,6 +165,11 @@ function isNumberArray(value: unknown): value is number[] {
   );
 }
 
+/**
+ * Collapses token-level vectors into a single sentence vector. Some HF
+ * feature-extraction providers return per-token embeddings instead of pooled
+ * sentence embeddings, so callers normalize both shapes through this helper.
+ */
 function meanPoolTokenEmbeddings(tokenEmbeddings: number[][]): number[] {
   if (tokenEmbeddings.length === 0 || tokenEmbeddings[0].length === 0) {
     throw new Error("HF featureExtraction returned empty token embeddings.");
@@ -183,6 +198,10 @@ function meanPoolTokenEmbeddings(tokenEmbeddings: number[][]): number[] {
   return pooled;
 }
 
+/**
+ * Normalizes the shapes HF may return for one input: a direct vector, a token
+ * matrix, or a nested first-item token matrix.
+ */
 function normalizeSingleEmbeddingOutput(output: unknown): number[] {
   if (isNumberArray(output)) {
     return output;
@@ -210,6 +229,10 @@ function normalizeSingleEmbeddingOutput(output: unknown): number[] {
   );
 }
 
+/**
+ * Normalizes HF embedding responses into one vector per requested text while
+ * preserving a strict expected-count check for batch safety.
+ */
 function normalizeBatchEmbeddingOutput(
   output: unknown,
   expectedCount: number,
@@ -252,6 +275,10 @@ function normalizeBatchEmbeddingOutput(
   );
 }
 
+/**
+ * Sends chat prompts through Hugging Face's OpenAI-compatible router with the
+ * same transient-error retry policy used by the Shenute fallback path.
+ */
 export async function createHfChatCompletion(messages: HfChatMessage[]) {
   const { OpenAI } = await import("openai");
 
@@ -284,6 +311,11 @@ export async function createHfChatCompletion(messages: HfChatMessage[]) {
   throw new Error(`HF chat completion failed after retries: ${message}`);
 }
 
+/**
+ * Public embedding adapter used by RAG ingestion. It delegates shape handling
+ * to the normalization helpers so provider-specific response formats stay out
+ * of the ingestion pipeline.
+ */
 export async function generateHFEmbeddings(
   texts: string[],
 ): Promise<number[][]> {

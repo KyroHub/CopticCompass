@@ -1,14 +1,14 @@
 import StructuredData from "@/components/StructuredData";
 import GrammarHubPageClient from "@/features/grammar/components/GrammarHubPageClient";
 import { listGrammarLessons } from "@/features/grammar/lib/grammarDataset";
+import {
+  createBreadcrumbStructuredData,
+  createGrammarHubStructuredData,
+} from "@/features/seo/lib/structuredData";
 import { getTranslation } from "@/lib/i18n";
 import { getGrammarPath, getLocalizedHomePath } from "@/lib/locale";
 import { createLocalizedPageMetadata } from "@/lib/metadata";
 import { resolvePublicLocale } from "@/lib/publicLocaleRouting";
-import {
-  createBreadcrumbStructuredData,
-  createGrammarHubStructuredData,
-} from "@/lib/structuredData";
 
 import type { Metadata } from "next";
 

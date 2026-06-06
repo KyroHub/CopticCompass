@@ -1,14 +1,14 @@
 import StructuredData from "@/components/StructuredData";
 import PublicationsPageClient from "@/features/publications/components/PublicationsPageClient";
 import { publications } from "@/features/publications/lib/publications";
+import {
+  createBreadcrumbStructuredData,
+  createPublicationsStructuredData,
+} from "@/features/seo/lib/structuredData";
 import { getTranslation } from "@/lib/i18n";
 import { getLocalizedHomePath, getPublicationsPath } from "@/lib/locale";
 import { createLocalizedPageMetadata } from "@/lib/metadata";
 import { resolvePublicLocale } from "@/lib/publicLocaleRouting";
-import {
-  createBreadcrumbStructuredData,
-  createPublicationsStructuredData,
-} from "@/lib/structuredData";
 
 import type { Metadata } from "next";
 

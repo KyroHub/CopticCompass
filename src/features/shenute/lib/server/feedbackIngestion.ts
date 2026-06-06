@@ -1,37 +1,48 @@
 import "server-only";
-import { embedMany } from "ai";
 
-import { GEMINI_EMBEDDING_MODEL, getGeminiEmbeddingModel } from "@/lib/gemini";
-import { HF_EMBEDDING_MODEL, generateHFEmbeddings } from "@/lib/hf";
+import { generateTextEmbeddings } from "@/lib/ai/embeddings";
+import { buildThothAdminFeedbackRefinementPrompt } from "@/lib/ai/prompts/shenute";
+import { hasAiProviderToken } from "@/lib/ai/providerStatus";
+import { getRagVectorRuntimeConfig } from "@/lib/ai/ragRuntimeConfig";
+import { readBooleanEnv, readNumberEnv } from "@/lib/env";
+import type {
+  ShenuteFeedbackEmbeddingProvider,
+  ShenuteFeedbackPageContext,
+  ShenuteFeedbackSignal,
+} from "@/lib/shenute/feedbackPayload";
 import {
-  OPENROUTER_EMBEDDING_MODEL,
-  generateOpenRouterEmbeddings,
-} from "@/lib/openrouter";
+  insertCopticDocumentRows,
+  type CopticDocumentInsertRow,
+} from "@/lib/supabase/copticDocuments";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
+import { normalizeWhitespace } from "@/lib/text";
 import { createThothChatCompletion } from "@/lib/thoth";
+import {
+  createVectorLiteral,
+  normalizeEmbeddingDimensions,
+} from "@/lib/vector";
 import type { Json } from "@/types/supabase";
 
-const RAG_VECTOR_DIMENSIONS = Number(
-  process.env.RAG_VECTOR_DIMENSIONS ?? "768",
+const {
+  geminiEmbeddingOutputDimension: GEMINI_EMBEDDING_OUTPUT_DIMENSION,
+  vectorDimensions: RAG_VECTOR_DIMENSIONS,
+} = getRagVectorRuntimeConfig(process.env);
+const CHAT_FEEDBACK_THOTH_REFINEMENT_ENABLED = readBooleanEnv(
+  process.env,
+  "CHAT_FEEDBACK_THOTH_REFINEMENT_ENABLED",
+  true,
 );
-const GEMINI_EMBEDDING_OUTPUT_DIMENSION = Number(
-  process.env.GEMINI_EMBEDDING_OUTPUT_DIMENSION ?? "3072",
-);
-const CHAT_FEEDBACK_THOTH_REFINEMENT_ENABLED =
-  process.env.CHAT_FEEDBACK_THOTH_REFINEMENT_ENABLED !== "false";
-const CHAT_FEEDBACK_THOTH_INPUT_LIMIT = Number(
-  process.env.CHAT_FEEDBACK_THOTH_INPUT_LIMIT ?? "4000",
+const CHAT_FEEDBACK_THOTH_INPUT_LIMIT = readNumberEnv(
+  process.env,
+  "CHAT_FEEDBACK_THOTH_INPUT_LIMIT",
+  4000,
 );
 
-export type ShenuteFeedbackSignal = "admin_feedback" | "dislike" | "like";
-export type ShenuteFeedbackEmbeddingProvider = "gemini" | "hf" | "openrouter";
-
-export type ShenuteFeedbackPageContext = {
-  excerpt?: string;
-  path?: string;
-  title?: string;
-  url?: string;
-};
+const feedbackEmbeddingFailureMessages = {
+  gemini: "Gemini did not return a usable embedding for feedback.",
+  hf: "Hugging Face did not return a usable embedding for feedback.",
+  openrouter: "OpenRouter did not return a usable embedding for feedback.",
+} as const;
 
 type IngestShenuteFeedbackSignalOptions = {
   assistantMessageId?: string;
@@ -45,38 +56,6 @@ type IngestShenuteFeedbackSignalOptions = {
   userId: string;
   userMessageId?: string;
 };
-
-type CopticDocumentsInsertRow = {
-  content: string;
-  embedding: string;
-  metadata: Json;
-};
-
-function normalizeWhitespace(value: string) {
-  return value.replace(/\s+/g, " ").trim();
-}
-
-function createVectorLiteral(embedding: number[]) {
-  return `[${embedding.join(",")}]`;
-}
-
-function normalizeEmbeddingDimensions(
-  embedding: number[],
-  targetDimensions = RAG_VECTOR_DIMENSIONS,
-) {
-  if (embedding.length === targetDimensions) {
-    return embedding;
-  }
-
-  if (embedding.length > targetDimensions) {
-    return embedding.slice(0, targetDimensions);
-  }
-
-  return [
-    ...embedding,
-    ...new Array(targetDimensions - embedding.length).fill(0),
-  ];
-}
 
 function getSignalLearningLine(signal: ShenuteFeedbackSignal) {
   if (signal === "like") {
@@ -92,33 +71,15 @@ function getSignalLearningLine(signal: ShenuteFeedbackSignal) {
 
 function hasThothFeedbackRefinementAvailable() {
   return (
-    CHAT_FEEDBACK_THOTH_REFINEMENT_ENABLED && Boolean(process.env.THOTH_API_KEY)
+    CHAT_FEEDBACK_THOTH_REFINEMENT_ENABLED &&
+    hasAiProviderToken(process.env, "thoth")
   );
 }
 
-function buildThothAdminFeedbackRefinementQuery(options: {
-  assistantResponse: string;
-  feedbackText: string;
-  prompt: string;
-}) {
-  return `You are THOTH AI refining admin feedback for a Coptic tutoring assistant quality-improvement pipeline.
-
-Task:
-- Rewrite the admin note so it is concise, actionable, and specific.
-- Keep factual intent identical to the original note.
-- Preserve mentions of Coptic terms, dialect details, or correction targets.
-- Output plain text only with no markdown and no preface.
-
-User prompt:
-${options.prompt}
-
-Assistant response:
-${options.assistantResponse}
-
-Original admin note:
-${options.feedbackText}`;
-}
-
+/**
+ * Optionally rewrites admin feedback into a concise learning signal. Failures
+ * return `null` so feedback ingestion can proceed with the original note.
+ */
 async function maybeRefineAdminFeedbackWithThoth(options: {
   assistantResponse: string;
   feedbackText?: string;
@@ -144,7 +105,7 @@ async function maybeRefineAdminFeedbackWithThoth(options: {
 
   try {
     const completion = await createThothChatCompletion({
-      query: buildThothAdminFeedbackRefinementQuery({
+      query: buildThothAdminFeedbackRefinementPrompt({
         assistantResponse: options.assistantResponse,
         feedbackText: trimmedFeedbackText,
         prompt: options.prompt,
@@ -167,63 +128,35 @@ async function maybeRefineAdminFeedbackWithThoth(options: {
   }
 }
 
+/**
+ * Embeds feedback-learning content with the same provider family used by the
+ * chat turn, rejecting empty vectors before persistence.
+ */
 async function generateFeedbackEmbedding(options: {
   provider: ShenuteFeedbackEmbeddingProvider;
   text: string;
 }) {
-  if (options.provider === "gemini") {
-    const { embeddings } = await embedMany({
-      model: getGeminiEmbeddingModel(),
-      values: [options.text],
-      providerOptions: {
-        google: {
-          outputDimensionality: GEMINI_EMBEDDING_OUTPUT_DIMENSION,
-          taskType: "RETRIEVAL_DOCUMENT",
-        },
-      },
-    });
-
-    const embedding = embeddings[0];
-    if (!Array.isArray(embedding) || embedding.length === 0) {
-      throw new Error("Gemini did not return a usable embedding for feedback.");
-    }
-
-    return {
-      embedding,
-      model: GEMINI_EMBEDDING_MODEL,
-    };
-  }
-
-  if (options.provider === "openrouter") {
-    const embeddings = await generateOpenRouterEmbeddings([options.text]);
-    const embedding = embeddings[0];
-    if (!Array.isArray(embedding) || embedding.length === 0) {
-      throw new Error(
-        "OpenRouter did not return a usable embedding for feedback.",
-      );
-    }
-
-    return {
-      embedding,
-      model: OPENROUTER_EMBEDDING_MODEL,
-    };
-  }
-
-  const embeddings = await generateHFEmbeddings([options.text]);
+  const { embeddings, model } = await generateTextEmbeddings({
+    provider: options.provider,
+    values: [options.text],
+    geminiOutputDimension: GEMINI_EMBEDDING_OUTPUT_DIMENSION,
+  });
   const embedding = embeddings[0];
 
   if (!Array.isArray(embedding) || embedding.length === 0) {
-    throw new Error(
-      "Hugging Face did not return a usable embedding for feedback.",
-    );
+    throw new Error(feedbackEmbeddingFailureMessages[options.provider]);
   }
 
   return {
     embedding,
-    model: HF_EMBEDDING_MODEL,
+    model,
   };
 }
 
+/**
+ * Builds the plain-text learning document that later retrieval can surface as
+ * evidence about helpful, unhelpful, or admin-corrected responses.
+ */
 function buildFeedbackLearningContent(options: {
   assistantResponse: string;
   feedbackText?: string;
@@ -264,7 +197,7 @@ function buildFeedbackDocumentRow(options: {
   content: string;
   embedding: string;
   metadata: Json;
-}): CopticDocumentsInsertRow {
+}): CopticDocumentInsertRow {
   return {
     content: options.content,
     embedding: options.embedding,
@@ -323,6 +256,10 @@ function buildAdminFeedbackMetadata(options: {
   };
 }
 
+/**
+ * Builds bounded metadata for feedback-derived RAG documents, including page
+ * context and both original/refined admin notes when available.
+ */
 function buildFeedbackMetadata(options: {
   assistantMessageId?: string;
   feedbackTextOriginal?: string;
@@ -372,6 +309,11 @@ function buildFeedbackMetadata(options: {
 
   return metadata as unknown as Json;
 }
+
+/**
+ * Converts a chat feedback event into a RAG document so future Shenute answers
+ * can retrieve prior correction signals.
+ */
 export async function ingestShenuteFeedbackLearningSignal(
   options: IngestShenuteFeedbackSignalOptions,
 ) {
@@ -398,7 +340,10 @@ export async function ingestShenuteFeedbackLearningSignal(
     text: content,
   });
 
-  const targetEmbedding = normalizeEmbeddingDimensions(embedding);
+  const targetEmbedding = normalizeEmbeddingDimensions(
+    embedding,
+    RAG_VECTOR_DIMENSIONS,
+  );
 
   const metadata = buildFeedbackMetadata({
     assistantMessageId: options.assistantMessageId,
@@ -429,15 +374,7 @@ export async function ingestShenuteFeedbackLearningSignal(
   });
 
   const serviceRoleClient = createServiceRoleClient();
-  const copticDocumentsTable = serviceRoleClient.from(
-    "coptic_documents",
-  ) as unknown as {
-    insert: (
-      values: CopticDocumentsInsertRow[],
-    ) => Promise<{ error: { message: string } | null }>;
-  };
-
-  const { error } = await copticDocumentsTable.insert([row]);
+  const { error } = await insertCopticDocumentRows(serviceRoleClient, [row]);
   if (error) {
     throw new Error(
       `Failed to ingest Shenute feedback into RAG: ${error.message}`,

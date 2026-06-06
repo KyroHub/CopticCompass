@@ -1,98 +1,59 @@
 import "server-only";
-import { embedMany } from "ai";
 
-import { getGeminiEmbeddingModel } from "@/lib/gemini";
-import { generateHFEmbeddings } from "@/lib/hf";
-import { generateOpenRouterEmbeddings } from "@/lib/openrouter";
+import { generateTextEmbeddings } from "@/lib/ai/embeddings";
+import {
+  DEFAULT_RAG_VECTOR_DIMENSIONS,
+  getRagVectorRuntimeConfig,
+} from "@/lib/ai/ragRuntimeConfig";
+import {
+  matchCopticDocuments,
+  searchCopticVocabularyDocumentsByContentFilters,
+  type CopticDocumentMatch,
+} from "@/lib/supabase/copticDocuments";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
+import {
+  createVectorLiteral,
+  normalizeEmbeddingDimensions,
+} from "@/lib/vector";
 
-const GEMINI_EMBEDDING_OUTPUT_DIMENSION = Number(
-  process.env.GEMINI_EMBEDDING_OUTPUT_DIMENSION ?? "3072",
-);
+const { geminiEmbeddingOutputDimension: GEMINI_EMBEDDING_OUTPUT_DIMENSION } =
+  getRagVectorRuntimeConfig(process.env);
 
-type CopticDocumentMatch = {
-  content: string;
-  metadata: Record<string, unknown> | null;
-  [key: string]: unknown;
-};
+const embeddingFailureMessages = {
+  gemini: "Gemini embedding failed",
+  hf: "HF embedding failed",
+  openrouter: "OpenRouter embedding failed",
+} as const;
 
-type MatchDocumentsRpcArgs = {
-  filter_metadata: Record<string, unknown>;
-  match_count: number;
-  query_embedding: string;
-  query_text: string;
-};
-
-type MatchDocumentsRpcResult = {
-  data: CopticDocumentMatch[] | null;
-  error: { message: string } | null;
-};
-
+/**
+ * Generates one query embedding through the selected RAG provider and rejects
+ * empty provider responses before vector search reaches Supabase.
+ */
 async function generateQueryEmbedding(
   provider: "hf" | "gemini" | "openrouter",
   query: string,
 ): Promise<number[]> {
-  if (provider === "openrouter") {
-    const embeddings = await generateOpenRouterEmbeddings([query]);
-    const embedding = embeddings[0];
-    if (!Array.isArray(embedding) || embedding.length === 0) {
-      throw new Error("OpenRouter embedding failed");
-    }
-
-    return embedding;
+  const { embeddings } = await generateTextEmbeddings({
+    provider,
+    values: [query],
+    geminiOutputDimension: GEMINI_EMBEDDING_OUTPUT_DIMENSION,
+  });
+  const embedding = embeddings[0];
+  if (!Array.isArray(embedding) || embedding.length === 0) {
+    throw new Error(embeddingFailureMessages[provider]);
   }
 
-  if (provider === "gemini") {
-    const { embeddings } = await embedMany({
-      model: getGeminiEmbeddingModel(),
-      values: [query],
-      providerOptions: {
-        google: {
-          outputDimensionality: GEMINI_EMBEDDING_OUTPUT_DIMENSION,
-          taskType: "RETRIEVAL_DOCUMENT",
-        },
-      },
-    });
-
-    const embedding = embeddings[0];
-    if (!Array.isArray(embedding) || embedding.length === 0) {
-      throw new Error("Gemini embedding failed");
-    }
-
-    return embedding;
-  }
-
-  const hfEmbeddings = await generateHFEmbeddings([query]);
-  const hfEmbedding = hfEmbeddings[0];
-  if (!Array.isArray(hfEmbedding) || hfEmbedding.length === 0) {
-    throw new Error("HF embedding failed");
-  }
-
-  return hfEmbedding;
-}
-
-function normalizeEmbeddingDimensions(
-  embedding: number[],
-  targetDimensions = 768,
-): number[] {
-  if (embedding.length === targetDimensions) {
-    return embedding;
-  }
-
-  if (embedding.length > targetDimensions) {
-    return embedding.slice(0, targetDimensions);
-  }
-
-  return [
-    ...embedding,
-    ...new Array(targetDimensions - embedding.length).fill(0),
-  ];
+  return embedding;
 }
 
 function sanitizeKeywordForIlike(keyword: string): string {
   return keyword.replace(/[^\p{L}\p{N}\s-]/gu, "").trim();
 }
 
+/**
+ * Runs semantic RAG retrieval through the `match_coptic_documents` RPC with an
+ * optional metadata filter for grammar-only or source-specific searches.
+ */
 export async function searchCopticDocuments(
   query: string,
   matchCount: number = 5,
@@ -101,16 +62,14 @@ export async function searchCopticDocuments(
 ): Promise<CopticDocumentMatch[]> {
   const rawEmbedding = await generateQueryEmbedding(provider, query);
 
-  const queryEmbedding = normalizeEmbeddingDimensions(rawEmbedding, 768);
+  const queryEmbedding = normalizeEmbeddingDimensions(
+    rawEmbedding,
+    DEFAULT_RAG_VECTOR_DIMENSIONS,
+  );
 
   const supabase = createServiceRoleClient();
-  const matchDocuments = supabase.rpc.bind(supabase) as unknown as (
-    fn: "match_coptic_documents",
-    args: MatchDocumentsRpcArgs,
-  ) => Promise<MatchDocumentsRpcResult>;
-
-  const { data, error } = await matchDocuments("match_coptic_documents", {
-    query_embedding: `[${queryEmbedding.join(",")}]`,
+  const { data, error } = await matchCopticDocuments(supabase, {
+    query_embedding: createVectorLiteral(queryEmbedding),
     query_text: query,
     match_count: matchCount,
     filter_metadata: metadataFilter,
@@ -123,6 +82,10 @@ export async function searchCopticDocuments(
   return data ?? [];
 }
 
+/**
+ * Performs a metadata/content keyword lookup against vocabulary chunks to catch
+ * exact dictionary terms that vector search can miss.
+ */
 export async function searchVocabularyByKeywords(
   keywords: string[],
 ): Promise<CopticDocumentMatch[]> {
@@ -143,12 +106,10 @@ export async function searchVocabularyByKeywords(
     .map((keyword) => `content.ilike.%${keyword}%`)
     .join(",");
 
-  const { data, error } = await supabase
-    .from("coptic_documents")
-    .select("content, metadata")
-    .or(orFilters)
-    .in("metadata->>type", ["vocabulary", "vocabulary_xml"])
-    .limit(30);
+  const { data, error } = await searchCopticVocabularyDocumentsByContentFilters(
+    supabase,
+    orFilters,
+  );
 
   if (error) {
     console.error(
@@ -158,5 +119,5 @@ export async function searchVocabularyByKeywords(
     return [];
   }
 
-  return (data ?? []) as CopticDocumentMatch[];
+  return data ?? [];
 }

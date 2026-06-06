@@ -1,6 +1,10 @@
 import { generateText } from "ai";
 
 import {
+  buildShenuteRetrievalAnalysisPrompt,
+  parseShenuteRetrievalAnalysisResponse,
+} from "@/lib/ai/prompts/shenute";
+import {
   requestNMTTranslation,
   type NMTTranslationSuggestion,
 } from "@/lib/copticTranslator";
@@ -23,13 +27,10 @@ import type {
 } from "./chatTypes";
 import type { NMTTranslationTarget } from "./translationContext";
 
-type RetrievalAnalysisResponse = {
-  germanTranslation?: string;
-  grammaticalConcepts?: string[];
-  keywords?: string[];
-  translationTarget?: NMTTranslationTarget;
-};
-
+/**
+ * Deduplicates retrieved chunks and formats them into the bounded context block
+ * injected into Shenute's system prompt.
+ */
 function buildContextText(contextChunks: ContextDoc[]) {
   const uniqueContents = new Set<string>();
   const finalDocs = contextChunks.filter((doc) => {
@@ -70,6 +71,10 @@ function buildContextText(contextChunks: ContextDoc[]) {
   )}\n...[Context Truncated to fit token limits]`;
 }
 
+/**
+ * Requests an NMT hint only when retrieval analysis isolated a genuine
+ * translation target and the selected assistant provider benefits from it.
+ */
 async function maybeRequestNMTTranslation(options: {
   latestMessageText: string;
   nmtSuggestion: NMTTranslationSuggestion | null;
@@ -116,6 +121,10 @@ async function maybeRequestNMTTranslation(options: {
   }
 }
 
+/**
+ * Records expert translation targets for later distillation whenever the
+ * retrieval-analysis model supplied an authoritative translation.
+ */
 function recordTranslationDistillationExample(options: {
   latestMessageText: string;
   nmtSuggestion: NMTTranslationSuggestion | null;
@@ -151,6 +160,11 @@ function recordTranslationDistillationExample(options: {
   return translationTarget.text;
 }
 
+/**
+ * Uses Gemini as a routing assistant for retrieval: it expands keywords,
+ * extracts grammar concepts, and optionally isolates a translation target for
+ * NMT/context enrichment.
+ */
 async function analyzeRetrievalPrompt(options: {
   latestMessageText: string;
   nmtSuggestion: NMTTranslationSuggestion | null;
@@ -165,32 +179,11 @@ async function analyzeRetrievalPrompt(options: {
   try {
     const kwResponse = await generateText({
       model: getGeminiModel(),
-      prompt: `You are assisting a RAG pipeline. The user query is: "${options.latestMessageText}".
-Our Coptic Lexicon is in German, and our general dictionary is in English.
-1. Translate the user's query into German.
-2. Extract ALL meaningful keywords (nouns, verbs, adjectives, adverbs) to maximize dictionary lookup hits. Include at least 5-15 keywords if the prompt allows, in BOTH English AND German.
-3. Analyze the grammatical structure of the user's query (e.g., tenses, moods, cases, clauses) and list 1-3 core English grammatical concepts required to build or understand this sentence.
-4. Only populate "translationTarget" when the user's primary intent is translation, e.g. "translate...", "render... into Coptic", "how do I say/write...", "what is the Coptic for...", or "what does this Coptic phrase mean?". For grammar explanations, vocabulary discussion, parsing, etymology, lesson questions, or prompts that merely mention translatable words, set "translationTarget": null.
-Respond ONLY with a valid JSON object matching this schema, no markdown blocks:
-{
-  "germanTranslation": "...",
-  "keywords": ["englishKw1", "germanKw1", "englishKw2", "germanKw2"],
-  "grammaticalConcepts": ["past perfect", "definite article", "direct object"],
-  "translationTarget": null | {
-    "text": "the isolated FULL phrase or sentence to translate (do not truncate)",
-    "direction": "english-to-coptic" | "coptic-to-english",
-    "dialect": "Bohairic" | "Sahidic",
-    "expertTranslation": "your authoritative translation for this isolated string"
-  }
-}
-`,
+      prompt: buildShenuteRetrievalAnalysisPrompt({
+        latestMessageText: options.latestMessageText,
+      }),
     });
-
-    const rawResponse = kwResponse.text
-      .replace(/```json/i, "")
-      .replace(/```/g, "")
-      .trim();
-    const parsed = JSON.parse(rawResponse) as RetrievalAnalysisResponse;
+    const parsed = parseShenuteRetrievalAnalysisResponse(kwResponse.text);
 
     if (parsed.germanTranslation) {
       options.retrievalPromptSegments.add(parsed.germanTranslation);
@@ -249,6 +242,10 @@ Respond ONLY with a valid JSON object matching this schema, no markdown blocks:
   };
 }
 
+/**
+ * Builds the final RAG context for one Shenute turn by combining NMT hints,
+ * keyword vocabulary hits, grammar concept search, and broad vector retrieval.
+ */
 export async function buildShenuteRagContext(options: {
   inferenceProvider: InferenceProvider;
   latestMessageText: string;

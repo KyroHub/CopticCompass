@@ -56,12 +56,15 @@ async function loadVectorSearchModule(): Promise<VectorSearchModuleContext> {
     createServiceRoleClient: createServiceRoleClientMock,
   }));
   vi.doMock("@/lib/hf", () => ({
+    HF_EMBEDDING_MODEL: "hf-test-model",
     generateHFEmbeddings: vi.fn().mockResolvedValue([[0.1, 0.2, 0.3]]),
   }));
   vi.doMock("@/lib/openrouter", () => ({
+    OPENROUTER_EMBEDDING_MODEL: "openrouter-test-model",
     generateOpenRouterEmbeddings: vi.fn(),
   }));
   vi.doMock("@/lib/gemini", () => ({
+    GEMINI_EMBEDDING_MODEL: "gemini-test-model",
     getGeminiEmbeddingModel: vi.fn(),
   }));
 

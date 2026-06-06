@@ -1,3 +1,5 @@
+import { normalizeWhitespace } from "@/lib/text";
+
 type StructuredJsonChunk = {
   content: string;
   metadata: Record<string, unknown>;
@@ -36,10 +38,6 @@ type DictionaryEntry = {
   senses?: unknown;
 };
 
-function normalizeWhitespace(value: string) {
-  return value.replace(/\s+/g, " ").trim();
-}
-
 function uniqueStrings(values: string[]) {
   const seen = new Set<string>();
   const unique: string[] = [];
@@ -62,6 +60,10 @@ function uniqueStrings(values: string[]) {
   return unique;
 }
 
+/**
+ * Extracts human-readable text from nested JSON while favoring English
+ * localized values and skipping schema/id fields that would pollute embeddings.
+ */
 function collectTextSegments(value: unknown, depth = 0): string[] {
   if (depth > 10 || value === null || typeof value === "undefined") {
     return [];
@@ -230,6 +232,10 @@ function collectEnglishDialectMeanings(value: unknown) {
   );
 }
 
+/**
+ * Combines the dictionary meaning shapes into one deduplicated English gloss
+ * list for vocabulary-oriented embedding chunks.
+ */
 function collectDictionaryEnglishMeanings(entry: DictionaryEntry) {
   return uniqueStrings([
     ...collectEnglishGenderedMeanings(entry.genderedMeanings),
@@ -238,6 +244,11 @@ function collectDictionaryEnglishMeanings(entry: DictionaryEntry) {
   ]);
 }
 
+/**
+ * Converts a normalized dictionary JSON record into a vocabulary chunk. Entries
+ * without a headword or part of speech are skipped because they cannot produce
+ * useful retrieval metadata.
+ */
 function formatDictionaryEntry(
   entry: DictionaryEntry,
 ): StructuredJsonChunk | null {
@@ -292,6 +303,10 @@ function formatDictionaryEntry(
   };
 }
 
+/**
+ * Packs many dictionary entry chunks into bounded batches for compact RAG
+ * ingestion while preserving aggregate headword and translation metadata.
+ */
 function compactDictionaryChunks(chunks: StructuredJsonChunk[]) {
   const compacted: StructuredJsonChunk[] = [];
   let currentBatch: StructuredJsonChunk[] = [];
@@ -367,6 +382,10 @@ function compactDictionaryChunks(chunks: StructuredJsonChunk[]) {
   return compacted;
 }
 
+/**
+ * Builds a fallback chunk for arbitrary structured records by pulling common
+ * title, Coptic, translation, summary, and detail fields into retrieval text.
+ */
 function buildGenericRecordChunk(
   record: Record<string, unknown>,
 ): StructuredJsonChunk | null {
@@ -432,6 +451,10 @@ function buildGenericRecordChunk(
   };
 }
 
+/**
+ * Handles exported grammar lesson bundles specially so lesson overview and
+ * section chunks keep lesson metadata attached for retrieval filtering.
+ */
 function buildLessonChunks(lessonRecord: Record<string, unknown>) {
   const lesson = (
     lessonRecord.data &&
@@ -514,6 +537,10 @@ function buildLessonChunks(lessonRecord: Record<string, unknown>) {
   return chunks;
 }
 
+/**
+ * Parses structured JSON source text into RAG chunks, preferring specialized
+ * dictionary and grammar-lesson paths before falling back to generic records.
+ */
 export function buildStructuredJsonChunks(
   text: string,
   options: BuildStructuredJsonChunksOptions = {},

@@ -1,37 +1,19 @@
 import "server-only";
-import { getPublicErrorMessage, type AppErrorCode } from "@/lib/errors";
+import { getPublicErrorMessage } from "@/lib/errors";
+import {
+  buildOcrTargetUrl as buildOcrTargetUrlPrimitive,
+  buildOcrUploadFieldCandidates,
+  collectForwardableOcrTextFields as collectForwardableOcrTextFieldsPrimitive,
+  extractOcrText,
+  getFirstMatchingOcrFile,
+  getFirstOcrFileEntry as getFirstOcrFileEntryPrimitive,
+  getOcrUpstreamFailure as getOcrUpstreamFailurePrimitive,
+  isUnexpectedOcrUploadFieldError as isUnexpectedOcrUploadFieldErrorPrimitive,
+} from "@/lib/ocr";
+import type { OcrErrorCode } from "@/lib/ocr";
 import { assertServerOnly } from "@/lib/server/assertServerOnly";
 
 assertServerOnly("src/lib/server/ocrService.ts");
-
-const OCR_UPLOAD_FIELD_FALLBACKS = [
-  "file",
-  "image",
-  "upload",
-  "document",
-  "photo",
-  "files",
-];
-
-const OCR_TEXT_LIKE_KEYS = [
-  "text",
-  "extracted_text",
-  "ocr_text",
-  "output",
-  "content",
-  "transcript",
-  "transcription",
-  "result",
-  "data",
-  "message",
-];
-const OCR_FORWARDABLE_QUERY_PARAMS = new Set<string>();
-const OCR_FORWARDABLE_TEXT_FIELDS = new Set<string>();
-
-export type OcrErrorCode = Extract<
-  AppErrorCode,
-  "external_service_unavailable" | "rate_limited" | "validation_failed"
->;
 
 type OcrAttemptResult =
   | {
@@ -46,6 +28,14 @@ type OcrAttemptResult =
       kind: "fatal";
       message: string;
     };
+
+export type { OcrErrorCode };
+export const collectForwardableOcrTextFields =
+  collectForwardableOcrTextFieldsPrimitive;
+export const getFirstOcrFileEntry = getFirstOcrFileEntryPrimitive;
+export const getOcrUpstreamFailure = getOcrUpstreamFailurePrimitive;
+export const isUnexpectedOcrUploadFieldError =
+  isUnexpectedOcrUploadFieldErrorPrimitive;
 
 export function getOcrServiceUrlOrThrow() {
   const ocrServiceUrl = process.env.OCR_SERVICE_URL;
@@ -79,77 +69,16 @@ function validateOcrServiceUrl(ocrServiceUrl: string) {
   return parsedUrl;
 }
 
+/**
+ * Orders possible multipart field names from most intentional to most generic.
+ * This lets the OCR proxy adapt to upstream services that expect `image`,
+ * `upload`, or another legacy field without exposing those retries to callers.
+ */
 export function getOcrUploadFieldCandidates(incomingFieldName?: string) {
-  const preferred = process.env.OCR_UPLOAD_FIELD?.trim();
-  const candidates = [
-    preferred,
+  return buildOcrUploadFieldCandidates({
     incomingFieldName,
-    ...OCR_UPLOAD_FIELD_FALLBACKS,
-  ].filter((value): value is string => Boolean(value && value.length > 0));
-
-  return Array.from(new Set(candidates));
-}
-
-export function isUnexpectedOcrUploadFieldError(value: string) {
-  const normalized = value.toLowerCase();
-  return (
-    normalized.includes("multererror: unexpected field") ||
-    normalized.includes("unexpected field")
-  );
-}
-
-export function getOcrUpstreamFailure(status: number): {
-  code: OcrErrorCode;
-  status: number;
-} {
-  if (status === 429) {
-    return { code: "rate_limited", status: 429 };
-  }
-
-  if (status === 400 || status === 413 || status === 415) {
-    return {
-      code: "validation_failed",
-      status: status === 413 ? 413 : 400,
-    };
-  }
-
-  return { code: "external_service_unavailable", status: 502 };
-}
-
-function getTrimmedString(
-  value: FormDataEntryValue | string | null | undefined,
-) {
-  return typeof value === "string" && value.trim().length > 0
-    ? value.trim()
-    : null;
-}
-
-function copyOcrTargetSearchParams(targetUrl: URL, incomingUrl: URL | null) {
-  if (!incomingUrl) {
-    return;
-  }
-
-  for (const [key, value] of incomingUrl.searchParams.entries()) {
-    if (OCR_FORWARDABLE_QUERY_PARAMS.has(key.toLowerCase())) {
-      targetUrl.searchParams.set(key, value);
-    }
-  }
-}
-
-function getOcrTargetLanguage({
-  defaultLang,
-  formData,
-  incomingUrl,
-}: {
-  defaultLang: string;
-  formData?: FormData;
-  incomingUrl: URL | null;
-}) {
-  return (
-    getTrimmedString(incomingUrl?.searchParams.get("lang")) ??
-    getTrimmedString(formData?.get("lang")) ??
-    defaultLang
-  );
+    preferredUploadField: process.env.OCR_UPLOAD_FIELD?.trim(),
+  });
 }
 
 function getSafeOcrFailureMessage(status: number) {
@@ -160,83 +89,13 @@ function getSafeOcrFailureMessage(status: number) {
   return getPublicErrorMessage("external_service_unavailable", "en", "ocr");
 }
 
-function stripHtml(input: string) {
-  return input
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>/gi, "\n")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/gi, " ")
-    .replace(/&amp;/gi, "&")
-    .replace(/&lt;/gi, "<")
-    .replace(/&gt;/gi, ">")
-    .trim();
-}
-
-function normalizeStringCandidate(input: string): string[] {
-  const normalized = stripHtml(input).replace(/\s+/g, " ").trim();
-  return normalized ? [normalized] : [];
-}
-
-function collectTextCandidates(payload: unknown, depth = 0): string[] {
-  if (depth > 6 || payload === null || typeof payload === "undefined") {
-    return [];
-  }
-
-  if (typeof payload === "string") {
-    return normalizeStringCandidate(payload);
-  }
-
-  if (Array.isArray(payload)) {
-    return payload.flatMap((item) => collectTextCandidates(item, depth + 1));
-  }
-
-  if (typeof payload !== "object") {
-    return [];
-  }
-
-  return Object.entries(payload as Record<string, unknown>).flatMap(
-    ([key, value]) => {
-      if (
-        typeof value === "string" &&
-        OCR_TEXT_LIKE_KEYS.includes(key.toLowerCase())
-      ) {
-        return normalizeStringCandidate(value);
-      }
-
-      return collectTextCandidates(value, depth + 1);
-    },
-  );
-}
-
-function extractOcrText(payload: unknown): string {
-  const candidates = collectTextCandidates(payload);
-  return candidates.find((candidate) => candidate.length > 0) ?? "";
-}
-
 export function getUploadedOcrFile(formData: FormData): File {
-  for (const fieldName of getOcrUploadFieldCandidates()) {
-    const value = formData.get(fieldName);
-    if (value instanceof File) {
-      return value;
-    }
-  }
-
-  const fallback = formData.get("file");
-  if (fallback instanceof File) {
-    return fallback;
+  const file = getFirstMatchingOcrFile(formData, getOcrUploadFieldCandidates());
+  if (file) {
+    return file;
   }
 
   throw new Error(getPublicErrorMessage("validation_failed", "en", "ocr"));
-}
-
-export function getFirstOcrFileEntry(formData: FormData) {
-  for (const [key, value] of formData.entries()) {
-    if (value instanceof File && value.size > 0) {
-      return { key, file: value };
-    }
-  }
-
-  return null;
 }
 
 export function buildOcrTargetUrl({
@@ -250,39 +109,19 @@ export function buildOcrTargetUrl({
   ocrServiceUrl: string;
   requestUrl?: string;
 }) {
-  const targetUrl = validateOcrServiceUrl(ocrServiceUrl);
-  const incomingUrl = requestUrl ? new URL(requestUrl) : null;
-
-  copyOcrTargetSearchParams(targetUrl, incomingUrl);
-  targetUrl.searchParams.set(
-    "lang",
-    getOcrTargetLanguage({ defaultLang, formData, incomingUrl }),
-  );
-  return targetUrl;
+  return buildOcrTargetUrlPrimitive({
+    baseUrl: validateOcrServiceUrl(ocrServiceUrl),
+    defaultLang,
+    formData,
+    requestUrl,
+  });
 }
 
-export function collectForwardableOcrTextFields(
-  formData: FormData,
-  excludedKeys: Set<string>,
-) {
-  const fields: Array<{ key: string; value: string }> = [];
-
-  for (const [key, value] of formData.entries()) {
-    if (
-      excludedKeys.has(key) ||
-      !OCR_FORWARDABLE_TEXT_FIELDS.has(key.toLowerCase())
-    ) {
-      continue;
-    }
-
-    if (typeof value === "string") {
-      fields.push({ key, value });
-    }
-  }
-
-  return fields;
-}
-
+/**
+ * Reads an OCR response as JSON or text and returns the first plausible
+ * extracted text candidate instead of leaking provider-specific payload shape
+ * into route handlers.
+ */
 export async function extractOcrResponseText(response: Response) {
   const contentType = response.headers.get("content-type") ?? "";
   if (contentType.includes("application/json")) {
@@ -292,6 +131,11 @@ export async function extractOcrResponseText(response: Response) {
   return extractOcrText(await response.text());
 }
 
+/**
+ * Performs one OCR upload attempt. A field-name mismatch is reported as a
+ * retryable outcome; all other upstream failures become fatal client-safe
+ * messages for the current request.
+ */
 async function attemptOcrTextUpload({
   file,
   signal,
@@ -334,6 +178,11 @@ async function attemptOcrTextUpload({
   };
 }
 
+/**
+ * Attempts OCR extraction across the configured upload field candidates and
+ * stops at the first successful non-empty text result. Empty successful
+ * responses are preserved as empty OCR output rather than retried forever.
+ */
 export async function extractTextWithOcrService({
   file,
   targetUrl,

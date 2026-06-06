@@ -28,11 +28,13 @@ Implementation placement follows the architecture guide:
 
 - Endpoint: `POST /api/shenute`
 - Default provider: `thoth`
-- Supported providers: `thoth`, `openrouter`, `gemini`, `hf`
+- Supported providers: `thoth`, `openrouter`, `gemini`, `gemini_nmt`, `hf`
 - Payload style: AI SDK UI messages
 - Runtime behavior:
   - provider selection from request body (`inferenceProvider`)
   - retry/fallback for transient failures
+  - `gemini_nmt` is accepted as a request provider and maps to Gemini for RAG
+    execution
   - fallback path when Hugging Face is rate-limited
 - Public failures use the shared error payload shape
   `{ success: false, code, error, requestId? }`. Provider exceptions, token
@@ -40,14 +42,20 @@ Implementation placement follows the architecture guide:
 
 ### Public Error Responses
 
-Public API routes should map failures through `src/lib/errors.ts`:
+AI and OCR-facing public routes should map failures through `src/lib/errors.ts`:
 
 - `toPublicError` maps known app error codes and unknown thrown errors to
   localized public copy.
-- `jsonErrorResponse` returns the stable JSON error shape with `Cache-Control:
-no-store` and a generated request id for server-side failures.
+- `jsonErrorResponse` returns the stable JSON error shape with
+  `Cache-Control: no-store` and a generated request id for server-side
+  failures.
 - Raw `error.message`, environment variable names, provider debug text, and
   database details should not be returned to public clients.
+
+Read-only dataset and analytics routes that use `publicApiJsonResponse` may
+return a simpler `{ error: string }` shape today. Keep those messages stable,
+non-sensitive, and client-safe unless the route is migrated to the shared error
+helper.
 
 Guardrail tests in `src/app/errorHandling.guardrails.test.ts` catch common
 regressions such as `alert(`, raw `error.message` rendering, direct
@@ -182,23 +190,33 @@ Dictionary API surfaces:
 
 ## Public APIs
 
-The repository exposes read-only public grammar and dictionary datasets.
+The repository exposes read-only public grammar and dictionary datasets, plus
+app-supporting JSON helpers used by the current UI.
 
 Grammar entry points:
 
 - `/api/v1/grammar`
 - `/api/v1/grammar/manifest`
 - `/api/v1/grammar/lessons`
+- `/api/v1/grammar/lessons/<slug>`
 - `/api/v1/grammar/concepts`
+- `/api/v1/grammar/concepts/<id>`
 - `/api/v1/grammar/examples`
 - `/api/v1/grammar/exercises`
 - `/api/v1/grammar/footnotes`
 - `/api/v1/grammar/sources`
+- `/api/v1/grammar/sources/<id>`
 
 Dictionary entry points:
 
 - `/api/v1/dictionary/search`
 - `/api/v1/dictionary/search-index`
+
+Analytics helper:
+
+- `/api/v1/analytics/drilldown` for paginated dictionary analytics drilldowns.
+  It is an app-supporting public JSON route and is not currently included in
+  the combined OpenAPI document.
 
 Docs and developer pages:
 
@@ -252,6 +270,8 @@ segment, or worker behavior.
 Additional app API surfaces:
 
 - `/api/shenute`
+- `/api/shenute/history`
+- `/api/shenute/feedback`
 - `/api/ocr`
 - `/api/admin/rag/status`
 - `/api/admin/rag/logs`

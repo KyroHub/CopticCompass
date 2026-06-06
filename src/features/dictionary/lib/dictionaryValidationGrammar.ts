@@ -55,6 +55,10 @@ const allowedPrepGovernmentFormsForDialect = {
 
 const allowedSenseGrammarTags = new Set<string>(DICTIONARY_SENSE_CODES);
 
+/**
+ * Validates grammar fields that are represented as non-empty unique lists of
+ * registry-backed government forms.
+ */
 function validateGovernmentForms(
   issues: DictionaryValidationIssue[],
   allowedForms: ReadonlySet<string>,
@@ -117,6 +121,10 @@ function validateConstructionGovernment(
   );
 }
 
+/**
+ * Validates dialect-keyed prepositional government and enforces the current
+ * dialect-specific S/B form registries.
+ */
 function validatePrepGovernment(
   issues: DictionaryValidationIssue[],
   value: unknown,
@@ -202,6 +210,10 @@ function validatePrepGovernment(
   }
 }
 
+/**
+ * Validates one sense's grammar object, including cross-field constraints such
+ * as gender only applying to nouns and verbal fields only applying to verbs.
+ */
 function validateSenseGrammar(
   issues: DictionaryValidationIssue[],
   value: unknown,
@@ -319,6 +331,10 @@ function validateSenseGrammar(
   }
 }
 
+/**
+ * Validates the full sense envelope before delegating localized text arrays and
+ * grammar-specific rules to the narrower validators.
+ */
 export function validateSense(
   issues: DictionaryValidationIssue[],
   value: unknown,

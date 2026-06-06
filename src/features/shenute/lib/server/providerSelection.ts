@@ -1,11 +1,13 @@
+import { hasAiProviderToken } from "@/lib/ai/providerStatus";
+
 import type { InferenceProvider, RagInferenceProvider } from "./chatTypes";
 
 export function hasGeminiConfigured() {
-  return Boolean(process.env.GEMINI_API_KEY);
+  return hasAiProviderToken(process.env, "gemini");
 }
 
 export function hasOpenRouterConfigured() {
-  return Boolean(process.env.OPENROUTER_API_KEY);
+  return hasAiProviderToken(process.env, "openrouter");
 }
 
 export function toOptionalInferenceProvider(
