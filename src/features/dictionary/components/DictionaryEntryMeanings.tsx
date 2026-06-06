@@ -35,6 +35,7 @@ type DialectMeaningRow = ReturnType<
 >[number];
 
 type DictionaryEntryMeaningsProps = {
+  compactLayout?: boolean;
   compactPreview?: boolean;
   dialectMeanings: DialectMeaningRow[];
   genderedMeanings: GenderedMeaningRow[];
@@ -48,12 +49,12 @@ type DictionaryEntryMeaningsProps = {
 
 function getMeaningTextClassName(
   isDetailView: boolean,
-  compactPreview: boolean,
+  compactLayout: boolean,
 ) {
   return cx(
     "ml-5 list-disc text-ink marker:text-coptic",
-    compactPreview ? "space-y-1 text-base" : "space-y-1.5",
-    isDetailView ? "text-lg md:text-xl" : !compactPreview && "text-lg",
+    compactLayout ? "space-y-1" : "space-y-1.5",
+    isDetailView ? "text-lg md:text-xl" : "text-base",
   );
 }
 
@@ -144,6 +145,7 @@ function GovernmentMarkerRow({
 }
 
 export function DictionaryEntryMeanings({
+  compactLayout = false,
   compactPreview = false,
   dialectMeanings,
   genderedMeanings,
@@ -154,6 +156,7 @@ export function DictionaryEntryMeanings({
   query,
   t,
 }: DictionaryEntryMeaningsProps) {
+  const usesCompactLayout = compactLayout || compactPreview;
   const visibleGenderedMeanings = limitPreview
     ? genderedMeanings.slice(0, 2)
     : genderedMeanings;
@@ -180,8 +183,8 @@ export function DictionaryEntryMeanings({
         <ul
           className={cx(
             "ml-5 list-disc text-ink marker:text-coptic",
-            compactPreview ? "space-y-1 text-base" : "space-y-2",
-            isDetailView ? "text-lg md:text-xl" : !compactPreview && "text-lg",
+            usesCompactLayout ? "space-y-1" : "space-y-2",
+            isDetailView ? "text-lg md:text-xl" : "text-base",
           )}
         >
           {visibleGenderedMeanings.map((row, idx) => (
@@ -222,7 +225,7 @@ export function DictionaryEntryMeanings({
                   <ul
                     className={getMeaningTextClassName(
                       isDetailView,
-                      compactPreview,
+                      usesCompactLayout,
                     )}
                   >
                     {groupGenderedRows.map((row, idx) => (
@@ -283,7 +286,7 @@ export function DictionaryEntryMeanings({
                 <ul
                   className={getMeaningTextClassName(
                     isDetailView,
-                    compactPreview,
+                    usesCompactLayout,
                   )}
                 >
                   {dialectMeaning.meanings.map((meaning, idx) => (

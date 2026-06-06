@@ -96,6 +96,7 @@ export default function DictionaryEntryCard({
   }
 
   const isDetailView = headingLevel === "h1";
+  const usesResultCardDensity = !isDetailView;
   const isCompactResult = !isDetailView && resultMode === "compact";
   const primaryDialectKey = getPreferredEntryDialectKey(entry, viewDialect);
 
@@ -273,7 +274,7 @@ export default function DictionaryEntryCard({
         variantRows={variantRows}
       />
       <DictionaryEntryDialectForms
-        compact={isCompactResult}
+        compact={usesResultCardDensity}
         entry={entry}
         formSymbolTooltips={formSymbolTooltips}
         mainGenderMarkers={mainGenderMarkers}
@@ -292,8 +293,6 @@ export default function DictionaryEntryCard({
 
   if (isDetailView) {
     articlePaddingClassName = "p-8 md:p-10";
-  } else if (resultMode === "detailed") {
-    articlePaddingClassName = "p-5 sm:p-6 md:p-7";
   }
 
   if (isDetailView || resultMode === "detailed") {
@@ -373,6 +372,7 @@ export default function DictionaryEntryCard({
 
       <div className={cx(isDetailView ? "mb-6 space-y-3" : "mb-4 space-y-2")}>
         <DictionaryEntryMeanings
+          compactLayout={usesResultCardDensity}
           dialectMeanings={displayDialectMeanings}
           genderedMeanings={genderedMeanings}
           grammarAbbreviationTooltips={grammarAbbreviationTooltips}
