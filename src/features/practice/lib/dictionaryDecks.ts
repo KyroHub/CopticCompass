@@ -199,6 +199,10 @@ function getQueueLimit(limit: number | undefined) {
   return Math.max(1, Math.trunc(limit));
 }
 
+/**
+ * Builds the stable identity key that joins generated candidates to persisted
+ * flashcard rows across locale, source, template, and variant.
+ */
 function getFlashcardMatchKey(options: {
   language: Language;
   sourceId: number | string;
@@ -215,6 +219,10 @@ function getFlashcardMatchKey(options: {
   ].join(":");
 }
 
+/**
+ * Indexes existing flashcard rows by generated-candidate identity so deck
+ * assembly can preserve scheduler state when source candidates are rebuilt.
+ */
 function getExistingFlashcardByCandidateKey(
   existingFlashcards: readonly DictionaryFlashcardRow[],
 ) {
@@ -281,6 +289,11 @@ export function toDictionaryFlashcardDeckSummary(
   };
 }
 
+/**
+ * Merges generated candidate sources with persisted review state to produce the
+ * deck read model used by Practice. Due cards are queued before new cards,
+ * while scheduled cards remain visible in stats and next-due metadata.
+ */
 export function buildDictionaryFlashcardsDeckReadModel<
   TCandidate extends FlashcardCandidate = DictionaryFlashcardCandidate,
 >({
@@ -355,6 +368,10 @@ export function buildDictionaryFlashcardsDeckReadModel<
   };
 }
 
+/**
+ * Builds generated dictionary flashcard candidates for one deck definition,
+ * applying the deck predicate and stopping at the configured source-entry cap.
+ */
 export function buildGeneratedDictionaryFlashcardSources({
   deckId,
   dictionary,

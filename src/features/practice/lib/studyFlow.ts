@@ -27,6 +27,10 @@ export function isWeakFlashcardRating(
   return rating === "again" || rating === "hard";
 }
 
+/**
+ * Converts review ratings into a small weakness score. Negative values let
+ * recent successful reviews gradually push a card out of the weak-review lane.
+ */
 function getReviewWeaknessScore(rating: FlashcardReviewRating) {
   if (rating === "again") {
     return 2;
@@ -43,6 +47,10 @@ function getReviewWeaknessScore(rating: FlashcardReviewRating) {
   return -1;
 }
 
+/**
+ * Scores recent reviews for weak-mode ordering, falling back to the latest
+ * stored rating when the compact recent-rating history is unavailable.
+ */
 export function getFlashcardWeakReviewScore(
   item: Pick<FlashcardDeckItem, "lastReviewRating" | "recentReviewRatings">,
 ) {
@@ -58,6 +66,10 @@ export function getFlashcardWeakReviewScore(
   );
 }
 
+/**
+ * Marks cards for weak-mode practice when the latest review was weak or the
+ * recent review trend still crosses the weakness threshold.
+ */
 function isWeakFlashcardItem(item: FlashcardDeckItem) {
   const latestRating = item.recentReviewRatings[0] ?? item.lastReviewRating;
 
@@ -105,6 +117,10 @@ export function getInitialFlashcardStudyMode({
   return getDefaultFlashcardStudyMode(counts);
 }
 
+/**
+ * Selects the active study queue for a mode. Weak mode is additionally sorted
+ * by weakness score so the roughest cards appear first.
+ */
 export function getFlashcardStudyModeItems<TItem extends FlashcardDeckItem>({
   items,
   limit = DICTIONARY_FLASHCARD_QUEUE_LIMIT,

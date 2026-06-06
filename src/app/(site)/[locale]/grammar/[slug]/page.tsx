@@ -10,6 +10,10 @@ import {
 } from "@/features/grammar/lib/grammarDataset";
 import { getGrammarLessonPath } from "@/features/grammar/lib/grammarPaths";
 import { buildLessonOpenGraphImageUrl } from "@/features/grammar/lib/lessonOpenGraph";
+import {
+  createBreadcrumbStructuredData,
+  createGrammarLessonStructuredData,
+} from "@/features/seo/lib/structuredData";
 import { getTranslation } from "@/lib/i18n";
 import {
   createLanguageAlternates,
@@ -19,10 +23,6 @@ import {
 import { createPageSocialMetadata, createSocialImage } from "@/lib/metadata";
 import { resolvePublicLocale } from "@/lib/publicLocaleRouting";
 import { siteConfig } from "@/lib/site";
-import {
-  createBreadcrumbStructuredData,
-  createGrammarLessonStructuredData,
-} from "@/lib/structuredData";
 
 import type { Metadata } from "next";
 

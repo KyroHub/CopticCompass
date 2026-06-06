@@ -2,9 +2,8 @@ import {
   SHENUTE_HANDOFF_STORAGE_KEY,
   type ShenuteHandoffPayload,
 } from "@/features/shenute/handoff";
+import { serializeShenuteChatMessageForHistory } from "@/features/shenute/lib/client/shenuteClientApi";
 import {
-  getMessageText,
-  isTextMessagePart,
   toShenuteProvider,
   type ChatMessageLike,
   type ShenuteProvider,
@@ -18,19 +17,6 @@ import {
 
 type ShenuteClientLanguage = "en" | "nl";
 
-export type SavedChatSession = {
-  id: string;
-  title: string;
-  updated_at: string | null;
-};
-
-type FeedbackResponsePayload = {
-  code?: unknown;
-  ragIngested?: boolean;
-  ragWarning?: boolean;
-  success?: boolean;
-};
-
 type ShenuteErrorCopy = {
   accessRequired: string;
   feedbackSaveFailed: string;
@@ -41,13 +27,6 @@ type ShenuteErrorCopy = {
   providerThoth: string;
   rateLimit: string;
   requestFailed: string;
-};
-
-type SavedChatMessage = {
-  id: string;
-  role: ChatMessageLike["role"];
-  content: string;
-  parts?: Array<{ text: string; type: "text" }>;
 };
 
 export function formatFileSize(bytes: number, language: ShenuteClientLanguage) {
@@ -112,21 +91,8 @@ export function normalizeChatMessages<T extends ChatMessageLike>(
   return normalizedMessages;
 }
 
-function serializeChatMessage(message: ChatMessageLike): SavedChatMessage {
-  return {
-    id: message.id,
-    role: message.role,
-    content: getMessageText(message),
-    parts: Array.isArray(message.parts)
-      ? message.parts
-          .filter(isTextMessagePart)
-          .map((part) => ({ text: part.text, type: "text" }))
-      : undefined,
-  };
-}
-
 export function getChatMessagesSignature(messages: readonly ChatMessageLike[]) {
-  return JSON.stringify(messages.map(serializeChatMessage));
+  return JSON.stringify(messages.map(serializeShenuteChatMessageForHistory));
 }
 
 export function readShenuteHandoffPayload(): ShenuteHandoffPayload | null {
@@ -159,46 +125,6 @@ export function readShenuteHandoffPayload(): ShenuteHandoffPayload | null {
     };
   } catch {
     return null;
-  }
-}
-
-export async function saveChatHistoryOnline(
-  messages: ChatMessageLike[],
-  sessionId: string,
-): Promise<{
-  success: boolean;
-  sessionId?: string;
-  sessions?: Array<SavedChatSession>;
-}> {
-  if (typeof window === "undefined") {
-    return { success: false };
-  }
-
-  try {
-    const response = await fetch("/api/shenute/history", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        sessionId,
-        messages: messages.map(serializeChatMessage),
-      }),
-    });
-
-    if (!response.ok) {
-      return { success: false };
-    }
-
-    const data = (await response.json()) as {
-      success: boolean;
-      sessionId?: string;
-      sessions?: Array<SavedChatSession>;
-    };
-
-    return data;
-  } catch {
-    return { success: false };
   }
 }
 
@@ -281,24 +207,6 @@ export function getShenuteErrorMessage(
   }
 
   return copy.requestFailed;
-}
-
-export function getFeedbackErrorMessage(
-  payload: FeedbackResponsePayload,
-  copy: Pick<ShenuteErrorCopy, "feedbackSaveFailed">,
-  language: ShenuteClientLanguage,
-) {
-  return isAppErrorCode(payload.code)
-    ? getPublicErrorMessage(payload.code, language, "feedback")
-    : copy.feedbackSaveFailed;
-}
-
-export async function readFeedbackResponsePayload(response: Response) {
-  try {
-    return (await response.json()) as FeedbackResponsePayload;
-  } catch {
-    return { success: false } satisfies FeedbackResponsePayload;
-  }
 }
 
 export function getFeedbackStatusClass(

@@ -1,5 +1,4 @@
 import type { AudiencePreferencesRow } from "@/features/communications/lib/communications";
-import type { ProfileRole } from "@/features/submissions/types";
 import type { AppSupabaseClient } from "@/lib/supabase/queryTypes";
 import type { Tables } from "@/types/supabase";
 
@@ -64,24 +63,4 @@ export async function getAudienceContactForProfile(
   }
 
   return data;
-}
-
-/**
- * Loads the stored profile role used by server-side admin checks.
- */
-export async function getProfileRole(
-  supabase: AppSupabaseClient,
-  userId: string,
-): Promise<ProfileRole | null> {
-  const { data, error } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", userId)
-    .single();
-
-  if (error) {
-    return null;
-  }
-
-  return data?.role ?? null;
 }

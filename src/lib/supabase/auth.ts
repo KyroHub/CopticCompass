@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
 
-import { getProfileRole } from "@/features/profile/lib/server/queries";
 import { getAuthenticatedUser } from "@/lib/supabase/authQueries";
 import {
   getAuthUnavailableLoginPath,
   getLoginPath,
   hasSupabaseRuntimeEnv,
 } from "@/lib/supabase/config";
+import { getProfileRole } from "@/lib/supabase/profileRole";
 import type { AppSupabaseClient } from "@/lib/supabase/queryTypes";
 import { createClient } from "@/lib/supabase/server";
 

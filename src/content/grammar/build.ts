@@ -9,6 +9,10 @@ import type {
   GrammarLessonIndexItem,
 } from "./schema.ts";
 
+/**
+ * Collects the lesson-local bundle used by public lesson JSON, including
+ * section-level exercises that may not be listed directly on the lesson root.
+ */
 function createGrammarLessonBundleFromSnapshot(
   lesson: GrammarLessonDocument,
   snapshot: GrammarDatasetSnapshot,
@@ -73,6 +77,10 @@ function createPublishedLessonIndex(
   return lessons.filter((lesson) => lesson.status === "published");
 }
 
+/**
+ * Prunes the full authoring snapshot down to published lessons and then removes
+ * dangling concept, source, exercise, example, footnote, and flashcard refs.
+ */
 export function createPublishedGrammarDatasetSnapshot(
   snapshot: GrammarDatasetSnapshot = getGrammarDatasetSnapshot(),
 ): GrammarDatasetSnapshot {
@@ -202,6 +210,10 @@ export function createPublishedGrammarDatasetSnapshot(
   };
 }
 
+/**
+ * Builds the compact public export shape after dictionary-link enrichment and
+ * publish filtering, keyed by lesson slug for stable static file output.
+ */
 export function createGrammarExportSnapshot(
   snapshot: GrammarDatasetSnapshot = getGrammarDatasetSnapshot(),
 ) {
@@ -221,6 +233,10 @@ export function createGrammarExportSnapshot(
   };
 }
 
+/**
+ * Enumerates every static grammar JSON file produced by the export script,
+ * keeping the shared collection files and per-lesson bundles in one manifest.
+ */
 export function createGrammarStaticExportFiles(
   snapshot: GrammarDatasetSnapshot = getGrammarDatasetSnapshot(),
 ): GrammarStaticExportFile[] {

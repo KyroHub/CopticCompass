@@ -1,5 +1,6 @@
 import { Clock3 } from "lucide-react";
 
+import type { SavedChatSession } from "@/features/shenute/lib/client/shenuteClientApi";
 import { cx } from "@/lib/classes";
 import type { Language } from "@/lib/i18n";
 
@@ -10,7 +11,6 @@ import {
 import {
   closeContainingDetails,
   formatSessionTimestamp,
-  type SavedChatSession,
 } from "./shenuteClientUtils";
 
 type ShenuteSavedSessionsCopy = {

@@ -1,4 +1,4 @@
-export type OpenRouterChatMessage = {
+type OpenRouterChatMessage = {
   content: string;
   role: "assistant" | "system" | "user";
   reasoning_details?: unknown;

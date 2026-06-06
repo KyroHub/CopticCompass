@@ -1,10 +1,10 @@
 import StructuredData from "@/components/StructuredData";
 import { DevelopersPageClient } from "@/features/developers/components/DevelopersPageClient";
+import { createBreadcrumbStructuredData } from "@/features/seo/lib/structuredData";
 import { getTranslation } from "@/lib/i18n";
 import { getDevelopersPath, getLocalizedHomePath } from "@/lib/locale";
 import { createLocalizedPageMetadata } from "@/lib/metadata";
 import { resolvePublicLocale } from "@/lib/publicLocaleRouting";
-import { createBreadcrumbStructuredData } from "@/lib/structuredData";
 
 import type { Metadata } from "next";
 

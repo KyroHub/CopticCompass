@@ -12,6 +12,8 @@ const ADMIN_OPERATIONAL_ERROR_UI_FILES = [
   "src/features/admin/components/AdminNotificationsSection.tsx",
   "src/features/admin/components/AdminRagKnowledgeSection.tsx",
   "src/features/admin/components/AdminRagIngestionForm.tsx",
+  "src/features/admin/components/AdminRagNotices.tsx",
+  "src/features/admin/components/AdminRagStatusPanel.tsx",
   "src/features/admin/components/AdminReleasesSection.tsx",
   "src/features/admin/components/AdminReviewInboxSummary.tsx",
   "src/features/admin/components/AdminReviewQueueSections.tsx",
@@ -54,19 +56,19 @@ describe("admin error disclosure guardrails", () => {
     const technicalDetailRequirements = [
       {
         expected: "technicalDetails={ragStatusError}",
-        file: "src/features/admin/components/AdminRagIngestionForm.tsx",
+        file: "src/features/admin/components/AdminRagStatusPanel.tsx",
       },
       {
         expected: "technicalDetails={state.error}",
-        file: "src/features/admin/components/AdminRagIngestionForm.tsx",
+        file: "src/features/admin/components/AdminRagNotices.tsx",
       },
       {
         expected: "technicalDetails={bulkJsonState.error}",
-        file: "src/features/admin/components/AdminRagIngestionForm.tsx",
+        file: "src/features/admin/components/AdminRagNotices.tsx",
       },
       {
         expected: "technicalDetails={failedBulkJsonResults.map",
-        file: "src/features/admin/components/AdminRagIngestionForm.tsx",
+        file: "src/features/admin/components/AdminRagNotices.tsx",
       },
       {
         expected: "details={{",

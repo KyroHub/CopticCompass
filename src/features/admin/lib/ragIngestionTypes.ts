@@ -1,4 +1,4 @@
-import type { Json } from "@/types/supabase";
+import type { ReadableSourceType } from "@/lib/sourceFiles";
 
 import type { StructuredJsonChunkMode } from "./structuredJsonChunks";
 
@@ -12,6 +12,11 @@ export type RagIngestionResult = {
   sourceName?: string;
   sourceType?: string;
   success: boolean;
+};
+
+export type RagIngestionState = RagIngestionResult & {
+  embeddingProvider?: RagEmbeddingProvider;
+  ingestId?: string;
 };
 
 export type RagIngestionLogEntry = {
@@ -43,7 +48,7 @@ export type RagChunkStats = {
   totalChunks: number;
 };
 
-export type SourceType = "pdf" | "image" | "docx" | "text";
+export type SourceType = ReadableSourceType;
 export type RagEmbeddingProvider = "gemini" | "hf" | "openrouter";
 
 export type IngestRagFileOptions = {
@@ -57,12 +62,6 @@ export type IngestRagFileOptions = {
   skipThothProofcheck?: boolean;
   sourceTitle: string;
   userId: string;
-};
-
-export type CopticDocumentsInsertRow = {
-  content: string;
-  embedding: string;
-  metadata: Json;
 };
 
 export type PdfReconciliationSummary = {

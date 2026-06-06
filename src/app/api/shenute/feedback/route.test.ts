@@ -64,7 +64,7 @@ async function loadFeedbackRoute(options?: LoadFeedbackRouteOptions) {
     }
   });
 
-  vi.doMock("@/features/profile/lib/server/queries", () => ({
+  vi.doMock("@/lib/supabase/profileRole", () => ({
     getProfileRole: getProfileRoleMock,
   }));
   vi.doMock("@/features/shenute/lib/server/feedbackIngestion", () => ({

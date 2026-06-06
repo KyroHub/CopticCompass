@@ -34,6 +34,11 @@ const BOHAIRIC_PREFIX_STRIPPING_CANDIDATES = [
   "Ⲛⲓ",
 ] as const;
 
+/**
+ * Normalizes a Bohairic form into the same search key used by dictionary
+ * lookup, rejecting multi-token phrases that would make automatic linking too
+ * broad.
+ */
 function normalizeBohairicLookupCandidate(value: string): string | null {
   const normalizedValue = normalizeCopticSearchText(value).replace(/\s+/g, " ");
 
@@ -68,6 +73,10 @@ function collectBohairicForms(entry: LexicalEntry): string[] {
     .filter((form) => form.length > 0);
 }
 
+/**
+ * Builds the grammar auto-link lookup from normalized Bohairic forms to entry
+ * ids, keeping only forms that point to exactly one dictionary entry.
+ */
 function getBohairicDictionaryLookup() {
   if (bohairicDictionaryLookupCache) {
     return bohairicDictionaryLookupCache;
@@ -99,6 +108,11 @@ function getBohairicDictionaryLookup() {
   return bohairicDictionaryLookupCache;
 }
 
+/**
+ * Resolves a Coptic word to a dictionary entry by exact Bohairic form first,
+ * then by stripping common articles or prefixes only when the fallback remains
+ * unambiguous.
+ */
 export function getBohairicDictionaryEntryIdForWord(
   word: string,
 ): string | null {
@@ -140,6 +154,10 @@ export function getBohairicDictionaryEntryIdForWord(
   return fallbackMatches.size === 1 ? ([...fallbackMatches][0] ?? null) : null;
 }
 
+/**
+ * Reduces inline grammar nodes to plain Coptic/text content so span-level
+ * dictionary linking can inspect a whole marked phrase.
+ */
 function flattenInlineNodeText(node: GrammarInline): string {
   switch (node.type) {
     case "text":
@@ -171,6 +189,10 @@ function flattenInlineNodeText(node: GrammarInline): string {
   }
 }
 
+/**
+ * Adds dictionary links to inline Coptic nodes without overwriting explicit
+ * author-provided `dictionaryEntryId` values.
+ */
 function enrichInlineNode(node: GrammarInline): GrammarInline {
   switch (node.type) {
     case "coptic": {
@@ -227,6 +249,11 @@ function enrichInlineNode(node: GrammarInline): GrammarInline {
   }
 }
 
+/**
+ * Traverses block content that can contain inline Coptic text. Example and
+ * exercise groups are enriched through their own documents so references stay
+ * attached to the canonical grammar records.
+ */
 function enrichBlocks(blocks: readonly GrammarBlock[]): GrammarBlock[] {
   return blocks.map((block) => {
     switch (block.type) {
@@ -337,6 +364,11 @@ function enrichExerciseDocument(
   };
 }
 
+/**
+ * Builds example-level dictionary references from explicit refs first, then
+ * token-level links, then a whole-example fallback when the example is a single
+ * resolvable form.
+ */
 function enrichExampleDocument(
   example: GrammarExampleDocument,
 ): GrammarExampleDocument {
@@ -372,6 +404,10 @@ function tokenizeExampleCoptic(coptic: string) {
     .filter((segment) => segment.length > 0);
 }
 
+/**
+ * Tokenizes example text into display segments and attaches dictionary ids,
+ * honoring per-token overrides before attempting automatic Bohairic lookup.
+ */
 function buildExampleCopticSegments(
   example: GrammarExampleDocument,
 ): GrammarExampleSegment[] {
@@ -400,6 +436,10 @@ function enrichFootnoteDocument(
   };
 }
 
+/**
+ * Applies dictionary auto-link enrichment to the grammar snapshot used for
+ * exports and runtime bundles while leaving the source lesson files unchanged.
+ */
 export function enrichGrammarDatasetSnapshotWithDictionaryLinks(
   snapshot: GrammarDatasetSnapshot,
 ): GrammarDatasetSnapshot {

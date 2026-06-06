@@ -88,6 +88,10 @@ function toIsoString(value: Date | number | string | null | undefined) {
   return new Date(value).toISOString();
 }
 
+/**
+ * Converts the FSRS card object into a plain JSON shape that Supabase can store
+ * and later pass back through the scheduler without Date instances.
+ */
 function serializeFsrsCard(card: Card): SerializedFsrsCard {
   const lastReview = toIsoString(card.last_review);
 
@@ -120,6 +124,10 @@ function serializeFsrsReviewLog(log: ReviewLog): SerializedFsrsReviewLog {
   };
 }
 
+/**
+ * Rehydrates a persisted scheduler card into the Date-bearing input shape that
+ * `ts-fsrs` expects for the next review calculation.
+ */
 function toFsrsCardInput(card: SerializedFsrsCard): CardInput {
   return {
     difficulty: card.difficulty,
@@ -141,6 +149,10 @@ export function isFlashcardReviewRating(
   return FLASHCARD_REVIEW_RATINGS.includes(value as FlashcardReviewRating);
 }
 
+/**
+ * Validates persisted scheduler state before review. Corrupt or legacy rows
+ * return `null` so callers can fail with a clear practice-storage error.
+ */
 export function parseSerializedFsrsCard(
   value: unknown,
 ): SerializedFsrsCard | null {
@@ -183,6 +195,10 @@ export function parseSerializedFsrsCard(
   };
 }
 
+/**
+ * Creates the first scheduler card for a new practice item and exposes the
+ * initial due timestamp alongside the serialized card.
+ */
 export function createInitialFlashcardSchedulerState(
   now = new Date(),
 ): InitialFlashcardSchedulerState {
@@ -194,6 +210,10 @@ export function createInitialFlashcardSchedulerState(
   };
 }
 
+/**
+ * Applies one user review to serialized FSRS state and returns both the next
+ * persisted card and a serializable review log for analytics/replay.
+ */
 export function reviewFlashcardSchedulerState(
   serializedCard: unknown,
   rating: FlashcardReviewRating,

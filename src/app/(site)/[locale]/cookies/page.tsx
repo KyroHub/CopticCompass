@@ -2,11 +2,11 @@ import StructuredData from "@/components/StructuredData";
 import { AnalyticsConsentPreference } from "@/features/legal/components/AnalyticsConsentPreference";
 import { LegalDocumentPageClient } from "@/features/legal/components/LegalDocumentPageClient";
 import { getCookiesDocument } from "@/features/legal/lib/legalDocuments";
+import { createBreadcrumbStructuredData } from "@/features/seo/lib/structuredData";
 import { getTranslation } from "@/lib/i18n";
 import { getCookiesPath, getLocalizedHomePath } from "@/lib/locale";
 import { createLocalizedPageMetadata } from "@/lib/metadata";
 import { resolvePublicLocale } from "@/lib/publicLocaleRouting";
-import { createBreadcrumbStructuredData } from "@/lib/structuredData";
 
 import type { Metadata } from "next";
 

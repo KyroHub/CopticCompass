@@ -1,5 +1,7 @@
-import type { HfChatMessage } from "@/lib/hf";
-import type { OpenRouterChatMessage } from "@/lib/openrouter";
+import type {
+  ChatCompletionMessage,
+  ReasoningChatCompletionMessage,
+} from "@/lib/ai/chatCompletions";
 
 import { getCachedReasoningDetails } from "./openRouterReasoningCache";
 
@@ -22,8 +24,10 @@ export function extractMessageText(message: UIMessage): string {
     .trim();
 }
 
-export function toOpenAiMessages(messages: UIMessage[]): HfChatMessage[] {
-  const openAiMessages: HfChatMessage[] = [];
+export function toOpenAiMessages(
+  messages: UIMessage[],
+): ChatCompletionMessage[] {
+  const openAiMessages: ChatCompletionMessage[] = [];
 
   for (const message of messages) {
     const content = extractMessageText(message);
@@ -102,8 +106,8 @@ function getMessageReasoningDetails(message: UIMessage): unknown {
 export function toOpenRouterMessages(
   messages: UIMessage[],
   shenuteSessionId: string,
-): OpenRouterChatMessage[] {
-  const openRouterMessages: OpenRouterChatMessage[] = [];
+): ReasoningChatCompletionMessage[] {
+  const openRouterMessages: ReasoningChatCompletionMessage[] = [];
 
   for (const message of messages) {
     const content = extractMessageText(message);

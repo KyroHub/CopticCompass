@@ -5,14 +5,14 @@ import {
   getFaqPageCopy,
   listFaqItems,
 } from "@/features/faq/lib/faq";
+import {
+  createBreadcrumbStructuredData,
+  createFaqPageStructuredData,
+} from "@/features/seo/lib/structuredData";
 import { getTranslation } from "@/lib/i18n";
 import { getFaqPath, getLocalizedHomePath } from "@/lib/locale";
 import { createLocalizedPageMetadata } from "@/lib/metadata";
 import { resolvePublicLocale } from "@/lib/publicLocaleRouting";
-import {
-  createBreadcrumbStructuredData,
-  createFaqPageStructuredData,
-} from "@/lib/structuredData";
 
 import type { Metadata } from "next";
 

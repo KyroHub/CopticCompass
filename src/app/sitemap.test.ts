@@ -5,7 +5,7 @@ import {
   getPublicSitemapShardById,
   getPublicSitemapShards,
   PUBLIC_SITEMAP_MAX_URLS,
-} from "@/lib/server/sitemaps";
+} from "@/features/seo/lib/server/sitemaps";
 
 function getContentSitemapUrls() {
   return (

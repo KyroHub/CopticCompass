@@ -1,11 +1,9 @@
 import "server-only";
+import { buildThothPdfOcrReconciliationPrompt } from "@/lib/ai/prompts/ragIngestion";
+import { normalizeWhitespace, splitIntoSemanticSegments } from "@/lib/text";
+
 import { THOTH_RECONCILE_TEXT_LIMIT } from "./ragIngestionConfig";
-import {
-  hasThothAvailable,
-  normalizeWhitespace,
-  runThothStructuredTask,
-  splitIntoSemanticSegments,
-} from "./ragIngestionUtils";
+import { hasThothAvailable, runThothStructuredTask } from "./ragIngestionUtils";
 
 import type { PdfReconciliationSummary } from "./ragIngestionTypes";
 
@@ -139,19 +137,11 @@ export async function reconcilePdfExtractedAndOcrText(
   ) {
     const thothParsed = (await runThothStructuredTask({
       ingestId: options.ingestId,
-      prompt: `You are THOTH AI reconciling OCR and native PDF extraction for Coptic language sources.
-Return only valid JSON with schema:
-{
-  "strategy": "merge" | "ocr" | "pdf",
-  "confidence": 0.0,
-  "reconciledText": "single cleaned text"
-}
-
-Native PDF text:
-${normalizedExtracted.slice(0, THOTH_RECONCILE_TEXT_LIMIT)}
-
-OCR text:
-${normalizedOcr.slice(0, THOTH_RECONCILE_TEXT_LIMIT)}`,
+      prompt: buildThothPdfOcrReconciliationPrompt({
+        inputLimit: THOTH_RECONCILE_TEXT_LIMIT,
+        nativePdfText: normalizedExtracted,
+        ocrText: normalizedOcr,
+      }),
       taskTag: "pdf-ocr-reconcile",
       userId: options.userId,
     })) as ThothPdfReconciliationResult | null;

@@ -1,126 +1,61 @@
 "use client";
 
-/* eslint-disable react-hooks/set-state-in-effect -- Floating Shenute uses existing timer-driven chat state that is not compiler-clean yet. */
-
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { usePathname } from "next/navigation";
 import {
-  useEffect,
+  useCallback,
   useMemo,
   useRef,
   useState,
   type CSSProperties,
-  type FormEvent,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
 
-import { processOCRImage } from "@/actions/ocrActions";
 import { useLanguage } from "@/components/LanguageProvider";
 import {
-  SHENUTE_HANDOFF_STORAGE_KEY,
-  type ShenuteHandoffMessage,
-  type ShenuteHandoffPayload,
-  type ShenuteHandoffPageContext,
-} from "@/features/shenute/handoff";
-import {
-  copyTextToClipboard,
   formatElapsedTime,
-  getMessageText,
   getThinkingStatusMessage,
   type ChatMessageLike,
-  type ShenuteFeedbackSignal,
-  type ShenuteProvider,
-  type ShenuteReactionSignal,
 } from "@/features/shenute/shared";
 import { cx } from "@/lib/classes";
-import { getPublicErrorMessage, isAppErrorCode } from "@/lib/errors";
-import { getPublicOcrErrorMessage } from "@/lib/ocrErrors";
-import { createClient } from "@/lib/supabase/client";
 import { useOptionalAuthGate } from "@/lib/supabase/useOptionalAuthGate";
 import { useMediaQuery } from "@/lib/useMediaQuery";
 import type { Language } from "@/types/i18n";
 
 import { FLOATING_SHENUTE_CONTAINER_CLASS } from "./floatingShenuteClasses";
 import { FloatingShenuteComposer } from "./FloatingShenuteComposer";
+import {
+  getFloatingShenutePageContextLabel,
+  readFloatingShenutePageContext,
+} from "./floatingShenuteContext";
 import { FloatingShenuteHeader } from "./FloatingShenuteHeader";
 import { FloatingShenuteMessages } from "./FloatingShenuteMessages";
 import { FloatingShenuteProviderControls } from "./FloatingShenuteProviderControls";
 import { FloatingShenuteTrigger } from "./FloatingShenuteTrigger";
 import { FloatingShenuteWindow } from "./FloatingShenuteWindow";
+import { useFloatingShenuteChatHistoryDownload } from "./useFloatingShenuteChatHistoryDownload";
+import { useFloatingShenuteComposerSubmit } from "./useFloatingShenuteComposerSubmit";
+import {
+  useFloatingShenuteAnswerStyleChrome,
+  useFloatingShenuteAttachmentMenuChrome,
+  useFloatingShenuteStopResponse,
+  useFloatingShenuteWorkspaceHandoff,
+} from "./useFloatingShenutePanelChrome";
 import { useFloatingShenutePanelState } from "./useFloatingShenutePanelState";
+import { useShenuteAdminFeedbackAccess } from "./useShenuteAdminFeedbackAccess";
+import { useShenuteFeedbackSubmission } from "./useShenuteFeedbackSubmission";
 import { useShenuteImageAttachment } from "./useShenuteImageAttachment";
+import { useShenuteMessageCopy } from "./useShenuteMessageCopy";
 import { useShenuteProviderSelection } from "./useShenuteProviderSelection";
+import { useShenuteTemporaryMessageActions } from "./useShenuteTemporaryMessageActions";
 import { useShenuteTextareaAutosize } from "./useShenuteTextareaAutosize";
 import { useShenuteThinkingTimer } from "./useShenuteThinkingTimer";
 
-type FeedbackStateByMessage = Record<
-  string,
-  {
-    message: string;
-    status: "error" | "pending" | "success";
-  }
->;
-
-type PageContextPayload = {
-  excerpt: string;
-  path: string;
-  title: string;
-  url: string;
-};
-
-const SITE_TITLE_SUFFIX_PATTERN = /\s+\|\s+Coptic Compass$/;
 const MESSAGE_INPUT_MIN_HEIGHT = 40;
 const MESSAGE_INPUT_MOBILE_MAX_HEIGHT = 112;
 const MESSAGE_INPUT_MAX_HEIGHT = 136;
 const MOBILE_VIEWPORT_MEDIA_QUERY = "(max-width: 639px)";
-
-const PAGE_CONTEXT_LABELS: Record<Language, Record<string, string>> = {
-  en: {
-    admin: "Admin",
-    analytics: "Analytics",
-    "api-docs": "API docs",
-    communications: "Communications",
-    contact: "Contact",
-    contributors: "Contributors",
-    dashboard: "Dashboard",
-    developers: "Developers",
-    dictionary: "Dictionary",
-    entry: "Dictionary",
-    "forgot-password": "Forgot password",
-    grammar: "Grammar",
-    home: "Home",
-    login: "Sign in",
-    ocr: "OCR",
-    privacy: "Privacy",
-    publications: "Publications",
-    shenute: "Shenute AI",
-    terms: "Terms",
-    "update-password": "Update password",
-  },
-  nl: {
-    admin: "Admin",
-    analytics: "Analytics",
-    "api-docs": "API-documentatie",
-    communications: "Communicatie",
-    contact: "Contact",
-    contributors: "Bijdragers",
-    dashboard: "Dashboard",
-    developers: "Ontwikkelaars",
-    dictionary: "Woordenboek",
-    entry: "Woordenboek",
-    "forgot-password": "Wachtwoord vergeten",
-    grammar: "Grammatica",
-    home: "Home",
-    login: "Inloggen",
-    ocr: "OCR",
-    privacy: "Privacy",
-    publications: "Publicaties",
-    shenute: "Shenute AI",
-    terms: "Voorwaarden",
-    "update-password": "Wachtwoord bijwerken",
-  },
-};
 
 const floatingShenuteCopy = {
   en: {
@@ -289,152 +224,6 @@ const floatingShenuteCopy = {
   },
 } as const satisfies Record<Language, Record<string, string>>;
 
-type FloatingShenuteCopy =
-  (typeof floatingShenuteCopy)[keyof typeof floatingShenuteCopy];
-
-type FeedbackResponsePayload = {
-  code?: unknown;
-  ragIngested?: boolean;
-  ragWarning?: boolean;
-  success?: boolean;
-};
-
-function getFeedbackErrorMessage(
-  payload: FeedbackResponsePayload,
-  copy: FloatingShenuteCopy,
-  language: Language,
-) {
-  return isAppErrorCode(payload.code)
-    ? getPublicErrorMessage(payload.code, language, "feedback")
-    : copy.feedbackFailed;
-}
-
-async function readFeedbackResponsePayload(response: Response) {
-  try {
-    return (await response.json()) as FeedbackResponsePayload;
-  } catch {
-    return { success: false } satisfies FeedbackResponsePayload;
-  }
-}
-
-function formatChatHistory(
-  messages: ChatMessageLike[],
-  pageContext: PageContextPayload,
-  provider: ShenuteProvider,
-) {
-  const lines: string[] = [];
-  lines.push("Shenute AI chat history");
-  lines.push(`Page: ${pageContext.title || pageContext.path || "unknown"}`);
-  lines.push(`URL: ${pageContext.url || "unknown"}`);
-  lines.push(`Provider: ${provider}`);
-  lines.push(`Saved: ${new Date().toISOString()}`);
-  lines.push("");
-
-  for (const message of messages) {
-    let role = "System";
-    if (message.role === "user") {
-      role = "User";
-    } else if (message.role === "assistant") {
-      role = "Assistant";
-    }
-
-    const text = getMessageText(message) || "[no text]";
-    lines.push(`${role}:`);
-    lines.push(text);
-    lines.push("");
-  }
-
-  return lines.join("\n");
-}
-
-function serializeChatMessage(message: ChatMessageLike): ShenuteHandoffMessage {
-  const text = getMessageText(message);
-
-  return {
-    content: text,
-    id: message.id,
-    parts: text ? [{ text, type: "text" }] : undefined,
-    role: message.role,
-  };
-}
-
-function toHandoffPageContext(
-  pageContext: PageContextPayload,
-): ShenuteHandoffPageContext {
-  return {
-    excerpt: pageContext.excerpt,
-    path: pageContext.path,
-    title: pageContext.title,
-    url: pageContext.url,
-  };
-}
-
-function buildPageContext(pathname: string): PageContextPayload {
-  if (typeof window === "undefined") {
-    return {
-      excerpt: "",
-      path: pathname,
-      title: "",
-      url: "",
-    };
-  }
-
-  const title = document.title?.trim() ?? "";
-  const url = window.location.href;
-
-  const mainText = document.querySelector("main")?.textContent ?? "";
-  const bodyText = document.body?.textContent ?? "";
-  const extractedText =
-    mainText.replace(/\s+/g, " ").trim().length > 0 ? mainText : bodyText;
-  const excerpt = extractedText.replace(/\s+/g, " ").trim().slice(0, 3500);
-
-  return {
-    excerpt,
-    path: pathname,
-    title,
-    url,
-  };
-}
-
-function getPageContextSegments(pathname: string) {
-  const segments = pathname.split("/").filter(Boolean);
-  const firstSegment = segments[0];
-
-  if (firstSegment === "en" || firstSegment === "nl") {
-    return segments.slice(1);
-  }
-
-  return segments;
-}
-
-function formatFallbackPageContextLabel(segment: string) {
-  return segment
-    .split("-")
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
-
-function getPageContextLabel(
-  pageContext: PageContextPayload,
-  language: Language,
-) {
-  const labels = PAGE_CONTEXT_LABELS[language];
-  const [section] = getPageContextSegments(pageContext.path);
-
-  if (!section) {
-    return labels.home;
-  }
-
-  const routeLabel = labels[section];
-  if (routeLabel) {
-    return routeLabel;
-  }
-
-  const title = pageContext.title.replace(SITE_TITLE_SUFFIX_PATTERN, "").trim();
-  return title || formatFallbackPageContextLabel(section) || pageContext.path;
-}
-
 type FloatingShenutePanelProps = {
   initialOpen?: boolean;
 };
@@ -456,12 +245,16 @@ export function FloatingShenutePanel({
     selectedProviderOption,
     setInferenceProvider,
   } = useShenuteProviderSelection(copy);
-  const [isAnswerStylePanelOpen, setIsAnswerStylePanelOpen] = useState(false);
-  const [isAttachmentMenuOpen, setIsAttachmentMenuOpen] = useState(false);
   const [ocrPending, setOcrPending] = useState(false);
   const [ocrError, setOcrError] = useState<string | null>(null);
   const attachmentMenuDetailsRef = useRef<HTMLDetailsElement | null>(null);
   const messageInputRef = useRef<HTMLTextAreaElement | null>(null);
+  const { isAnswerStylePanelOpen, setIsAnswerStylePanelOpen } =
+    useFloatingShenuteAnswerStyleChrome();
+  const { closeAttachmentMenu, handleAttachmentMenuToggle } =
+    useFloatingShenuteAttachmentMenuChrome({
+      attachmentMenuDetailsRef,
+    });
   const shenuteSessionIdRef = useRef(crypto.randomUUID());
   const {
     cameraError,
@@ -490,21 +283,55 @@ export function FloatingShenutePanel({
   });
 
   const { isAuthenticated, isReady, user } = useOptionalAuthGate();
-  const [selectedReactionByMessage, setSelectedReactionByMessage] = useState<
-    Record<string, ShenuteReactionSignal>
-  >({});
-  const [adminFeedbackDraftByMessage, setAdminFeedbackDraftByMessage] =
-    useState<Record<string, string>>({});
-  const [feedbackStateByMessage, setFeedbackStateByMessage] =
-    useState<FeedbackStateByMessage>({});
-  const [messageActionStateByMessage, setMessageActionStateByMessage] =
-    useState<FeedbackStateByMessage>({});
-  const [canSubmitAdminFeedback, setCanSubmitAdminFeedback] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<string | null>(null);
+  const pageContext = useMemo(
+    () => readFloatingShenutePageContext(pathname),
+    [pathname],
+  );
+  const readCurrentPageContext = useCallback(
+    () => readFloatingShenutePageContext(pathname),
+    [pathname],
+  );
+  const getShenuteSessionId = useCallback(
+    () => shenuteSessionIdRef.current,
+    [],
+  );
+  const {
+    adminFeedbackDraftByMessage,
+    feedbackStateByMessage,
+    handleAdminFeedbackSubmit,
+    handleReaction,
+    selectedReactionByMessage,
+    setAdminFeedbackDraft,
+  } = useShenuteFeedbackSubmission({
+    copy: {
+      promptMissing: copy.promptResolveFailed,
+      saveFailed: copy.feedbackFailed,
+      saved: copy.saved,
+      savedLearningDelayed: copy.savedLearningDelayed,
+      savedWithRag: copy.savedRag,
+      saving: copy.savingFeedback,
+      signIn: copy.signInFeedback,
+      writeAdminFeedback: copy.writeAdminFeedback,
+    },
+    getShenuteSessionId,
+    inferenceProvider,
+    isAuthenticated,
+    language,
+    pageContext,
+  });
+  const { messageActionStateByMessage, setTemporaryMessageActionState } =
+    useShenuteTemporaryMessageActions();
+  const handleCopyMessage = useShenuteMessageCopy({
+    copy,
+    setTemporaryMessageActionState,
+  });
+  const canSubmitAdminFeedback = useShenuteAdminFeedbackAccess({
+    isAuthenticated,
+    userId: user?.id,
+  });
 
-  const pageContext = useMemo(() => buildPageContext(pathname), [pathname]);
   const pageContextLabel = useMemo(
-    () => getPageContextLabel(pageContext, language),
+    () => getFloatingShenutePageContextLabel(pageContext, language),
     [language, pageContext],
   );
 
@@ -524,9 +351,45 @@ export function FloatingShenutePanel({
   const thinkingElapsedSeconds = useShenuteThinkingTimer(isLoading);
   const isShenuteAccessBlocked = isReady && !isAuthenticated;
   const typedMessages = messages as ChatMessageLike[];
+  const handleStopResponseFromComposer = useFloatingShenuteStopResponse({
+    closeAttachmentMenu,
+    messageInputRef,
+    setIsAnswerStylePanelOpen,
+    stop,
+  });
+  const persistShenuteHandoff = useFloatingShenuteWorkspaceHandoff({
+    inferenceProvider,
+    messages: typedMessages,
+    readPageContext: readCurrentPageContext,
+  });
+  const { handleSaveChatHistory, saveStatus } =
+    useFloatingShenuteChatHistoryDownload({
+      messages: typedMessages,
+      pageContext,
+      provider: inferenceProvider,
+      savedHistoryMessage: copy.savedHistory,
+    });
   const hasPromptContent =
     inputValue.trim().length > 0 || Boolean(selectedImage);
   const isComposerDisabled = isLoading || ocrPending || isShenuteAccessBlocked;
+  const handleSubmit = useFloatingShenuteComposerSubmit({
+    clearSelectedImage,
+    closeAttachmentMenu,
+    imageContextLabel: `[${copy.imageContext}]`,
+    inferenceProvider,
+    inputValue,
+    isComposerDisabled,
+    isShenuteAccessBlocked,
+    language,
+    noTextExtractedMessage: copy.noTextExtracted,
+    readPageContext: readCurrentPageContext,
+    selectedImage,
+    sendMessage,
+    setInputValue,
+    setIsAnswerStylePanelOpen,
+    setOcrError,
+    setOcrPending,
+  });
   const canSubmitPrompt = hasPromptContent && !isComposerDisabled;
   const isAttachmentMenuDisabled = isComposerDisabled;
   const thinkingStatusMessage = getThinkingStatusMessage(
@@ -558,62 +421,6 @@ export function FloatingShenutePanel({
         "--floating-shenute-opacity": launcherOpacity.toFixed(2),
       } as CSSProperties)
     : undefined;
-  function handleSaveChatHistory() {
-    const historyText = formatChatHistory(
-      typedMessages,
-      pageContext,
-      inferenceProvider,
-    );
-    const blob = new Blob([historyText], {
-      type: "text/plain;charset=utf-8",
-    });
-    const url = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-
-    anchor.href = url;
-    anchor.download = `shenute-chat-history-${new Date()
-      .toISOString()
-      .replace(/[:.]/g, "-")}.txt`;
-    anchor.click();
-    URL.revokeObjectURL(url);
-
-    setSaveStatus(copy.savedHistory);
-    window.setTimeout(() => setSaveStatus(null), 3000);
-  }
-
-  useEffect(() => {
-    if (!isAnswerStylePanelOpen) {
-      return;
-    }
-
-    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsAnswerStylePanelOpen(false);
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [isAnswerStylePanelOpen]);
-
-  useEffect(() => {
-    if (!isAttachmentMenuOpen) {
-      return;
-    }
-
-    const handlePointerDown = (event: PointerEvent) => {
-      const details = attachmentMenuDetailsRef.current;
-      if (!details || details.contains(event.target as Node)) {
-        return;
-      }
-
-      details.open = false;
-      setIsAttachmentMenuOpen(false);
-    };
-
-    window.addEventListener("pointerdown", handlePointerDown);
-    return () => window.removeEventListener("pointerdown", handlePointerDown);
-  }, [isAttachmentMenuOpen]);
 
   useShenuteTextareaAutosize({
     inputValue,
@@ -623,54 +430,6 @@ export function FloatingShenutePanel({
     mobileMaxHeight: MESSAGE_INPUT_MOBILE_MAX_HEIGHT,
     textareaRef: messageInputRef,
   });
-
-  useEffect(() => {
-    if (!isAuthenticated || !user?.id) {
-      setCanSubmitAdminFeedback(false);
-      return;
-    }
-
-    const supabase = createClient();
-    if (!supabase) {
-      setCanSubmitAdminFeedback(false);
-      return;
-    }
-
-    let isMounted = true;
-    const loadAdminFeedbackAccess = async () => {
-      try {
-        const { data } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", user.id)
-          .maybeSingle();
-
-        if (!isMounted) {
-          return;
-        }
-
-        setCanSubmitAdminFeedback(data?.role === "admin");
-      } catch {
-        if (isMounted) {
-          setCanSubmitAdminFeedback(false);
-        }
-      }
-    };
-
-    void loadAdminFeedbackAccess();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [isAuthenticated, user?.id]);
-
-  function closeAttachmentMenu() {
-    if (attachmentMenuDetailsRef.current) {
-      attachmentMenuDetailsRef.current.open = false;
-    }
-
-    setIsAttachmentMenuOpen(false);
-  }
 
   function handlePromptKeyDown(event: ReactKeyboardEvent<HTMLTextAreaElement>) {
     if (
@@ -683,294 +442,6 @@ export function FloatingShenutePanel({
 
     event.preventDefault();
     event.currentTarget.form?.requestSubmit();
-  }
-
-  function handleStopResponseFromComposer() {
-    stop();
-    setIsAnswerStylePanelOpen(false);
-    closeAttachmentMenu();
-    window.requestAnimationFrame(() => {
-      messageInputRef.current?.focus({ preventScroll: true });
-    });
-  }
-
-  function setTemporaryMessageActionState(
-    messageId: string,
-    message: string,
-    status: "error" | "pending" | "success",
-  ) {
-    setMessageActionStateByMessage((current) => ({
-      ...current,
-      [messageId]: { message, status },
-    }));
-    window.setTimeout(() => {
-      setMessageActionStateByMessage((current) => {
-        if (current[messageId]?.message !== message) {
-          return current;
-        }
-
-        const next = { ...current };
-        delete next[messageId];
-        return next;
-      });
-    }, 2500);
-  }
-
-  async function handleCopyMessage(message: ChatMessageLike) {
-    const text = getMessageText(message);
-    if (!text) {
-      return;
-    }
-
-    const didCopy = await copyTextToClipboard(text);
-    setTemporaryMessageActionState(
-      message.id,
-      didCopy ? copy.copiedResponse : copy.copyResponseManual,
-      didCopy ? "success" : "pending",
-    );
-  }
-
-  function persistShenuteHandoff() {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const payload: ShenuteHandoffPayload = {
-      createdAt: new Date().toISOString(),
-      inferenceProvider,
-      messages: typedMessages.map(serializeChatMessage),
-      pageContext: toHandoffPageContext(buildPageContext(pathname)),
-      source: "floating",
-    };
-
-    try {
-      window.sessionStorage.setItem(
-        SHENUTE_HANDOFF_STORAGE_KEY,
-        JSON.stringify(payload),
-      );
-    } catch {}
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-
-    if (isShenuteAccessBlocked) {
-      return;
-    }
-
-    const trimmed = inputValue.trim();
-    if ((!trimmed && !selectedImage) || isComposerDisabled) {
-      return;
-    }
-
-    let composedPrompt = trimmed;
-
-    if (selectedImage) {
-      setOcrPending(true);
-      setOcrError(null);
-
-      try {
-        const ocrFormData = new FormData();
-        ocrFormData.append("file", selectedImage);
-        const ocrText = await processOCRImage(ocrFormData);
-        const trimmedOcrText = ocrText
-          .replace(/\s+/g, " ")
-          .trim()
-          .slice(0, 6000);
-
-        composedPrompt = [
-          composedPrompt,
-          `[${copy.imageContext}]`,
-          `Image: ${selectedImage.name}`,
-          trimmedOcrText,
-        ]
-          .filter((part) => part.length > 0)
-          .join("\n\n");
-      } catch (ocrProcessingError) {
-        setOcrError(getPublicOcrErrorMessage(ocrProcessingError, language));
-        setOcrPending(false);
-        return;
-      } finally {
-        setOcrPending(false);
-      }
-    }
-
-    if (!composedPrompt.trim()) {
-      setOcrError(copy.noTextExtracted);
-      return;
-    }
-
-    const freshContext = buildPageContext(pathname);
-
-    sendMessage(
-      { text: composedPrompt },
-      {
-        body: {
-          inferenceProvider,
-          pageContext: freshContext,
-        },
-      },
-    );
-    setInputValue("");
-    setIsAnswerStylePanelOpen(false);
-    closeAttachmentMenu();
-    clearSelectedImage();
-  }
-
-  async function submitFeedbackSignal(options: {
-    assistantMessage: ChatMessageLike;
-    feedbackText?: string;
-    promptMessage: ChatMessageLike | null;
-    signal: ShenuteFeedbackSignal;
-  }) {
-    if (!isAuthenticated) {
-      setFeedbackStateByMessage((current) => ({
-        ...current,
-        [options.assistantMessage.id]: {
-          message: copy.signInFeedback,
-          status: "error",
-        },
-      }));
-      return false;
-    }
-
-    const assistantResponse = getMessageText(options.assistantMessage);
-    const prompt = options.promptMessage
-      ? getMessageText(options.promptMessage)
-      : "";
-
-    if (!assistantResponse || !prompt) {
-      setFeedbackStateByMessage((current) => ({
-        ...current,
-        [options.assistantMessage.id]: {
-          message: copy.promptResolveFailed,
-          status: "error",
-        },
-      }));
-      return false;
-    }
-
-    setFeedbackStateByMessage((current) => ({
-      ...current,
-      [options.assistantMessage.id]: {
-        message: copy.savingFeedback,
-        status: "pending",
-      },
-    }));
-
-    try {
-      const response = await fetch("/api/shenute/feedback", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          assistantMessageId: options.assistantMessage.id,
-          assistantResponse,
-          shenuteSessionId: shenuteSessionIdRef.current,
-          feedbackText: options.feedbackText,
-          inferenceProvider,
-          pageContext,
-          prompt,
-          signal: options.signal,
-          userMessageId: options.promptMessage?.id,
-        }),
-      });
-
-      const payload = await readFeedbackResponsePayload(response);
-
-      if (!response.ok || !payload.success) {
-        setFeedbackStateByMessage((current) => ({
-          ...current,
-          [options.assistantMessage.id]: {
-            message: getFeedbackErrorMessage(payload, copy, language),
-            status: "error",
-          },
-        }));
-        return false;
-      }
-
-      let successMessage: string = copy.saved;
-      if (payload.ragIngested) {
-        successMessage = copy.savedRag;
-      } else if (payload.ragWarning) {
-        successMessage = copy.savedLearningDelayed;
-      }
-
-      setFeedbackStateByMessage((current) => ({
-        ...current,
-        [options.assistantMessage.id]: {
-          message: successMessage,
-          status: "success",
-        },
-      }));
-
-      return true;
-    } catch {
-      setFeedbackStateByMessage((current) => ({
-        ...current,
-        [options.assistantMessage.id]: {
-          message: copy.feedbackFailed,
-          status: "error",
-        },
-      }));
-      return false;
-    }
-  }
-
-  async function handleReaction(
-    signal: ShenuteReactionSignal,
-    assistantMessage: ChatMessageLike,
-    promptMessage: ChatMessageLike | null,
-  ) {
-    const success = await submitFeedbackSignal({
-      assistantMessage,
-      promptMessage,
-      signal,
-    });
-
-    if (!success) {
-      return;
-    }
-
-    setSelectedReactionByMessage((current) => ({
-      ...current,
-      [assistantMessage.id]: signal,
-    }));
-  }
-
-  async function handleAdminFeedbackSubmit(
-    assistantMessage: ChatMessageLike,
-    promptMessage: ChatMessageLike | null,
-  ) {
-    const draft =
-      adminFeedbackDraftByMessage[assistantMessage.id]?.trim() ?? "";
-    if (!draft) {
-      setFeedbackStateByMessage((current) => ({
-        ...current,
-        [assistantMessage.id]: {
-          message: copy.writeAdminFeedback,
-          status: "error",
-        },
-      }));
-      return;
-    }
-
-    const success = await submitFeedbackSignal({
-      assistantMessage,
-      feedbackText: draft,
-      promptMessage,
-      signal: "admin_feedback",
-    });
-
-    if (!success) {
-      return;
-    }
-
-    setAdminFeedbackDraftByMessage((current) => ({
-      ...current,
-      [assistantMessage.id]: "",
-    }));
   }
 
   return (
@@ -1015,12 +486,7 @@ export function FloatingShenutePanel({
             isReady={isReady}
             isShenuteAccessBlocked={isShenuteAccessBlocked}
             messageActionStateByMessage={messageActionStateByMessage}
-            onAdminFeedbackDraftChange={(messageId, value) => {
-              setAdminFeedbackDraftByMessage((current) => ({
-                ...current,
-                [messageId]: value,
-              }));
-            }}
+            onAdminFeedbackDraftChange={setAdminFeedbackDraft}
             onAdminFeedbackSubmit={(assistantMessage, promptMessage) => {
               void handleAdminFeedbackSubmit(assistantMessage, promptMessage);
             }}
@@ -1069,9 +535,7 @@ export function FloatingShenutePanel({
             onStopCamera={stopCamera}
             onStopResponse={handleStopResponseFromComposer}
             onSubmit={handleSubmit}
-            onToggleAttachmentMenu={(event) => {
-              setIsAttachmentMenuOpen(event.currentTarget.open);
-            }}
+            onToggleAttachmentMenu={handleAttachmentMenuToggle}
             selectedImage={selectedImage}
             selectedImagePreviewUrl={selectedImagePreviewUrl}
             selectedImageSource={selectedImageSource}

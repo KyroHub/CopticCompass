@@ -1,10 +1,16 @@
 import "server-only";
-import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
-
+import {
+  deleteCopticDocumentsBySourceName,
+  insertCopticDocumentRows,
+  listCopticDocumentMetadataBySourceName,
+  type CopticDocumentInsertRow,
+} from "@/lib/supabase/copticDocuments";
+import type { AppSupabaseClient } from "@/lib/supabase/queryTypes";
 import {
   createVectorLiteral,
   normalizeEmbeddingDimensions,
-} from "./ragEmbeddings";
+} from "@/lib/vector";
+
 import {
   DB_INSERT_MAX_RETRIES,
   INSERT_BATCH_SIZE,
@@ -15,7 +21,6 @@ import { logIngestion } from "./ragIngestionLogging";
 import { delay, shouldRetryNetworkError } from "./ragIngestionUtils";
 
 import type {
-  CopticDocumentsInsertRow,
   RagChunkWithMetadata,
   RagIngestionLogEntry,
   SourceType,
@@ -59,8 +64,8 @@ export async function prepareRagDocumentUpdate(options: {
   ingestionId: string;
   logs: RagIngestionLogEntry[];
   sourceTitle: string;
+  supabase: AppSupabaseClient;
 }) {
-  const serviceRoleClient = createServiceRoleClient();
   let isUpdate = false;
 
   logIngestion(
@@ -69,11 +74,10 @@ export async function prepareRagDocumentUpdate(options: {
     options.logs,
   );
 
-  const { data: existingDocs } = await serviceRoleClient
-    .from("coptic_documents")
-    .select("metadata")
-    .eq("metadata->>sourceName", options.sourceTitle)
-    .limit(1);
+  const { data: existingDocs } = await listCopticDocumentMetadataBySourceName(
+    options.supabase,
+    options.sourceTitle,
+  );
 
   if (existingDocs && existingDocs.length > 0) {
     isUpdate = true;
@@ -94,10 +98,10 @@ export async function prepareRagDocumentUpdate(options: {
       `Sweeping previous records for "${options.sourceTitle}" to prepare for update...`,
       options.logs,
     );
-    const { error: sweepError } = await serviceRoleClient
-      .from("coptic_documents")
-      .delete()
-      .eq("metadata->>sourceName", options.sourceTitle);
+    const { error: sweepError } = await deleteCopticDocumentsBySourceName(
+      options.supabase,
+      options.sourceTitle,
+    );
 
     if (
       sweepError &&
@@ -128,12 +132,11 @@ export async function insertRagDocumentChunks(options: {
   sourceDimensions: number;
   sourceTitle: string;
   sourceType: SourceType;
+  supabase: AppSupabaseClient;
   uploadedAt: string;
   userId: string;
 }) {
-  const serviceRoleClient = createServiceRoleClient();
-
-  function buildRows(targetDimensions: number): CopticDocumentsInsertRow[] {
+  function buildRows(targetDimensions: number): CopticDocumentInsertRow[] {
     const normalizedEmbeddings = options.embeddings.map((embedding) =>
       normalizeEmbeddingDimensions(embedding, targetDimensions),
     );
@@ -168,15 +171,7 @@ export async function insertRagDocumentChunks(options: {
     );
   }
 
-  let rows: CopticDocumentsInsertRow[] = buildRows(activeVectorDimensions);
-
-  const copticDocumentsTable = serviceRoleClient.from(
-    "coptic_documents",
-  ) as unknown as {
-    insert: (
-      values: CopticDocumentsInsertRow[],
-    ) => Promise<{ error: { message: string } | null }>;
-  };
+  let rows: CopticDocumentInsertRow[] = buildRows(activeVectorDimensions);
 
   const insertStartMs = Date.now();
   for (let start = 0; start < rows.length; start += INSERT_BATCH_SIZE) {
@@ -191,7 +186,7 @@ export async function insertRagDocumentChunks(options: {
     let inserted = false;
     for (let attempt = 1; attempt <= DB_INSERT_MAX_RETRIES; attempt += 1) {
       const batch = rows.slice(start, start + INSERT_BATCH_SIZE);
-      const { error } = await copticDocumentsTable.insert(batch);
+      const { error } = await insertCopticDocumentRows(options.supabase, batch);
 
       if (!error) {
         inserted = true;

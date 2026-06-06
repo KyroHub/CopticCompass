@@ -12,6 +12,10 @@ import {
   getRelatedPublications,
   publications,
 } from "@/features/publications/lib/publications";
+import {
+  createBreadcrumbStructuredData,
+  createPublicationStructuredData,
+} from "@/features/seo/lib/structuredData";
 import { getTranslation } from "@/lib/i18n";
 import {
   createLanguageAlternates,
@@ -21,10 +25,6 @@ import {
 import { createPageSocialMetadata, createSocialImage } from "@/lib/metadata";
 import { resolvePublicLocale } from "@/lib/publicLocaleRouting";
 import { siteConfig } from "@/lib/site";
-import {
-  createBreadcrumbStructuredData,
-  createPublicationStructuredData,
-} from "@/lib/structuredData";
 
 import type { Metadata } from "next";
 

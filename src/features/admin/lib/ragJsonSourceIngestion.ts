@@ -1,16 +1,16 @@
 import "server-only";
 import { generateText } from "ai";
 
+import {
+  buildGeminiStructuredSourceExtractionPrompt,
+  buildThothStructuredSourceExtractionPrompt,
+} from "@/lib/ai/prompts/ragIngestion";
 import { getGeminiModel } from "@/lib/gemini";
+import { tryParseJsonFromModelAnswer } from "@/lib/llm";
+import { normalizeWhitespace, stripHtml, toStringArray } from "@/lib/text";
 
 import { THOTH_JSON_SAMPLE_LIMIT } from "./ragIngestionConfig";
-import {
-  normalizeWhitespace,
-  runThothStructuredTask,
-  stripHtml,
-  toStringArray,
-  tryParseJsonFromModelAnswer,
-} from "./ragIngestionUtils";
+import { runThothStructuredTask } from "./ragIngestionUtils";
 import {
   buildStructuredJsonChunks,
   type StructuredJsonChunkMode,
@@ -186,19 +186,13 @@ export async function buildJsonOrXmlSourceChunks(options: {
 
   try {
     const sampleText = options.text.slice(0, THOTH_JSON_SAMPLE_LIMIT);
+    const sourceFormat = isJson ? "JSON" : "XML";
     const thothParsed = await runThothStructuredTask({
       ingestId: options.ingestId ?? "local",
-      prompt: `You are THOTH AI enriching a Coptic RAG ingestion pipeline.
-Extract records from this ${isJson ? "JSON" : "XML"} source and return only valid JSON Array.
-Schema for each element:
-{
-  "content": "standalone retrieval-optimized text",
-  "metadata": { "type": "...", "topic": "...", "dialect": "..." },
-  "retrievalKeywords": ["..."],
-  "retrievalSummary": "..."
-}
-Data sample:
-${sampleText}`,
+      prompt: buildThothStructuredSourceExtractionPrompt({
+        sampleText,
+        sourceFormat,
+      }),
       taskTag: "schema-extract",
       userId: options.userId ?? "system",
     });
@@ -210,15 +204,10 @@ ${sampleText}`,
 
     const result = await generateText({
       model: getGeminiModel(),
-      prompt: `Analyze this ${isJson ? "JSON" : "XML"} data. It contains semi-structured records.
-Extract the records and normalize them into an array of structured JSON objects.
-Generate a predictable schema for the metadata based on the fields you discover.
-For each record, provide:
-1. "content": A clean text paragraph summarizing the record (for vector embeddings).
-2. "metadata": A JSON object containing the distinct fields found (e.g. title, meaning, author, type, category).
-Output ONLY a valid JSON Array. Do not wrap with \`\`\`json.
-Data:
-${sampleText}`,
+      prompt: buildGeminiStructuredSourceExtractionPrompt({
+        sampleText,
+        sourceFormat,
+      }),
     });
 
     const dynamicallyParsed = tryParseJsonFromModelAnswer(result.text);

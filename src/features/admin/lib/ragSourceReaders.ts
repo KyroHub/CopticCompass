@@ -7,6 +7,8 @@ import {
   getOcrUploadFieldCandidates,
   isUnexpectedOcrUploadFieldError,
 } from "@/lib/server/ocrService";
+import { detectReadableSourceType } from "@/lib/sourceFiles";
+import { normalizeWhitespace } from "@/lib/text";
 
 import {
   OCR_MAX_RETRIES,
@@ -14,89 +16,23 @@ import {
   OCR_TIMEOUT_MS,
   RETRY_BASE_MS,
 } from "./ragIngestionConfig";
-import {
-  delay,
-  normalizeWhitespace,
-  shouldRetryNetworkError,
-} from "./ragIngestionUtils";
+import { delay, shouldRetryNetworkError } from "./ragIngestionUtils";
 import { reconcilePdfExtractedAndOcrText } from "./ragOcrReconciliation";
 
 import type { PdfReconciliationSummary, SourceType } from "./ragIngestionTypes";
 
-const IMAGE_MIME_PREFIX = "image/";
-const PDF_MIME = "application/pdf";
-const DOCX_MIME =
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-
-const IMAGE_EXTENSIONS = new Set([
-  "png",
-  "jpg",
-  "jpeg",
-  "webp",
-  "gif",
-  "bmp",
-  "tif",
-  "tiff",
-]);
-
-const TEXT_EXTENSIONS = new Set([
-  "txt",
-  "md",
-  "markdown",
-  "csv",
-  "tsv",
-  "json",
-  "xml",
-  "html",
-  "htm",
-  "yaml",
-  "yml",
-  "tex",
-  "log",
-  "js",
-  "ts",
-  "tsx",
-  "jsx",
-  "py",
-  "java",
-  "c",
-  "cpp",
-  "cs",
-  "go",
-  "rs",
-  "sql",
-]);
-
-function getFileExtension(fileName: string) {
-  const extension = fileName.split(".").pop();
-  return extension ? extension.toLowerCase() : "";
-}
-
+/**
+ * Classifies uploads by MIME type first and extension second so browser-blank
+ * `File.type` values still route common source formats correctly.
+ */
 export function detectSourceType(file: File): SourceType | null {
-  const extension = getFileExtension(file.name);
-
-  if (file.type === PDF_MIME || extension === "pdf") {
-    return "pdf";
-  }
-
-  if (
-    file.type.startsWith(IMAGE_MIME_PREFIX) ||
-    IMAGE_EXTENSIONS.has(extension)
-  ) {
-    return "image";
-  }
-
-  if (file.type === DOCX_MIME || extension === "docx") {
-    return "docx";
-  }
-
-  if (TEXT_EXTENSIONS.has(extension) || file.type.startsWith("text/")) {
-    return "text";
-  }
-
-  return null;
+  return detectReadableSourceType(file);
 }
 
+/**
+ * Sends one file through the configured OCR service with bounded retries across
+ * both transient network failures and alternate multipart field names.
+ */
 async function runOcr(file: File): Promise<string> {
   const ocrServiceUrl = process.env.OCR_SERVICE_URL;
   if (!ocrServiceUrl) {
@@ -201,8 +137,10 @@ async function extractTextFile(file: File): Promise<string> {
 }
 
 /**
- * Extracts readable source text while preserving OCR fallback behavior for
- * forced OCR, optional OCR, native PDF extraction, DOCX, images, and text files.
+ * Extracts readable source text while preserving the ingestion policy for each
+ * source type: images require OCR, DOCX/text use deterministic readers, forced
+ * OCR still falls back to native PDF extraction, and optional OCR reconciles
+ * with native PDF text when both are available.
  */
 export async function extractSourceText(
   file: File,
