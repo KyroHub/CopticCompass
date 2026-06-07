@@ -146,14 +146,16 @@ export default function OCRPage() {
                 </StatusNotice>
               ) : null}
 
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="grid w-full gap-3 sm:flex sm:w-auto sm:items-center">
                 <button
                   type="button"
                   onClick={() => {
                     void handleUpload();
                   }}
                   disabled={!image || loading}
-                  className={buttonClassName({ className: "px-5" })}
+                  className={buttonClassName({
+                    className: "w-full px-5 sm:w-auto",
+                  })}
                 >
                   <ScanSearch className="h-4 w-4" />
                   {loading ? copy.running : copy.extract}

@@ -153,17 +153,24 @@ export function NotFoundPage() {
           tone="brand"
         />
 
-        <div className="flex flex-wrap gap-3">
+        <div className="grid w-full gap-3 sm:flex sm:w-auto sm:flex-wrap">
           <Link
             href={getLocalizedHomePath(displayLanguage)}
-            className={buttonClassName({ size: "lg" })}
+            className={buttonClassName({
+              className: "w-full sm:w-auto",
+              size: "lg",
+            })}
           >
             <Home className="h-4 w-4" aria-hidden="true" />
             {t("notFound.primaryAction")}
           </Link>
           <Link
             href={getDictionaryPath(displayLanguage)}
-            className={buttonClassName({ size: "lg", variant: "secondary" })}
+            className={buttonClassName({
+              className: "w-full sm:w-auto",
+              size: "lg",
+              variant: "secondary",
+            })}
           >
             <Search className="h-4 w-4" aria-hidden="true" />
             {t("notFound.secondaryAction")}
