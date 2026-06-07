@@ -4,15 +4,18 @@ import { cx } from "@/lib/classes";
 import type { ReactNode } from "react";
 
 export type PageHeaderTone = "default" | "brand" | "coptic" | "analytics";
-type PageHeaderSize = "hero" | "page" | "compact" | "workspace";
+type PageHeaderSize = "hero" | "page" | "compact" | "workspace" | "section";
 type PageHeaderAlign = "center" | "left";
 type EyebrowVariant = "text" | "badge";
+
+type PageHeaderAs = "h1" | "h2" | "h3";
 
 type PageHeaderProps = {
   title: ReactNode;
   description?: ReactNode;
   eyebrow?: ReactNode;
   align?: PageHeaderAlign;
+  as?: PageHeaderAs;
   className?: string;
   titleClassName?: string;
   descriptionClassName?: string;
@@ -34,6 +37,7 @@ const TITLE_SIZE_CLASSES: Record<PageHeaderSize, string> = {
   page: "text-4xl md:text-5xl",
   compact: "text-3xl md:text-4xl",
   workspace: "text-3xl md:text-4xl",
+  section: "text-xl md:text-2xl",
 };
 
 const DESCRIPTION_SIZE_CLASSES: Record<PageHeaderSize, string> = {
@@ -41,6 +45,7 @@ const DESCRIPTION_SIZE_CLASSES: Record<PageHeaderSize, string> = {
   page: "text-lg md:text-xl",
   compact: "text-base md:text-lg",
   workspace: "text-base md:text-lg",
+  section: "text-sm leading-6",
 };
 
 export function PageHeader({
@@ -48,6 +53,7 @@ export function PageHeader({
   description,
   eyebrow,
   align = "center",
+  as = "h1",
   className,
   titleClassName,
   descriptionClassName,
@@ -57,6 +63,7 @@ export function PageHeader({
   tone = "default",
 }: PageHeaderProps) {
   const centered = align === "center";
+  const Component = as;
 
   return (
     <div
@@ -88,7 +95,7 @@ export function PageHeader({
           </span>
         ))}
 
-      <h1
+      <Component
         className={cx(
           "font-extrabold tracking-tight",
           description ? "pb-2" : "pb-0",
@@ -98,7 +105,7 @@ export function PageHeader({
         )}
       >
         {title}
-      </h1>
+      </Component>
 
       {description && (
         <p

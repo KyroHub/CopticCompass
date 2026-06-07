@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/PageHeader";
 import { surfacePanelClassName } from "@/components/SurfacePanel";
 import { adminSummaryPanelClassName } from "@/features/admin/components/adminControlStyles";
 import { formatAdminNumber } from "@/features/admin/components/AdminDashboardSectionShared";
@@ -28,9 +29,12 @@ export function AdminSystemHealthSummary({
     <section className={adminSummaryPanelClassName()}>
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="space-y-3">
-          <div className="space-y-2">
-            <h2 className="text-xl font-semibold tracking-tight text-ink">
-              {overview.failedNotificationCount > 0
+          <PageHeader
+            as="h2"
+            align="left"
+            size="section"
+            title={
+              overview.failedNotificationCount > 0
                 ? `${formatAdminNumber(
                     overview.failedNotificationCount,
                     language,
@@ -39,12 +43,10 @@ export function AdminSystemHealthSummary({
                       ? copy.issueSingular
                       : copy.issuePlural
                   }`
-                : copy.steadyTitle}
-            </h2>
-            <p className="max-w-3xl text-sm leading-6 text-muted">
-              {copy.description}
-            </p>
-          </div>
+                : copy.steadyTitle
+            }
+            description={copy.description}
+          />
         </div>
 
         <p

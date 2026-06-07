@@ -1,3 +1,4 @@
+import { PageHeader } from "@/components/PageHeader";
 import {
   adminQueueLinkClassName,
   adminSummaryPanelClassName,
@@ -48,18 +49,21 @@ export function AdminReviewInboxSummary({
     <section className={adminSummaryPanelClassName()}>
       <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div className="space-y-3">
-          <div className="space-y-2">
-            <h2 className="text-xl font-semibold tracking-tight text-ink">
-              {reviewQueueTotal > 0
+          <PageHeader
+            as="h2"
+            align="left"
+            size="section"
+            title={
+              reviewQueueTotal > 0
                 ? `${formatAdminNumber(reviewQueueTotal, language)} ${copy.activeTitleSuffix}`
-                : copy.clearTitle}
-            </h2>
-            <p className="max-w-3xl text-sm leading-6 text-muted">
-              {reviewQueueTotal > 0
+                : copy.clearTitle
+            }
+            description={
+              reviewQueueTotal > 0
                 ? copy.activeDescription
-                : copy.clearDescription}
-            </p>
-          </div>
+                : copy.clearDescription
+            }
+          />
         </div>
 
         <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
