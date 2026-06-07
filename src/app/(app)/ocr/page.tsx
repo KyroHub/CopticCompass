@@ -11,7 +11,7 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { PageHeader } from "@/components/PageHeader";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
 import { StatusNotice } from "@/components/StatusNotice";
-import { SurfacePanel } from "@/components/SurfacePanel";
+import { SurfacePanel, surfacePanelClassName } from "@/components/SurfacePanel";
 import { getLocalizedHomePath } from "@/lib/locale";
 import { getPublicOcrErrorMessage } from "@/lib/ocrErrors";
 
@@ -180,7 +180,13 @@ export default function OCRPage() {
                   description={copy.workflowDescription}
                 />
                 {image ? (
-                  <div className="rounded-lg border border-line bg-elevated/80 px-4 py-3 text-sm text-muted">
+                  <div
+                    className={surfacePanelClassName({
+                      rounded: "lg",
+                      variant: "elevated",
+                      className: "px-4 py-3 text-sm text-muted",
+                    })}
+                  >
                     {copy.selectedFile}{" "}
                     <span className="font-semibold">{image.name}</span>
                   </div>
@@ -204,7 +210,14 @@ export default function OCRPage() {
                 description={copy.extractedDescription}
               />
             </div>
-            <pre className="whitespace-pre-wrap rounded-lg border border-line bg-elevated/80 p-5 font-coptic text-lg leading-8 text-ink">
+            <pre
+              className={surfacePanelClassName({
+                rounded: "lg",
+                variant: "elevated",
+                className:
+                  "whitespace-pre-wrap p-5 font-coptic text-lg leading-8 text-ink",
+              })}
+            >
               {result}
             </pre>
           </SurfacePanel>

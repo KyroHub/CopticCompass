@@ -236,7 +236,14 @@ function AdminSubmissionReviewPanel({
       </div>
 
       <div className="space-y-6 px-6 py-6 md:px-7">
-        <div className="rounded-lg border border-line bg-elevated p-5 whitespace-pre-wrap font-coptic text-lg text-muted md:text-xl">
+        <div
+          className={surfacePanelClassName({
+            rounded: "lg",
+            variant: "elevated",
+            className:
+              "whitespace-pre-wrap p-5 font-coptic text-lg text-muted md:text-xl",
+          })}
+        >
           {submission.submitted_text}
         </div>
 

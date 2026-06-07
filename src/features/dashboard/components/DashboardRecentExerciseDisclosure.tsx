@@ -70,7 +70,14 @@ export function DashboardRecentExerciseDisclosure({
           {copy.submissions.responseLabel}
         </div>
 
-        <div className="mb-6 rounded-lg border border-line bg-elevated p-5 whitespace-pre-wrap font-coptic text-lg text-muted md:text-xl">
+        <div
+          className={surfacePanelClassName({
+            rounded: "lg",
+            variant: "elevated",
+            className:
+              "mb-6 whitespace-pre-wrap p-5 font-coptic text-lg text-muted md:text-xl",
+          })}
+        >
           {submission.submitted_text}
         </div>
 
