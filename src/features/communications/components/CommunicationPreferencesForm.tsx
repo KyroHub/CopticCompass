@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { updateCommunicationPreferences } from "@/actions/communications";
 import { Button } from "@/components/Button";
 import { CheckboxField } from "@/components/CheckboxField";
+import { ElevatedPanel } from "@/components/ElevatedPanel";
 import { FormField, FormHint } from "@/components/FormField";
 import { useLanguage } from "@/components/LanguageProvider";
 import { StatusNotice } from "@/components/StatusNotice";
@@ -76,7 +77,7 @@ export function CommunicationPreferencesForm({
         <FormHint>{copy.account.communicationLocaleHint}</FormHint>
       </FormField>
 
-      <div className="space-y-4 rounded-lg border border-line bg-elevated/70 p-4">
+      <ElevatedPanel className="space-y-4 p-4">
         <CheckboxField
           name="lessons_opt_in"
           value="true"
@@ -100,7 +101,7 @@ export function CommunicationPreferencesForm({
           label={copy.account.communicationGeneralLabel}
           wrapperClassName="-m-2"
         />
-      </div>
+      </ElevatedPanel>
 
       <p className="text-sm leading-6 text-muted">
         {copy.account.communicationHint}

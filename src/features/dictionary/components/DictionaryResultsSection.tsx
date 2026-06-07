@@ -7,6 +7,7 @@ import { buttonClassName } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { useLanguage } from "@/components/LanguageProvider";
 import { StatusNotice } from "@/components/StatusNotice";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import type {
   DialectFilter,
   DictionaryPartOfSpeechFilter,
@@ -159,7 +160,7 @@ export function DictionaryResultsSection({
         <EmptyState
           title={t("dict.noMatch")}
           description={t("dict.tryFuzzy")}
-          className="border-line bg-surface/88 shadow-soft"
+          className={surfacePanelClassName({ shadow: "soft" })}
           titleClassName="font-medium text-ink"
           descriptionClassName="mt-2 text-muted"
         />

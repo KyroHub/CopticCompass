@@ -90,7 +90,7 @@ export function ShenuteAnswerStylePanel({
                   "flex min-h-11 items-center gap-2 rounded-lg border px-3 py-2 text-left transition disabled:cursor-not-allowed disabled:opacity-60",
                   isActive
                     ? "border-coptic/55 bg-coptic-soft text-ink shadow-sm"
-                    : "border-line bg-surface/80 text-muted hover:border-accent/35 hover:bg-elevated hover:text-ink",
+                    : "border-line bg-surface/88 text-muted hover:border-accent/35 hover:bg-elevated hover:text-ink",
                 )}
               >
                 <span

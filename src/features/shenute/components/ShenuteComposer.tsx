@@ -9,7 +9,7 @@ import {
 import { AuthGateNotice } from "@/components/AuthGateNotice";
 import { buttonClassName } from "@/components/Button";
 import { StatusNotice } from "@/components/StatusNotice";
-import { SurfacePanel } from "@/components/SurfacePanel";
+import { SurfacePanel, surfacePanelClassName } from "@/components/SurfacePanel";
 import { cx } from "@/lib/classes";
 
 import {
@@ -119,7 +119,10 @@ export function ShenuteComposer({
     <form
       onSubmit={onSubmit}
       aria-busy={isComposerBusy}
-      className="sticky bottom-0 z-20 border-t border-line bg-surface/90 p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-[0_-18px_30px_rgba(30,29,29,0.08)] backdrop-blur-xl dark:shadow-[0_-18px_30px_rgba(0,0,0,0.35)] sm:p-3 sm:pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:p-4 md:pb-4"
+      className={surfacePanelClassName({
+        className:
+          "sticky bottom-0 z-20 border-t !border-x-0 !border-b-0 !rounded-none p-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] shadow-[0_-18px_30px_rgba(30,29,29,0.08)] dark:shadow-[0_-18px_30px_rgba(0,0,0,0.35)] sm:p-3 sm:pb-[calc(0.75rem+env(safe-area-inset-bottom))] md:p-4 md:pb-4",
+      })}
     >
       {shenuteAccessError || requestErrorMessage || ocrError || cameraError ? (
         <div className="mb-3 space-y-3">
@@ -290,7 +293,10 @@ export function ShenuteComposer({
         {composerStateLabel ? (
           <div
             aria-live="polite"
-            className="mt-1.5 flex min-w-0 items-center gap-2 rounded-lg bg-surface/65 px-2.5 py-1.5 text-xs text-muted sm:mt-2 sm:px-3"
+            className={surfacePanelClassName({
+              className:
+                "mt-1.5 flex min-w-0 items-center gap-2 px-2.5 py-1.5 text-xs text-muted sm:mt-2 sm:px-3",
+            })}
           >
             <LoaderCircle
               aria-hidden="true"

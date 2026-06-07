@@ -5,7 +5,12 @@ import type { HTMLAttributes } from "react";
 type SurfacePanelVariant = "default" | "subtle" | "elevated";
 type SurfacePanelShadow = "soft" | "panel" | "float";
 type SurfacePanelRounded = "lg";
-type SurfacePanelTag = "article" | "div" | "section";
+export type SurfacePanelTag =
+  | "article"
+  | "div"
+  | "section"
+  | "aside"
+  | "details";
 
 type SurfacePanelClassNameOptions = {
   className?: string;
@@ -18,7 +23,7 @@ type SurfacePanelClassNameOptions = {
 const VARIANT_CLASSES: Record<SurfacePanelVariant, string> = {
   default: "bg-surface/88",
   subtle: "bg-surface/72",
-  elevated: "bg-surface/95",
+  elevated: "bg-elevated/70",
 };
 
 const SHADOW_CLASSES: Record<SurfacePanelShadow, string> = {

@@ -1,5 +1,5 @@
 import { buttonClassName } from "@/components/Button";
-import { SurfacePanel } from "@/components/SurfacePanel";
+import { SurfacePanel, surfacePanelClassName } from "@/components/SurfacePanel";
 import {
   toAdminRagEmbeddingProvider,
   type AdminRagEmbeddingProvider,
@@ -54,7 +54,12 @@ export function AdminRagIngestionControls({
 
       <div className="mt-5 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(14rem,18rem)]">
         <div className="grid gap-2 sm:grid-cols-2">
-          <label className="checkbox-row border border-line bg-surface/75 shadow-sm">
+          <label
+            className={surfacePanelClassName({
+              shadow: "soft",
+              className: "checkbox-row",
+            })}
+          >
             <input
               name="enable_ocr"
               type="checkbox"
@@ -64,7 +69,12 @@ export function AdminRagIngestionControls({
             <span className="text-sm leading-6 text-muted">{copy.runOcr}</span>
           </label>
 
-          <label className="checkbox-row border border-line bg-surface/75 shadow-sm">
+          <label
+            className={surfacePanelClassName({
+              shadow: "soft",
+              className: "checkbox-row",
+            })}
+          >
             <input name="force_ocr" type="checkbox" className="checkbox-base" />
             <span className="text-sm leading-6 text-muted">
               {copy.forceOcr}

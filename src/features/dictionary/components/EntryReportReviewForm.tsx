@@ -4,6 +4,7 @@ import { updateEntryReportStatus } from "@/actions/admin";
 import { buttonClassName } from "@/components/Button";
 import { FormField } from "@/components/FormField";
 import { useLanguage } from "@/components/LanguageProvider";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 
 import {
   ENTRY_REPORT_STATUSES,
@@ -37,7 +38,7 @@ export function EntryReportReviewForm({
   return (
     <form
       action={updateEntryReportStatus}
-      className="space-y-4 rounded-lg border border-line bg-surface/88 p-5"
+      className={surfacePanelClassName({ className: "space-y-4 p-5" })}
     >
       <input type="hidden" name="report_id" value={reportId} />
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end">

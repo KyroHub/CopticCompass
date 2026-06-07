@@ -14,12 +14,12 @@ function RagMetricCard({
   label: string;
 }) {
   return (
-    <div className="rounded-lg border border-line bg-surface/80 p-4 text-sm shadow-sm">
+    <SurfacePanel shadow="soft" className="p-4 text-sm">
       <dt className="text-xs font-semibold uppercase tracking-widest text-muted">
         {label}
       </dt>
       <dd className="mt-2 font-semibold text-ink">{children}</dd>
-    </div>
+    </SurfacePanel>
   );
 }
 

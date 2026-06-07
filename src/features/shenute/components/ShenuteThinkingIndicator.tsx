@@ -1,5 +1,6 @@
 import { Clock3 } from "lucide-react";
 
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import { cx } from "@/lib/classes";
 
 import { SHENUTE_ICON_CLASS } from "./ShenuteClientPrimitives";
@@ -42,7 +43,11 @@ export function ShenuteThinkingIndicator({
         </p>
         <div
           aria-live="polite"
-          className="rounded-lg rounded-bl-sm border border-line bg-surface/95 px-3 py-2.5 shadow-soft ring-1 ring-line/60 sm:px-4 sm:py-3"
+          className={surfacePanelClassName({
+            shadow: "soft",
+            className:
+              "rounded-bl-sm px-3 py-2.5 ring-1 ring-line/60 sm:px-4 sm:py-3",
+          })}
         >
           <div className="flex min-w-0 items-center gap-2">
             <span

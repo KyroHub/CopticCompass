@@ -4,6 +4,7 @@ import { Keyboard, Search, X } from "lucide-react";
 
 import { iconButtonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
+import { SurfacePanel } from "@/components/SurfacePanel";
 import { cx } from "@/lib/classes";
 import { antinoou } from "@/lib/fonts";
 
@@ -37,7 +38,11 @@ export function DictionarySearchBar({
   const { t } = useLanguage();
 
   return (
-    <div className="group relative z-30 rounded-lg border border-line bg-surface/92 shadow-panel backdrop-blur-xl">
+    <SurfacePanel
+      variant="elevated"
+      shadow="panel"
+      className="group relative z-30"
+    >
       <div className="relative flex items-center">
         <div className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-muted transition-colors group-focus-within:text-coptic sm:left-6">
           <Search className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -130,6 +135,6 @@ export function DictionarySearchBar({
           onBackspace={onBackspace}
         />
       </div>
-    </div>
+    </SurfacePanel>
   );
 }

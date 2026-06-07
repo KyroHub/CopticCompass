@@ -1,4 +1,4 @@
-import { SurfacePanel } from "@/components/SurfacePanel";
+import { SurfacePanel, surfacePanelClassName } from "@/components/SurfacePanel";
 import {
   formatAdminRagLogTimestamp,
   formatAdminRagNumber,
@@ -33,12 +33,16 @@ export function AdminRagLogsPanel({
       </div>
 
       {dashboardLogs.length === 0 ? (
-        <p className="rounded-lg border border-line bg-surface/80 px-4 py-3 text-xs text-muted shadow-sm">
+        <SurfacePanel shadow="soft" className="px-4 py-3 text-xs text-muted">
           {isPending || bulkJsonPending ? copy.logsRunning : copy.logsEmpty}
-        </p>
+        </SurfacePanel>
       ) : (
         <div
-          className="max-h-64 space-y-1 overflow-y-auto rounded-lg border border-line bg-surface/80 p-3 font-mono text-[11px] shadow-sm"
+          className={surfacePanelClassName({
+            shadow: "soft",
+            className:
+              "max-h-64 space-y-1 overflow-y-auto p-3 font-mono text-[11px]",
+          })}
           aria-live="polite"
         >
           {dashboardLogs.map((log, index) => (

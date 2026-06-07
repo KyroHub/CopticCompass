@@ -1,4 +1,5 @@
 import { Badge } from "@/components/Badge";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import type { GrammarLessonBundle } from "@/content/grammar/schema";
 import {
   getGrammarConceptAnchorId,
@@ -52,10 +53,10 @@ function SemanticPanel({
 }) {
   return (
     <section
-      className={cx(
-        "overflow-hidden rounded-lg border border-line bg-surface/88 shadow-soft backdrop-blur-sm",
-        className,
-      )}
+      className={surfacePanelClassName({
+        shadow: "soft",
+        className: cx("overflow-hidden", className),
+      })}
     >
       <div
         className={cx(
@@ -155,7 +156,7 @@ export function GrammarLessonConceptGlossary({
             <article
               key={concept.id}
               id={getGrammarConceptAnchorId(concept.id)}
-              className="app-anchor-inline rounded-lg border border-line bg-elevated/65 px-4 py-4"
+              className="app-anchor-inline rounded-lg border border-line bg-elevated/70 px-4 py-4"
             >
               <div className="flex flex-wrap items-center gap-2">
                 <h3 className="text-lg font-semibold text-ink">
@@ -237,7 +238,7 @@ export function GrammarLessonBibliography({
               <li
                 key={source.id}
                 id={getGrammarSourceAnchorId(source.id)}
-                className="app-anchor-inline rounded-lg border border-line bg-elevated/65 px-4 py-4"
+                className="app-anchor-inline rounded-lg border border-line bg-elevated/70 px-4 py-4"
               >
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">

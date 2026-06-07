@@ -101,8 +101,8 @@ export function DictionaryEntryDialectForms({
               aria-label={`${t("entry.dialectForms")}: ${dialect} ${dialectAriaSpelling}`}
               className={
                 compact
-                  ? "flex min-w-0 max-w-full basis-full cursor-pointer select-none items-start gap-2 rounded-lg border border-line bg-elevated/65 px-2.5 py-2 text-left transition-all duration-200 hover:-translate-y-px hover:border-coptic/35 hover:bg-coptic-soft/45 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coptic/30 focus-visible:ring-offset-2 focus-visible:ring-offset-paper sm:basis-auto"
-                  : "flex min-w-0 max-w-full basis-full cursor-pointer select-none items-start gap-3 rounded-lg border border-line bg-elevated/65 px-3 py-2.5 text-left transition-all duration-200 hover:-translate-y-px hover:border-coptic/35 hover:bg-coptic-soft/45 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coptic/30 focus-visible:ring-offset-2 focus-visible:ring-offset-paper sm:basis-auto"
+                  ? "flex min-w-0 max-w-full basis-full cursor-pointer select-none items-start gap-2 rounded-lg border border-line bg-elevated/70 px-2.5 py-2 text-left transition-all duration-200 hover:-translate-y-px hover:border-coptic/35 hover:bg-coptic-soft/45 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coptic/30 focus-visible:ring-offset-2 focus-visible:ring-offset-paper sm:basis-auto"
+                  : "flex min-w-0 max-w-full basis-full cursor-pointer select-none items-start gap-3 rounded-lg border border-line bg-elevated/70 px-3 py-2.5 text-left transition-all duration-200 hover:-translate-y-px hover:border-coptic/35 hover:bg-coptic-soft/45 active:translate-y-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coptic/30 focus-visible:ring-offset-2 focus-visible:ring-offset-paper sm:basis-auto"
               }
             >
               <span className="inline-flex min-h-7 shrink-0 items-center rounded-md bg-surface px-2.5 py-2 text-[10px] font-bold text-muted">

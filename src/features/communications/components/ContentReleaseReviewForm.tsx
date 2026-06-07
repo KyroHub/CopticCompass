@@ -2,6 +2,7 @@
 
 import { updateContentReleaseStatus } from "@/actions/admin";
 import { buttonClassName } from "@/components/Button";
+import { ElevatedPanel } from "@/components/ElevatedPanel";
 import { FormField } from "@/components/FormField";
 import { useLanguage } from "@/components/LanguageProvider";
 import {
@@ -41,12 +42,9 @@ export function ContentReleaseReviewForm({
       : "draft";
 
   return (
-    <form
-      action={updateContentReleaseStatus}
-      className="space-y-4 rounded-lg border border-line bg-elevated/60 p-5"
-    >
+    <form action={updateContentReleaseStatus} className="space-y-4 p-5">
       <input type="hidden" name="release_id" value={releaseId} />
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+      <ElevatedPanel className="flex flex-col gap-4 sm:flex-row sm:items-end">
         <FormField
           htmlFor={`content-release-status-${releaseId}`}
           label={copy.label}
@@ -73,7 +71,7 @@ export function ContentReleaseReviewForm({
         >
           {copy.save}
         </button>
-      </div>
+      </ElevatedPanel>
     </form>
   );
 }

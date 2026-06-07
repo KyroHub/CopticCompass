@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import { sendContentReleasePreview } from "@/actions/admin";
 import type { SendContentReleaseState } from "@/actions/admin/states";
 import { buttonClassName } from "@/components/Button";
+import { elevatedPanelClassName } from "@/components/ElevatedPanel";
 import { FormField } from "@/components/FormField";
 import { useLanguage } from "@/components/LanguageProvider";
 import { StatusNotice } from "@/components/StatusNotice";
@@ -46,7 +47,7 @@ export function SendContentReleasePreviewForm({
   return (
     <form
       action={formAction}
-      className="space-y-4 rounded-lg border border-line bg-elevated/60 p-5"
+      className={elevatedPanelClassName({ className: "space-y-4 p-5" })}
     >
       <input type="hidden" name="release_id" value={releaseId} />
 

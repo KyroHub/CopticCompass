@@ -141,7 +141,7 @@ export function DeckPickerDialog({
                       "grid w-full gap-3 rounded-lg border px-4 py-3 text-left transition-colors sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center",
                       isActive
                         ? "border-coptic/30 bg-coptic/5 text-coptic"
-                        : "border-line bg-elevated/55 text-ink hover:border-coptic/25 hover:bg-elevated",
+                        : "border-line bg-elevated/70 text-ink hover:border-coptic/25 hover:bg-elevated",
                     );
                     const rowContent = (
                       <>

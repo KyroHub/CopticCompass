@@ -149,7 +149,7 @@ export function FaqPageContent({ locale }: FaqPageContentProps) {
               key={item.id}
               className="group scroll-mt-32 transition-colors open:bg-elevated/45"
             >
-              <summary className="cursor-pointer px-5 py-4 text-base font-semibold leading-7 text-ink marker:text-accent-strong transition-colors hover:bg-elevated/55 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/30 md:px-6 md:py-5 md:text-lg">
+              <summary className="cursor-pointer px-5 py-4 text-base font-semibold leading-7 text-ink marker:text-accent-strong transition-colors hover:bg-elevated/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/30 md:px-6 md:py-5 md:text-lg">
                 {item.question}
               </summary>
               <div className="space-y-4 px-5 pb-5 text-sm leading-7 text-muted md:px-6 md:pb-6 md:text-base md:leading-8">

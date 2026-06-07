@@ -16,6 +16,7 @@ import { useEffect } from "react";
 import { buttonClassName } from "@/components/Button";
 import { PageHeader } from "@/components/PageHeader";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import { cx } from "@/lib/classes";
 import { getTranslation, type TranslationKey } from "@/lib/i18n";
 import {
@@ -194,7 +195,13 @@ export function NotFoundPage() {
               <Link
                 key={destination.href}
                 href={destination.href}
-                className="group flex min-h-24 items-start gap-4 rounded-lg border border-line bg-surface/80 p-4 shadow-sm backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-accent/35 hover:bg-surface hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25"
+                className={surfacePanelClassName({
+                  className:
+                    "group flex min-h-24 items-start gap-4 p-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25",
+                  interactive: true,
+                  shadow: "soft",
+                  variant: "subtle",
+                })}
               >
                 <span
                   className={cx(

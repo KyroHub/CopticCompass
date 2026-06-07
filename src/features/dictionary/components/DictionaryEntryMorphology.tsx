@@ -66,7 +66,7 @@ export function DictionaryEntryMorphology({
             {t("entry.imperatives")}
           </span>
           <div className="flex flex-wrap gap-2.5">
-            <span className="inline-flex max-w-full items-baseline gap-2 rounded-lg border border-line bg-elevated/65 px-3 py-2 text-sm text-ink">
+            <span className="inline-flex max-w-full items-baseline gap-2 rounded-lg border border-line bg-elevated/70 px-3 py-2 text-sm text-ink">
               <span className="inline-flex min-h-6 shrink-0 items-center rounded-md bg-surface px-2 text-[10px] font-bold text-muted">
                 <DialectSiglum siglum={primaryDialectKey} />
               </span>
@@ -123,7 +123,7 @@ export function DictionaryEntryMorphology({
             {variantRows.map(({ dialect, forms, label, state }, index) => (
               <span
                 key={`${dialect}-${state}-${index}`}
-                className="inline-flex max-w-full items-baseline gap-2 rounded-lg border border-line bg-elevated/65 px-3 py-2 text-sm text-ink"
+                className="inline-flex max-w-full items-baseline gap-2 rounded-lg border border-line bg-elevated/70 px-3 py-2 text-sm text-ink"
               >
                 <span className="inline-flex min-h-6 shrink-0 items-center rounded-md bg-surface px-2 text-[10px] font-bold text-muted">
                   <DialectSiglum siglum={dialect} />

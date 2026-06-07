@@ -1,5 +1,5 @@
 import { buttonClassName } from "@/components/Button";
-import { SurfacePanel } from "@/components/SurfacePanel";
+import { SurfacePanel, surfacePanelClassName } from "@/components/SurfacePanel";
 import { AdminErrorDisclosure } from "@/features/admin/components/AdminErrorDisclosure";
 import {
   formatAdminRagNumber,
@@ -30,7 +30,12 @@ function RagStatusCard({
   status: AdminRagStatusItem;
 }) {
   return (
-    <li className="flex min-h-20 items-start gap-3 rounded-lg border border-line bg-surface/80 p-4 shadow-sm">
+    <li
+      className={surfacePanelClassName({
+        shadow: "soft",
+        className: "flex min-h-20 items-start gap-3 p-4",
+      })}
+    >
       <StatusDot healthy={status.healthy} />
       <span className="min-w-0 text-sm leading-6 text-ink">
         <span className="block font-semibold">{status.label}</span>
@@ -78,9 +83,9 @@ export function AdminRagStatusPanel({
       </div>
 
       {statusLoading ? (
-        <p className="rounded-lg border border-line bg-surface/80 px-4 py-3 text-sm text-muted shadow-sm">
+        <SurfacePanel shadow="soft" className="px-4 py-3 text-sm text-muted">
           {copy.checking}
-        </p>
+        </SurfacePanel>
       ) : null}
 
       {!statusLoading && ragStatusError ? (

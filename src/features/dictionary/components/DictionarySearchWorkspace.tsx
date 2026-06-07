@@ -6,6 +6,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { buttonClassName, iconButtonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { SegmentedControl } from "@/components/SegmentedControl";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import type {
   DialectFilter,
   DictionaryEtymologyFilter,
@@ -90,7 +91,7 @@ function CollapsibleFilterSection({
         aria-controls={contentId}
         aria-expanded={isOpen}
         onClick={toggleExpanded}
-        className="group flex h-11 w-full min-w-0 items-center justify-between gap-3 rounded-lg -mx-2 px-2 text-left text-muted transition-colors hover:bg-elevated/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 md:mx-0 md:px-0 md:hover:bg-transparent"
+        className="group flex h-11 w-full min-w-0 items-center justify-between gap-3 rounded-lg -mx-2 px-2 text-left text-muted transition-colors hover:bg-elevated/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 md:mx-0 md:px-0 md:hover:bg-transparent"
       >
         <span className="flex min-w-0 items-center gap-2">
           <span className="truncate text-xs font-semibold uppercase tracking-widest transition-colors group-hover:text-ink">
@@ -214,7 +215,11 @@ export function DictionarySearchWorkspace({
       {isControlsOpen ? (
         <section
           id={controlsPanelId}
-          className="rounded-lg border border-line bg-surface/94 p-3 shadow-panel backdrop-blur-xl sm:p-4"
+          className={surfacePanelClassName({
+            variant: "elevated",
+            shadow: "panel",
+            className: "p-3 sm:p-4",
+          })}
         >
           <div className="grid gap-4">
             <div className="flex min-w-0 items-center justify-between gap-3">

@@ -7,6 +7,7 @@ import {
 } from "react";
 
 import { FormLabel } from "@/components/FormField";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import { cx } from "@/lib/classes";
 
 type SegmentedControlTone = "brand" | "language" | "neutral";
@@ -98,10 +99,18 @@ const FLUSH_OPTION_LAYOUT_CLASSES: Record<SegmentedControlLayout, string> = {
 
 function getControlChromeClassName(variant: SegmentedControlVariant) {
   if (variant === "flush") {
-    return "mt-1 flex h-11 gap-0 overflow-hidden rounded-lg border border-line bg-surface/88 p-0 shadow-sm";
+    return surfacePanelClassName({
+      className: "mt-1 flex h-11 gap-0 overflow-hidden p-0",
+      shadow: "soft",
+      variant: "default",
+    });
   }
 
-  return "mt-1 flex gap-1 rounded-lg border border-line bg-elevated/60 p-1 shadow-sm";
+  return surfacePanelClassName({
+    className: "mt-1 flex gap-1 p-1",
+    shadow: "soft",
+    variant: "subtle",
+  });
 }
 
 function getOptionChromeClassName(variant: SegmentedControlVariant) {

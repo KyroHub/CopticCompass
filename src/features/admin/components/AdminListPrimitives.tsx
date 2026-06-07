@@ -3,6 +3,7 @@
 import { ChevronDown } from "lucide-react";
 
 import { Badge } from "@/components/Badge";
+import { ElevatedPanel } from "@/components/ElevatedPanel";
 import { useLanguage } from "@/components/LanguageProvider";
 import { adminFilterToggleClassName } from "@/features/admin/components/adminControlStyles";
 
@@ -89,7 +90,7 @@ export function AdminOverflowDisclosure({
   const copy = adminListPrimitivesCopy[language];
 
   return (
-    <details className="group rounded-lg border border-dashed border-line bg-elevated/70 p-4">
+    <ElevatedPanel as="details" className="group !border-dashed p-4">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-lg px-2 py-1 text-sm font-medium text-muted [&::-webkit-details-marker]:hidden">
         <div className="flex flex-wrap items-center gap-3">
           <Badge tone={badgeTone} size="xs">
@@ -103,6 +104,6 @@ export function AdminOverflowDisclosure({
       </summary>
 
       <div className="mt-4 space-y-6">{children}</div>
-    </details>
+    </ElevatedPanel>
   );
 }

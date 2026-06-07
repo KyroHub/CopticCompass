@@ -18,6 +18,7 @@ import {
 import { createPortal } from "react-dom";
 
 import { buttonClassName } from "@/components/Button";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import { cx } from "@/lib/classes";
 import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 import { useMediaQuery } from "@/lib/useMediaQuery";
@@ -93,7 +94,10 @@ export function FilterBar({
   return (
     <div
       className={cx(
-        "relative rounded-lg border border-line bg-surface/88 p-3 shadow-soft sm:p-4",
+        surfacePanelClassName({
+          className: "relative p-3 sm:p-4",
+          shadow: "soft",
+        }),
         className,
       )}
     >

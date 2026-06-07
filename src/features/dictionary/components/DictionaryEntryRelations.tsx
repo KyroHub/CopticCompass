@@ -60,7 +60,7 @@ export function DictionaryEntryRelations({
             <Link
               href={relation.href}
               prefetch={false}
-              className="inline-flex max-w-full flex-wrap items-baseline gap-x-2 gap-y-1 rounded-lg border border-line bg-elevated/65 px-3 py-2 text-sm text-ink transition hover:-translate-y-px hover:border-coptic/35 hover:bg-coptic-soft/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coptic/30 focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+              className="inline-flex max-w-full flex-wrap items-baseline gap-x-2 gap-y-1 rounded-lg border border-line bg-elevated/70 px-3 py-2 text-sm text-ink transition hover:-translate-y-px hover:border-coptic/35 hover:bg-coptic-soft/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coptic/30 focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
             >
               <span className="text-[10px] font-bold uppercase tracking-widest text-muted">
                 {relation.label}

@@ -7,6 +7,7 @@ import { sendContactEmail, type ContactFormState } from "@/actions/contact";
 import { AppPageIntro } from "@/components/AppPageIntro";
 import { Button } from "@/components/Button";
 import { CheckboxField } from "@/components/CheckboxField";
+import { elevatedPanelClassName } from "@/components/ElevatedPanel";
 import { FormField } from "@/components/FormField";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
@@ -134,7 +135,7 @@ export default function ContactPageClient() {
             <FormField
               htmlFor="wants_updates"
               label={t("contact.updatesLabel")}
-              className="rounded-lg border border-line bg-elevated/70 p-4"
+              className={elevatedPanelClassName({ className: "p-4" })}
             >
               <CheckboxField
                 id="wants_updates"

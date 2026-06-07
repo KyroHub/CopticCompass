@@ -1,6 +1,7 @@
 import { XCircle } from "lucide-react";
 
 import { buttonClassName } from "@/components/Button";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import { cx } from "@/lib/classes";
 
 import type { ButtonHTMLAttributes, MouseEvent, ReactNode } from "react";
@@ -20,14 +21,17 @@ export const SHENUTE_ICON_CLASS = {
 } as const;
 export const SHENUTE_DIALOG_BACKDROP_CLASS =
   "fixed inset-0 cursor-default bg-ink/15 backdrop-blur-[1px]";
-export const SHENUTE_MOBILE_SHEET_CLASS =
-  "fixed inset-x-0 bottom-0 max-h-[calc(100dvh-4rem)] overflow-y-auto rounded-t-xl border border-line bg-surface p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] shadow-panel";
+export const SHENUTE_MOBILE_SHEET_CLASS = surfacePanelClassName({
+  shadow: "panel",
+  className:
+    "fixed inset-x-0 bottom-0 max-h-[calc(100dvh-4rem)] overflow-y-auto !rounded-t-xl !rounded-b-none p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]",
+});
 export const SHENUTE_ADAPTIVE_DIALOG_CLASS = cx(
   SHENUTE_MOBILE_SHEET_CLASS,
   "sm:left-1/2 sm:right-auto sm:top-[calc(var(--app-sticky-offset)_+_0.75rem)] sm:bottom-auto sm:max-h-[calc(100dvh_-_var(--app-sticky-offset)_-_1.5rem)] sm:-translate-x-1/2 sm:rounded-lg",
 );
 export const SHENUTE_UTILITY_BUTTON_CLASS =
-  "h-11 w-11 shrink-0 rounded-lg border-line/70 bg-surface/75 px-0 text-muted shadow-none hover:translate-y-0 hover:border-coptic/30 hover:bg-elevated hover:text-ink focus-visible:ring-coptic/25";
+  "h-11 w-11 shrink-0 rounded-lg border-line/70 bg-surface/88 px-0 text-muted shadow-none hover:translate-y-0 hover:border-coptic/30 hover:bg-elevated hover:text-ink focus-visible:ring-coptic/25";
 export const SHENUTE_UTILITY_SUMMARY_CLASS = cx(
   SHENUTE_UTILITY_BUTTON_CLASS,
   "cursor-pointer list-none [&::-webkit-details-marker]:hidden group-open:border-coptic/45 group-open:bg-coptic-soft/70 group-open:text-coptic",

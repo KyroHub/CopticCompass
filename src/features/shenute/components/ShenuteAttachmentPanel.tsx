@@ -3,6 +3,7 @@ import Image from "next/image";
 
 import { Badge } from "@/components/Badge";
 import { buttonClassName } from "@/components/Button";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import { cx } from "@/lib/classes";
 
 import {
@@ -68,7 +69,13 @@ export function ShenuteAttachmentPreview({
   }
 
   return (
-    <div className="mb-1.5 flex items-center gap-2 rounded-lg border border-line bg-surface/85 p-1.5 shadow-sm sm:mb-2 sm:gap-3 sm:p-2">
+    <div
+      className={surfacePanelClassName({
+        shadow: "soft",
+        className:
+          "mb-1.5 flex items-center gap-2 p-1.5 sm:mb-2 sm:gap-3 sm:p-2",
+      })}
+    >
       <Image
         unoptimized
         src={selectedImagePreviewUrl}
@@ -149,7 +156,13 @@ export function ShenuteAttachmentMenu({
       >
         <ImagePlus className={SHENUTE_ICON_CLASS.panel} />
       </summary>
-      <div className="fixed inset-x-3 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-[70] hidden w-auto rounded-lg border border-line bg-surface p-3 shadow-panel group-open:block sm:absolute sm:inset-x-auto sm:bottom-full sm:left-0 sm:mb-2 sm:w-52 sm:p-2">
+      <div
+        className={surfacePanelClassName({
+          shadow: "panel",
+          className:
+            "fixed inset-x-3 bottom-[calc(6rem+env(safe-area-inset-bottom))] z-[70] hidden w-auto p-3 group-open:block sm:absolute sm:inset-x-auto sm:bottom-full sm:left-0 sm:mb-2 sm:w-52 sm:p-2",
+        })}
+      >
         <ShenuteSurfaceHeader
           closeLabel={copy.closeMenu}
           className="mb-2 sm:hidden"

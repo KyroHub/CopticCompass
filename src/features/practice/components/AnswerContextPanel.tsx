@@ -33,7 +33,7 @@ export function AnswerContextPanel({
     : candidate.metadata.focusText;
 
   return (
-    <section className="mt-3 rounded-lg border border-line bg-elevated/60 text-left md:mt-4">
+    <section className="mt-3 rounded-lg border border-line bg-elevated/70 text-left md:mt-4">
       <div className="flex flex-col gap-2 p-2 sm:flex-row sm:items-center">
         <button
           type="button"

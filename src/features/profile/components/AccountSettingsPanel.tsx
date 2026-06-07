@@ -65,7 +65,7 @@ function AccountSettingsSection({
         type="button"
         onClick={onToggle}
         aria-expanded={isOpen}
-        className="flex w-full cursor-pointer select-none items-start gap-4 px-6 py-5 text-left transition-all duration-200 hover:bg-elevated/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/30"
+        className="flex w-full cursor-pointer select-none items-start gap-4 px-6 py-5 text-left transition-all duration-200 hover:bg-elevated/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent/30"
       >
         <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent-strong dark:text-accent">
           {icon}

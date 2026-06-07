@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { Badge } from "@/components/Badge";
 import { iconButtonClassName as sharedIconButtonClassName } from "@/components/Button";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import type { ChatMessageLike } from "@/features/shenute/shared";
 
 import { FLOATING_SHENUTE_ICON_BUTTON_CLASS } from "./floatingShenuteClasses";
@@ -39,7 +40,11 @@ export function FloatingShenuteHeader({
   });
 
   return (
-    <header className="border-b border-line/80 bg-surface/80 px-4 py-3">
+    <header
+      className={surfacePanelClassName({
+        className: "border-b border-line/80 px-4 py-3",
+      })}
+    >
       <div
         aria-hidden="true"
         className="mx-auto mb-2 h-1 w-10 rounded-full bg-line sm:hidden"

@@ -13,6 +13,7 @@ import {
 } from "react";
 
 import { controlButtonClassName } from "@/components/Button";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import { DEFAULT_PRACTICE_DECK_ID } from "@/features/practice/lib/practiceDeckDefaults";
 import { cx } from "@/lib/classes";
 import {
@@ -298,7 +299,12 @@ export function Navbar() {
 
               {isDictionaryMenuOpen ? (
                 <div
-                  className="absolute left-1/2 top-full z-50 mt-2 w-80 -translate-x-1/2 rounded-lg border border-line bg-surface/96 p-2 shadow-soft backdrop-blur-md"
+                  className={surfacePanelClassName({
+                    className:
+                      "absolute left-1/2 top-full z-50 mt-2 w-80 -translate-x-1/2 p-2",
+                    shadow: "soft",
+                    variant: "elevated",
+                  })}
                   role="menu"
                   aria-label={t("nav.dictionaryMenu")}
                 >
@@ -386,7 +392,10 @@ export function Navbar() {
           <nav
             id="mobile-navigation"
             aria-label="Mobile"
-            className="mb-3 flex flex-col gap-1 rounded-lg border border-line bg-surface/88 p-2 shadow-soft backdrop-blur-md xl:hidden"
+            className={surfacePanelClassName({
+              className: "mb-3 flex flex-col gap-1 p-2 xl:hidden",
+              shadow: "soft",
+            })}
           >
             {primaryLinks.map((link) =>
               renderNavbarLink(link, "mobile", () =>

@@ -54,7 +54,7 @@ export function ShenuteWelcomePanel({
                   type="button"
                   onClick={() => onSelectPrompt(starterPrompt.prompt)}
                   disabled={isDisabled}
-                  className="group flex min-h-12 w-full items-start gap-3 rounded-lg border border-line bg-surface/85 px-3 py-2.5 text-left text-sm font-medium leading-5 text-ink shadow-sm transition hover:border-coptic/35 hover:bg-coptic-soft/45 disabled:cursor-not-allowed disabled:opacity-60 md:min-h-14 md:py-3"
+                  className="group flex min-h-12 w-full items-start gap-3 rounded-lg border border-line bg-surface/88 px-3 py-2.5 text-left text-sm font-medium leading-5 text-ink shadow-sm transition hover:border-coptic/35 hover:bg-coptic-soft/45 disabled:cursor-not-allowed disabled:opacity-60 md:min-h-14 md:py-3"
                 >
                   <span className="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-elevated text-muted transition group-hover:bg-coptic-soft group-hover:text-coptic">
                     <Icon className={SHENUTE_ICON_CLASS.action} />

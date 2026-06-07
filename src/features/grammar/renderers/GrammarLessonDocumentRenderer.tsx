@@ -125,7 +125,7 @@ function GrammarLessonAbbreviationAppendix({
             <article
               key={entry.key}
               id={getGrammarLessonAbbreviationAnchorId(lessonId, entry.key)}
-              className="app-anchor-inline rounded-lg border border-line bg-elevated/65 px-4 py-3"
+              className="app-anchor-inline rounded-lg border border-line bg-elevated/70 px-4 py-3"
             >
               <h3 className="text-base font-semibold text-ink">
                 {entry.label}

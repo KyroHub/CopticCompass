@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 import { Button, controlButtonClassName } from "@/components/Button";
-import { SurfacePanel } from "@/components/SurfacePanel";
+import { SurfacePanel, surfacePanelClassName } from "@/components/SurfacePanel";
 import { GrammarLessonOutline } from "@/features/grammar/components/GrammarLessonPrimitives";
 import { cx } from "@/lib/classes";
 
@@ -176,7 +176,12 @@ function MobileLessonTools({
   lessonToolsTitle,
 }: ReadingWorkspaceProps) {
   return (
-    <details className="group mb-6 overflow-hidden rounded-lg border border-line bg-surface/88 shadow-soft backdrop-blur-sm xl:hidden">
+    <details
+      className={surfacePanelClassName({
+        shadow: "soft",
+        className: "group mb-6 overflow-hidden xl:hidden",
+      })}
+    >
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3 [&::-webkit-details-marker]:hidden">
         <div className="min-w-0">
           <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted">

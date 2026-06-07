@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 
 import { buttonClassName } from "@/components/Button";
+import { elevatedPanelClassName } from "@/components/ElevatedPanel";
 import { useLanguage } from "@/components/LanguageProvider";
 import { SpeakButton } from "@/features/dictionary/components/SpeakButton";
 import { AnswerContextPanel } from "@/features/practice/components/AnswerContextPanel";
@@ -106,7 +107,11 @@ export function FlashcardFace({
       <div className={cx("card-inner", isRevealed && "is-flipped")}>
         {/* CARD FRONT FACE */}
         <div
-          className="card-face card-front rounded-lg border border-line bg-elevated/45 p-4 shadow-soft md:p-6"
+          className={elevatedPanelClassName({
+            variant: "subtle",
+            shadow: "soft",
+            className: "card-face card-front p-4 md:p-6",
+          })}
           aria-hidden={isRevealed}
         >
           {primaryLink ? (
@@ -139,7 +144,11 @@ export function FlashcardFace({
               />
             </div>
 
-            <div className="w-full rounded-lg border border-line bg-elevated/70 px-4 py-3 md:px-6 md:py-5">
+            <div
+              className={elevatedPanelClassName({
+                className: "w-full px-4 py-3 md:px-6 md:py-5",
+              })}
+            >
               <p className="text-xs font-semibold uppercase tracking-widest text-muted">
                 {t(candidate.back.labelKey)}
               </p>

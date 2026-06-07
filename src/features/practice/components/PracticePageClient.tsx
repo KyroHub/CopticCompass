@@ -19,6 +19,7 @@ import { EmptyState } from "@/components/EmptyState";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
 import { StatusNotice } from "@/components/StatusNotice";
+import { SurfacePanel, surfacePanelClassName } from "@/components/SurfacePanel";
 import { useSpeech } from "@/features/dictionary/hooks/useSpeech";
 import { CompletionPanel } from "@/features/practice/components/CompletionPanel";
 import { DeckPickerDialog } from "@/features/practice/components/DeckPickerDialog";
@@ -107,7 +108,7 @@ function StudyModeEmptyPanel({
     <EmptyState
       title={t(titleKey)}
       description={t(descriptionKey)}
-      className="border-line bg-surface/88 shadow-soft"
+      className={surfacePanelClassName({ shadow: "soft" })}
     >
       {fallbackMode ? (
         <button
@@ -286,7 +287,7 @@ export function PracticePageClient({
       <EmptyState
         title={t("practice.saved.storageTitle")}
         description={t("practice.saved.storageDescription")}
-        className="border-line bg-surface/88 shadow-soft"
+        className={surfacePanelClassName({ shadow: "soft" })}
       >
         <Link
           href={getDashboardPath(language)}
@@ -310,7 +311,7 @@ export function PracticePageClient({
             ? t("practice.saved.emptyDescription")
             : t("practice.saved.generatedEmptyDescription")
         }
-        className="border-line bg-surface/88 shadow-soft"
+        className={surfacePanelClassName({ shadow: "soft" })}
       >
         <Link
           href={getDictionaryPath(language)}
@@ -326,7 +327,7 @@ export function PracticePageClient({
       <EmptyState
         title={t("practice.filters.emptyTitle")}
         description={t("practice.filters.emptyDescription")}
-        className="border-line bg-surface/88 shadow-soft"
+        className={surfacePanelClassName({ shadow: "soft" })}
       >
         <button
           type="button"
@@ -345,7 +346,7 @@ export function PracticePageClient({
       <EmptyState
         title={t("practice.saved.caughtUpTitle")}
         description={caughtUpDescription}
-        className="border-line bg-surface/88 shadow-soft"
+        className={surfacePanelClassName({ shadow: "soft" })}
       >
         <div className="flex flex-wrap justify-center gap-3">
           <Link
@@ -376,7 +377,11 @@ export function PracticePageClient({
   } else {
     deckContent = (
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-6">
-        <div className="min-w-0 rounded-lg border border-line bg-surface/92 p-4 shadow-soft backdrop-blur-sm md:p-7">
+        <SurfacePanel
+          variant="elevated"
+          shadow="soft"
+          className="min-w-0 p-4 md:p-7"
+        >
           {currentItem ? (
             <>
               <MobileReviewProgress
@@ -493,7 +498,7 @@ export function PracticePageClient({
               weakReviewCount={weakReviewCount}
             />
           )}
-        </div>
+        </SurfacePanel>
 
         <div className="hidden lg:block">
           <PracticeProgressPanel
