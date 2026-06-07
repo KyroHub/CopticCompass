@@ -278,13 +278,15 @@ export function Navbar() {
                 onClick={() => setIsDictionaryMenuOpen((isOpen) => !isOpen)}
               >
                 <span
-                  className={
+                  data-label={t("nav.dictionary")}
+                  className={cx(
+                    "inline-grid items-center justify-items-center before:invisible before:col-start-1 before:row-start-1 before:h-0 before:overflow-hidden before:font-semibold before:content-[attr(data-label)]",
                     isDictionaryActive
                       ? "font-semibold"
-                      : "font-medium group-hover:font-semibold"
-                  }
+                      : "font-medium group-hover:font-semibold",
+                  )}
                 >
-                  <span className="whitespace-nowrap">
+                  <span className="col-start-1 row-start-1 whitespace-nowrap">
                     {t("nav.dictionary")}
                   </span>
                 </span>
@@ -303,7 +305,7 @@ export function Navbar() {
                     className:
                       "absolute left-1/2 top-full z-50 mt-2 w-80 -translate-x-1/2 p-2",
                     shadow: "soft",
-                    variant: "elevated",
+                    variant: "default",
                   })}
                   role="menu"
                   aria-label={t("nav.dictionaryMenu")}
@@ -419,13 +421,17 @@ export function Navbar() {
                 }
               >
                 <span
+                  data-label={t("nav.dictionary")}
                   className={cx(
+                    "inline-grid items-center justify-items-center before:invisible before:col-start-1 before:row-start-1 before:h-0 before:overflow-hidden before:font-semibold before:content-[attr(data-label)]",
                     isDictionaryActive
                       ? "font-semibold"
                       : "font-medium group-hover:font-semibold",
                   )}
                 >
-                  {t("nav.dictionary")}
+                  <span className="col-start-1 row-start-1 whitespace-nowrap">
+                    {t("nav.dictionary")}
+                  </span>
                 </span>
                 <ChevronDown
                   className={cx(
@@ -439,7 +445,10 @@ export function Navbar() {
               {isMobileDictionaryExpanded ? (
                 <div
                   id="mobile-dictionary-tools"
-                  className="rounded-lg bg-elevated/60 p-1"
+                  className={surfacePanelClassName({
+                    className: "p-1",
+                    variant: "default",
+                  })}
                   aria-label={t("nav.dictionaryMenu")}
                 >
                   <div className="grid grid-cols-2 gap-1">

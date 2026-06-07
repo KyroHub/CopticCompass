@@ -508,14 +508,14 @@ export default function ShenutePageClient() {
               <p className="hidden min-w-0 flex-1 truncate sm:block">
                 {historyStatusMessage}
               </p>
-              <span className="hidden max-w-full items-center rounded-full bg-elevated px-2 py-0.5 text-xs font-semibold text-muted sm:inline-flex">
+              <span className="hidden max-w-full items-center rounded-md bg-elevated px-2 py-0.5 text-xs font-semibold text-muted sm:inline-flex">
                 <span className="truncate">
                   {copy.aiMode}: {selectedProviderOption.label}
                 </span>
               </span>
               {handoffContextLabel ? (
                 <span
-                  className="hidden max-w-[14rem] items-center rounded-full bg-coptic-soft px-2 py-0.5 text-xs font-semibold text-coptic sm:inline-flex"
+                  className="hidden max-w-[14rem] items-center rounded-md bg-coptic-soft px-2 py-0.5 text-xs font-semibold text-coptic sm:inline-flex"
                   title={handoffPageContext?.url || handoffPageContext?.path}
                 >
                   <span className="truncate">

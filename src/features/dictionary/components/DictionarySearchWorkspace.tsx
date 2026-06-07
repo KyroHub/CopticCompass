@@ -98,7 +98,7 @@ function CollapsibleFilterSection({
             {title}
           </span>
           {activeCount > 0 ? (
-            <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ink px-1.5 text-xs font-semibold text-paper dark:bg-elevated dark:text-ink dark:ring-1 dark:ring-line">
+            <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-md bg-ink px-1.5 text-xs font-semibold text-paper dark:bg-elevated dark:text-ink dark:ring-1 dark:ring-line">
               {activeCount}
             </span>
           ) : null}
@@ -191,7 +191,7 @@ export function DictionarySearchWorkspace({
     >
       <SlidersHorizontal className="h-5 w-5" />
       {hasActiveFilters ? (
-        <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ink px-1 text-[10px] font-bold leading-none text-paper ring-2 ring-surface dark:bg-elevated dark:text-ink dark:ring-surface">
+        <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-md bg-ink px-1 text-[10px] font-bold leading-none text-paper ring-2 ring-surface dark:bg-elevated dark:text-ink dark:ring-surface">
           {activeFilterCount}
         </span>
       ) : null}

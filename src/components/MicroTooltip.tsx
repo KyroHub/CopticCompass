@@ -1,3 +1,4 @@
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/Tooltip";
 import { cx } from "@/lib/classes";
 
 import type { CSSProperties, ReactNode } from "react";
@@ -57,25 +58,23 @@ export function MicroTooltip({
   label,
 }: MicroTooltipProps) {
   return (
-    <span
-      aria-label={label}
-      className={cx(
-        "group/micro-tooltip relative inline-flex cursor-help focus:outline-none",
-        alignItems === "center" ? "items-center" : "items-baseline",
-        className,
-      )}
-      tabIndex={focusable ? 0 : undefined}
-    >
-      {children}
-      <span
-        className={cx(
-          "pointer-events-none absolute left-1/2 top-full z-30 mt-2 hidden w-max -translate-x-1/2 group-hover/micro-tooltip:block group-focus-visible/micro-tooltip:block",
-          microTooltipBubbleClassName,
-          bubbleClassName,
-        )}
-      >
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span
+          className={cx(
+            "inline-flex cursor-help focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 rounded-sm",
+            alignItems === "center" ? "items-center" : "items-baseline",
+            className,
+          )}
+          tabIndex={focusable ? 0 : -1}
+        >
+          {children}
+          <span className="sr-only">{label}</span>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent variant="micro" className={bubbleClassName}>
         {label}
-      </span>
-    </span>
+      </TooltipContent>
+    </Tooltip>
   );
 }

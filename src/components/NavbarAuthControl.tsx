@@ -2,16 +2,17 @@
 
 import { LayoutDashboard, LogIn } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { buttonClassName, controlButtonClassName } from "@/components/Button";
-import { FloatingTooltip } from "@/components/FloatingTooltip";
 import { useLanguage } from "@/components/LanguageProvider";
 import {
-  interactiveTooltipBubbleClassName,
-  microTooltipBubbleClassName,
-  tooltipArrowClassName,
-} from "@/components/MicroTooltip";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  PopoverArrow,
+} from "@/components/Popover";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/Tooltip";
 import { cx } from "@/lib/classes";
 import { createClient, hasSupabaseEnv } from "@/lib/supabase/client";
 import { loadBrowserUser } from "@/lib/supabase/clientAuth";
@@ -42,8 +43,6 @@ export function NavbarAuthControl({
   pathname,
   variant,
 }: NavbarAuthControlProps) {
-  const dashboardTooltipId = useId();
-  const tooltipId = useId();
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -141,75 +140,63 @@ export function NavbarAuthControl({
 
     if (user) {
       return (
-        <span className="group/account-tooltip relative inline-flex">
-          <Link
-            href={dashboardHref}
-            prefetch={false}
-            onClick={onNavigate}
-            data-label={dashboardLabel}
-            className={controlButtonClassName({
-              className: cx(
-                "h-10 w-10 px-0",
-                isActive && activeControlClassName,
-              ),
-            })}
-            aria-current={isActive ? "page" : undefined}
-            aria-describedby={dashboardTooltipId}
-            aria-label={t("nav.openDashboard")}
-          >
-            <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
-            <span className="sr-only">{dashboardLabel}</span>
-          </Link>
-          <span
-            id={dashboardTooltipId}
-            role="tooltip"
-            className={cx(
-              "pointer-events-none absolute right-0 top-full z-50 mt-2 hidden w-max group-hover/account-tooltip:block group-focus-within/account-tooltip:block",
-              microTooltipBubbleClassName,
-            )}
-          >
-            {dashboardLabel}
-          </span>
-        </span>
+        <Tooltip delayDuration={200}>
+          <TooltipTrigger asChild>
+            <Link
+              href={dashboardHref}
+              prefetch={false}
+              onClick={onNavigate}
+              data-label={dashboardLabel}
+              className={controlButtonClassName({
+                className: cx(
+                  "h-10 w-10 px-0",
+                  isActive && activeControlClassName,
+                ),
+              })}
+              aria-current={isActive ? "page" : undefined}
+              aria-label={t("nav.openDashboard")}
+            >
+              <LayoutDashboard className="h-4 w-4" aria-hidden="true" />
+              <span className="sr-only">{dashboardLabel}</span>
+            </Link>
+          </TooltipTrigger>
+          <TooltipContent variant="micro">{dashboardLabel}</TooltipContent>
+        </Tooltip>
       );
     }
 
     return (
-      <>
-        <button
-          ref={buttonRef}
-          type="button"
-          aria-controls={isPromptOpen ? tooltipId : undefined}
-          aria-expanded={isPromptOpen}
-          aria-label={loginLabel}
-          aria-haspopup="dialog"
-          className={controlButtonClassName({
-            className: cx(
-              "h-10 w-10 px-0",
-              isPromptOpen && activeControlClassName,
-            ),
-          })}
-          data-label={loginLabel}
-          onClick={() => setIsPromptOpen(true)}
-          onFocus={() => setIsPromptOpen(true)}
-          title={loginLabel}
-        >
-          <LogIn className="h-4 w-4" aria-hidden="true" />
-          <span className="sr-only">{loginLabel}</span>
-        </button>
+      <Popover open={isPromptOpen} onOpenChange={setIsPromptOpen}>
+        <PopoverTrigger asChild>
+          <button
+            ref={buttonRef}
+            type="button"
+            aria-label={loginLabel}
+            className={controlButtonClassName({
+              className: cx(
+                "h-10 w-10 px-0",
+                isPromptOpen && activeControlClassName,
+              ),
+            })}
+            data-label={loginLabel}
+            title={loginLabel}
+          >
+            <LogIn className="h-4 w-4" aria-hidden="true" />
+            <span className="sr-only">{loginLabel}</span>
+          </button>
+        </PopoverTrigger>
 
-        <FloatingTooltip
-          align="right"
-          anchorRef={buttonRef}
-          arrowClassName={tooltipArrowClassName}
-          className={interactiveTooltipBubbleClassName}
-          id={tooltipId}
-          isOpen={isPromptOpen}
-          role="dialog"
-          tooltipRef={tooltipRef}
-          withArrow
+        <PopoverContent
+          className="w-64 max-w-[calc(100vw-2rem)] rounded-lg p-3 text-left"
+          align="end"
+          onOpenAutoFocus={(e) => {
+            e.preventDefault();
+            tooltipRef.current
+              ?.querySelector<HTMLAnchorElement>("a[href]")
+              ?.focus();
+          }}
         >
-          <div className="space-y-3 text-left">
+          <div ref={tooltipRef} className="space-y-3">
             <div>
               <p className="text-sm font-semibold text-ink">
                 {t("nav.authPrompt.title")}
@@ -234,8 +221,9 @@ export function NavbarAuthControl({
               {loginLabel}
             </Link>
           </div>
-        </FloatingTooltip>
-      </>
+          <PopoverArrow />
+        </PopoverContent>
+      </Popover>
     );
   }
 

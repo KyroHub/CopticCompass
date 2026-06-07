@@ -247,7 +247,7 @@ export function GrammarLessonStudyWorkspace({
     <div className="relative hidden 2xl:block">
       <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen px-6 3xl:px-8">
         <div className={cx("grid items-start gap-6", studyGridClassName)}>
-          <div className="app-sticky-panel self-start">
+          <div className="sticky top-[var(--app-rail-sticky-offset)] z-20 self-start">
             <div className="flex flex-col gap-2">
               {isLeftRailCollapsed ? (
                 <CollapsedRailCard
@@ -267,7 +267,7 @@ export function GrammarLessonStudyWorkspace({
                       side="left"
                     />
                   </div>
-                  <div className="max-h-[calc(100vh-var(--app-sticky-offset)-4rem)] overflow-y-auto pr-1">
+                  <div className="max-h-[calc(100vh-var(--app-rail-sticky-offset)-4rem)] overflow-y-auto pr-1">
                     <GrammarLessonOutline
                       activeSectionId={activeSectionId}
                       eyebrow={lessonOutlineEyebrow}
@@ -293,7 +293,7 @@ export function GrammarLessonStudyWorkspace({
           </SurfacePanel>
 
           {hasSemanticSidebar ? (
-            <div className="app-sticky-panel self-start">
+            <div className="sticky top-[var(--app-rail-sticky-offset)] z-20 self-start">
               <div className="flex flex-col gap-2">
                 {isRightRailCollapsed ? (
                   <CollapsedRailCard
@@ -313,7 +313,7 @@ export function GrammarLessonStudyWorkspace({
                         side="right"
                       />
                     </div>
-                    <div className="max-h-[calc(100vh-var(--app-sticky-offset)-4rem)] space-y-4 overflow-y-auto pr-1">
+                    <div className="max-h-[calc(100vh-var(--app-rail-sticky-offset)-4rem)] space-y-4 overflow-y-auto pr-1">
                       {learnerPanel}
                       {navigationPanel}
                       {conceptSummary}

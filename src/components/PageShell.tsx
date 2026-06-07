@@ -69,7 +69,7 @@ export function PageShell({
   width,
 }: PageShellProps) {
   return (
-    <section className={cx("relative overflow-hidden", className)}>
+    <section className={cx("relative overflow-x-clip", className)}>
       {accents.map((accentClassName, index) => (
         <div key={index} className={cx(ACCENT_BASE_CLASS, accentClassName)} />
       ))}

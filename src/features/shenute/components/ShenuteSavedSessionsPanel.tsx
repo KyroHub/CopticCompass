@@ -93,7 +93,7 @@ export function ShenuteSavedSessionsPanel({
                 </span>
                 <span
                   className={cx(
-                    "shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold",
+                    "shrink-0 rounded-md px-2 py-0.5 text-xs font-semibold",
                     isActive
                       ? "bg-surface/88 text-coptic"
                       : "bg-elevated text-muted",
@@ -106,7 +106,7 @@ export function ShenuteSavedSessionsPanel({
                 <Clock3 className={SHENUTE_ICON_CLASS.meta} />
                 <span>{formattedSessionDate}</span>
                 {isActive && hasUnsavedConversationChanges ? (
-                  <span className="rounded-full bg-accent-soft px-2 py-0.5 font-semibold text-accent-strong dark:text-accent">
+                  <span className="rounded-md bg-accent-soft px-2 py-0.5 font-semibold text-accent-strong dark:text-accent">
                     {copy.sessionUnsavedBadge}
                   </span>
                 ) : null}

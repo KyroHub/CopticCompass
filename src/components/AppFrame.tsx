@@ -2,6 +2,7 @@ import { Footer } from "@/components/Footer";
 import { LanguageProvider } from "@/components/LanguageProvider";
 import { Navbar } from "@/components/Navbar";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { TooltipProvider } from "@/components/Tooltip";
 import { FloatingShenute } from "@/features/shenute/components/FloatingShenute";
 import type { Language } from "@/types/i18n";
 
@@ -35,12 +36,14 @@ export function AppFrame({
         initialLanguage={initialLanguage}
         localeRouting={localeRouting}
       >
-        <div className="flex min-h-screen flex-col">
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <FloatingShenute />
-        </div>
+        <TooltipProvider delayDuration={200}>
+          <div className="flex min-h-screen flex-col">
+            <Navbar />
+            <main className="flex-1">{children}</main>
+            <Footer />
+            <FloatingShenute />
+          </div>
+        </TooltipProvider>
       </LanguageProvider>
     </ThemeProvider>
   );

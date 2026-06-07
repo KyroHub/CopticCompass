@@ -79,7 +79,6 @@ function DictionaryPageBody({ searchPath }: DictionaryPageBodyProps) {
       ]}
     >
       <AppPageIntro
-        spacing="compact"
         actions={
           <div className="grid w-full grid-cols-2 gap-3 sm:flex sm:w-auto sm:flex-wrap sm:justify-end">
             <Link

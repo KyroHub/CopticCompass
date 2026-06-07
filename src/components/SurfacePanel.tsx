@@ -21,9 +21,9 @@ type SurfacePanelClassNameOptions = {
 };
 
 const VARIANT_CLASSES: Record<SurfacePanelVariant, string> = {
-  default: "bg-surface/88",
-  subtle: "bg-surface/72",
-  elevated: "bg-elevated/70",
+  default: "bg-surface/95",
+  subtle: "bg-surface/80",
+  elevated: "bg-elevated/85",
 };
 
 const SHADOW_CLASSES: Record<SurfacePanelShadow, string> = {

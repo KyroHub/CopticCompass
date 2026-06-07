@@ -64,7 +64,7 @@ export function ShenuteSessionSidebar({
           <ShenuteSurfaceHeading>
             {copy.conversationHistory}
           </ShenuteSurfaceHeading>
-          <span className="shrink-0 rounded-full bg-elevated px-2 py-0.5 text-xs font-semibold text-muted">
+          <span className="shrink-0 rounded-md bg-elevated px-2 py-0.5 text-xs font-semibold text-muted">
             {sessionCountLabel}
           </span>
         </div>

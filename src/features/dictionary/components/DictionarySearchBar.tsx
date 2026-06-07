@@ -39,9 +39,8 @@ export function DictionarySearchBar({
 
   return (
     <SurfacePanel
-      variant="elevated"
       shadow="panel"
-      className="group relative z-30"
+      className="group relative z-30 backdrop-blur-xl"
     >
       <div className="relative flex items-center">
         <div className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-muted transition-colors group-focus-within:text-coptic sm:left-6">

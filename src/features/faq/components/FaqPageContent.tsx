@@ -83,7 +83,7 @@ function renderFaqBlock(
     return (
       <blockquote
         key={index}
-        className="rounded-lg border-l-2 border-accent/55 bg-accent-soft/35 px-4 py-3 font-medium leading-7 text-ink dark:bg-accent-soft/15"
+        className="rounded-lg border-l-4 border-accent/70 bg-elevated px-4 py-3 font-medium leading-7 text-ink dark:bg-elevated/60"
       >
         {content}
       </blockquote>
@@ -140,8 +140,8 @@ export function FaqPageContent({ locale }: FaqPageContentProps) {
         <SurfacePanel
           as="section"
           rounded="lg"
-          variant="elevated"
-          className="divide-y divide-line overflow-hidden"
+          variant="default"
+          className="divide-y divide-line overflow-hidden shadow-sm"
         >
           {copy.items.map((item) => (
             <details

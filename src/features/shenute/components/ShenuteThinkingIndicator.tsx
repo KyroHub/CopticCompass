@@ -62,7 +62,7 @@ export function ShenuteThinkingIndicator({
             </span>
             <span
               aria-label={`${copy.thinkingElapsed} ${thinkingElapsedLabel}`}
-              className="inline-flex shrink-0 items-center gap-1 rounded-full bg-elevated px-2 py-0.5 text-xs font-semibold text-muted"
+              className="inline-flex shrink-0 items-center gap-1 rounded-md bg-elevated px-2 py-0.5 text-xs font-semibold text-muted"
             >
               <Clock3 className={SHENUTE_ICON_CLASS.meta} />
               {thinkingElapsedLabel}

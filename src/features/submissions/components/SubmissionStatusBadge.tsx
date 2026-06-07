@@ -19,7 +19,7 @@ export function SubmissionStatusBadge({
   return (
     <span
       className={cx(
-        "inline-flex rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wider",
+        "inline-flex rounded-md px-3 py-1 text-xs font-bold uppercase tracking-wider",
         TONE_CLASSES[tone],
         className,
       )}

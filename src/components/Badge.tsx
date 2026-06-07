@@ -64,7 +64,7 @@ export function Badge({
   return (
     <span
       className={cx(
-        "inline-flex items-center rounded-full font-semibold",
+        "inline-flex items-center rounded-md font-semibold",
         TONE_CLASSES[tone],
         SIZE_CLASSES[size],
         caps ? "uppercase tracking-widest" : "tracking-[0.02em]",

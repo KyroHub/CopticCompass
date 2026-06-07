@@ -309,7 +309,7 @@ export function SegmentedControl({
               {typeof option.count === "number" ? (
                 <span
                   className={cx(
-                    "rounded-full px-1.5 py-0.5 text-[0.68rem] font-semibold leading-none",
+                    "rounded-md px-1.5 py-0.5 text-[0.68rem] font-semibold leading-none",
                     isActive ? COUNT_TONE_CLASSES[tone] : "bg-line text-muted",
                   )}
                 >

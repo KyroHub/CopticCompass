@@ -21,7 +21,6 @@ type DownloadPdfButtonProps = {
   beforeCapture?: PdfLifecycleCallback;
   afterCapture?: PdfLifecycleCallback;
   className?: string;
-  wrapperClassName?: string;
 };
 
 const PDF_BUTTON_COPY = {
@@ -66,7 +65,6 @@ export function DownloadPdfButton({
   beforeCapture,
   afterCapture,
   className,
-  wrapperClassName,
 }: DownloadPdfButtonProps) {
   const { language } = useLanguage();
   const authGate = useOptionalAuthGate();
@@ -209,11 +207,12 @@ export function DownloadPdfButton({
   };
 
   return (
-    <div className={cx("flex flex-col items-stretch gap-2", wrapperClassName)}>
+    <div className="flex flex-col items-stretch gap-2">
       <AuthGatedActionButton
-        wrapperClassName="w-full min-w-0 sm:w-auto"
         className={cx(
           buttonClassName({ className, variant: "secondary" }),
+          "font-semibold",
+          "w-full sm:w-auto",
           isGenerating && "opacity-70",
         )}
         disabled={isGenerating}

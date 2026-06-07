@@ -7,24 +7,21 @@ import {
   FileClock,
   FileText,
   Search,
+  SlidersHorizontal,
   X,
   type LucideIcon,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 
 import { AppPageIntro } from "@/components/AppPageIntro";
 import { Badge } from "@/components/Badge";
-import { iconButtonClassName } from "@/components/Button";
+import { buttonClassName, iconButtonClassName } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
-import {
-  FilterBar,
-  FilterMenu,
-  type FilterMenuOption,
-} from "@/components/FilterMenu";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
+import { SegmentedControl } from "@/components/SegmentedControl";
 import { surfacePanelClassName, SurfacePanel } from "@/components/SurfacePanel";
 import {
   getPublicationFormatLabel,
@@ -55,13 +52,6 @@ const statusFilterOptions: PublicationStatusFilter[] = [
 
 function getCountLabel(count: number, itemLabel: string, itemsLabel: string) {
   return `${count} ${count === 1 ? itemLabel : itemsLabel}`;
-}
-
-function getSelectedFilterLabel(
-  options: readonly FilterMenuOption[],
-  value: string,
-) {
-  return options.find((option) => option.value === value)?.label ?? value;
 }
 
 function CatalogStat({
@@ -100,11 +90,13 @@ function PublicationsSearchBar({
   onQueryChange,
   placeholder,
   query,
+  trailingControls,
 }: {
   clearLabel: string;
   onQueryChange: (value: string) => void;
   placeholder: string;
   query: string;
+  trailingControls?: ReactNode;
 }) {
   return (
     <div
@@ -124,22 +116,25 @@ function PublicationsSearchBar({
           placeholder={placeholder}
           aria-label={placeholder}
           enterKeyHint="search"
-          className="w-full rounded-lg bg-transparent p-4 pl-12 pr-14 text-base text-ink transition-all placeholder:text-muted/65 focus:outline-none focus:ring-2 focus:ring-accent/30 sm:p-5 sm:pl-14 sm:pr-16 sm:text-lg"
+          className="w-full rounded-lg bg-transparent p-4 pl-12 pr-[8.5rem] text-base text-ink transition-all placeholder:text-muted/65 focus:outline-none focus:ring-2 focus:ring-accent/30 sm:p-5 sm:pl-14 sm:pr-[9rem] sm:text-lg"
         />
 
-        {query ? (
-          <button
-            type="button"
-            aria-label={clearLabel}
-            onClick={() => onQueryChange("")}
-            className={iconButtonClassName({
-              className:
-                "absolute right-3 top-1/2 h-9 w-9 -translate-y-1/2 border-transparent sm:right-4",
-            })}
-          >
-            <X className="h-5 w-5" aria-hidden="true" />
-          </button>
-        ) : null}
+        <div className="absolute right-2 top-1/2 flex -translate-y-1/2 items-center gap-1 sm:right-3">
+          {query ? (
+            <button
+              type="button"
+              aria-label={clearLabel}
+              onClick={() => onQueryChange("")}
+              className={iconButtonClassName({
+                className:
+                  "h-9 w-9 border-transparent text-muted hover:text-ink sm:h-10 sm:w-10",
+              })}
+            >
+              <X className="h-5 w-5" aria-hidden="true" />
+            </button>
+          ) : null}
+          {trailingControls}
+        </div>
       </div>
     </div>
   );
@@ -279,29 +274,26 @@ export default function PublicationsPageClient() {
     useState<PublicationLanguageFilter>("ALL");
   const [selectedStatus, setSelectedStatus] =
     useState<PublicationStatusFilter>("ALL");
+  const [isControlsOpen, setIsControlsOpen] = useState(false);
   const normalizedQuery = query.trim().toLocaleLowerCase();
   const activeFilterCount = [
     selectedLanguage !== "ALL",
     selectedStatus !== "ALL",
   ].filter(Boolean).length;
-  const statusOptions: FilterMenuOption[] = statusFilterOptions.map(
-    (status) => ({
-      label:
-        status === "ALL"
-          ? t("publications.status.all")
-          : t(`publications.status.${status}`),
-      value: status,
-    }),
-  );
-  const languageOptions: FilterMenuOption[] = languageFilterOptions.map(
-    (languageOption) => ({
-      label:
-        languageOption === "ALL"
-          ? t("publications.language.all")
-          : languageOption,
-      value: languageOption,
-    }),
-  );
+  const statusOptions = statusFilterOptions.map((status) => ({
+    label:
+      status === "ALL"
+        ? t("publications.status.all")
+        : t(`publications.status.${status}`),
+    value: status,
+  }));
+  const languageOptions = languageFilterOptions.map((languageOption) => ({
+    label:
+      languageOption === "ALL"
+        ? t("publications.language.all")
+        : languageOption,
+    value: languageOption,
+  }));
   const filteredPublications = useMemo(
     () =>
       publications.filter((publication) => {
@@ -352,7 +344,6 @@ export default function PublicationsPageClient() {
       ]}
     >
       <AppPageIntro
-        spacing="compact"
         breadcrumbs={[
           { label: t("nav.home"), href: getLocalizedHomePath(language) },
           { label: t("nav.publications") },
@@ -367,46 +358,104 @@ export default function PublicationsPageClient() {
             onQueryChange={setQuery}
             placeholder={t("publications.searchPlaceholder")}
             query={query}
+            trailingControls={
+              <button
+                type="button"
+                onClick={() => setIsControlsOpen((current) => !current)}
+                aria-expanded={isControlsOpen}
+                aria-label={t("publications.filterToggle")}
+                title={t("publications.filterToggle")}
+                className={iconButtonClassName({
+                  active: isControlsOpen,
+                  className:
+                    "relative h-9 w-9 border-transparent sm:h-10 sm:w-10",
+                })}
+              >
+                <SlidersHorizontal className="h-5 w-5" />
+                {activeFilterCount > 0 ? (
+                  <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-md bg-ink px-1 text-[10px] font-bold leading-none text-paper ring-2 ring-surface dark:bg-elevated dark:text-ink dark:ring-surface">
+                    {activeFilterCount}
+                  </span>
+                ) : null}
+              </button>
+            }
           />
 
-          <FilterBar
-            activeCount={activeFilterCount}
-            clearLabel={t("publications.clearFilters")}
-            defaultOpen="desktop"
-            label={t("publications.filterToggle")}
-            onClear={() => {
-              setSelectedLanguage("ALL");
-              setSelectedStatus("ALL");
-            }}
-          >
-            <FilterMenu
-              active={selectedStatus !== "ALL"}
-              closeLabel={t("publications.hideFilters")}
-              label={t("publications.status")}
-              menuLabel={t("publications.status")}
-              value={selectedStatus}
-              valueLabel={getSelectedFilterLabel(statusOptions, selectedStatus)}
-              options={statusOptions}
-              onChange={(value) =>
-                setSelectedStatus(value as PublicationStatusFilter)
-              }
-            />
-            <FilterMenu
-              active={selectedLanguage !== "ALL"}
-              closeLabel={t("publications.hideFilters")}
-              label={t("publications.language")}
-              menuLabel={t("publications.language")}
-              value={selectedLanguage}
-              valueLabel={getSelectedFilterLabel(
-                languageOptions,
-                selectedLanguage,
-              )}
-              options={languageOptions}
-              onChange={(value) =>
-                setSelectedLanguage(value as PublicationLanguageFilter)
-              }
-            />
-          </FilterBar>
+          {isControlsOpen ? (
+            <section
+              className={surfacePanelClassName({
+                variant: "elevated",
+                shadow: "panel",
+                className: "p-3 sm:p-4 z-20",
+              })}
+            >
+              <div className="grid gap-4">
+                <div className="flex min-w-0 items-center justify-between gap-3">
+                  <h2 className="text-xs font-semibold uppercase tracking-widest text-muted">
+                    {t("publications.filterToggle")}
+                  </h2>
+                  {activeFilterCount > 0 ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedLanguage("ALL");
+                        setSelectedStatus("ALL");
+                      }}
+                      className={buttonClassName({
+                        className: "h-8 shrink-0 px-2.5 text-xs",
+                        size: "sm",
+                        variant: "ghost",
+                      })}
+                    >
+                      <X className="h-3.5 w-3.5" aria-hidden="true" />
+                      {t("publications.clearFilters")}
+                    </button>
+                  ) : null}
+                </div>
+
+                <div className="flex flex-col gap-0">
+                  <div className="grid gap-3 md:grid-cols-[8rem_minmax(0,1fr)] md:items-center py-4">
+                    <h3 className="flex h-11 items-center text-xs font-semibold uppercase tracking-widest text-muted">
+                      {t("publications.status")}
+                    </h3>
+                    <SegmentedControl
+                      className="w-full min-w-0"
+                      controlClassName="mt-0"
+                      label={t("publications.status")}
+                      labelClassName="sr-only"
+                      layout="wrap"
+                      onChange={(value) =>
+                        setSelectedStatus(value as PublicationStatusFilter)
+                      }
+                      options={statusOptions}
+                      tone="neutral"
+                      value={selectedStatus}
+                      variant="flush"
+                    />
+                  </div>
+                  <div className="grid gap-3 border-t border-line py-4 md:grid-cols-[8rem_minmax(0,1fr)] md:items-center">
+                    <h3 className="flex h-11 items-center text-xs font-semibold uppercase tracking-widest text-muted">
+                      {t("publications.language")}
+                    </h3>
+                    <SegmentedControl
+                      className="w-full min-w-0"
+                      controlClassName="mt-0"
+                      label={t("publications.language")}
+                      labelClassName="sr-only"
+                      layout="wrap"
+                      onChange={(value) =>
+                        setSelectedLanguage(value as PublicationLanguageFilter)
+                      }
+                      options={languageOptions}
+                      tone="neutral"
+                      value={selectedLanguage}
+                      variant="flush"
+                    />
+                  </div>
+                </div>
+              </div>
+            </section>
+          ) : null}
         </div>
 
         <section className="hidden gap-3 md:grid md:grid-cols-3">

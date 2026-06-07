@@ -505,13 +505,15 @@ export function PracticePageClient({
           )}
         </SurfacePanel>
 
-        <div className="hidden lg:block">
-          <PracticeProgressPanel
-            currentPosition={currentPosition}
-            reviews={reviews}
-            totalCards={totalCards}
-          />
-        </div>
+        <aside className="hidden lg:block">
+          <div className="app-sticky-panel h-max">
+            <PracticeProgressPanel
+              currentPosition={currentPosition}
+              reviews={reviews}
+              totalCards={totalCards}
+            />
+          </div>
+        </aside>
       </div>
     );
   }

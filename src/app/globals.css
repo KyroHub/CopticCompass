@@ -61,8 +61,9 @@
   --chart-5: 156 104 35;
   --chart-6: 220 38 38;
   --chart-7: 120 113 108;
-  --app-sticky-offset: 5rem;
-  --app-anchor-offset: 8rem;
+  --app-sticky-offset: 6rem;
+  --app-rail-sticky-offset: 8rem;
+  --app-anchor-offset: 5rem;
   --app-anchor-inline-offset: 7rem;
 }
 
