@@ -533,6 +533,7 @@ export function PracticePageClient({
                 prefetch={false}
                 className={buttonClassName({ variant: "primary" })}
               >
+                <LogIn className="h-4 w-4" />
                 {t("practice.saved.signInToSave")}
               </Link>
             ) : null}
