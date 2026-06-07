@@ -1,11 +1,17 @@
 "use client";
 
-import { X } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useId, useMemo } from "react";
-import { createPortal } from "react-dom";
+import { useId, useMemo } from "react";
 
 import { Badge } from "@/components/Badge";
+import {
+  Dialog,
+  DialogCloseButton,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/Dialog";
 import { useLanguage } from "@/components/LanguageProvider";
 import type {
   AppFlashcardDeckId,
@@ -18,7 +24,6 @@ import {
   getPracticeDeckPath,
 } from "@/features/practice/lib/practicePageHelpers";
 import { cx } from "@/lib/classes";
-import { useBodyScrollLock } from "@/lib/useBodyScrollLock";
 
 export function DeckPickerDialog({
   activeDeckId,
@@ -44,65 +49,20 @@ export function DeckPickerDialog({
     [deckOptions],
   );
 
-  useBodyScrollLock(isOpen);
-
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    }
-
-    document.addEventListener("keydown", handleKeyDown);
-
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) {
-    return null;
-  }
-
-  if (typeof document === "undefined") {
-    return null;
-  }
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[70] flex items-end bg-ink/35 p-2 backdrop-blur-sm sm:items-center sm:justify-center sm:p-3"
-      onClick={onClose}
-    >
-      <section
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        onClick={(event) => event.stopPropagation()}
-        className="max-h-[min(44rem,calc(100dvh-1rem))] w-full max-w-3xl overflow-hidden rounded-t-lg border border-line bg-surface shadow-soft sm:rounded-lg"
-      >
-        <div className="flex items-start justify-between gap-3 border-b border-line px-4 py-3 sm:items-center">
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-3xl">
+        <DialogHeader className="flex-row items-start justify-between gap-3 sm:items-center">
           <div>
-            <h2
-              id={titleId}
-              className="text-sm font-semibold uppercase tracking-widest text-muted"
-            >
+            <DialogTitle id={titleId}>
               {t("practice.deckSelector.title")}
-            </h2>
-            <p className="mt-1 text-xs leading-5 text-muted sm:text-sm">
+            </DialogTitle>
+            <DialogDescription id={`${titleId}-desc`} className="mt-1">
               {t("practice.deckSelector.description")}
-            </p>
+            </DialogDescription>
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={t("practice.deckSelector.close")}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-line bg-elevated text-muted transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30"
-          >
-            <X className="h-4 w-4" aria-hidden="true" />
-          </button>
-        </div>
+          <DialogCloseButton aria-label={t("practice.deckSelector.close")} />
+        </DialogHeader>
 
         <div className="max-h-[calc(100dvh-8.5rem)] space-y-5 overflow-y-auto p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:max-h-[34rem] sm:p-4">
           {deckGroups.map((group) => {
@@ -211,8 +171,7 @@ export function DeckPickerDialog({
             );
           })}
         </div>
-      </section>
-    </div>,
-    document.body,
+      </DialogContent>
+    </Dialog>
   );
 }
