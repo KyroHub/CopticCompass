@@ -7,6 +7,7 @@ import type { SendContentReleaseState } from "@/actions/admin/states";
 import { buttonClassName } from "@/components/Button";
 import { elevatedPanelClassName } from "@/components/ElevatedPanel";
 import { FormField } from "@/components/FormField";
+import { Select } from "@/components/Input";
 import { useLanguage } from "@/components/LanguageProvider";
 import { StatusNotice } from "@/components/StatusNotice";
 import { AdminErrorDisclosure } from "@/features/admin/components/AdminErrorDisclosure";
@@ -58,15 +59,15 @@ export function SendContentReleasePreviewForm({
           labelTone="muted"
           className="min-w-[14rem] flex-1"
         >
-          <select
+          <Select
             id={`content-release-preview-locale-${releaseId}`}
             name="preview_locale"
             defaultValue="en"
-            className="select-base h-11 text-sm"
+            className="h-11 text-sm"
           >
             <option value="en">{copy.englishPreview}</option>
             <option value="nl">{copy.dutchPreview}</option>
-          </select>
+          </Select>
         </FormField>
 
         <button

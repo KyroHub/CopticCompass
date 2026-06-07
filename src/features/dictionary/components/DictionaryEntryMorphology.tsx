@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/Badge";
 import type { DictionaryDialectCode } from "@/features/dictionary/config";
 import {
   formatImperativeForms,
@@ -67,9 +68,9 @@ export function DictionaryEntryMorphology({
           </span>
           <div className="flex flex-wrap gap-2.5">
             <span className="inline-flex max-w-full items-baseline gap-2 rounded-lg border border-line bg-elevated/70 px-3 py-2 text-sm text-ink">
-              <span className="inline-flex min-h-6 shrink-0 items-center rounded-md bg-surface px-2 text-[10px] font-bold text-muted">
+              <Badge tone="surface" size="xxs" className="min-h-6 shrink-0">
                 <DialectSiglum siglum={primaryDialectKey} />
-              </span>
+              </Badge>
               {hasAnnotatedPrimaryImperativeForms ? (
                 <span className="inline-flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
                   {primaryImperativeDisplayForms.map((form, index) => (
@@ -125,9 +126,9 @@ export function DictionaryEntryMorphology({
                 key={`${dialect}-${state}-${index}`}
                 className="inline-flex max-w-full items-baseline gap-2 rounded-lg border border-line bg-elevated/70 px-3 py-2 text-sm text-ink"
               >
-                <span className="inline-flex min-h-6 shrink-0 items-center rounded-md bg-surface px-2 text-[10px] font-bold text-muted">
+                <Badge tone="surface" size="xxs" className="min-h-6 shrink-0">
                   <DialectSiglum siglum={dialect} />
-                </span>
+                </Badge>
                 {label ? (
                   <LinguisticGloss
                     code={label}

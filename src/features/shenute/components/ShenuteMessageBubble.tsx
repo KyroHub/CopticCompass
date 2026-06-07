@@ -14,6 +14,7 @@ import remarkGfm from "remark-gfm";
 
 import { AuthGateInlinePrompt } from "@/components/AuthGateNotice";
 import { buttonClassName } from "@/components/Button";
+import { Textarea } from "@/components/Input";
 import { surfacePanelClassName } from "@/components/SurfacePanel";
 import {
   findPreviousUserMessage,
@@ -410,7 +411,7 @@ export function ShenuteMessageBubble({
                     {copy.adminNoteSummary}
                   </summary>
                   <div className="mt-2 space-y-2">
-                    <textarea
+                    <Textarea
                       value={adminDraft}
                       onChange={(event) => {
                         onAdminDraftChange(message.id, event.target.value);
@@ -418,7 +419,7 @@ export function ShenuteMessageBubble({
                       placeholder={copy.adminNotePlaceholder}
                       rows={3}
                       disabled={isFeedbackPending}
-                      className="w-full rounded-lg border border-line bg-surface/88 px-3 py-2 text-xs text-ink shadow-sm focus:border-accent/55 focus:outline-none focus:ring-2 focus:ring-accent/25"
+                      className="min-h-0 px-3 py-2 text-xs"
                     />
                     <button
                       type="button"

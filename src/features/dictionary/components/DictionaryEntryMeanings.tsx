@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/Badge";
 import {
   type DictionaryComplementizerGovernment,
   type DictionaryConstructionGovernment,
@@ -274,12 +275,14 @@ export function DictionaryEntryMeanings({
             >
               <div className="flex min-w-0 flex-wrap items-baseline gap-2">
                 {dialectMeaning.dialects.map((dialect) => (
-                  <span
+                  <Badge
                     key={`${dialectMeaning.sourceLabel}-${dialect}`}
-                    className="inline-flex min-h-6 items-center rounded-md bg-elevated px-2 text-[10px] font-bold text-muted"
+                    tone="neutral"
+                    size="xxs"
+                    className="min-h-6"
                   >
                     <DialectSiglum siglum={dialect} />
-                  </span>
+                  </Badge>
                 ))}
               </div>
               {dialectMeaning.meanings.length > 0 && (

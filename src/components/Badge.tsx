@@ -14,7 +14,7 @@ type BadgeTone =
   | "success"
   | "surface"
   | "warning";
-type BadgeSize = "xs" | "sm" | "md";
+type BadgeSize = "xxs" | "xs" | "sm" | "md";
 
 type BadgeProps = {
   caps?: boolean;
@@ -48,6 +48,7 @@ const TONE_CLASSES: Record<BadgeTone, string> = {
 };
 
 const SIZE_CLASSES: Record<BadgeSize, string> = {
+  xxs: "px-2 py-0.5 text-[10px]",
   xs: "px-3 py-1 text-xs",
   sm: "px-3.5 py-2 text-sm",
   md: "px-4 py-2 text-sm",

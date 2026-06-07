@@ -16,6 +16,7 @@ import { useCallback, useState } from "react";
 import { AppPageIntro } from "@/components/AppPageIntro";
 import { buttonClassName } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
+import { Kbd } from "@/components/Kbd";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
 import { StatusNotice } from "@/components/StatusNotice";
@@ -433,9 +434,7 @@ export function PracticePageClient({
                           ? t("practice.saved.hideHint")
                           : t("practice.saved.hint")}
                       </span>
-                      <kbd className="hidden md:inline-block ml-1.5 px-1.5 py-0.5 text-[10px] font-sans font-semibold text-muted bg-elevated rounded border border-line shadow-sm">
-                        H
-                      </kbd>
+                      <Kbd className="ml-1.5 hidden md:inline-flex">H</Kbd>
                     </button>
                     <button
                       type="button"
@@ -447,9 +446,12 @@ export function PracticePageClient({
                     >
                       <Eye className="h-4 w-4" aria-hidden="true" />
                       <span>{t("practice.saved.reveal")}</span>
-                      <kbd className="hidden md:inline-block ml-1.5 px-1.5 py-0.5 text-[10px] font-sans font-semibold text-paper/85 bg-paper/20 rounded border border-paper/10 shadow-sm">
+                      <Kbd
+                        variant="inverse"
+                        className="ml-1.5 hidden md:inline-flex"
+                      >
                         Space
-                      </kbd>
+                      </Kbd>
                     </button>
                   </div>
                 ) : (
@@ -480,9 +482,12 @@ export function PracticePageClient({
                               aria-hidden="true"
                             />
                             <span>{buttonLabel}</span>
-                            <kbd className="hidden md:inline-block ml-1 px-1.5 py-0.5 text-[10px] font-sans font-semibold opacity-75 rounded border border-current bg-surface/10">
+                            <Kbd
+                              variant="ghost"
+                              className="ml-1 hidden md:inline-flex"
+                            >
                               {index + 1}
-                            </kbd>
+                            </Kbd>
                           </button>
                         );
                       })}

@@ -13,7 +13,7 @@ import { AuthGateNotice } from "@/components/AuthGateNotice";
 import { Badge } from "@/components/Badge";
 import { buttonClassName } from "@/components/Button";
 import { SkeletonBlock } from "@/components/SkeletonBlock";
-import { SurfacePanel } from "@/components/SurfacePanel";
+import { SurfacePanel, surfacePanelClassName } from "@/components/SurfacePanel";
 import type { GrammarLessonLearnerSummary } from "@/features/grammar/lib/grammarLearnerState";
 import { cx } from "@/lib/classes";
 import { getDashboardPath } from "@/lib/locale";
@@ -279,10 +279,13 @@ function LessonNavigationCard({
   return (
     <Link
       href={lesson.href}
-      className={cx(
-        "rounded-lg border border-line bg-surface/80 px-3.5 py-3 transition-all duration-200 hover:-translate-y-px hover:border-coptic/35 hover:bg-coptic-soft/45",
-        className,
-      )}
+      className={surfacePanelClassName({
+        variant: "default",
+        className: cx(
+          "px-3.5 py-3 transition-all duration-200 hover:-translate-y-px hover:border-coptic/35 hover:bg-coptic-soft/45",
+          className,
+        ),
+      })}
     >
       {content}
     </Link>

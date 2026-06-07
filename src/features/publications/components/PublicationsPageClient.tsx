@@ -25,7 +25,7 @@ import {
 } from "@/components/FilterMenu";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
-import { SurfacePanel, surfacePanelClassName } from "@/components/SurfacePanel";
+import { surfacePanelClassName, SurfacePanel } from "@/components/SurfacePanel";
 import {
   getPublicationFormatLabel,
   getPublicationPath,
@@ -107,7 +107,11 @@ function PublicationsSearchBar({
   query: string;
 }) {
   return (
-    <div className="group relative z-30 rounded-lg border border-line bg-surface/92 shadow-panel backdrop-blur-xl">
+    <div
+      className={surfacePanelClassName({
+        className: "group relative z-30 backdrop-blur-xl",
+      })}
+    >
       <div className="relative flex items-center">
         <div className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-muted transition-colors group-focus-within:text-coptic sm:left-5">
           <Search className="h-5 w-5" aria-hidden="true" />
