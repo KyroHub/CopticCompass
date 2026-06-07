@@ -173,7 +173,13 @@ export function AdminCommunicationsDesk({
 
           <div className="mt-5 space-y-4">
             <div className="grid gap-3 sm:grid-cols-2">
-              <div className="rounded-lg border border-line bg-elevated/70 p-4">
+              <div
+                className={surfacePanelClassName({
+                  rounded: "lg",
+                  variant: "elevated",
+                  className: "p-4",
+                })}
+              >
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
                   {copy.lessons}
                 </p>
@@ -184,7 +190,13 @@ export function AdminCommunicationsDesk({
                   )}
                 </p>
               </div>
-              <div className="rounded-lg border border-line bg-elevated/70 p-4">
+              <div
+                className={surfacePanelClassName({
+                  rounded: "lg",
+                  variant: "elevated",
+                  className: "p-4",
+                })}
+              >
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
                   {copy.booksGeneral}
                 </p>

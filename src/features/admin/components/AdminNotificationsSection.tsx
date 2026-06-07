@@ -1,4 +1,5 @@
 import { EmptyState } from "@/components/EmptyState";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import {
   AdminDatabaseErrorState,
   formatAdminNumber,
@@ -75,7 +76,13 @@ export function AdminNotificationsSection({
           </div>
 
           {attentionNotifications.length === 0 ? (
-            <div className="rounded-lg border border-line bg-elevated/70 px-5 py-4 text-sm leading-7 text-muted">
+            <div
+              className={surfacePanelClassName({
+                rounded: "lg",
+                variant: "elevated",
+                className: "px-5 py-4 text-sm leading-7 text-muted",
+              })}
+            >
               {copy.emptyIssues}
             </div>
           ) : (
@@ -109,7 +116,14 @@ export function AdminNotificationsSection({
           </div>
 
           {historyNotifications.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-line bg-elevated/60 px-5 py-4 text-sm leading-7 text-muted">
+            <div
+              className={surfacePanelClassName({
+                rounded: "lg",
+                variant: "elevated",
+                className:
+                  "border-dashed px-5 py-4 text-sm leading-7 text-muted",
+              })}
+            >
               {copy.emptyHistory}
             </div>
           ) : (

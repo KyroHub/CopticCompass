@@ -4,7 +4,7 @@ import { ChevronDown } from "lucide-react";
 
 import { Badge } from "@/components/Badge";
 import { useLanguage } from "@/components/LanguageProvider";
-import { SurfacePanel } from "@/components/SurfacePanel";
+import { SurfacePanel, surfacePanelClassName } from "@/components/SurfacePanel";
 import { AdminErrorDisclosure } from "@/features/admin/components/AdminErrorDisclosure";
 import {
   formatContentReleaseAudienceSegment,
@@ -213,7 +213,11 @@ export function AdminContentReleaseCard({
 
           <div className="mt-4">
             <details
-              className="group rounded-lg border border-line bg-elevated/70 p-4"
+              className={surfacePanelClassName({
+                rounded: "lg",
+                variant: "elevated",
+                className: "group p-4",
+              })}
               open={shouldOpenDeliveryLog}
             >
               <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-medium text-ink [&::-webkit-details-marker]:hidden">
@@ -334,7 +338,13 @@ export function AdminContentReleaseCard({
       ) : null}
 
       <div className="mb-6 grid gap-4 lg:grid-cols-2">
-        <div className="rounded-lg border border-line bg-elevated p-5">
+        <div
+          className={surfacePanelClassName({
+            rounded: "lg",
+            variant: "elevated",
+            className: "p-5",
+          })}
+        >
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted">
             {copy.englishCopy}
           </p>
@@ -346,7 +356,13 @@ export function AdminContentReleaseCard({
           </p>
         </div>
 
-        <div className="rounded-lg border border-line bg-elevated p-5">
+        <div
+          className={surfacePanelClassName({
+            rounded: "lg",
+            variant: "elevated",
+            className: "p-5",
+          })}
+        >
           <p className="mb-2 text-xs font-semibold uppercase tracking-[0.18em] text-muted">
             {copy.dutchCopy}
           </p>
@@ -367,7 +383,11 @@ export function AdminContentReleaseCard({
           {release.items.map((item) => (
             <div
               key={item.id}
-              className="rounded-lg border border-line bg-elevated px-5 py-4"
+              className={surfacePanelClassName({
+                rounded: "lg",
+                variant: "elevated",
+                className: "px-5 py-4",
+              })}
             >
               <div className="flex flex-wrap items-center gap-2">
                 <Badge tone="surface" size="xs">
