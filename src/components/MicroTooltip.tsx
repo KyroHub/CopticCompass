@@ -55,6 +55,7 @@ export function MicroTooltip({
             className,
           )}
           tabIndex={focusable ? 0 : -1}
+          aria-label={label}
         >
           {children}
           <span className="sr-only">{label}</span>

@@ -4,6 +4,7 @@ import { ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { useId, useState } from "react";
 
+import CopticText from "@/components/CopticText";
 import { useLanguage } from "@/components/LanguageProvider";
 import DialectSiglum from "@/features/dictionary/components/DialectSiglum";
 import type { AppFlashcardCandidate } from "@/features/practice/lib/deckRegistry";
@@ -54,7 +55,12 @@ export function AnswerContextPanel({
             </span>
             <span className="mt-1 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1 text-sm font-semibold text-ink">
               <span
-                className={`font-coptic max-w-full truncate text-base leading-5 text-coptic sm:max-w-40`}
+                className={cx(
+                  "max-w-full truncate text-base leading-5 sm:max-w-40",
+                  isDictionaryFlashcardCandidate(candidate)
+                    ? "font-coptic text-coptic"
+                    : "font-semibold text-ink",
+                )}
               >
                 {summaryTitle}
               </span>
@@ -62,7 +68,7 @@ export function AnswerContextPanel({
                 ·
               </span>
               <span className="min-w-0 max-w-full truncate">
-                {summaryDetail}
+                <CopticText text={summaryDetail} query="" />
               </span>
             </span>
           </span>
@@ -113,7 +119,7 @@ export function AnswerContextPanel({
                   {t("practice.saved.contextGrammar")}
                 </dt>
                 <dd className="mt-1 truncate font-semibold text-ink">
-                  {candidate.metadata.grammarText}
+                  <CopticText text={candidate.metadata.grammarText} query="" />
                 </dd>
               </div>
             </>
@@ -132,7 +138,7 @@ export function AnswerContextPanel({
                   {t("practice.saved.contextFocus")}
                 </dt>
                 <dd className="mt-1 truncate font-semibold text-ink">
-                  {candidate.metadata.focusText}
+                  <CopticText text={candidate.metadata.focusText} query="" />
                 </dd>
               </div>
               <div>
@@ -150,9 +156,11 @@ export function AnswerContextPanel({
               {t("practice.saved.contextMeaning")}
             </dt>
             <dd className="mt-1 line-clamp-2 font-semibold text-ink">
-              {meanings.length > 0
-                ? meanings.join("; ")
-                : t("practice.saved.contextMeaningUnavailable")}
+              {meanings.length > 0 ? (
+                <CopticText text={meanings.join("; ")} query="" />
+              ) : (
+                t("practice.saved.contextMeaningUnavailable")
+              )}
             </dd>
           </div>
         </dl>

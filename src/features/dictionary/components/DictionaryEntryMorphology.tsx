@@ -16,6 +16,10 @@ import DialectSiglum from "./DialectSiglum";
 import { getImperativeFormMorphologyMarkers } from "./dictionaryEntryHelpers";
 import { LinguisticGloss, LinguisticGlossGroup } from "./LinguisticGloss";
 
+function normalizeGrammarAbbreviationKey(value: string) {
+  return value.toLowerCase().replace(/\.$/, "").replace(/\s+/g, " ").trim();
+}
+
 type DictionaryEntryTranslator = (key: TranslationKey) => string;
 type PrimaryImperativeForms = Parameters<typeof formatImperativeForms>[0];
 
@@ -132,8 +136,9 @@ export function DictionaryEntryMorphology({
                   <LinguisticGloss
                     code={label}
                     label={
-                      grammarAbbreviationTooltips[label.toLocaleLowerCase()] ??
-                      label
+                      grammarAbbreviationTooltips[
+                        normalizeGrammarAbbreviationKey(label)
+                      ] ?? label
                     }
                     size="body"
                   />

@@ -340,6 +340,7 @@ export default function CopticText({
   text,
   query,
   className = "",
+  emphasizeAbbreviations = false,
   emphasizeLeadingLabel = false,
   grammarAbbreviationTooltips,
   symbolTooltips,
@@ -347,6 +348,7 @@ export default function CopticText({
   text: string;
   query: string;
   className?: string;
+  emphasizeAbbreviations?: boolean;
   emphasizeLeadingLabel?: boolean;
   grammarAbbreviationTooltips?: GrammarAbbreviationTooltips;
   symbolTooltips?: FormSymbolTooltips;
@@ -362,7 +364,7 @@ export default function CopticText({
       query,
       "plain",
       className,
-      emphasizeLeadingLabel,
+      emphasizeAbbreviations,
       symbolTooltips,
       grammarAbbreviationTooltips,
     );
@@ -384,7 +386,7 @@ export default function CopticText({
         query,
         "rest",
         "",
-        true,
+        emphasizeAbbreviations,
         symbolTooltips,
         grammarAbbreviationTooltips,
       )}
