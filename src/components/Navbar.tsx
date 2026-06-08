@@ -13,6 +13,7 @@ import {
 } from "react";
 
 import { controlButtonClassName } from "@/components/Button";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import { DEFAULT_PRACTICE_DECK_ID } from "@/features/practice/lib/practiceDeckDefaults";
 import { cx } from "@/lib/classes";
 import {
@@ -277,13 +278,15 @@ export function Navbar() {
                 onClick={() => setIsDictionaryMenuOpen((isOpen) => !isOpen)}
               >
                 <span
-                  className={
+                  data-label={t("nav.dictionary")}
+                  className={cx(
+                    "inline-grid items-center justify-items-center before:invisible before:col-start-1 before:row-start-1 before:h-0 before:overflow-hidden before:font-semibold before:content-[attr(data-label)]",
                     isDictionaryActive
                       ? "font-semibold"
-                      : "font-medium group-hover:font-semibold"
-                  }
+                      : "font-medium group-hover:font-semibold",
+                  )}
                 >
-                  <span className="whitespace-nowrap">
+                  <span className="col-start-1 row-start-1 whitespace-nowrap">
                     {t("nav.dictionary")}
                   </span>
                 </span>
@@ -298,7 +301,12 @@ export function Navbar() {
 
               {isDictionaryMenuOpen ? (
                 <div
-                  className="absolute left-1/2 top-full z-50 mt-2 w-80 -translate-x-1/2 rounded-lg border border-line bg-surface/96 p-2 shadow-soft backdrop-blur-md"
+                  className={surfacePanelClassName({
+                    className:
+                      "absolute left-1/2 top-full z-50 mt-2 w-80 -translate-x-1/2 p-2",
+                    shadow: "soft",
+                    variant: "default",
+                  })}
                   role="menu"
                   aria-label={t("nav.dictionaryMenu")}
                 >
@@ -386,7 +394,10 @@ export function Navbar() {
           <nav
             id="mobile-navigation"
             aria-label="Mobile"
-            className="mb-3 flex flex-col gap-1 rounded-lg border border-line bg-surface/88 p-2 shadow-soft backdrop-blur-md xl:hidden"
+            className={surfacePanelClassName({
+              className: "mb-3 flex flex-col gap-1 p-2 xl:hidden",
+              shadow: "soft",
+            })}
           >
             {primaryLinks.map((link) =>
               renderNavbarLink(link, "mobile", () =>
@@ -410,13 +421,17 @@ export function Navbar() {
                 }
               >
                 <span
+                  data-label={t("nav.dictionary")}
                   className={cx(
+                    "inline-grid items-center justify-items-center before:invisible before:col-start-1 before:row-start-1 before:h-0 before:overflow-hidden before:font-semibold before:content-[attr(data-label)]",
                     isDictionaryActive
                       ? "font-semibold"
                       : "font-medium group-hover:font-semibold",
                   )}
                 >
-                  {t("nav.dictionary")}
+                  <span className="col-start-1 row-start-1 whitespace-nowrap">
+                    {t("nav.dictionary")}
+                  </span>
                 </span>
                 <ChevronDown
                   className={cx(
@@ -430,7 +445,10 @@ export function Navbar() {
               {isMobileDictionaryExpanded ? (
                 <div
                   id="mobile-dictionary-tools"
-                  className="rounded-lg bg-elevated/60 p-1"
+                  className={surfacePanelClassName({
+                    className: "p-1",
+                    variant: "default",
+                  })}
                   aria-label={t("nav.dictionaryMenu")}
                 >
                   <div className="grid grid-cols-2 gap-1">

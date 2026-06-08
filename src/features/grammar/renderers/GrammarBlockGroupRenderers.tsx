@@ -1,5 +1,6 @@
 "use client";
 
+import CopticText from "@/components/CopticText";
 import type { GrammarLessonBundle } from "@/content/grammar/schema";
 import { ExerciseForm } from "@/features/grammar/components/ExerciseForm";
 import { GrammarLessonCard } from "@/features/grammar/components/GrammarLessonPrimitives";
@@ -26,12 +27,12 @@ function renderExampleCopticText(text: string) {
     return (
       <>
         <sup className="text-sm font-semibold not-italic">Ø</sup>-
-        {text.slice(2)}
+        <CopticText text={text.slice(2)} query="" />
       </>
     );
   }
 
-  return text;
+  return <CopticText text={text} query="" />;
 }
 
 function renderDictionaryEntryHref(
@@ -251,7 +252,7 @@ export function GrammarExampleGroupBlock({
     <ul className="space-y-3">
       {items.map((example) => (
         <li key={example.id} className="leading-7 text-muted">
-          <span className="font-coptic text-xl text-coptic">
+          <span className="text-xl text-coptic">
             {renderExampleContent(example)}
           </span>
           <span className="ml-3">{example.translation[language]}</span>

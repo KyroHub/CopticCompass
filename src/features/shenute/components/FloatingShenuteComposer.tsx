@@ -11,6 +11,7 @@ import Image from "next/image";
 
 import { Badge } from "@/components/Badge";
 import { buttonClassName } from "@/components/Button";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import { cx } from "@/lib/classes";
 
 import type { ShenuteImageAttachmentSource } from "./useShenuteImageAttachment";
@@ -115,7 +116,10 @@ export function FloatingShenuteComposer({
   return (
     <form
       onSubmit={onSubmit}
-      className="border-t border-line/80 bg-surface/90 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] backdrop-blur-xl"
+      className={surfacePanelClassName({
+        className:
+          "border-t border-line/80 p-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]",
+      })}
     >
       {error ? (
         <p className="mb-2 rounded-lg border border-danger/25 bg-danger/5 px-3 py-2 text-xs text-danger dark:bg-danger/10">
@@ -233,7 +237,12 @@ export function FloatingShenuteComposer({
         </div>
       ) : null}
 
-      <div className="flex items-end gap-2 rounded-lg border border-line/80 bg-surface/95 p-2 shadow-soft">
+      <div
+        className={surfacePanelClassName({
+          shadow: "soft",
+          className: "flex items-end gap-2 border-line/80 p-2",
+        })}
+      >
         <details
           ref={attachmentMenuDetailsRef}
           className="group relative shrink-0"
@@ -350,7 +359,10 @@ export function FloatingShenuteComposer({
       {composerStateLabel ? (
         <div
           aria-live="polite"
-          className="mt-1.5 flex min-w-0 items-center gap-2 rounded-lg bg-surface/65 px-2.5 py-1.5 text-xs text-muted"
+          className={surfacePanelClassName({
+            className:
+              "mt-1.5 flex min-w-0 items-center gap-2 px-2.5 py-1.5 text-xs text-muted",
+          })}
         >
           <LoaderCircle
             aria-hidden="true"

@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 
+import { ElevatedPanel } from "@/components/ElevatedPanel";
 import { useLanguage } from "@/components/LanguageProvider";
 import type { AnalyticsSnapshot } from "@/features/analytics/lib/analytics";
 import { useAnalyticsThemeColors } from "@/features/analytics/lib/useAnalyticsThemeColors";
@@ -103,7 +104,7 @@ export function AnalyticsChartsSection({
             </>
           }
           footer={
-            <div className="mt-auto rounded-lg border border-line bg-elevated/65 px-4 py-3 shadow-sm">
+            <ElevatedPanel className="mt-auto px-4 py-3 shadow-sm">
               <div className="mb-2 flex items-center justify-between text-sm text-[rgb(var(--accent-strong))]">
                 <span>{t("analytics.verbalNouns")}</span>
                 <span className="font-bold">{stats.verbalNouns}</span>
@@ -113,7 +114,7 @@ export function AnalyticsChartsSection({
                 <span>{t("analytics.totalMasculine")}</span>
                 <span>{stats.totalMasculine}</span>
               </div>
-            </div>
+            </ElevatedPanel>
           }
           data={genderChartData}
           palette={colors.palettes.gender}

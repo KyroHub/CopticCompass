@@ -84,7 +84,7 @@ export function ShenuteSavedSessionsPanel({
                 "flex w-full flex-col gap-1 rounded-lg border px-3 py-2.5 text-left text-sm transition",
                 isActive
                   ? "border-coptic/55 bg-coptic-soft text-ink"
-                  : "border-line bg-surface text-ink hover:border-accent/35 hover:bg-elevated",
+                  : "border-line bg-surface/88 text-ink hover:border-accent/35 hover:bg-elevated",
               )}
             >
               <div className="flex items-center justify-between gap-3">
@@ -93,9 +93,9 @@ export function ShenuteSavedSessionsPanel({
                 </span>
                 <span
                   className={cx(
-                    "shrink-0 rounded-full px-2 py-0.5 text-xs font-semibold",
+                    "shrink-0 rounded-md px-2 py-0.5 text-xs font-semibold",
                     isActive
-                      ? "bg-surface/80 text-coptic"
+                      ? "bg-surface/88 text-coptic"
                       : "bg-elevated text-muted",
                   )}
                 >
@@ -106,7 +106,7 @@ export function ShenuteSavedSessionsPanel({
                 <Clock3 className={SHENUTE_ICON_CLASS.meta} />
                 <span>{formattedSessionDate}</span>
                 {isActive && hasUnsavedConversationChanges ? (
-                  <span className="rounded-full bg-accent-soft px-2 py-0.5 font-semibold text-accent-strong dark:text-accent">
+                  <span className="rounded-md bg-accent-soft px-2 py-0.5 font-semibold text-accent-strong dark:text-accent">
                     {copy.sessionUnsavedBadge}
                   </span>
                 ) : null}

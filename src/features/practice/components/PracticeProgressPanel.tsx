@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 
 import { useLanguage } from "@/components/LanguageProvider";
+import { SurfacePanel } from "@/components/SurfacePanel";
 import { RATING_OPTIONS } from "@/features/practice/components/practicePageOptions";
 import { getRatingCounts } from "@/features/practice/lib/practicePageHelpers";
 import type { PracticeReviewOutcome } from "@/features/practice/lib/practiceSessionTypes";
@@ -24,7 +25,7 @@ export function PracticeProgressPanel({
   const ratingCounts = useMemo(() => getRatingCounts(reviews), [reviews]);
 
   return (
-    <aside className="space-y-4 rounded-lg border border-line bg-surface/88 p-5 shadow-sm backdrop-blur-sm">
+    <SurfacePanel as="aside" shadow="soft" className="space-y-4 p-5">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-sm font-semibold uppercase tracking-widest text-muted">
           {t("practice.saved.progress")}
@@ -87,7 +88,7 @@ export function PracticeProgressPanel({
           })}
         </div>
       ) : null}
-    </aside>
+    </SurfacePanel>
   );
 }
 

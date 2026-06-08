@@ -6,6 +6,7 @@ import { FaFacebookF, FaLinkedinIn, FaXTwitter } from "react-icons/fa6";
 import { buttonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { StatusNotice } from "@/components/StatusNotice";
+import { SurfacePanel } from "@/components/SurfacePanel";
 
 import type { EntryActionNotice } from "../lib/entryActionBar";
 import type {
@@ -47,14 +48,14 @@ export function EntrySharePanel({
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
-        <div className="rounded-lg border border-line bg-surface/88 p-4 shadow-sm">
+        <SurfacePanel shadow="soft" className="p-4">
           <p className="text-xs font-semibold uppercase tracking-widest text-accent-strong dark:text-accent">
             {t("entry.actions.sharePreviewLabel")}
           </p>
           <p className="mt-3 whitespace-pre-line text-sm leading-6 text-ink">
             {sharePayload.text}
           </p>
-        </div>
+        </SurfacePanel>
 
         <div className="grid gap-3 sm:grid-cols-2">
           {canUseNativeShare ? (

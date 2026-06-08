@@ -2,12 +2,13 @@
 
 import { useRef, useState } from "react";
 
-import { FloatingTooltip } from "@/components/FloatingTooltip";
 import { useLanguage } from "@/components/LanguageProvider";
 import {
-  microTooltipBubbleClassName,
-  tooltipArrowClassName,
-} from "@/components/MicroTooltip";
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipArrow,
+} from "@/components/Tooltip";
 import { useSpeech } from "@/features/dictionary/hooks/useSpeech";
 import { cx } from "@/lib/classes";
 
@@ -105,37 +106,32 @@ export function SpeakButton({ copticText, className }: SpeakButtonProps) {
   }
 
   return (
-    <>
-      <button
-        ref={buttonRef}
-        onClick={handleClick}
-        onMouseEnter={() => setIsHovered(true)}
-        onMouseLeave={() => setIsHovered(false)}
-        onFocus={() => setIsHovered(true)}
-        onBlur={() => setIsHovered(false)}
-        title={isSpeaking ? stopLabel : hearLabel}
-        aria-label={isSpeaking ? stopLabel : `${hearLabel}: ${copticText}`}
-        aria-pressed={isSpeaking}
-        className={cx(
-          "inline-flex cursor-pointer select-none shrink-0 items-center justify-center rounded-lg p-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30",
-          isSpeaking
-            ? "bg-coptic-soft text-coptic"
-            : "text-muted hover:bg-elevated hover:text-ink",
-          isPremiumLoading && "animate-pulse",
-          className,
-        )}
-      >
-        {icon}
-      </button>
-      <FloatingTooltip
-        anchorRef={buttonRef}
-        isOpen={isHovered && !isSpeaking}
-        className={cx("max-w-[200px]", microTooltipBubbleClassName)}
-        withArrow
-        arrowClassName={tooltipArrowClassName}
-      >
+    <Tooltip open={isHovered && !isSpeaking} onOpenChange={setIsHovered}>
+      <TooltipTrigger asChild>
+        <button
+          ref={buttonRef}
+          onClick={handleClick}
+          onFocus={() => setIsHovered(true)}
+          onBlur={() => setIsHovered(false)}
+          title={isSpeaking ? stopLabel : hearLabel}
+          aria-label={isSpeaking ? stopLabel : `${hearLabel}: ${copticText}`}
+          aria-pressed={isSpeaking}
+          className={cx(
+            "inline-flex cursor-pointer select-none shrink-0 items-center justify-center rounded-lg p-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30",
+            isSpeaking
+              ? "bg-coptic-soft text-coptic"
+              : "text-muted hover:bg-elevated hover:text-ink",
+            isPremiumLoading && "animate-pulse",
+            className,
+          )}
+        >
+          {icon}
+        </button>
+      </TooltipTrigger>
+      <TooltipContent variant="micro" className="max-w-[200px]">
         {t("dict.ttsDisclaimer")}
-      </FloatingTooltip>
-    </>
+        <TooltipArrow />
+      </TooltipContent>
+    </Tooltip>
   );
 }

@@ -182,8 +182,8 @@ function AnalyticsChartSkeletonCard() {
       shadow="soft"
       className="flex h-full flex-col p-5"
     >
-      <div className="mb-6 h-8 w-48 rounded-full bg-elevated/80" />
-      <div className="h-[300px] w-full rounded-lg bg-elevated/65" />
+      <div className="mb-6 h-8 w-48 rounded-full bg-elevated/70" />
+      <div className="h-[300px] w-full rounded-lg bg-elevated/70" />
     </SurfacePanel>
   );
 }

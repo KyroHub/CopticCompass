@@ -12,6 +12,7 @@ import {
 } from "@/components/FilterMenu";
 import { useLanguage } from "@/components/LanguageProvider";
 import { SegmentedControl } from "@/components/SegmentedControl";
+import { SurfacePanel } from "@/components/SurfacePanel";
 import { STUDY_MODE_OPTIONS } from "@/features/practice/components/practicePageOptions";
 import {
   FLASHCARD_DECK_FILTER_ALL,
@@ -167,13 +168,17 @@ export function StudySetupPanel({
   }
 
   return (
-    <section className="mb-4 rounded-lg border border-line bg-surface/88 p-3 shadow-sm backdrop-blur-sm md:mb-6 md:p-4">
+    <SurfacePanel
+      as="section"
+      shadow="soft"
+      className="mb-4 p-3 md:mb-6 md:p-4"
+    >
       <button
         type="button"
         aria-controls={setupControlsId}
         aria-expanded={isSetupExpanded}
         onClick={() => setIsSetupExpanded((isOpen) => !isOpen)}
-        className="flex w-full items-start justify-between gap-3 rounded-md px-1 py-1 text-left transition-colors hover:bg-elevated/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25"
+        className="flex w-full items-start justify-between gap-3 rounded-md px-1 py-1 text-left transition-colors hover:bg-elevated/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/25"
       >
         <span className="min-w-0">
           <span className="flex flex-wrap items-center gap-2">
@@ -394,6 +399,6 @@ export function StudySetupPanel({
           </div>
         ) : null}
       </div>
-    </section>
+    </SurfacePanel>
   );
 }

@@ -7,6 +7,7 @@ import { startTransition, useRef } from "react";
 import { deleteSubmission } from "@/actions/admin";
 import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
+import { ElevatedPanel } from "@/components/ElevatedPanel";
 import { useLanguage } from "@/components/LanguageProvider";
 import { surfacePanelClassName } from "@/components/SurfacePanel";
 import { adminReviewQueueItemClassName } from "@/features/admin/components/adminControlStyles";
@@ -236,7 +237,14 @@ function AdminSubmissionReviewPanel({
       </div>
 
       <div className="space-y-6 px-6 py-6 md:px-7">
-        <div className="rounded-lg border border-line bg-elevated p-5 whitespace-pre-wrap font-coptic text-lg text-muted md:text-xl">
+        <div
+          className={surfacePanelClassName({
+            rounded: "lg",
+            variant: "elevated",
+            className:
+              "whitespace-pre-wrap p-5 font-coptic text-lg text-muted md:text-xl",
+          })}
+        >
           {submission.submitted_text}
         </div>
 
@@ -325,9 +333,9 @@ export function AdminSubmissionReviewWorkspace({
 
   return (
     <div className="space-y-5">
-      <div className="rounded-lg border border-line/80 bg-elevated/70 p-4 text-sm leading-6 text-muted">
+      <ElevatedPanel className="p-4 text-sm leading-6 text-muted">
         {copy.intro}
-      </div>
+      </ElevatedPanel>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,0.95fr)_minmax(22rem,30rem)]">
         <div className="space-y-3">

@@ -191,7 +191,7 @@ export function ExerciseForm({
       {questions.map((question, idx) => (
         <div
           key={question.id}
-          className="space-y-3 rounded-lg border border-line bg-elevated/65 p-5"
+          className="space-y-3 rounded-lg border border-line bg-elevated/70 p-5"
         >
           <label className="block text-lg font-medium leading-8 text-ink">
             <span className="mr-2 inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-coptic-soft px-2 text-sm font-semibold tabular-nums text-coptic">

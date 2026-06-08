@@ -17,7 +17,6 @@ import type { EntryFavoriteWithEntry } from "@/features/dictionary/lib/entryActi
 import { getPreferredEntryDisplaySpelling } from "@/features/dictionary/lib/entryDisplay";
 import { getPrimaryEntryPartOfSpeech } from "@/features/dictionary/lib/entryGrammar";
 import { getEntryMeaningPreview } from "@/features/dictionary/lib/entryText";
-import { antinoou } from "@/lib/fonts";
 import { getTranslation } from "@/lib/i18n";
 import { getEntryPath } from "@/lib/locale";
 import type { Language } from "@/types/i18n";
@@ -122,7 +121,7 @@ export function DictionaryFavoritesOverview({
                     </div>
 
                     <h4
-                      className={`${antinoou.className} text-3xl tracking-wide text-coptic`}
+                      className={`font-coptic text-3xl tracking-wide text-coptic`}
                     >
                       {entry
                         ? getPreferredEntryDisplaySpelling(

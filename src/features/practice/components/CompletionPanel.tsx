@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Badge } from "@/components/Badge";
 import { buttonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
+import { SurfacePanel } from "@/components/SurfacePanel";
 import type { PracticeReviewOutcome } from "@/features/practice/lib/practiceSessionTypes";
 import { getDashboardPath, getDictionaryPath } from "@/lib/locale";
 
@@ -22,7 +23,7 @@ export function CompletionPanel({
   const solidReviewCount = reviews.length - weakReviewCount;
 
   return (
-    <div className="rounded-lg border border-line bg-surface/92 p-6 shadow-soft backdrop-blur-sm md:p-8">
+    <SurfacePanel variant="elevated" shadow="soft" className="p-6 md:p-8">
       <Badge tone="coptic" size="sm">
         {t("practice.saved.completeTitle")}
       </Badge>
@@ -78,6 +79,6 @@ export function CompletionPanel({
           {t("practice.saved.openDictionary")}
         </Link>
       </div>
-    </div>
+    </SurfacePanel>
   );
 }

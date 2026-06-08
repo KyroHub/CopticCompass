@@ -17,7 +17,7 @@ export const publicationsMessages = defineMessages({
     "publications.indexDescription":
       "A curated catalog of books, editions, reference works, and research projects for Coptic language work and Coptology.",
     "publications.filters": "Browse publications",
-    "publications.searchPlaceholder": "Search by title, summary, or language",
+    "publications.searchPlaceholder": "Title, summary, language",
     "publications.clearSearch": "Clear search",
     "publications.filterToggle": "Filters",
     "publications.showFilters": "Show filters",
@@ -52,7 +52,7 @@ export const publicationsMessages = defineMessages({
     "publications.indexDescription":
       "Een gecureerde catalogus van boeken, edities, naslagwerken en onderzoeksprojecten voor werk rond de Koptische taal en Koptologie.",
     "publications.filters": "Publicaties verkennen",
-    "publications.searchPlaceholder": "Zoek op titel, samenvatting of taal",
+    "publications.searchPlaceholder": "Titel, samenvatting, taal",
     "publications.clearSearch": "Zoekopdracht wissen",
     "publications.filterToggle": "Filters",
     "publications.showFilters": "Filters tonen",

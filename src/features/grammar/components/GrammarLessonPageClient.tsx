@@ -302,7 +302,6 @@ export function GrammarLessonPageClient({
               targetId={lessonContentId}
               fileName={`Coptic_${lesson.title.en.replace(/\s+/g, "_")}.pdf`}
               className="w-full min-w-0 px-3 sm:w-auto sm:px-4"
-              wrapperClassName="w-full min-w-0 sm:w-auto"
               beforeCapture={() => {
                 flushSync(() => {
                   setRenderMode("pdf");
@@ -327,6 +326,7 @@ export function GrammarLessonPageClient({
             <PageHeader
               title={`${t("nav.grammar")} - ${lesson.title[language]}`}
               description={lessonDescription}
+              descriptionClassName="hidden md:block"
               tone="coptic"
               size="workspace"
               className="mb-6 md:mb-10"

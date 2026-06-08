@@ -4,6 +4,7 @@ import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { useLanguage } from "@/components/LanguageProvider";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import { cx } from "@/lib/classes";
 
 import { useGrammarLessonRenderContext } from "./GrammarLessonRenderContext";
@@ -104,10 +105,10 @@ export function GrammarLessonSection({
       ref={detailsRef}
       id={id}
       open={renderMode === "pdf" ? true : defaultOpen}
-      className={cx(
-        "group app-anchor-section overflow-hidden rounded-lg border border-line bg-surface/88 shadow-soft backdrop-blur-sm",
-        className,
-      )}
+      className={surfacePanelClassName({
+        shadow: "soft",
+        className: cx("group app-anchor-section overflow-hidden", className),
+      })}
     >
       <summary className="flex cursor-pointer list-none items-start justify-between gap-4 px-4 py-3 [&::-webkit-details-marker]:hidden sm:px-5 sm:py-4">
         <div className="flex min-w-0 items-start gap-4">
@@ -143,10 +144,10 @@ export function GrammarLessonOutline({
 
   return (
     <nav
-      className={cx(
-        "overflow-hidden rounded-lg border border-line bg-surface/88 shadow-soft backdrop-blur-sm",
-        className,
-      )}
+      className={surfacePanelClassName({
+        shadow: "soft",
+        className: cx("overflow-hidden", className),
+      })}
     >
       <div className="border-b border-line px-4 py-3">
         {eyebrow && (
@@ -212,7 +213,7 @@ export function GrammarLessonCard({
         "rounded-lg border p-4",
         tone === "coptic"
           ? "border-coptic/20 bg-coptic-soft/55 dark:bg-coptic-soft/20"
-          : "border-line bg-elevated/75",
+          : "border-line bg-elevated/70",
         className,
       )}
     >
@@ -343,7 +344,7 @@ export function GrammarLessonTable({
       </div>
 
       {renderMode !== "pdf" && canScrollHorizontally && isScrolledToStart ? (
-        <div className="border-t border-line bg-elevated/80 px-4 py-2 text-[11px] font-medium uppercase tracking-[0.14em] text-muted sm:hidden">
+        <div className="border-t border-line bg-elevated/70 px-4 py-2 text-[11px] font-medium uppercase tracking-[0.14em] text-muted sm:hidden">
           {mobileScrollHint}
         </div>
       ) : null}
@@ -368,10 +369,10 @@ export function GrammarLessonEndnotes({
 
   return (
     <section
-      className={cx(
-        "rounded-lg border border-line bg-surface/88 px-5 py-5 shadow-soft",
-        className,
-      )}
+      className={surfacePanelClassName({
+        shadow: "soft",
+        className: cx("px-5 py-5", className),
+      })}
     >
       <h2 className="mb-4 text-2xl font-semibold text-ink">{title}</h2>
       <ol className="space-y-4">

@@ -1,11 +1,12 @@
 "use client";
 
 import { ChevronDown, SlidersHorizontal, X } from "lucide-react";
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import { buttonClassName, iconButtonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { SegmentedControl } from "@/components/SegmentedControl";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import type {
   DialectFilter,
   DictionaryEtymologyFilter,
@@ -13,6 +14,7 @@ import type {
 } from "@/features/dictionary/config";
 import type { DictionaryResultMode } from "@/features/dictionary/hooks/useDictionaryResultMode";
 import { cx } from "@/lib/classes";
+import { useMediaQuery } from "@/lib/useMediaQuery";
 
 import {
   DictionaryAdvancedFilterControls,
@@ -51,60 +53,70 @@ type DictionarySearchWorkspaceProps = {
   setResultMode: (mode: DictionaryResultMode) => void;
 };
 
-type MobileCollapsibleSectionProps = {
+type CollapsibleFilterSectionProps = {
   activeCount?: number;
   children: ReactNode;
   className?: string;
+  defaultOpen?: "desktop" | boolean;
   title: string;
 };
 
-function MobileCollapsibleSection({
+function CollapsibleFilterSection({
   activeCount = 0,
   children,
   className,
+  defaultOpen = false,
   title,
-}: MobileCollapsibleSectionProps) {
+}: CollapsibleFilterSectionProps) {
   const contentId = useId();
-  const [isOpen, setIsOpen] = useState(false);
+  const hasUserToggledRef = useRef(false);
+  const isDesktopViewport = useMediaQuery("(min-width: 768px)");
+  const [isOpen, setIsOpen] = useState(defaultOpen === true);
+
+  useEffect(() => {
+    if (defaultOpen === "desktop" && !hasUserToggledRef.current) {
+      setIsOpen(isDesktopViewport);
+    }
+  }, [defaultOpen, isDesktopViewport]);
+
+  function toggleExpanded() {
+    hasUserToggledRef.current = true;
+    setIsOpen((current) => !current);
+  }
 
   return (
-    <div className="border-t border-line pt-4 sm:grid sm:gap-3 md:grid-cols-[8rem_minmax(0,1fr)] md:items-center">
+    <div className="border-t border-line pt-4 md:grid md:gap-3 md:grid-cols-[8rem_minmax(0,1fr)] md:items-start">
       <button
         type="button"
         aria-controls={contentId}
         aria-expanded={isOpen}
-        onClick={() => setIsOpen((current) => !current)}
-        className="flex h-11 w-full min-w-0 items-center justify-between gap-3 rounded-lg px-2 text-left text-muted transition-colors hover:bg-elevated/75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 sm:hidden"
+        onClick={toggleExpanded}
+        className="group flex h-11 w-full min-w-0 items-center justify-between gap-3 rounded-lg -mx-2 px-2 text-left text-muted transition-colors hover:bg-elevated/70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 md:mx-0 md:px-0 md:hover:bg-transparent"
       >
         <span className="flex min-w-0 items-center gap-2">
-          <span className="truncate text-xs font-semibold uppercase tracking-widest">
+          <span className="truncate text-xs font-semibold uppercase tracking-widest transition-colors group-hover:text-ink">
             {title}
           </span>
           {activeCount > 0 ? (
-            <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ink px-1.5 text-xs font-semibold text-paper dark:bg-elevated dark:text-ink dark:ring-1 dark:ring-line">
+            <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-md bg-ink px-1.5 text-xs font-semibold text-paper dark:bg-elevated dark:text-ink dark:ring-1 dark:ring-line">
               {activeCount}
             </span>
           ) : null}
         </span>
         <ChevronDown
           className={cx(
-            "h-4 w-4 shrink-0 transition-transform",
+            "h-4 w-4 shrink-0 transition-transform group-hover:text-ink",
             isOpen && "rotate-180",
           )}
           aria-hidden="true"
         />
       </button>
 
-      <h3 className="hidden text-xs font-semibold uppercase tracking-widest text-muted sm:block">
-        {title}
-      </h3>
-
       <div
         id={contentId}
         className={cx(
           "min-w-0",
-          isOpen ? "mt-3 grid gap-2" : "hidden",
-          "sm:mt-0 sm:grid sm:gap-2",
+          isOpen ? "mt-3 grid gap-2 md:mt-0" : "hidden",
           className,
         )}
       >
@@ -147,10 +159,10 @@ export function DictionarySearchWorkspace({
   const standardFilterCount = [
     selectedPartOfSpeech !== "ALL",
     selectedDialect !== "ALL",
-    exactMatch,
+    selectedEtymology !== "ALL",
   ].filter(Boolean).length;
   const advancedFilterCount = [
-    selectedEtymology !== "ALL",
+    exactMatch,
     hasGreek,
     hasInflections,
     hasRelatedEntries,
@@ -162,7 +174,7 @@ export function DictionarySearchWorkspace({
   const panelControlClassName = "w-full min-w-0";
   const panelTriggerClassName = "w-full min-w-0";
   const panelRowClassName =
-    "grid gap-3 md:grid-cols-[8rem_minmax(0,1fr)] md:items-center";
+    "grid gap-3 md:grid-cols-[8rem_minmax(0,1fr)] md:items-start";
 
   const controlsToggle = (
     <button
@@ -179,7 +191,7 @@ export function DictionarySearchWorkspace({
     >
       <SlidersHorizontal className="h-5 w-5" />
       {hasActiveFilters ? (
-        <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ink px-1 text-[10px] font-bold leading-none text-paper ring-2 ring-surface dark:bg-elevated dark:text-ink dark:ring-surface">
+        <span className="absolute -right-1 -top-1 inline-flex h-5 min-w-5 items-center justify-center rounded-md bg-ink px-1 text-[10px] font-bold leading-none text-paper ring-2 ring-surface dark:bg-elevated dark:text-ink dark:ring-surface">
           {activeFilterCount}
         </span>
       ) : null}
@@ -203,7 +215,11 @@ export function DictionarySearchWorkspace({
       {isControlsOpen ? (
         <section
           id={controlsPanelId}
-          className="rounded-lg border border-line bg-surface/94 p-3 shadow-panel backdrop-blur-xl sm:p-4"
+          className={surfacePanelClassName({
+            variant: "elevated",
+            shadow: "panel",
+            className: "p-3 sm:p-4",
+          })}
         >
           <div className="grid gap-4">
             <div className="flex min-w-0 items-center justify-between gap-3">
@@ -227,7 +243,7 @@ export function DictionarySearchWorkspace({
             </div>
 
             <div className={panelRowClassName}>
-              <h3 className="text-xs font-semibold uppercase tracking-widest text-muted">
+              <h3 className="flex h-11 items-center text-xs font-semibold uppercase tracking-widest text-muted">
                 {t("dict.resultView")}
               </h3>
               <SegmentedControl
@@ -255,44 +271,45 @@ export function DictionarySearchWorkspace({
               />
             </div>
 
-            <MobileCollapsibleSection
+            <CollapsibleFilterSection
               activeCount={standardFilterCount}
-              className="sm:grid-cols-3"
+              className="sm:grid-cols-2 lg:grid-cols-3"
+              defaultOpen="desktop"
               title={t("dict.filters")}
             >
               <DictionaryFilterControls
                 controlClassName={panelControlClassName}
-                exactMatch={exactMatch}
                 selectedDialect={selectedDialect}
+                selectedEtymology={selectedEtymology}
                 selectedPartOfSpeech={selectedPartOfSpeech}
-                setExactMatch={setExactMatch}
                 setSelectedDialect={setSelectedDialect}
+                setSelectedEtymology={setSelectedEtymology}
                 setSelectedPartOfSpeech={setSelectedPartOfSpeech}
                 triggerClassName={panelTriggerClassName}
               />
-            </MobileCollapsibleSection>
+            </CollapsibleFilterSection>
 
-            <MobileCollapsibleSection
+            <CollapsibleFilterSection
               activeCount={advancedFilterCount}
-              className="sm:grid-cols-4"
+              className="sm:grid-cols-2 lg:grid-cols-4"
               title={t("dict.advanced")}
             >
               <DictionaryAdvancedFilterControls
                 controlClassName={panelControlClassName}
+                exactMatch={exactMatch}
                 hasGreek={hasGreek}
                 hasInflections={hasInflections}
                 hasRelatedEntries={hasRelatedEntries}
-                selectedEtymology={selectedEtymology}
+                setExactMatch={setExactMatch}
                 setHasGreek={setHasGreek}
                 setHasInflections={setHasInflections}
                 setHasRelatedEntries={setHasRelatedEntries}
-                setSelectedEtymology={setSelectedEtymology}
                 triggerClassName={panelTriggerClassName}
               />
-            </MobileCollapsibleSection>
+            </CollapsibleFilterSection>
 
             {canShowPronunciationControls ? (
-              <MobileCollapsibleSection
+              <CollapsibleFilterSection
                 className="sm:grid-cols-2"
                 title={t("dict.pronunciation")}
               >
@@ -301,7 +318,7 @@ export function DictionarySearchWorkspace({
                   selectedDialect={selectedDialect}
                   triggerClassName={panelTriggerClassName}
                 />
-              </MobileCollapsibleSection>
+              </CollapsibleFilterSection>
             ) : null}
           </div>
         </section>

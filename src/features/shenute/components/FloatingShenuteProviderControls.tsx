@@ -48,7 +48,7 @@ export function FloatingShenuteProviderControls({
           size: "sm",
           variant: "secondary",
           className:
-            "h-10 justify-start gap-2 border-line/80 bg-surface/80 px-3 text-left text-xs",
+            "h-10 justify-start gap-2 border-line/80 bg-surface/88 px-3 text-left text-xs",
         })}
       >
         <SlidersHorizontal
@@ -98,7 +98,7 @@ export function FloatingShenuteProviderControls({
                     "flex min-h-10 w-full min-w-0 items-center gap-2 overflow-hidden rounded-lg border px-2.5 py-2 text-left text-xs transition disabled:cursor-not-allowed disabled:opacity-60",
                     isActive
                       ? "border-coptic/55 bg-coptic-soft text-ink shadow-sm"
-                      : "border-line bg-surface/80 text-muted hover:border-accent/35 hover:bg-elevated hover:text-ink",
+                      : "border-line bg-surface/88 text-muted hover:border-accent/35 hover:bg-elevated hover:text-ink",
                   )}
                 >
                   <span

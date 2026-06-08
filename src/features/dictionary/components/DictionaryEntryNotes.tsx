@@ -1,10 +1,9 @@
 "use client";
 
-import type { TranslationKey } from "@/lib/i18n";
-
-import HighlightText, {
+import CopticText, {
   type GrammarAbbreviationTooltips,
-} from "./HighlightText";
+} from "@/components/CopticText";
+import type { TranslationKey } from "@/lib/i18n";
 
 type DictionaryEntryTranslator = (key: TranslationKey) => string;
 
@@ -42,7 +41,7 @@ export function DictionaryEntryNotes({
       >
         {notes.map((note, idx) => (
           <li key={idx} className="leading-relaxed pl-1">
-            <HighlightText
+            <CopticText
               text={note}
               query={query}
               grammarAbbreviationTooltips={grammarAbbreviationTooltips}

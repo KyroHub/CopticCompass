@@ -11,6 +11,7 @@ import { buttonClassName } from "@/components/Button";
 import { FormField } from "@/components/FormField";
 import { useLanguage } from "@/components/LanguageProvider";
 import { StatusNotice } from "@/components/StatusNotice";
+import { SurfacePanel } from "@/components/SurfacePanel";
 import type { LexicalEntry } from "@/features/dictionary/types";
 import type { Language } from "@/types/i18n";
 
@@ -58,7 +59,7 @@ export function EntryReportPanel({
   }, [onClose, onSubmitted, state?.message, state?.success]);
 
   return (
-    <div className="rounded-lg border border-line bg-surface/88 p-5 shadow-soft backdrop-blur-md">
+    <SurfacePanel shadow="soft" className="p-5">
       <div className="mb-4">
         <h3 className="flex items-center gap-2 text-sm font-semibold text-ink">
           <MessageSquareText className="h-4 w-4 text-accent-strong dark:text-accent" />
@@ -150,6 +151,6 @@ export function EntryReportPanel({
           </StatusNotice>
         ) : null}
       </form>
-    </div>
+    </SurfacePanel>
   );
 }

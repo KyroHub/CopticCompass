@@ -13,6 +13,7 @@ import { AuthGateNotice } from "@/components/AuthGateNotice";
 import { Badge } from "@/components/Badge";
 import { buttonClassName } from "@/components/Button";
 import { SkeletonBlock } from "@/components/SkeletonBlock";
+import { SurfacePanel, surfacePanelClassName } from "@/components/SurfacePanel";
 import type { GrammarLessonLearnerSummary } from "@/features/grammar/lib/grammarLearnerState";
 import { cx } from "@/lib/classes";
 import { getDashboardPath } from "@/lib/locale";
@@ -121,7 +122,7 @@ export function GrammarLessonLearnerPanel({
   }
 
   return (
-    <section className="overflow-hidden rounded-lg border border-line bg-surface/88 shadow-soft backdrop-blur-sm">
+    <SurfacePanel as="section" shadow="soft" className="overflow-hidden">
       <div className="border-b border-line px-4 py-3">
         <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted">
           {language === "nl" ? "Studietracking" : "Study tracking"}
@@ -209,7 +210,7 @@ export function GrammarLessonLearnerPanel({
           <p className="text-sm text-danger">{errorMessage}</p>
         ) : null}
       </div>
-    </section>
+    </SurfacePanel>
   );
 }
 
@@ -278,10 +279,13 @@ function LessonNavigationCard({
   return (
     <Link
       href={lesson.href}
-      className={cx(
-        "rounded-lg border border-line bg-surface/80 px-3.5 py-3 transition-all duration-200 hover:-translate-y-px hover:border-coptic/35 hover:bg-coptic-soft/45",
-        className,
-      )}
+      className={surfacePanelClassName({
+        variant: "default",
+        className: cx(
+          "px-3.5 py-3 transition-all duration-200 hover:-translate-y-px hover:border-coptic/35 hover:bg-coptic-soft/45",
+          className,
+        ),
+      })}
     >
       {content}
     </Link>
@@ -294,7 +298,7 @@ export function GrammarLessonNavigationPanel({
   previousLesson,
 }: GrammarLessonNavigationPanelProps) {
   return (
-    <section className="overflow-hidden rounded-lg border border-line bg-surface/88 shadow-soft backdrop-blur-sm">
+    <SurfacePanel as="section" shadow="soft" className="overflow-hidden">
       <div className="border-b border-line px-4 py-3">
         <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted">
           {language === "nl" ? "Navigatie" : "Navigation"}
@@ -316,7 +320,7 @@ export function GrammarLessonNavigationPanel({
           lesson={nextLesson}
         />
       </div>
-    </section>
+    </SurfacePanel>
   );
 }
 
@@ -420,7 +424,7 @@ export function GrammarLessonNotesPanel({
   }
 
   return (
-    <section className="overflow-hidden rounded-lg border border-line bg-surface/88 shadow-soft backdrop-blur-sm">
+    <SurfacePanel as="section" shadow="soft" className="overflow-hidden">
       <div className="border-b border-line px-6 py-5">
         <div className="flex items-center gap-3">
           <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg bg-coptic-soft text-coptic">
@@ -479,6 +483,6 @@ export function GrammarLessonNotesPanel({
           <p className="text-sm text-danger">{errorMessage}</p>
         ) : null}
       </div>
-    </section>
+    </SurfacePanel>
   );
 }

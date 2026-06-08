@@ -22,7 +22,6 @@ import {
 import { getEntryMeaningPreview } from "@/features/dictionary/lib/entryText";
 import { formatSubmissionDate } from "@/features/submissions/utils";
 import { cx } from "@/lib/classes";
-import { antinoou } from "@/lib/fonts";
 import { getEntryPath } from "@/lib/locale";
 import type { Language } from "@/types/i18n";
 
@@ -265,7 +264,7 @@ export function AdminEntryReportDisclosure({
         </>
       }
       title={report.entry_headword}
-      titleClassName={`${antinoou.className} tracking-wide text-coptic`}
+      titleClassName={`font-coptic tracking-wide text-coptic`}
       metadata={
         <>
           <span className="font-medium text-ink">

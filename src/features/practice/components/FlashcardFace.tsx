@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useEffect, useRef } from "react";
 
 import { buttonClassName } from "@/components/Button";
+import CopticText from "@/components/CopticText";
+import { elevatedPanelClassName } from "@/components/ElevatedPanel";
 import { useLanguage } from "@/components/LanguageProvider";
 import { SpeakButton } from "@/features/dictionary/components/SpeakButton";
 import { AnswerContextPanel } from "@/features/practice/components/AnswerContextPanel";
@@ -21,7 +23,6 @@ import type {
 } from "@/features/practice/lib/practiceSessionTypes";
 import type { TypedFlashcardAnswerResult } from "@/features/practice/lib/typedAnswer";
 import { cx } from "@/lib/classes";
-import { antinoou } from "@/lib/fonts";
 
 function FlashcardSideValue({
   side,
@@ -37,11 +38,11 @@ function FlashcardSideValue({
       <p
         className={
           isCoptic
-            ? `${antinoou.className} max-w-full break-words text-4xl leading-tight text-coptic [overflow-wrap:anywhere] sm:text-5xl md:text-6xl`
+            ? `font-coptic max-w-full break-words text-4xl leading-tight text-coptic [overflow-wrap:anywhere] sm:text-5xl md:text-6xl`
             : "line-clamp-3 max-w-3xl text-base font-semibold leading-6 text-ink md:line-clamp-none md:text-3xl md:leading-10"
         }
       >
-        {side.text}
+        {isCoptic ? side.text : <CopticText text={side.text} query="" />}
       </p>
       {speechText ? (
         <SpeakButton
@@ -63,7 +64,7 @@ function FlashcardHintPanel({ hintText }: { hintText: string }) {
         {t("practice.saved.hintTitle")}
       </p>
       <p className="mt-2 text-sm font-semibold leading-6 text-ink">
-        {hintText}
+        <CopticText text={hintText} query="" />
       </p>
     </div>
   );
@@ -106,7 +107,11 @@ export function FlashcardFace({
       <div className={cx("card-inner", isRevealed && "is-flipped")}>
         {/* CARD FRONT FACE */}
         <div
-          className="card-face card-front rounded-lg border border-line bg-elevated/45 p-4 shadow-soft md:p-6"
+          className={elevatedPanelClassName({
+            variant: "subtle",
+            shadow: "soft",
+            className: "card-face card-front p-4 md:p-6",
+          })}
           aria-hidden={isRevealed}
         >
           {primaryLink ? (
@@ -139,7 +144,11 @@ export function FlashcardFace({
               />
             </div>
 
-            <div className="w-full rounded-lg border border-line bg-elevated/70 px-4 py-3 md:px-6 md:py-5">
+            <div
+              className={elevatedPanelClassName({
+                className: "w-full px-4 py-3 md:px-6 md:py-5",
+              })}
+            >
               <p className="text-xs font-semibold uppercase tracking-widest text-muted">
                 {t(candidate.back.labelKey)}
               </p>

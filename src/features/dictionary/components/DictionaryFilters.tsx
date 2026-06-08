@@ -1,7 +1,5 @@
 "use client";
 
-import { Volume2 } from "lucide-react";
-
 import {
   FilterMenu,
   FilterToggle,
@@ -24,11 +22,11 @@ import {
 import { type VoiceKey, VOICES } from "@/features/dictionary/lib/copticTts";
 
 type DictionaryFilterControlsProps = {
-  exactMatch: boolean;
   selectedDialect: DialectFilter;
+  selectedEtymology: DictionaryEtymologyFilter;
   selectedPartOfSpeech: DictionaryPartOfSpeechFilter;
-  setExactMatch: (value: boolean) => void;
   setSelectedDialect: (value: DialectFilter) => void;
+  setSelectedEtymology: (value: DictionaryEtymologyFilter) => void;
   setSelectedPartOfSpeech: (value: DictionaryPartOfSpeechFilter) => void;
 };
 
@@ -37,14 +35,14 @@ type DictionaryPronunciationControlsProps = {
 };
 
 type DictionaryAdvancedFiltersProps = {
+  exactMatch: boolean;
   hasGreek: boolean;
   hasInflections: boolean;
   hasRelatedEntries: boolean;
-  selectedEtymology: DictionaryEtymologyFilter;
+  setExactMatch: (value: boolean) => void;
   setHasGreek: (value: boolean) => void;
   setHasInflections: (value: boolean) => void;
   setHasRelatedEntries: (value: boolean) => void;
-  setSelectedEtymology: (value: DictionaryEtymologyFilter) => void;
 };
 
 type DictionaryControlLayoutProps = {
@@ -70,17 +68,22 @@ function getSelectedOptionLabel(
 
 export function DictionaryFilterControls({
   controlClassName,
-  exactMatch,
   selectedDialect,
+  selectedEtymology,
   selectedPartOfSpeech,
-  setExactMatch,
   setSelectedDialect,
+  setSelectedEtymology,
   setSelectedPartOfSpeech,
   triggerClassName,
 }: DictionaryFilterControlsProps & DictionaryControlLayoutProps) {
   const { t } = useLanguage();
   const partOfSpeechOptions: FilterMenuOption[] =
     dictionaryPartOfSpeechFilterOptions.map((option) => ({
+      label: t(option.labelKey),
+      value: option.value,
+    }));
+  const etymologyOptions: FilterMenuOption[] =
+    dictionaryEtymologyFilterOptions.map((option) => ({
       label: t(option.labelKey),
       value: option.value,
     }));
@@ -125,39 +128,6 @@ export function DictionaryFilterControls({
         onChange={(value) => setSelectedDialect(value as DialectFilter)}
       />
 
-      <FilterToggle
-        active={exactMatch}
-        className={controlClassName}
-        label={t("dict.exactMatch")}
-        value={exactMatch}
-        valueLabel={exactMatch ? t("dict.exactMatch") : t("dict.any")}
-        onChange={setExactMatch}
-      />
-    </>
-  );
-}
-
-export function DictionaryAdvancedFilterControls({
-  controlClassName,
-  hasGreek,
-  hasInflections,
-  hasRelatedEntries,
-  selectedEtymology,
-  setHasGreek,
-  setHasInflections,
-  setHasRelatedEntries,
-  setSelectedEtymology,
-  triggerClassName,
-}: DictionaryAdvancedFiltersProps & DictionaryControlLayoutProps) {
-  const { t } = useLanguage();
-  const etymologyOptions: FilterMenuOption[] =
-    dictionaryEtymologyFilterOptions.map((option) => ({
-      label: t(option.labelKey),
-      value: option.value,
-    }));
-
-  return (
-    <>
       <FilterMenu
         active={selectedEtymology !== "ALL"}
         className={controlClassName}
@@ -171,6 +141,33 @@ export function DictionaryAdvancedFilterControls({
         onChange={(value) =>
           setSelectedEtymology(value as DictionaryEtymologyFilter)
         }
+      />
+    </>
+  );
+}
+
+export function DictionaryAdvancedFilterControls({
+  controlClassName,
+  exactMatch,
+  hasGreek,
+  hasInflections,
+  hasRelatedEntries,
+  setExactMatch,
+  setHasGreek,
+  setHasInflections,
+  setHasRelatedEntries,
+}: DictionaryAdvancedFiltersProps & DictionaryControlLayoutProps) {
+  const { t } = useLanguage();
+
+  return (
+    <>
+      <FilterToggle
+        active={exactMatch}
+        className={controlClassName}
+        label={t("dict.exactMatch")}
+        value={exactMatch}
+        valueLabel={exactMatch ? t("dict.exactMatch") : t("dict.any")}
+        onChange={setExactMatch}
       />
 
       <FilterToggle
@@ -238,7 +235,6 @@ export function DictionaryPronunciationControls({
         active={settings.mode === "premium"}
         className={controlClassName}
         closeLabel={t("dict.hideFilters")}
-        icon={Volume2}
         label={cleanFilterLabel(t("dict.ttsMode"))}
         menuLabel={cleanFilterLabel(t("dict.ttsMode"))}
         value={settings.mode}

@@ -12,6 +12,7 @@ import { BreadcrumbTrail } from "@/components/BreadcrumbTrail";
 import { buttonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import { useSpeech } from "@/features/dictionary/hooks/useSpeech";
 import type { ShenuteHandoffPageContext } from "@/features/shenute/handoff";
 import type { SavedChatSession } from "@/features/shenute/lib/client/shenuteClientApi";
@@ -484,7 +485,12 @@ export default function ShenutePageClient() {
             isUtilityChromeCollapsed && "hidden sm:block",
           )}
         >
-          <div className="flex min-h-14 items-center justify-between gap-2 border-b border-line/80 bg-surface/65 px-3 py-1.5 text-xs text-muted backdrop-blur-md sm:px-4 sm:py-2 sm:text-sm md:px-5">
+          <div
+            className={surfacePanelClassName({
+              className:
+                "flex min-h-14 items-center justify-between gap-2 border-b border-line/80 px-3 py-1.5 text-xs text-muted sm:px-4 sm:py-2 sm:text-sm md:px-5",
+            })}
+          >
             <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
               <span
                 aria-hidden="true"
@@ -502,14 +508,14 @@ export default function ShenutePageClient() {
               <p className="hidden min-w-0 flex-1 truncate sm:block">
                 {historyStatusMessage}
               </p>
-              <span className="hidden max-w-full items-center rounded-full bg-elevated px-2 py-0.5 text-xs font-semibold text-muted sm:inline-flex">
+              <span className="hidden max-w-full items-center rounded-md bg-elevated px-2 py-0.5 text-xs font-semibold text-muted sm:inline-flex">
                 <span className="truncate">
                   {copy.aiMode}: {selectedProviderOption.label}
                 </span>
               </span>
               {handoffContextLabel ? (
                 <span
-                  className="hidden max-w-[14rem] items-center rounded-full bg-coptic-soft px-2 py-0.5 text-xs font-semibold text-coptic sm:inline-flex"
+                  className="hidden max-w-[14rem] items-center rounded-md bg-coptic-soft px-2 py-0.5 text-xs font-semibold text-coptic sm:inline-flex"
                   title={handoffPageContext?.url || handoffPageContext?.path}
                 >
                   <span className="truncate">
@@ -637,7 +643,13 @@ export default function ShenutePageClient() {
                 >
                   <MoreHorizontal className={SHENUTE_ICON_CLASS.action} />
                 </summary>
-                <div className="absolute right-0 top-full z-50 mt-2 hidden w-64 rounded-lg border border-line bg-surface p-2 shadow-panel group-open:block">
+                <div
+                  className={surfacePanelClassName({
+                    shadow: "panel",
+                    className:
+                      "absolute right-0 top-full z-50 mt-2 hidden w-64 p-2 group-open:block",
+                  })}
+                >
                   <ShenuteConversationActionsPanel
                     activeSessionId={activeSessionId}
                     copy={copy}
@@ -663,7 +675,7 @@ export default function ShenutePageClient() {
           title={copy.expandControls}
           onClick={expandUtilityChrome}
           className={cx(
-            "relative z-30 h-10 items-center gap-2 border-b border-line bg-surface/80 px-3 py-1 text-left text-xs text-muted shadow-sm transition hover:bg-elevated sm:hidden",
+            "relative z-30 h-10 items-center gap-2 border-b border-line bg-surface/88 px-3 py-1 text-left text-xs text-muted shadow-sm transition hover:bg-elevated sm:hidden",
             isUtilityChromeCollapsed ? "flex" : "hidden",
           )}
         >

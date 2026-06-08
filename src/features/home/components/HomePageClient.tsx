@@ -18,7 +18,7 @@ import { buttonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PageHeader } from "@/components/PageHeader";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
-import { surfacePanelClassName } from "@/components/SurfacePanel";
+import { SurfacePanel, surfacePanelClassName } from "@/components/SurfacePanel";
 import { DEFAULT_PRACTICE_DECK_ID } from "@/features/practice/lib/practiceDeckDefaults";
 import { cx } from "@/lib/classes";
 import {
@@ -376,22 +376,22 @@ export default function HomePageClient() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-lg border border-line bg-surface/88 p-5 shadow-soft md:p-6">
+          <SurfacePanel shadow="soft" className="p-5 md:p-6">
             <p className="text-xs font-semibold uppercase tracking-widest text-accent-strong dark:text-accent">
               {t("home.promise.title")}
             </p>
             <p className="mt-4 leading-7 text-muted">
               {t("home.promise.body")}
             </p>
-          </div>
-          <div className="rounded-lg border border-line bg-surface/88 p-5 shadow-soft md:p-6">
+          </SurfacePanel>
+          <SurfacePanel shadow="soft" className="p-5 md:p-6">
             <p className="text-xs font-semibold uppercase tracking-widest text-coptic">
               {t("home.audience.title")}
             </p>
             <p className="mt-4 leading-7 text-muted">
               {t("home.audience.body")}
             </p>
-          </div>
+          </SurfacePanel>
         </div>
       </section>
 

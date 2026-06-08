@@ -1,7 +1,6 @@
 import Image from "next/image";
 
 import { SurfacePanel } from "@/components/SurfacePanel";
-import { antinoou } from "@/lib/fonts";
 import type { Language } from "@/types/i18n";
 import type { Tables } from "@/types/supabase";
 
@@ -25,7 +24,7 @@ export function DashboardWelcomePanel({
         <h2 className="mb-2 text-2xl font-semibold text-ink">
           {copy.welcomeBack},{" "}
           {profile.full_name ? (
-            <span className={`${antinoou.className} tracking-wide`}>
+            <span className={`font-coptic tracking-wide`}>
               {profile.full_name}
             </span>
           ) : (

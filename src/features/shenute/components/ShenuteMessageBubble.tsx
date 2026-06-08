@@ -14,6 +14,8 @@ import remarkGfm from "remark-gfm";
 
 import { AuthGateInlinePrompt } from "@/components/AuthGateNotice";
 import { buttonClassName } from "@/components/Button";
+import { Textarea } from "@/components/Input";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import {
   findPreviousUserMessage,
   getMessageText,
@@ -370,7 +372,13 @@ export function ShenuteMessageBubble({
                     closeContainingDetails(event.currentTarget)
                   }
                 />
-                <div className="fixed inset-x-3 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-[70] hidden max-h-[min(32rem,calc(100dvh-2rem))] overflow-y-auto rounded-lg border border-line bg-surface p-3 shadow-panel group-open:block">
+                <div
+                  className={surfacePanelClassName({
+                    shadow: "panel",
+                    className:
+                      "fixed inset-x-3 bottom-[calc(1rem+env(safe-area-inset-bottom))] z-[70] hidden max-h-[min(32rem,calc(100dvh-2rem))] overflow-y-auto p-3 group-open:block",
+                  })}
+                >
                   <ShenuteSurfaceHeader
                     closeLabel={copy.closeMenu}
                     className="mb-2"
@@ -403,7 +411,7 @@ export function ShenuteMessageBubble({
                     {copy.adminNoteSummary}
                   </summary>
                   <div className="mt-2 space-y-2">
-                    <textarea
+                    <Textarea
                       value={adminDraft}
                       onChange={(event) => {
                         onAdminDraftChange(message.id, event.target.value);
@@ -411,7 +419,7 @@ export function ShenuteMessageBubble({
                       placeholder={copy.adminNotePlaceholder}
                       rows={3}
                       disabled={isFeedbackPending}
-                      className="w-full rounded-lg border border-line bg-surface/85 px-3 py-2 text-xs text-ink shadow-sm focus:border-accent/55 focus:outline-none focus:ring-2 focus:ring-accent/25"
+                      className="min-h-0 px-3 py-2 text-xs"
                     />
                     <button
                       type="button"

@@ -4,6 +4,7 @@ import { BarChart3 } from "lucide-react";
 import { useSyncExternalStore } from "react";
 
 import { useLanguage } from "@/components/LanguageProvider";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import {
   ANALYTICS_CONSENT_DENIED,
   ANALYTICS_CONSENT_GRANTED,
@@ -39,7 +40,7 @@ export function AnalyticsConsentPreference() {
   return (
     <section
       aria-labelledby="analytics-preferences-title"
-      className="rounded-lg border border-line bg-surface/75 p-4 shadow-sm"
+      className={surfacePanelClassName({ shadow: "soft", className: "p-4" })}
     >
       <div className="flex items-start gap-3">
         <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent-strong dark:text-accent">

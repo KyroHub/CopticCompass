@@ -1,5 +1,9 @@
 "use client";
 
+import { Badge } from "@/components/Badge";
+import CopticText, {
+  type GrammarAbbreviationTooltips,
+} from "@/components/CopticText";
 import {
   type DictionaryComplementizerGovernment,
   type DictionaryConstructionGovernment,
@@ -20,9 +24,6 @@ import {
   GovernmentBadges,
   getGenderedHeadingMarkerLabel,
 } from "./dictionaryEntryHelpers";
-import HighlightText, {
-  type GrammarAbbreviationTooltips,
-} from "./HighlightText";
 import { LinguisticGloss } from "./LinguisticGloss";
 
 type DictionaryEntryTranslator = (key: TranslationKey) => string;
@@ -82,7 +83,7 @@ function GenderedMeaningValues({
             size="inline"
           />
           <span>
-            <HighlightText
+            <CopticText
               className="italic"
               text={meaning}
               query={query}
@@ -248,7 +249,7 @@ export function DictionaryEntryMeanings({
                         key={`${group.code}-meaning-${idx}`}
                         className="leading-relaxed pl-1"
                       >
-                        <HighlightText
+                        <CopticText
                           className="italic"
                           text={meaning}
                           query={query}
@@ -274,12 +275,14 @@ export function DictionaryEntryMeanings({
             >
               <div className="flex min-w-0 flex-wrap items-baseline gap-2">
                 {dialectMeaning.dialects.map((dialect) => (
-                  <span
+                  <Badge
                     key={`${dialectMeaning.sourceLabel}-${dialect}`}
-                    className="inline-flex min-h-6 items-center rounded-md bg-elevated px-2 text-[10px] font-bold text-muted"
+                    tone="neutral"
+                    size="xxs"
+                    className="min-h-6"
                   >
                     <DialectSiglum siglum={dialect} />
-                  </span>
+                  </Badge>
                 ))}
               </div>
               {dialectMeaning.meanings.length > 0 && (
@@ -291,7 +294,7 @@ export function DictionaryEntryMeanings({
                 >
                   {dialectMeaning.meanings.map((meaning, idx) => (
                     <li key={idx} className="leading-relaxed pl-1">
-                      <HighlightText
+                      <CopticText
                         className="italic"
                         text={meaning}
                         query={query}

@@ -6,7 +6,6 @@ import { buttonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import type { TypedFlashcardAnswerResult } from "@/features/practice/lib/typedAnswer";
 import { cx } from "@/lib/classes";
-import { antinoou } from "@/lib/fonts";
 import type { TranslationKey } from "@/lib/i18n";
 
 export function TypedAnswerPractice({
@@ -71,7 +70,7 @@ export function TypedAnswerPractice({
           aria-label={t("practice.saved.typeAnswerLabel")}
           placeholder={t("practice.saved.typeAnswerPlaceholder")}
           className={cx(
-            antinoou.className,
+            "font-coptic",
             "h-11 min-w-0 flex-1 rounded-md border border-line bg-surface px-3 text-lg font-semibold text-coptic shadow-inner outline-none transition-colors placeholder:text-sm placeholder:font-sans placeholder:text-muted focus:border-accent focus:ring-2 focus:ring-accent/20",
             shouldShake && "animate-shake",
           )}

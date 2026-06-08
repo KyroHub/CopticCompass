@@ -93,7 +93,7 @@ curl -X POST "https://www.copticcompass.com/api/ocr?lang=cop" \\
 
 const BODY_TEXT_CLASS = "text-sm leading-7 text-muted";
 const API_HIGHLIGHT_CLASS =
-  "rounded-lg border border-line/80 bg-elevated/65 px-4 py-3 text-center text-sm font-medium leading-6 text-ink";
+  "rounded-lg border border-line/80 bg-elevated/70 px-4 py-3 text-center text-sm font-medium leading-6 text-ink";
 const API_CARD_TITLE_CLASS = "text-xl font-semibold text-ink";
 const CODE_BLOCK_CLASS =
   "overflow-x-auto rounded-lg border border-line/70 bg-ink px-4 py-4 text-sm leading-6 text-paper dark:bg-black/60";

@@ -5,7 +5,9 @@ import { useActionState } from "react";
 import { sendContentReleasePreview } from "@/actions/admin";
 import type { SendContentReleaseState } from "@/actions/admin/states";
 import { buttonClassName } from "@/components/Button";
+import { elevatedPanelClassName } from "@/components/ElevatedPanel";
 import { FormField } from "@/components/FormField";
+import { Select } from "@/components/Input";
 import { useLanguage } from "@/components/LanguageProvider";
 import { StatusNotice } from "@/components/StatusNotice";
 import { AdminErrorDisclosure } from "@/features/admin/components/AdminErrorDisclosure";
@@ -46,7 +48,7 @@ export function SendContentReleasePreviewForm({
   return (
     <form
       action={formAction}
-      className="space-y-4 rounded-lg border border-line bg-elevated/60 p-5"
+      className={elevatedPanelClassName({ className: "space-y-4 p-5" })}
     >
       <input type="hidden" name="release_id" value={releaseId} />
 
@@ -57,15 +59,15 @@ export function SendContentReleasePreviewForm({
           labelTone="muted"
           className="min-w-[14rem] flex-1"
         >
-          <select
+          <Select
             id={`content-release-preview-locale-${releaseId}`}
             name="preview_locale"
             defaultValue="en"
-            className="select-base h-11 text-sm"
+            className="h-11 text-sm"
           >
             <option value="en">{copy.englishPreview}</option>
             <option value="nl">{copy.dutchPreview}</option>
-          </select>
+          </Select>
         </FormField>
 
         <button

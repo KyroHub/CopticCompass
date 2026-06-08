@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 
 import { Button, controlButtonClassName } from "@/components/Button";
-import { SurfacePanel } from "@/components/SurfacePanel";
+import { SurfacePanel, surfacePanelClassName } from "@/components/SurfacePanel";
 import { GrammarLessonOutline } from "@/features/grammar/components/GrammarLessonPrimitives";
 import { cx } from "@/lib/classes";
 
@@ -176,7 +176,12 @@ function MobileLessonTools({
   lessonToolsTitle,
 }: ReadingWorkspaceProps) {
   return (
-    <details className="group mb-6 overflow-hidden rounded-lg border border-line bg-surface/88 shadow-soft backdrop-blur-sm xl:hidden">
+    <details
+      className={surfacePanelClassName({
+        shadow: "soft",
+        className: "group mb-6 overflow-hidden xl:hidden",
+      })}
+    >
       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3 [&::-webkit-details-marker]:hidden">
         <div className="min-w-0">
           <p className="mb-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted">
@@ -242,7 +247,7 @@ export function GrammarLessonStudyWorkspace({
     <div className="relative hidden 2xl:block">
       <div className="relative left-1/2 right-1/2 -ml-[50vw] -mr-[50vw] w-screen px-6 3xl:px-8">
         <div className={cx("grid items-start gap-6", studyGridClassName)}>
-          <div className="app-sticky-panel self-start">
+          <div className="sticky top-[var(--app-rail-sticky-offset)] z-20 self-start">
             <div className="flex flex-col gap-2">
               {isLeftRailCollapsed ? (
                 <CollapsedRailCard
@@ -262,7 +267,7 @@ export function GrammarLessonStudyWorkspace({
                       side="left"
                     />
                   </div>
-                  <div className="max-h-[calc(100vh-var(--app-sticky-offset)-4rem)] overflow-y-auto pr-1">
+                  <div className="max-h-[calc(100vh-var(--app-rail-sticky-offset)-4rem)] overflow-y-auto pr-1">
                     <GrammarLessonOutline
                       activeSectionId={activeSectionId}
                       eyebrow={lessonOutlineEyebrow}
@@ -288,7 +293,7 @@ export function GrammarLessonStudyWorkspace({
           </SurfacePanel>
 
           {hasSemanticSidebar ? (
-            <div className="app-sticky-panel self-start">
+            <div className="sticky top-[var(--app-rail-sticky-offset)] z-20 self-start">
               <div className="flex flex-col gap-2">
                 {isRightRailCollapsed ? (
                   <CollapsedRailCard
@@ -308,7 +313,7 @@ export function GrammarLessonStudyWorkspace({
                         side="right"
                       />
                     </div>
-                    <div className="max-h-[calc(100vh-var(--app-sticky-offset)-4rem)] space-y-4 overflow-y-auto pr-1">
+                    <div className="max-h-[calc(100vh-var(--app-rail-sticky-offset)-4rem)] space-y-4 overflow-y-auto pr-1">
                       {learnerPanel}
                       {navigationPanel}
                       {conceptSummary}

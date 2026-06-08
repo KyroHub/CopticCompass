@@ -1,19 +1,19 @@
 "use client";
 
+import { Badge } from "@/components/Badge";
+import CopticText, {
+  type FormSymbolTooltips,
+  type GrammarAbbreviationTooltips,
+} from "@/components/CopticText";
 import type { DictionaryDialectCode } from "@/features/dictionary/config";
 import {
   formatImperativeForms,
   type ImperativeDisplayForm,
 } from "@/features/dictionary/lib/entryDisplay";
-import { antinoou } from "@/lib/fonts";
 import type { TranslationKey } from "@/lib/i18n";
 
 import DialectSiglum from "./DialectSiglum";
 import { getImperativeFormMorphologyMarkers } from "./dictionaryEntryHelpers";
-import HighlightText, {
-  type FormSymbolTooltips,
-  type GrammarAbbreviationTooltips,
-} from "./HighlightText";
 import { LinguisticGloss, LinguisticGlossGroup } from "./LinguisticGloss";
 
 type DictionaryEntryTranslator = (key: TranslationKey) => string;
@@ -66,10 +66,10 @@ export function DictionaryEntryMorphology({
             {t("entry.imperatives")}
           </span>
           <div className="flex flex-wrap gap-2.5">
-            <span className="inline-flex max-w-full items-baseline gap-2 rounded-lg border border-line bg-elevated/65 px-3 py-2 text-sm text-ink">
-              <span className="inline-flex min-h-6 shrink-0 items-center rounded-md bg-surface px-2 text-[10px] font-bold text-muted">
+            <span className="inline-flex max-w-full items-baseline gap-2 rounded-lg border border-line bg-elevated/70 px-3 py-2 text-sm text-ink">
+              <Badge tone="surface" size="xxs" className="min-h-6 shrink-0">
                 <DialectSiglum siglum={primaryDialectKey} />
-              </span>
+              </Badge>
               {hasAnnotatedPrimaryImperativeForms ? (
                 <span className="inline-flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1">
                   {primaryImperativeDisplayForms.map((form, index) => (
@@ -80,9 +80,9 @@ export function DictionaryEntryMorphology({
                       {index > 0 && <span className="text-muted/60">·</span>}
                       <span className="inline-flex min-w-0 items-baseline gap-x-1.5">
                         <span
-                          className={`${antinoou.className} min-w-0 break-words text-base leading-snug [overflow-wrap:anywhere]`}
+                          className={`font-coptic min-w-0 break-words text-base leading-snug [overflow-wrap:anywhere]`}
                         >
-                          <HighlightText
+                          <CopticText
                             text={form.form}
                             query={query}
                             symbolTooltips={formSymbolTooltips}
@@ -98,9 +98,9 @@ export function DictionaryEntryMorphology({
                 </span>
               ) : (
                 <span
-                  className={`${antinoou.className} min-w-0 break-words text-base leading-snug [overflow-wrap:anywhere]`}
+                  className={`font-coptic min-w-0 break-words text-base leading-snug [overflow-wrap:anywhere]`}
                 >
-                  <HighlightText
+                  <CopticText
                     text={formatImperativeForms(primaryImperativeForms)}
                     query={query}
                     symbolTooltips={formSymbolTooltips}
@@ -123,11 +123,11 @@ export function DictionaryEntryMorphology({
             {variantRows.map(({ dialect, forms, label, state }, index) => (
               <span
                 key={`${dialect}-${state}-${index}`}
-                className="inline-flex max-w-full items-baseline gap-2 rounded-lg border border-line bg-elevated/65 px-3 py-2 text-sm text-ink"
+                className="inline-flex max-w-full items-baseline gap-2 rounded-lg border border-line bg-elevated/70 px-3 py-2 text-sm text-ink"
               >
-                <span className="inline-flex min-h-6 shrink-0 items-center rounded-md bg-surface px-2 text-[10px] font-bold text-muted">
+                <Badge tone="surface" size="xxs" className="min-h-6 shrink-0">
                   <DialectSiglum siglum={dialect} />
-                </span>
+                </Badge>
                 {label ? (
                   <LinguisticGloss
                     code={label}
@@ -139,9 +139,9 @@ export function DictionaryEntryMorphology({
                   />
                 ) : null}
                 <span
-                  className={`${antinoou.className} min-w-0 break-words text-base leading-snug [overflow-wrap:anywhere]`}
+                  className={`font-coptic min-w-0 break-words text-base leading-snug [overflow-wrap:anywhere]`}
                 >
-                  <HighlightText
+                  <CopticText
                     text={forms.join(", ")}
                     query={query}
                     symbolTooltips={formSymbolTooltips}
@@ -164,7 +164,7 @@ export function DictionaryEntryMorphology({
                 key={idx}
                 className="rounded-lg border border-coptic/20 bg-coptic-soft px-3 py-1.5 text-sm font-medium text-coptic"
               >
-                <HighlightText text={gr} query={query} />
+                <CopticText text={gr} query={query} />
               </span>
             ))}
           </div>
@@ -182,7 +182,7 @@ export function DictionaryEntryMorphology({
                 key={idx}
                 className="rounded-lg border border-coptic/20 bg-coptic-soft px-3 py-1.5 text-sm font-medium text-coptic"
               >
-                <HighlightText text={gr} query={query} />
+                <CopticText text={gr} query={query} />
               </span>
             ))}
           </div>

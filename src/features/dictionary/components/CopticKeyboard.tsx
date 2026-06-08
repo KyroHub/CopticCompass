@@ -1,7 +1,7 @@
 import { Delete } from "lucide-react";
 
 import { useLanguage } from "@/components/LanguageProvider";
-import { antinoou } from "@/lib/fonts";
+import { SurfacePanel } from "@/components/SurfacePanel";
 
 const COPTIC_LETTERS = [
   "ⲁ",
@@ -65,7 +65,11 @@ export default function CopticKeyboard({
   }
 
   return (
-    <div className="absolute right-0 top-[calc(100%+0.75rem)] z-[70] max-h-[70vh] w-full overflow-y-auto rounded-lg border border-line bg-surface/95 p-3 shadow-panel backdrop-blur-xl sm:p-4 md:w-[640px] md:p-5">
+    <SurfacePanel
+      variant="elevated"
+      shadow="panel"
+      className="absolute right-0 top-[calc(100%+0.75rem)] z-[70] max-h-[70vh] w-full overflow-y-auto p-3 sm:p-4 md:w-[640px] md:p-5"
+    >
       <div className="mb-3 sm:mb-4">
         <h3 className="text-sm font-semibold uppercase tracking-widest text-ink">
           {t("dict.keyboardTitle")}
@@ -78,7 +82,7 @@ export default function CopticKeyboard({
             type="button"
             key={char}
             onClick={() => onAppend(char)}
-            className="flex h-10 cursor-pointer select-none items-center justify-center rounded-lg border border-line bg-elevated/80 font-coptic text-xl text-ink shadow-sm transition-colors hover:border-coptic/35 hover:bg-coptic-soft hover:text-coptic active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 sm:h-12 sm:text-2xl"
+            className="flex h-10 cursor-pointer select-none items-center justify-center rounded-lg border border-line bg-elevated/70 font-coptic text-xl text-ink shadow-sm transition-colors hover:border-coptic/35 hover:bg-coptic-soft hover:text-coptic active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 sm:h-12 sm:text-2xl"
           >
             {char}
           </button>
@@ -96,7 +100,7 @@ export default function CopticKeyboard({
             title={t("dict.keyboardCombine")}
           >
             <span
-              className={`${antinoou.className} inline-flex items-center text-2xl leading-none text-accent-strong dark:text-accent sm:text-3xl`}
+              className={`font-coptic inline-flex items-center text-2xl leading-none text-accent-strong dark:text-accent sm:text-3xl`}
             >
               {`◌${char}`}
             </span>
@@ -121,6 +125,6 @@ export default function CopticKeyboard({
           {t("dict.keyboardSpace")}
         </button>
       </div>
-    </div>
+    </SurfacePanel>
   );
 }

@@ -8,9 +8,10 @@ import { AppPageIntro } from "@/components/AppPageIntro";
 import { buttonClassName } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
 import { useLanguage } from "@/components/LanguageProvider";
+import { PageHeader } from "@/components/PageHeader";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
 import { StatusNotice } from "@/components/StatusNotice";
-import { SurfacePanel } from "@/components/SurfacePanel";
+import { SurfacePanel, surfacePanelClassName } from "@/components/SurfacePanel";
 import { getLocalizedHomePath } from "@/lib/locale";
 import { getPublicOcrErrorMessage } from "@/lib/ocrErrors";
 
@@ -145,14 +146,16 @@ export default function OCRPage() {
                 </StatusNotice>
               ) : null}
 
-              <div className="flex flex-wrap items-center gap-3">
+              <div className="grid w-full gap-3 sm:flex sm:w-auto sm:items-center">
                 <button
                   type="button"
                   onClick={() => {
                     void handleUpload();
                   }}
                   disabled={!image || loading}
-                  className={buttonClassName({ className: "px-5" })}
+                  className={buttonClassName({
+                    className: "w-full px-5 sm:w-auto",
+                  })}
                 >
                   <ScanSearch className="h-4 w-4" />
                   {loading ? copy.running : copy.extract}
@@ -171,16 +174,21 @@ export default function OCRPage() {
                 <div className="inline-flex h-12 w-12 items-center justify-center rounded-lg bg-coptic-soft text-coptic">
                   <Camera className="h-5 w-5" />
                 </div>
-                <div className="space-y-2">
-                  <h2 className="text-lg font-semibold text-ink">
-                    {copy.workflowTitle}
-                  </h2>
-                  <p className="text-sm leading-6 text-muted">
-                    {copy.workflowDescription}
-                  </p>
-                </div>
+                <PageHeader
+                  as="h2"
+                  align="left"
+                  size="section"
+                  title={copy.workflowTitle}
+                  description={copy.workflowDescription}
+                />
                 {image ? (
-                  <div className="rounded-lg border border-line bg-elevated/80 px-4 py-3 text-sm text-muted">
+                  <div
+                    className={surfacePanelClassName({
+                      rounded: "lg",
+                      variant: "elevated",
+                      className: "px-4 py-3 text-sm text-muted",
+                    })}
+                  >
                     {copy.selectedFile}{" "}
                     <span className="font-semibold">{image.name}</span>
                   </div>
@@ -196,16 +204,22 @@ export default function OCRPage() {
               <div className="inline-flex h-11 w-11 items-center justify-center rounded-lg bg-coptic-soft text-coptic">
                 <FileText className="h-5 w-5" />
               </div>
-              <div>
-                <h2 className="text-xl font-semibold text-ink">
-                  {copy.extractedTitle}
-                </h2>
-                <p className="text-sm text-muted">
-                  {copy.extractedDescription}
-                </p>
-              </div>
+              <PageHeader
+                as="h2"
+                align="left"
+                size="section"
+                title={copy.extractedTitle}
+                description={copy.extractedDescription}
+              />
             </div>
-            <pre className="whitespace-pre-wrap rounded-lg border border-line bg-elevated/80 p-5 font-coptic text-lg leading-8 text-ink">
+            <pre
+              className={surfacePanelClassName({
+                rounded: "lg",
+                variant: "elevated",
+                className:
+                  "whitespace-pre-wrap p-5 font-coptic text-lg leading-8 text-ink",
+              })}
+            >
               {result}
             </pre>
           </SurfacePanel>

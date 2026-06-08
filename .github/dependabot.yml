@@ -8,6 +8,7 @@ updates:
       time: "08:00"
       timezone: "Europe/Brussels"
     open-pull-requests-limit: 5
+    rebase-strategy: "disabled"
     versioning-strategy: increase
     labels:
       - "dependencies"

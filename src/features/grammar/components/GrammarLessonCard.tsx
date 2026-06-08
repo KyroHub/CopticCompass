@@ -4,6 +4,7 @@ import { ArrowRight, BookOpenText, Clock3 } from "lucide-react";
 import Link from "next/link";
 
 import { Badge } from "@/components/Badge";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import type { GrammarLessonIndexItem } from "@/content/grammar/schema";
 import { getGrammarLessonPath } from "@/features/grammar/lib/grammarPaths";
 import { cx } from "@/lib/classes";
@@ -28,7 +29,7 @@ export function GrammarLessonCard({
 }: GrammarLessonCardProps) {
   const isAvailable = lesson.status === "published";
   const sharedClassName =
-    "group relative flex min-h-[20rem] flex-col justify-between overflow-hidden rounded-lg border p-7 text-left shadow-soft backdrop-blur-sm transition-all duration-200 md:p-8";
+    "group relative flex min-h-[20rem] flex-col justify-between overflow-hidden p-7 text-left backdrop-blur-sm transition-all duration-200 md:p-8";
 
   const content = (
     <>
@@ -88,10 +89,11 @@ export function GrammarLessonCard({
   if (!isAvailable) {
     return (
       <div
-        className={cx(
-          sharedClassName,
-          "cursor-not-allowed border-line bg-surface/60 opacity-90",
-        )}
+        className={surfacePanelClassName({
+          variant: "subtle",
+          shadow: "soft",
+          className: cx(sharedClassName, "cursor-not-allowed opacity-90"),
+        })}
       >
         {content}
       </div>
@@ -102,10 +104,14 @@ export function GrammarLessonCard({
     <Link
       href={getGrammarLessonPath(lesson.slug, language)}
       prefetch={false}
-      className={cx(
-        sharedClassName,
-        "cursor-pointer border-line bg-surface/88 hover:-translate-y-0.5 hover:border-coptic/35 hover:bg-surface",
-      )}
+      className={surfacePanelClassName({
+        variant: "default",
+        shadow: "soft",
+        className: cx(
+          sharedClassName,
+          "cursor-pointer hover:-translate-y-0.5 hover:border-coptic/35 hover:bg-surface",
+        ),
+      })}
     >
       <div className="absolute inset-x-0 top-0 h-1 bg-coptic/70 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
       {content}

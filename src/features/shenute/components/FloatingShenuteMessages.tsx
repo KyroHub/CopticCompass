@@ -8,6 +8,7 @@ import {
   AuthGateNotice,
 } from "@/components/AuthGateNotice";
 import { buttonClassName } from "@/components/Button";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import {
   findPreviousUserMessage,
   getMessageText,
@@ -111,7 +112,11 @@ export function FloatingShenuteMessages({
       {isLoading ? (
         <div
           aria-live="polite"
-          className="mr-8 flex min-w-0 items-center gap-2 rounded-lg rounded-bl-md border border-line/80 bg-surface/95 px-3 py-2 text-sm text-muted shadow-sm"
+          className={surfacePanelClassName({
+            shadow: "soft",
+            className:
+              "mr-8 flex min-w-0 items-center gap-2 rounded-bl-md border-line/80 px-3 py-2 text-sm text-muted",
+          })}
         >
           <span
             aria-hidden="true"
@@ -196,7 +201,11 @@ function FloatingShenuteConversationContent({
         className={
           message.role === "user"
             ? "ml-8 rounded-lg rounded-br-md bg-coptic px-3.5 py-2.5 font-coptic text-[0.98rem] leading-6 text-white shadow-sm dark:text-paper"
-            : "mr-5 rounded-lg rounded-bl-md border border-line/80 bg-surface/95 px-3.5 py-2.5 font-coptic text-[0.98rem] leading-6 text-ink shadow-sm ring-1 ring-line/60"
+            : surfacePanelClassName({
+                shadow: "soft",
+                className:
+                  "mr-5 rounded-bl-md border-line/80 px-3.5 py-2.5 font-coptic text-[0.98rem] leading-6 ring-1 ring-line/60",
+              })
         }
       >
         <FloatingShenuteMarkdownMessage message={message} />

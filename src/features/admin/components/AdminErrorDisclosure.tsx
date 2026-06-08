@@ -1,6 +1,7 @@
 import { ChevronDown } from "lucide-react";
 
 import { StatusNotice } from "@/components/StatusNotice";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import { cx } from "@/lib/classes";
 import type { Language } from "@/types/i18n";
 
@@ -66,7 +67,12 @@ export function AdminTechnicalDetails({
   }
 
   return (
-    <details className="group mt-4 rounded-lg border border-current/20 bg-surface/80 p-3 shadow-sm">
+    <details
+      className={surfacePanelClassName({
+        shadow: "soft",
+        className: "group mt-4 p-3 border-current/20",
+      })}
+    >
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-semibold uppercase tracking-[0.16em] [&::-webkit-details-marker]:hidden">
         <span>{copy.technicalDetails}</span>
         <span className="flex items-center gap-2 normal-case tracking-normal">

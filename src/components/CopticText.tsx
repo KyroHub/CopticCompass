@@ -1,14 +1,12 @@
 import React from "react";
 
 import { MicroTooltip } from "@/components/MicroTooltip";
+import { LinguisticGloss } from "@/features/dictionary/components/LinguisticGloss";
 import {
   INLINE_GRAMMAR_ABBREVIATION_PATTERNS,
   LEADING_GRAMMAR_LABEL_PATTERNS,
 } from "@/features/dictionary/grammarRegistry";
 import { buildCopticSearchRegex } from "@/lib/copticSearch";
-import { antinoou } from "@/lib/fonts";
-
-import { LinguisticGloss } from "./LinguisticGloss";
 
 import type { ReactNode } from "react";
 
@@ -80,7 +78,7 @@ function FormSymbolTooltip({
 
 function getFormSymbolClassName(symbol: FormSymbol) {
   return symbol === "-" || symbol === "=" || symbol === "†"
-    ? antinoou.className
+    ? "font-coptic"
     : undefined;
 }
 
@@ -226,7 +224,7 @@ function renderWithCopticTypography(
         ...renderWithSuperscript(
           part,
           `${keyPrefix}-${i}`,
-          antinoou.className,
+          "font-coptic",
           symbolTooltips,
         ),
       );
@@ -336,10 +334,9 @@ function splitLeadingLabel(text: string) {
 }
 
 /**
- * Renders dictionary text with Coptic typography, optional grammar-label
  * emphasis, and query highlighting that respects combining-mark variants.
  */
-export default function HighlightText({
+export default function CopticText({
   text,
   query,
   className = "",

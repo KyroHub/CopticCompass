@@ -57,11 +57,11 @@ const SECTION_EYEBROW_CLASS =
   "text-xs font-semibold uppercase tracking-[0.18em] text-muted";
 const BODY_TEXT_CLASS = "text-sm leading-7 text-muted";
 const LIST_ITEM_CLASS =
-  "rounded-lg border border-line/80 bg-elevated/65 px-4 py-3";
+  "rounded-lg border border-line/80 bg-elevated/70 px-4 py-3";
 const LINK_CARD_CLASS =
-  "rounded-lg border border-line/80 bg-elevated/65 px-5 py-4 transition-colors hover:border-accent/35 hover:bg-accent-soft/45";
+  "rounded-lg border border-line/80 bg-elevated/70 px-5 py-4 transition-colors hover:border-accent/35 hover:bg-accent-soft/45";
 const RESOURCE_CARD_CLASS =
-  "block rounded-lg border border-line/80 bg-elevated/65 px-4 py-4 transition-colors hover:border-accent/35 hover:bg-accent-soft/45";
+  "block rounded-lg border border-line/80 bg-elevated/70 px-4 py-4 transition-colors hover:border-accent/35 hover:bg-accent-soft/45";
 const CODE_BLOCK_CLASS =
   "mt-5 overflow-x-auto rounded-lg border border-line/70 bg-ink px-4 py-4 text-sm leading-6 text-paper dark:bg-black/60";
 

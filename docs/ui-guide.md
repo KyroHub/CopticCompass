@@ -154,31 +154,26 @@ Search should remain visually primary when a page is search-driven. Filters
 should sit below the search field in a shared responsive surface, usually inside
 an `app-sticky-panel`.
 
+When using sticky panels:
+
+- Use `var(--app-sticky-offset)` (currently `6rem`) for standard top-level search bars.
+- Use `var(--app-rail-sticky-offset)` (currently `8rem`) for side rails (like the Grammar Study rails) to ensure they have enough breathing room from the top navigation without breaking standard search bar placement.
+
 Use these primitives:
 
-- `FilterBar` for a collapsible filter block.
-- `FilterMenu` for option sets such as status, language, dialect, source, or
-  prompt type.
-- `FilterToggle` for binary refinements.
-- `SegmentedControl` for 2-3 primary modes, not broad filter sets.
+- `SegmentedControl` embedded inside expandable panels for option sets such as status, language, or dialect.
+- `trailingControls` nodes injected directly into search fields to contain filter toggle buttons.
 
 Preferred filter behavior:
 
 - collapsed by default on mobile;
-- open by default on desktop when useful;
-- active-filter count shown on the `FilterBar`;
+- inline filter toggle icon buttons located directly inside the search bar (`trailingControls`);
+- clicking the toggle expands a clean `<section>` panel underneath the search bar;
+- simple SegmentedControl layouts stacked vertically with divider lines;
 - one clear/reset action when filters are active;
-- horizontal mobile rail for filter triggers;
-- tap-friendly mobile menu sheet for option selection;
-- desktop dropdowns anchored to their triggers;
 - keyboard support for opening, closing, and moving through options.
 
-Use dropdown-style menus for multi-option filters. This keeps the interaction
-model consistent across Dictionary, Publications, Analytics, and Practice.
-
-Use segmented controls when the choice is a small primary mode switch, such as
-Practice mode. Do not use segmented controls for long option lists or page
-refinements that may grow over time.
+Use vertical stacked rows of `SegmentedControl` inputs for most search filters. This keeps the interaction model consistent across Dictionary, Publications, and Analytics. Do not use dropdown-style menus or native selects for public result filtering unless there is a strong reason.
 
 Use native selects for ordinary forms where the user is submitting data, not for
 public result filtering unless there is a strong reason.
@@ -238,7 +233,7 @@ Good mobile reductions:
 Watch for these risks:
 
 - stacked CTAs that create unnecessary vertical length;
-- filter menus hidden behind sticky search fields;
+- nested scrolling areas inside panels;
 - repeated explanatory copy before controls;
 - labels that overflow buttons;
 - collapsed panels that lose the active configuration summary;
@@ -316,9 +311,8 @@ Before merging a UI change, ask:
 - Is the subtitle necessary, or is it slowing the page down?
 - Are mobile CTAs full-width for single actions and equal-width for paired
   actions?
-- Are filters using `FilterBar`, `FilterMenu`, or `FilterToggle` where
-  appropriate?
-- Is a segmented control being used only for a small mode choice?
+- Is the filter toggle correctly placed within the search bar's `trailingControls`?
+- Are filter options rendered cleanly as `SegmentedControl` grids inside the expanded panel?
 - Can the filter or setup block collapse to reduce scroll fatigue?
 - Are labels clear to non-technical users?
 - Does the page avoid card-on-card decoration?
@@ -336,7 +330,6 @@ Current shared UI primitives that contributors should know:
 - `src/components/AppPageIntro.tsx`
 - `src/components/PageHeader.tsx`
 - `src/components/Button.tsx`
-- `src/components/FilterMenu.tsx`
 - `src/components/SegmentedControl.tsx`
 - `src/components/SurfacePanel.tsx`
 - `src/components/Badge.tsx`

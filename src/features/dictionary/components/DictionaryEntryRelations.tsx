@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 
-import { antinoou } from "@/lib/fonts";
-import type { TranslationKey } from "@/lib/i18n";
-
-import HighlightText, {
+import { Badge } from "@/components/Badge";
+import CopticText, {
   type FormSymbolTooltips,
   type GrammarAbbreviationTooltips,
-} from "./HighlightText";
+} from "@/components/CopticText";
+import type { TranslationKey } from "@/lib/i18n";
 
 type DictionaryEntryTranslator = (key: TranslationKey) => string;
 
@@ -60,15 +59,15 @@ export function DictionaryEntryRelations({
             <Link
               href={relation.href}
               prefetch={false}
-              className="inline-flex max-w-full flex-wrap items-baseline gap-x-2 gap-y-1 rounded-lg border border-line bg-elevated/65 px-3 py-2 text-sm text-ink transition hover:-translate-y-px hover:border-coptic/35 hover:bg-coptic-soft/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coptic/30 focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
+              className="inline-flex max-w-full flex-wrap items-baseline gap-x-2 gap-y-1 rounded-lg border border-line bg-elevated/70 px-3 py-2 text-sm text-ink transition hover:-translate-y-px hover:border-coptic/35 hover:bg-coptic-soft/45 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-coptic/30 focus-visible:ring-offset-2 focus-visible:ring-offset-paper"
             >
-              <span className="text-[10px] font-bold uppercase tracking-widest text-muted">
+              <Badge size="xxs" tone="surface" caps>
                 {relation.label}
-              </span>
+              </Badge>
               <span
-                className={`${antinoou.className} min-w-0 break-words text-base leading-snug text-coptic [overflow-wrap:anywhere]`}
+                className={`font-coptic min-w-0 break-words text-base leading-snug text-coptic [overflow-wrap:anywhere]`}
               >
-                <HighlightText
+                <CopticText
                   text={relation.targetLabel}
                   query={query}
                   symbolTooltips={formSymbolTooltips}
@@ -79,7 +78,7 @@ export function DictionaryEntryRelations({
               <ul className="ml-5 list-disc space-y-1 text-sm text-muted marker:text-coptic">
                 {relation.notes.map((note, noteIndex) => (
                   <li key={noteIndex}>
-                    <HighlightText
+                    <CopticText
                       text={note}
                       query={query}
                       grammarAbbreviationTooltips={grammarAbbreviationTooltips}

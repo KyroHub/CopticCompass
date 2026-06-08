@@ -4,8 +4,8 @@ import { Keyboard, Search, X } from "lucide-react";
 
 import { iconButtonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
+import { SurfacePanel } from "@/components/SurfacePanel";
 import { cx } from "@/lib/classes";
-import { antinoou } from "@/lib/fonts";
 
 import CopticKeyboard from "./CopticKeyboard";
 
@@ -37,7 +37,10 @@ export function DictionarySearchBar({
   const { t } = useLanguage();
 
   return (
-    <div className="group relative z-30 rounded-lg border border-line bg-surface/92 shadow-panel backdrop-blur-xl">
+    <SurfacePanel
+      shadow="panel"
+      className="group relative z-30 backdrop-blur-xl"
+    >
       <div className="relative flex items-center">
         <div className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-muted transition-colors group-focus-within:text-coptic sm:left-6">
           <Search className="h-5 w-5 sm:h-6 sm:w-6" />
@@ -85,7 +88,7 @@ export function DictionarySearchBar({
             )
           }
           className={cx(
-            antinoou.className,
+            "font-coptic",
             "w-full rounded-lg bg-transparent p-4 pl-12 text-base text-ink transition-all placeholder:font-sans placeholder:text-muted/65 focus:outline-none focus:ring-2 focus:ring-accent/30 sm:p-6 sm:pl-16 sm:text-lg md:text-2xl",
             trailingControls ? "pr-36 sm:pr-44" : "pr-24 sm:pr-28",
           )}
@@ -130,6 +133,6 @@ export function DictionarySearchBar({
           onBackspace={onBackspace}
         />
       </div>
-    </div>
+    </SurfacePanel>
   );
 }

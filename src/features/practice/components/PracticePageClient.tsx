@@ -16,9 +16,11 @@ import { useCallback, useState } from "react";
 import { AppPageIntro } from "@/components/AppPageIntro";
 import { buttonClassName } from "@/components/Button";
 import { EmptyState } from "@/components/EmptyState";
+import { Kbd } from "@/components/Kbd";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
 import { StatusNotice } from "@/components/StatusNotice";
+import { SurfacePanel, surfacePanelClassName } from "@/components/SurfacePanel";
 import { useSpeech } from "@/features/dictionary/hooks/useSpeech";
 import { CompletionPanel } from "@/features/practice/components/CompletionPanel";
 import { DeckPickerDialog } from "@/features/practice/components/DeckPickerDialog";
@@ -107,7 +109,7 @@ function StudyModeEmptyPanel({
     <EmptyState
       title={t(titleKey)}
       description={t(descriptionKey)}
-      className="border-line bg-surface/88 shadow-soft"
+      className={surfacePanelClassName({ shadow: "soft" })}
     >
       {fallbackMode ? (
         <button
@@ -286,7 +288,7 @@ export function PracticePageClient({
       <EmptyState
         title={t("practice.saved.storageTitle")}
         description={t("practice.saved.storageDescription")}
-        className="border-line bg-surface/88 shadow-soft"
+        className={surfacePanelClassName({ shadow: "soft" })}
       >
         <Link
           href={getDashboardPath(language)}
@@ -310,7 +312,7 @@ export function PracticePageClient({
             ? t("practice.saved.emptyDescription")
             : t("practice.saved.generatedEmptyDescription")
         }
-        className="border-line bg-surface/88 shadow-soft"
+        className={surfacePanelClassName({ shadow: "soft" })}
       >
         <Link
           href={getDictionaryPath(language)}
@@ -326,7 +328,7 @@ export function PracticePageClient({
       <EmptyState
         title={t("practice.filters.emptyTitle")}
         description={t("practice.filters.emptyDescription")}
-        className="border-line bg-surface/88 shadow-soft"
+        className={surfacePanelClassName({ shadow: "soft" })}
       >
         <button
           type="button"
@@ -345,7 +347,7 @@ export function PracticePageClient({
       <EmptyState
         title={t("practice.saved.caughtUpTitle")}
         description={caughtUpDescription}
-        className="border-line bg-surface/88 shadow-soft"
+        className={surfacePanelClassName({ shadow: "soft" })}
       >
         <div className="flex flex-wrap justify-center gap-3">
           <Link
@@ -376,7 +378,11 @@ export function PracticePageClient({
   } else {
     deckContent = (
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-6">
-        <div className="min-w-0 rounded-lg border border-line bg-surface/92 p-4 shadow-soft backdrop-blur-sm md:p-7">
+        <SurfacePanel
+          variant="elevated"
+          shadow="soft"
+          className="min-w-0 p-4 md:p-7"
+        >
           {currentItem ? (
             <>
               <MobileReviewProgress
@@ -428,9 +434,7 @@ export function PracticePageClient({
                           ? t("practice.saved.hideHint")
                           : t("practice.saved.hint")}
                       </span>
-                      <kbd className="hidden md:inline-block ml-1.5 px-1.5 py-0.5 text-[10px] font-sans font-semibold text-muted bg-elevated rounded border border-line shadow-sm">
-                        H
-                      </kbd>
+                      <Kbd className="ml-1.5 hidden md:inline-flex">H</Kbd>
                     </button>
                     <button
                       type="button"
@@ -442,9 +446,12 @@ export function PracticePageClient({
                     >
                       <Eye className="h-4 w-4" aria-hidden="true" />
                       <span>{t("practice.saved.reveal")}</span>
-                      <kbd className="hidden md:inline-block ml-1.5 px-1.5 py-0.5 text-[10px] font-sans font-semibold text-paper/85 bg-paper/20 rounded border border-paper/10 shadow-sm">
+                      <Kbd
+                        variant="inverse"
+                        className="ml-1.5 hidden md:inline-flex"
+                      >
                         Space
-                      </kbd>
+                      </Kbd>
                     </button>
                   </div>
                 ) : (
@@ -475,9 +482,12 @@ export function PracticePageClient({
                               aria-hidden="true"
                             />
                             <span>{buttonLabel}</span>
-                            <kbd className="hidden md:inline-block ml-1 px-1.5 py-0.5 text-[10px] font-sans font-semibold opacity-75 rounded border border-current bg-surface/10">
+                            <Kbd
+                              variant="ghost"
+                              className="ml-1 hidden md:inline-flex"
+                            >
                               {index + 1}
-                            </kbd>
+                            </Kbd>
                           </button>
                         );
                       })}
@@ -493,15 +503,17 @@ export function PracticePageClient({
               weakReviewCount={weakReviewCount}
             />
           )}
-        </div>
+        </SurfacePanel>
 
-        <div className="hidden lg:block">
-          <PracticeProgressPanel
-            currentPosition={currentPosition}
-            reviews={reviews}
-            totalCards={totalCards}
-          />
-        </div>
+        <aside className="hidden lg:block">
+          <div className="app-sticky-panel h-max">
+            <PracticeProgressPanel
+              currentPosition={currentPosition}
+              reviews={reviews}
+              totalCards={totalCards}
+            />
+          </div>
+        </aside>
       </div>
     );
   }
@@ -533,6 +545,7 @@ export function PracticePageClient({
                 prefetch={false}
                 className={buttonClassName({ variant: "primary" })}
               >
+                <LogIn className="h-4 w-4" />
                 {t("practice.saved.signInToSave")}
               </Link>
             ) : null}

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Cell, Legend, Pie, PieChart, Tooltip } from "recharts";
 
+import { PageHeader } from "@/components/PageHeader";
 import { SurfacePanel } from "@/components/SurfacePanel";
 import { antinoou } from "@/lib/fonts";
 
@@ -69,7 +70,7 @@ export function AnalyticsPieChartCard({
 
   const hasMeasuredChartSize = chartSize.width > 0 && chartSize.height > 0;
   const chartPlaceholder = (
-    <div className="h-full w-full rounded-lg bg-elevated/65" />
+    <div className="h-full w-full rounded-lg bg-elevated/70" />
   );
 
   return (
@@ -78,9 +79,13 @@ export function AnalyticsPieChartCard({
       shadow="soft"
       className="flex h-full flex-col p-6"
     >
-      <h2 className="mb-6 border-b border-line pb-3 text-2xl font-bold text-ink">
-        {title}
-      </h2>
+      <PageHeader
+        as="h2"
+        align="left"
+        size="section"
+        className="mb-6 border-b border-line pb-3"
+        title={title}
+      />
 
       <div ref={chartContainerRef} className="mb-6 h-[300px] min-w-0 w-full">
         {isThemeReady && hasMeasuredChartSize ? (

@@ -7,8 +7,10 @@ import { createContentReleaseDraft } from "@/actions/admin";
 import type { ContentReleaseDraftState } from "@/actions/admin/states";
 import { Badge } from "@/components/Badge";
 import { Button } from "@/components/Button";
+import { elevatedPanelClassName } from "@/components/ElevatedPanel";
 import { FormField } from "@/components/FormField";
 import { useLanguage } from "@/components/LanguageProvider";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import { AdminErrorDisclosure } from "@/features/admin/components/AdminErrorDisclosure";
 import {
   CONTENT_RELEASE_AUDIENCE_SEGMENTS,
@@ -113,7 +115,10 @@ export function CreateContentReleaseForm({
   return (
     <details
       ref={detailsRef}
-      className="group overflow-hidden rounded-lg border border-line bg-surface/82 shadow-sm"
+      className={surfacePanelClassName({
+        shadow: "soft",
+        className: "group overflow-hidden",
+      })}
       open={totalCandidates === 0}
     >
       <summary className="flex cursor-pointer list-none items-start justify-between gap-4 p-6 [&::-webkit-details-marker]:hidden md:p-7">
@@ -241,7 +246,7 @@ export function CreateContentReleaseForm({
             label={`${copy.publishedLessons} (${lessonCandidates.length.toLocaleString(
               language === "nl" ? "nl-BE" : "en-US",
             )})`}
-            className="rounded-lg border border-line bg-elevated/70 p-4"
+            className={elevatedPanelClassName({ className: "p-4" })}
           >
             <div className="space-y-3">
               {lessonCandidates.length === 0 ? (
@@ -285,7 +290,7 @@ export function CreateContentReleaseForm({
             label={`${copy.publishedPublications} (${publicationCandidates.length.toLocaleString(
               language === "nl" ? "nl-BE" : "en-US",
             )})`}
-            className="rounded-lg border border-line bg-elevated/70 p-4"
+            className={elevatedPanelClassName({ className: "p-4" })}
           >
             <div className="space-y-3">
               {publicationCandidates.length === 0 ? (

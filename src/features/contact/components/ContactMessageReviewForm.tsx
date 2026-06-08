@@ -2,6 +2,7 @@
 
 import { updateContactMessageStatus } from "@/actions/admin";
 import { buttonClassName } from "@/components/Button";
+import { ElevatedPanel } from "@/components/ElevatedPanel";
 import { FormField } from "@/components/FormField";
 import { useLanguage } from "@/components/LanguageProvider";
 import {
@@ -34,12 +35,9 @@ export function ContactMessageReviewForm({
   const copy = contactMessageReviewFormCopy[language];
 
   return (
-    <form
-      action={updateContactMessageStatus}
-      className="space-y-4 rounded-lg border border-line bg-elevated/70 p-5"
-    >
+    <form action={updateContactMessageStatus} className="space-y-4 p-5">
       <input type="hidden" name="contact_message_id" value={contactMessageId} />
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
+      <ElevatedPanel className="flex flex-col gap-4 sm:flex-row sm:items-end">
         <FormField
           htmlFor={`contact-message-status-${contactMessageId}`}
           label={copy.label}
@@ -66,7 +64,7 @@ export function ContactMessageReviewForm({
         >
           {copy.save}
         </button>
-      </div>
+      </ElevatedPanel>
     </form>
   );
 }

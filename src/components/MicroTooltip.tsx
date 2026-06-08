@@ -1,3 +1,4 @@
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/Tooltip";
 import { cx } from "@/lib/classes";
 
 import type { CSSProperties, ReactNode } from "react";
@@ -10,18 +11,6 @@ type MicroTooltipProps = {
   focusable?: boolean;
   label: string;
 };
-
-export const microTooltipBubbleClassName =
-  "max-w-64 rounded-lg border border-line/80 bg-surface px-2.5 py-1.5 text-center font-sans text-[11px] font-medium leading-snug normal-case tracking-normal text-ink shadow-soft";
-
-export const tooltipArrowClassName =
-  "border-r border-b border-line/80 bg-surface";
-
-export const richTooltipBubbleClassName =
-  "max-w-[min(18rem,calc(100vw-1.5rem))] rounded-lg border border-line/80 bg-surface px-3 py-2.5 text-left text-xs leading-relaxed text-ink shadow-panel";
-
-export const interactiveTooltipBubbleClassName =
-  "w-64 max-w-[calc(100vw-2rem)] rounded-lg border border-line/80 bg-surface px-3 py-3 text-center text-xs leading-5 text-ink shadow-panel";
 
 export const chartTooltipContentBaseStyle = {
   borderRadius: "8px",
@@ -57,25 +46,23 @@ export function MicroTooltip({
   label,
 }: MicroTooltipProps) {
   return (
-    <span
-      aria-label={label}
-      className={cx(
-        "group/micro-tooltip relative inline-flex cursor-help focus:outline-none",
-        alignItems === "center" ? "items-center" : "items-baseline",
-        className,
-      )}
-      tabIndex={focusable ? 0 : undefined}
-    >
-      {children}
-      <span
-        className={cx(
-          "pointer-events-none absolute left-1/2 top-full z-30 mt-2 hidden w-max -translate-x-1/2 group-hover/micro-tooltip:block group-focus-visible/micro-tooltip:block",
-          microTooltipBubbleClassName,
-          bubbleClassName,
-        )}
-      >
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span
+          className={cx(
+            "inline-flex cursor-help focus:outline-none focus-visible:ring-2 focus-visible:ring-accent/30 rounded-sm",
+            alignItems === "center" ? "items-center" : "items-baseline",
+            className,
+          )}
+          tabIndex={focusable ? 0 : -1}
+        >
+          {children}
+          <span className="sr-only">{label}</span>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent variant="micro" className={bubbleClassName}>
         {label}
-      </span>
-    </span>
+      </TooltipContent>
+    </Tooltip>
   );
 }
