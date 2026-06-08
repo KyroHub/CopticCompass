@@ -70,16 +70,13 @@ The Supabase CLI is intentionally not kept as an npm `devDependency` while the
 still call `supabase`, but contributors should install the CLI through a trusted
 external channel and keep it on `PATH`.
 
-## Optional Automation
+## Automation
 
-Leave broad auto-merge disabled. After several quiet weeks of Dependabot PRs, it
-may be reasonable to consider auto-merge for low-risk patch updates only, but
-keep manual review for major updates and for the sensitive package areas listed
-above.
+Dependabot is configured to automatically approve and merge **minor and patch** version updates through the `.github/workflows/dependabot-auto-merge.yml` workflow.
 
-If auto-merge is introduced later, require passing CI and keep the rule narrow
-enough that it cannot merge Next.js, Supabase auth, analytics, privacy, security,
-or email-delivery changes without human review.
+This auto-merge relies entirely on the CI safety net (`.github/workflows/ci.yml`). GitHub will wait for the full CI pipeline (typechecking, linting, unit tests, and Playwright E2E smoke tests) to pass before merging the PR.
+
+Major version updates, however, are deliberately excluded from auto-merge and still require manual human review to check release notes, migration guides, and focused validation.
 
 ## First-Run Validation
 
