@@ -55,7 +55,7 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.80",
-    "@ai-sdk/react": "^3.0.199",
+    "@ai-sdk/react": "^3.0.200",
     "@gradio/client": "^2.2.1",
     "@huggingface/inference": "^4.13.18",
     "@opentelemetry/api": "^1.9.1",
