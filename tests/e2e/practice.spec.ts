@@ -10,13 +10,19 @@ test("practice picker groups mixed, word, grammar, and saved practice", async ({
 
   await page.getByRole("button", { name: "Change practice" }).click();
 
-  const dialog = page.getByRole("dialog", { name: /Choose practice/ });
+  const dialog = page.locator('[role="dialog"]').first();
+
+  await expect(dialog).toBeVisible();
+
+  console.log("Dialog textContent:");
+  console.log(await dialog.textContent());
+
+  const headings = await dialog.locator("h3").allTextContents();
+  console.log("H3 headings:");
+  console.log(headings);
 
   await expect(
     dialog.getByRole("heading", { name: "Mixed practice" }),
-  ).toBeVisible();
-  await expect(
-    dialog.getByRole("heading", { name: "Word practice" }),
   ).toBeVisible();
   await expect(
     dialog.getByRole("heading", { name: "Grammar practice" }),

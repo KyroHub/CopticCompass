@@ -5,6 +5,14 @@ import type { HTMLAttributes } from "react";
 type ElevatedPanelVariant = "default" | "subtle";
 type ElevatedPanelShadow = "none" | "soft" | "panel";
 type ElevatedPanelRounded = "md" | "lg" | "xl";
+type ElevatedPanelTag =
+  | "article"
+  | "div"
+  | "section"
+  | "aside"
+  | "details"
+  | "form"
+  | "main";
 
 type ElevatedPanelClassNameOptions = {
   className?: string;

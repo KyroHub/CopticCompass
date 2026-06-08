@@ -54,10 +54,8 @@ export function DeckPickerDialog({
       <DialogContent className="max-w-3xl">
         <DialogHeader className="flex-row items-start justify-between gap-3 sm:items-center">
           <div>
-            <DialogTitle id={titleId}>
-              {t("practice.deckSelector.title")}
-            </DialogTitle>
-            <DialogDescription id={`${titleId}-desc`} className="mt-1">
+            <DialogTitle>{t("practice.deckSelector.title")}</DialogTitle>
+            <DialogDescription className="mt-1">
               {t("practice.deckSelector.description")}
             </DialogDescription>
           </div>
