@@ -22,7 +22,6 @@ import {
 } from "@/components/Popover";
 import { cx } from "@/lib/classes";
 import { getLoginPath } from "@/lib/supabase/config";
-import { useMediaQuery } from "@/lib/useMediaQuery";
 
 type AuthGatedActionButtonProps = Omit<
   ButtonHTMLAttributes<HTMLButtonElement>,
@@ -59,7 +58,6 @@ export function AuthGatedActionButton({
   const buttonRef = useRef<HTMLButtonElement | null>(null);
   const hideTimerRef = useRef<number | null>(null);
   const suppressNextLockedClickRef = useRef(false);
-  const canHoverLockedButton = useMediaQuery(HOVER_POINTER_MEDIA_QUERY);
   const [isHoveringLockedButton, setIsHoveringLockedButton] = useState(false);
   const [uncontrolledLockedOpen, setUncontrolledLockedOpen] = useState(false);
   const pathname = usePathname();
@@ -123,6 +121,9 @@ export function AuthGatedActionButton({
     };
 
     const showHoverLockedMessage = () => {
+      const canHoverLockedButton = window.matchMedia(
+        HOVER_POINTER_MEDIA_QUERY,
+      ).matches;
       if (!canHoverLockedButton) {
         return;
       }
@@ -141,6 +142,9 @@ export function AuthGatedActionButton({
             data-locked="true"
             className={cx(className, "cursor-not-allowed opacity-50")}
             onPointerDown={(event) => {
+              const canHoverLockedButton = window.matchMedia(
+                HOVER_POINTER_MEDIA_QUERY,
+              ).matches;
               if (canHoverLockedButton || !isLockedMessageVisible) {
                 return;
               }
@@ -150,6 +154,9 @@ export function AuthGatedActionButton({
               hideLockedMessage();
             }}
             onTouchStart={(event) => {
+              const canHoverLockedButton = window.matchMedia(
+                HOVER_POINTER_MEDIA_QUERY,
+              ).matches;
               if (canHoverLockedButton || !isLockedMessageVisible) {
                 return;
               }
@@ -159,6 +166,9 @@ export function AuthGatedActionButton({
               hideLockedMessage();
             }}
             onClick={(event) => {
+              const canHoverLockedButton = window.matchMedia(
+                HOVER_POINTER_MEDIA_QUERY,
+              ).matches;
               event.preventDefault();
 
               if (suppressNextLockedClickRef.current) {
@@ -181,8 +191,13 @@ export function AuthGatedActionButton({
               showHoverLockedMessage();
             }}
             onMouseLeave={() => {
+              const canHoverLockedButton = window.matchMedia(
+                HOVER_POINTER_MEDIA_QUERY,
+              ).matches;
               setIsHoveringLockedButton(false);
-              scheduleHideLockedMessage();
+              if (canHoverLockedButton) {
+                scheduleHideLockedMessage();
+              }
             }}
           >
             {lockedContent ?? (

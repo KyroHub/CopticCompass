@@ -11,6 +11,7 @@ import { cx } from "@/lib/classes";
 
 export const DropdownMenu = DropdownMenuPrimitive.Root;
 export const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger;
+
 export const DropdownMenuContent = forwardRef<
   ComponentRef<typeof DropdownMenuPrimitive.Content>,
   ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>

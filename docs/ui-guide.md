@@ -337,6 +337,7 @@ Current shared UI primitives that contributors should know:
 - `src/components/StatusNotice.tsx`
 - `src/features/admin/components/AdminErrorDisclosure.tsx`
 - `src/components/DownloadPdfButton.tsx`
+- `src/components/CopticText.tsx`
 
 Keep this guide updated whenever shared UI primitives, page intro rhythm, or
 responsive control patterns change.

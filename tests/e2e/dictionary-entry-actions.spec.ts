@@ -47,7 +47,7 @@ test("signed-out desktop users can hover locked dictionary entry actions to reve
   const saveButton = page.getByRole("button", { name: "Save entry" });
   const reportButton = page.getByRole("button", { name: "Report entry" });
   const lockedPrompt = page
-    .locator('[role="tooltip"]')
+    .locator('[role="tooltip"], [role="dialog"]')
     .filter({ hasText: LOCKED_ENTRY_PROMPT_PATTERN })
     .first();
 
@@ -74,7 +74,7 @@ test("signed-out desktop users can hover locked dictionary entry actions to reve
   await expect(lockedPrompt).toBeVisible();
   await expect(
     page
-      .locator('[role="tooltip"]')
+      .locator('[role="tooltip"], [role="dialog"]')
       .filter({ hasText: LOCKED_ENTRY_PROMPT_PATTERN }),
   ).toHaveCount(1);
 });
@@ -91,7 +91,7 @@ test("signed-out desktop users keep the locked action tooltip visible long enoug
 
   const saveButton = page.getByRole("button", { name: "Save entry" });
   const lockedPrompt = page
-    .locator('[role="tooltip"]')
+    .locator('[role="tooltip"], [role="dialog"]')
     .filter({ hasText: LOCKED_ENTRY_PROMPT_PATTERN })
     .first();
   const buttonBox = await saveButton.boundingBox();
@@ -119,7 +119,7 @@ test("signed-out desktop users still reveal locked prompts when hover media dete
 
   const saveButton = page.getByRole("button", { name: "Save entry" });
   const lockedPrompt = page
-    .locator('[role="tooltip"]')
+    .locator('[role="tooltip"], [role="dialog"]')
     .filter({ hasText: LOCKED_ENTRY_PROMPT_PATTERN })
     .first();
 
@@ -145,7 +145,7 @@ test.describe("signed-out mobile dictionary entry actions", () => {
     const saveButton = page.getByRole("button", { name: "Save entry" });
     const reportButton = page.getByRole("button", { name: "Report entry" });
     const lockedPrompt = page
-      .locator('[role="tooltip"]')
+      .locator('[role="tooltip"], [role="dialog"]')
       .filter({ hasText: LOCKED_ENTRY_PROMPT_PATTERN })
       .first();
 
@@ -164,7 +164,7 @@ test.describe("signed-out mobile dictionary entry actions", () => {
     await expect(lockedPrompt).toBeVisible();
     await expect(
       page
-        .locator('[role="tooltip"]')
+        .locator('[role="tooltip"], [role="dialog"]')
         .filter({ hasText: LOCKED_ENTRY_PROMPT_PATTERN }),
     ).toHaveCount(1);
   });
