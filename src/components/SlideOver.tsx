@@ -11,11 +11,9 @@ import {
 import { cx } from "@/lib/classes";
 
 export const SlideOver = DialogPrimitive.Root;
-export const SlideOverTrigger = DialogPrimitive.Trigger;
-export const SlideOverPortal = DialogPrimitive.Portal;
-export const SlideOverClose = DialogPrimitive.Close;
+const SlideOverPortal = DialogPrimitive.Portal;
 
-export const SlideOverOverlay = forwardRef<
+const SlideOverOverlay = forwardRef<
   ComponentRef<typeof DialogPrimitive.Overlay>,
   ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
@@ -65,20 +63,6 @@ export const SlideOverHeader = ({
 );
 SlideOverHeader.displayName = "SlideOverHeader";
 
-export const SlideOverFooter = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cx(
-      "flex flex-col-reverse gap-2 border-t border-line bg-surface px-6 py-5 sm:flex-row sm:justify-end",
-      className,
-    )}
-    {...props}
-  />
-);
-SlideOverFooter.displayName = "SlideOverFooter";
-
 export const SlideOverTitle = forwardRef<
   ComponentRef<typeof DialogPrimitive.Title>,
   ComponentPropsWithoutRef<typeof DialogPrimitive.Title>
@@ -90,18 +74,6 @@ export const SlideOverTitle = forwardRef<
   />
 ));
 SlideOverTitle.displayName = DialogPrimitive.Title.displayName;
-
-export const SlideOverDescription = forwardRef<
-  ComponentRef<typeof DialogPrimitive.Description>,
-  ComponentPropsWithoutRef<typeof DialogPrimitive.Description>
->(({ className, ...props }, ref) => (
-  <DialogPrimitive.Description
-    ref={ref}
-    className={cx("text-sm text-muted", className)}
-    {...props}
-  />
-));
-SlideOverDescription.displayName = DialogPrimitive.Description.displayName;
 
 export const SlideOverCloseButton = forwardRef<
   ComponentRef<typeof DialogPrimitive.Close>,

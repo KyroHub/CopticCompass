@@ -5,12 +5,7 @@ import type { HTMLAttributes } from "react";
 type SurfacePanelVariant = "default" | "subtle" | "elevated";
 type SurfacePanelShadow = "soft" | "panel" | "float";
 type SurfacePanelRounded = "lg";
-export type SurfacePanelTag =
-  | "article"
-  | "div"
-  | "section"
-  | "aside"
-  | "details";
+type SurfacePanelTag = "article" | "div" | "section" | "aside" | "details";
 
 type SurfacePanelClassNameOptions = {
   className?: string;

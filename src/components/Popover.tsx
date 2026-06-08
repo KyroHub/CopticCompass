@@ -11,7 +11,6 @@ import { cx } from "@/lib/classes";
 
 export const Popover = PopoverPrimitive.Root;
 export const PopoverTrigger = PopoverPrimitive.Trigger;
-export const PopoverPortal = PopoverPrimitive.Portal;
 
 export const PopoverContent = forwardRef<
   ComponentRef<typeof PopoverPrimitive.Content>,

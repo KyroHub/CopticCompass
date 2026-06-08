@@ -11,11 +11,9 @@ import {
 import { cx } from "@/lib/classes";
 
 export const Dialog = DialogPrimitive.Root;
-export const DialogTrigger = DialogPrimitive.Trigger;
-export const DialogPortal = DialogPrimitive.Portal;
-export const DialogClose = DialogPrimitive.Close;
+const DialogPortal = DialogPrimitive.Portal;
 
-export const DialogOverlay = forwardRef<
+const DialogOverlay = forwardRef<
   ComponentRef<typeof DialogPrimitive.Overlay>,
   ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
 >(({ className, ...props }, ref) => (
@@ -64,20 +62,6 @@ export const DialogHeader = ({
   />
 );
 DialogHeader.displayName = "DialogHeader";
-
-export const DialogFooter = ({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) => (
-  <div
-    className={cx(
-      "flex flex-col-reverse gap-2 border-t border-line bg-surface px-4 py-3 sm:flex-row sm:justify-end",
-      className,
-    )}
-    {...props}
-  />
-);
-DialogFooter.displayName = "DialogFooter";
 
 export const DialogTitle = forwardRef<
   ComponentRef<typeof DialogPrimitive.Title>,

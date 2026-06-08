@@ -12,10 +12,9 @@ import { cx } from "@/lib/classes";
 
 export const BottomSheet = DialogPrimitive.Root;
 export const BottomSheetTrigger = DialogPrimitive.Trigger;
-export const BottomSheetPortal = DialogPrimitive.Portal;
-export const BottomSheetClose = DialogPrimitive.Close;
+const BottomSheetPortal = DialogPrimitive.Portal;
 
-export const BottomSheetOverlay = forwardRef<
+const BottomSheetOverlay = forwardRef<
   ComponentRef<typeof DialogPrimitive.Overlay>,
   ComponentPropsWithoutRef<typeof DialogPrimitive.Overlay>
 >(({ className, ...props }, ref) => (

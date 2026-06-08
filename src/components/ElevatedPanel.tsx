@@ -5,7 +5,7 @@ import type { HTMLAttributes } from "react";
 type ElevatedPanelVariant = "default" | "subtle";
 type ElevatedPanelShadow = "none" | "soft" | "panel";
 type ElevatedPanelRounded = "md" | "lg" | "xl";
-export type ElevatedPanelTag =
+type ElevatedPanelTag =
   | "article"
   | "div"
   | "section"
