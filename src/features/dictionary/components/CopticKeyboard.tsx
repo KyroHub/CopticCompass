@@ -2,7 +2,6 @@ import { Delete } from "lucide-react";
 
 import { useLanguage } from "@/components/LanguageProvider";
 import { SurfacePanel } from "@/components/SurfacePanel";
-import { antinoou } from "@/lib/fonts";
 
 const COPTIC_LETTERS = [
   "ⲁ",
@@ -101,7 +100,7 @@ export default function CopticKeyboard({
             title={t("dict.keyboardCombine")}
           >
             <span
-              className={`${antinoou.className} inline-flex items-center text-2xl leading-none text-accent-strong dark:text-accent sm:text-3xl`}
+              className={`font-coptic inline-flex items-center text-2xl leading-none text-accent-strong dark:text-accent sm:text-3xl`}
             >
               {`◌${char}`}
             </span>

@@ -1,3 +1,4 @@
+import type { FormSymbolTooltips } from "@/components/CopticText";
 import type {
   ImperativeDisplayForm,
   GenderedHeadingMarker,
@@ -6,10 +7,7 @@ import type {
   DictionaryRelationType,
   LexicalGender,
 } from "@/features/dictionary/types";
-import { antinoou } from "@/lib/fonts";
 import type { TranslationKey } from "@/lib/i18n";
-
-import type { FormSymbolTooltips } from "./HighlightText";
 
 type DictionaryEntryTranslator = (key: TranslationKey) => string;
 
@@ -157,7 +155,7 @@ export function GovernmentBadges({
       {forms.map((form, index) => (
         <span key={`${form}-${index}`} className="inline-flex">
           <span
-            className={`${antinoou.className} rounded-md border px-1.5 py-0.5 text-sm leading-none ${badgeToneClassName}`}
+            className={`font-coptic rounded-md border px-1.5 py-0.5 text-sm leading-none ${badgeToneClassName}`}
           >
             {form}
           </span>

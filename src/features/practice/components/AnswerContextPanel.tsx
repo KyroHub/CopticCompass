@@ -13,7 +13,6 @@ import {
   isDictionaryFlashcardCandidate,
 } from "@/features/practice/lib/practicePageHelpers";
 import { cx } from "@/lib/classes";
-import { antinoou } from "@/lib/fonts";
 
 export function AnswerContextPanel({
   candidate,
@@ -55,7 +54,7 @@ export function AnswerContextPanel({
             </span>
             <span className="mt-1 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-1 text-sm font-semibold text-ink">
               <span
-                className={`${antinoou.className} max-w-full truncate text-base leading-5 text-coptic sm:max-w-40`}
+                className={`font-coptic max-w-full truncate text-base leading-5 text-coptic sm:max-w-40`}
               >
                 {summaryTitle}
               </span>
@@ -92,7 +91,7 @@ export function AnswerContextPanel({
                   {t("practice.saved.contextHeadword")}
                 </dt>
                 <dd
-                  className={`${antinoou.className} mt-1 truncate text-base leading-6 text-coptic md:text-lg`}
+                  className={`font-coptic mt-1 truncate text-base leading-6 text-coptic md:text-lg`}
                 >
                   {candidate.metadata.copticText}
                 </dd>

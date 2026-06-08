@@ -1,6 +1,9 @@
 "use client";
 
 import { Badge } from "@/components/Badge";
+import CopticText, {
+  type GrammarAbbreviationTooltips,
+} from "@/components/CopticText";
 import {
   type DictionaryComplementizerGovernment,
   type DictionaryConstructionGovernment,
@@ -21,9 +24,6 @@ import {
   GovernmentBadges,
   getGenderedHeadingMarkerLabel,
 } from "./dictionaryEntryHelpers";
-import HighlightText, {
-  type GrammarAbbreviationTooltips,
-} from "./HighlightText";
 import { LinguisticGloss } from "./LinguisticGloss";
 
 type DictionaryEntryTranslator = (key: TranslationKey) => string;
@@ -83,7 +83,7 @@ function GenderedMeaningValues({
             size="inline"
           />
           <span>
-            <HighlightText
+            <CopticText
               className="italic"
               text={meaning}
               query={query}
@@ -249,7 +249,7 @@ export function DictionaryEntryMeanings({
                         key={`${group.code}-meaning-${idx}`}
                         className="leading-relaxed pl-1"
                       >
-                        <HighlightText
+                        <CopticText
                           className="italic"
                           text={meaning}
                           query={query}
@@ -294,7 +294,7 @@ export function DictionaryEntryMeanings({
                 >
                   {dialectMeaning.meanings.map((meaning, idx) => (
                     <li key={idx} className="leading-relaxed pl-1">
-                      <HighlightText
+                      <CopticText
                         className="italic"
                         text={meaning}
                         query={query}

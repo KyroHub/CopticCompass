@@ -6,7 +6,6 @@ import { iconButtonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { SurfacePanel } from "@/components/SurfacePanel";
 import { cx } from "@/lib/classes";
-import { antinoou } from "@/lib/fonts";
 
 import CopticKeyboard from "./CopticKeyboard";
 
@@ -89,7 +88,7 @@ export function DictionarySearchBar({
             )
           }
           className={cx(
-            antinoou.className,
+            "font-coptic",
             "w-full rounded-lg bg-transparent p-4 pl-12 text-base text-ink transition-all placeholder:font-sans placeholder:text-muted/65 focus:outline-none focus:ring-2 focus:ring-accent/30 sm:p-6 sm:pl-16 sm:text-lg md:text-2xl",
             trailingControls ? "pr-36 sm:pr-44" : "pr-24 sm:pr-28",
           )}

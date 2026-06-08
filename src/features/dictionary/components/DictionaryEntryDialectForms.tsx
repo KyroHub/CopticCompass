@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/Badge";
+import CopticText, { type FormSymbolTooltips } from "@/components/CopticText";
 import type { DictionaryDialectCode } from "@/features/dictionary/config";
 import {
   formatDialectForms,
@@ -8,12 +9,10 @@ import {
   getGenderedDialectFormParts,
 } from "@/features/dictionary/lib/entryDisplay";
 import type { DictionaryClientEntry } from "@/features/dictionary/types";
-import { antinoou } from "@/lib/fonts";
 import type { TranslationKey } from "@/lib/i18n";
 
 import DialectSiglum from "./DialectSiglum";
 import { getGenderedHeadingMarkerLabel } from "./dictionaryEntryHelpers";
-import HighlightText, { type FormSymbolTooltips } from "./HighlightText";
 import { LinguisticGloss, LinguisticGlossGroup } from "./LinguisticGloss";
 
 type DictionaryEntryTranslator = (key: TranslationKey) => string;
@@ -118,9 +117,9 @@ export function DictionaryEntryDialectForms({
                         className="inline-flex min-w-0 items-baseline gap-x-1.5"
                       >
                         <span
-                          className={`${antinoou.className} block break-words text-lg leading-snug text-ink [overflow-wrap:anywhere]`}
+                          className={`font-coptic block break-words text-lg leading-snug text-ink [overflow-wrap:anywhere]`}
                         >
-                          <HighlightText
+                          <CopticText
                             text={part.spelling}
                             query={query}
                             symbolTooltips={formSymbolTooltips}
@@ -137,9 +136,9 @@ export function DictionaryEntryDialectForms({
                   </>
                 ) : (
                   <span
-                    className={`${antinoou.className} block break-words text-lg leading-snug text-ink [overflow-wrap:anywhere]`}
+                    className={`font-coptic block break-words text-lg leading-snug text-ink [overflow-wrap:anywhere]`}
                   >
-                    <HighlightText
+                    <CopticText
                       text={spelling}
                       query={query}
                       symbolTooltips={formSymbolTooltips}
@@ -165,9 +164,9 @@ export function DictionaryEntryDialectForms({
                   <>
                     {visibleDialectPlurals[0] && (
                       <span
-                        className={`${antinoou.className} block break-words text-lg leading-snug text-ink [overflow-wrap:anywhere]`}
+                        className={`font-coptic block break-words text-lg leading-snug text-ink [overflow-wrap:anywhere]`}
                       >
-                        <HighlightText
+                        <CopticText
                           text={visibleDialectPlurals[0]}
                           query={query}
                           symbolTooltips={formSymbolTooltips}

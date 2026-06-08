@@ -11,7 +11,6 @@ import { useLanguage } from "@/components/LanguageProvider";
 import { StatusNotice } from "@/components/StatusNotice";
 import { SurfacePanel } from "@/components/SurfacePanel";
 import { getDashboardCopy } from "@/features/dashboard/lib/dashboardCopy";
-import { antinoou } from "@/lib/fonts";
 import { createClient } from "@/lib/supabase/client";
 import type { Tables } from "@/types/supabase";
 
@@ -196,7 +195,7 @@ export function ProfileForm({
             id="full_name"
             name="full_name"
             type="text"
-            className={`input-base ${antinoou.className} tracking-wide`}
+            className={`input-base font-coptic tracking-wide`}
             defaultValue={profile.full_name || ""}
             placeholder={copy.profile.fullNamePlaceholder}
           />

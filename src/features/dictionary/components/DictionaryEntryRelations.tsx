@@ -3,13 +3,11 @@
 import Link from "next/link";
 
 import { Badge } from "@/components/Badge";
-import { antinoou } from "@/lib/fonts";
-import type { TranslationKey } from "@/lib/i18n";
-
-import HighlightText, {
+import CopticText, {
   type FormSymbolTooltips,
   type GrammarAbbreviationTooltips,
-} from "./HighlightText";
+} from "@/components/CopticText";
+import type { TranslationKey } from "@/lib/i18n";
 
 type DictionaryEntryTranslator = (key: TranslationKey) => string;
 
@@ -67,9 +65,9 @@ export function DictionaryEntryRelations({
                 {relation.label}
               </Badge>
               <span
-                className={`${antinoou.className} min-w-0 break-words text-base leading-snug text-coptic [overflow-wrap:anywhere]`}
+                className={`font-coptic min-w-0 break-words text-base leading-snug text-coptic [overflow-wrap:anywhere]`}
               >
-                <HighlightText
+                <CopticText
                   text={relation.targetLabel}
                   query={query}
                   symbolTooltips={formSymbolTooltips}
@@ -80,7 +78,7 @@ export function DictionaryEntryRelations({
               <ul className="ml-5 list-disc space-y-1 text-sm text-muted marker:text-coptic">
                 {relation.notes.map((note, noteIndex) => (
                   <li key={noteIndex}>
-                    <HighlightText
+                    <CopticText
                       text={note}
                       query={query}
                       grammarAbbreviationTooltips={grammarAbbreviationTooltips}

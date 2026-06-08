@@ -3,6 +3,8 @@
 import Link from "next/link";
 
 import { Badge } from "@/components/Badge";
+import CopticText from "@/components/CopticText";
+import type { FormSymbolTooltips } from "@/components/CopticText";
 import {
   getPartOfSpeechCode,
   getPartOfSpeechLabel,
@@ -23,7 +25,6 @@ import type {
   DictionaryClientEntry,
   DictionarySearchMatchKind,
 } from "@/features/dictionary/types";
-import { antinoou } from "@/lib/fonts";
 import type { TranslationKey } from "@/lib/i18n";
 import { getEntryPath } from "@/lib/locale";
 import type { Language } from "@/types/i18n";
@@ -33,11 +34,9 @@ import {
   getGenderedHeadingMarkerLabel,
   getMainGenderMarkers,
 } from "./dictionaryEntryHelpers";
-import HighlightText from "./HighlightText";
 import { LinguisticGloss, LinguisticGlossGroup } from "./LinguisticGloss";
 import { SpeakButton } from "./SpeakButton";
 
-import type { FormSymbolTooltips } from "./HighlightText";
 import type { ReactNode } from "react";
 
 type DictionaryEntryTranslator = (key: TranslationKey) => string;
@@ -93,7 +92,7 @@ export function DictionaryEntryHeading({
 
   const canSpeakPrimarySpelling = primaryDialectKey === "B";
   const HeadingTag = headingLevel;
-  const headingClassName = `${antinoou.className} ${
+  const headingClassName = `font-coptic ${
     isDetailView ? "text-5xl md:text-6xl" : "text-4xl"
   } text-coptic tracking-wide transition-colors ${
     linkHeadword ? "hover:text-accent-strong cursor-pointer" : ""
@@ -129,7 +128,7 @@ export function DictionaryEntryHeading({
             className="inline-flex min-w-0 items-baseline gap-x-2"
           >
             <span>
-              <HighlightText
+              <CopticText
                 text={part.spelling}
                 query={query}
                 symbolTooltips={formSymbolTooltips}
@@ -145,7 +144,7 @@ export function DictionaryEntryHeading({
         ))
       ) : (
         <span className="min-w-0">
-          <HighlightText
+          <CopticText
             text={headerSpelling}
             query={query}
             symbolTooltips={formSymbolTooltips}
@@ -182,7 +181,7 @@ export function DictionaryEntryHeading({
         <>
           {headingPluralForm && (
             <span>
-              <HighlightText
+              <CopticText
                 text={headingPluralForm}
                 query={query}
                 symbolTooltips={formSymbolTooltips}
@@ -219,9 +218,9 @@ export function DictionaryEntryHeading({
           >
             <span>{t("entry.compoundOf")}</span>
             <span
-              className={`${antinoou.className} min-w-0 truncate text-sm font-normal tracking-wide`}
+              className={`font-coptic min-w-0 truncate text-sm font-normal tracking-wide`}
             >
-              <HighlightText
+              <CopticText
                 text={compoundTargetLabel}
                 query={query}
                 symbolTooltips={formSymbolTooltips}
