@@ -56,25 +56,39 @@ Run a normal `npm audit fix` only on a dedicated maintenance branch, then run th
 full CI suite before merging. Do not force audit fixes that downgrade framework
 packages or jump across unrelated major versions.
 
-As of June 4, 2026, the reviewed moderate findings are tracked through
-Dependabot instead of force-fixed:
+### Current Audit Snapshot
 
-- Next.js has a nested PostCSS advisory that should move through the normal Next
-  maintenance track.
-- `brace-expansion` appears in the development dependency tree and should be
-  updated through the owning package chain.
-- `@react-email/components` pulls deprecated subpackages during `npm ci`.
+As of June 13, 2026, `npm audit` reports five moderate and two high findings for
+the checked-in lockfile:
 
-The Supabase CLI is intentionally not kept as an npm `devDependency` while the
-`supabase` npm package has an active critical malware advisory. Migration scripts
-still call `supabase`, but contributors should install the CLI through a trusted
-external channel and keep it on `PATH`.
+- the two high findings are the Vite development-tooling chain through
+  `esbuild`; npm currently proposes a Vite 8 major update as the available fix
+- Next.js still carries the nested PostCSS moderate advisory
+- `brace-expansion` remains in the development dependency tree
+- the Vercel Analytics and Speed Insights packages inherit the Next.js moderate
+  finding
+
+Because CI runs `npm audit --audit-level=high`, the Vite/esbuild finding is a
+current CI blocker and should be handled on a dedicated dependency-maintenance
+branch with release-note review and the full validation suite. Re-run
+`npm audit` whenever the lockfile changes rather than treating this dated
+snapshot as permanent.
+
+`@react-email/components` also pulls deprecated subpackages during `npm ci`;
+that warning is separate from the audit findings above.
+
+The Supabase CLI is intentionally not kept as an npm `devDependency`.
+Migration scripts still call `supabase`, so contributors should install the
+official CLI through a trusted supported channel and keep it on `PATH`.
 
 ## Automation
 
 Dependabot is configured to automatically approve and merge **minor and patch** version updates through the `.github/workflows/dependabot-auto-merge.yml` workflow.
 
-This auto-merge relies entirely on the CI safety net (`.github/workflows/ci.yml`). GitHub will wait for the full CI pipeline (typechecking, linting, unit tests, and Playwright E2E smoke tests) to pass before merging the PR.
+This auto-merge relies entirely on the CI safety net
+(`.github/workflows/ci.yml`). GitHub will wait for the protected checks,
+including the dependency audit, formatting, Knip, lint, unit tests, production
+build, and Playwright end-to-end tests, before merging the PR.
 
 Major version updates, however, are deliberately excluded from auto-merge and still require manual human review to check release notes, migration guides, and focused validation.
 

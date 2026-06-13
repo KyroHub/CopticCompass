@@ -13,7 +13,7 @@
             "content": [
               { "type": "coptic", "text": "Ⲟⲩ-" },
               { "type": "text", "text": " comes from " },
-              { "type": "coptic", "text": "ⲟⲩⲁⲓ", "dictionaryEntryId": "68" },
+              { "type": "coptic", "text": "ⲟⲩⲁⲓ", "dictionaryEntryId": "72" },
               {
                 "type": "text",
                 "text": " (the number “one”). Compare with French un/une (articles), but also: un, deux, trois, ... (numbers)."
@@ -27,7 +27,7 @@
             "content": [
               { "type": "coptic", "text": "Ⲟⲩ-" },
               { "type": "text", "text": " < " },
-              { "type": "coptic", "text": "ⲟⲩⲁⲓ", "dictionaryEntryId": "68" },
+              { "type": "coptic", "text": "ⲟⲩⲁⲓ", "dictionaryEntryId": "72" },
               {
                 "type": "text",
                 "text": " (het getal “een”). Vgl. Frans un/une (lidwoorden), maar ook: un, deux, trois, ... (getallen)."
@@ -46,14 +46,14 @@
           {
             "type": "paragraph",
             "content": [
-              { "type": "coptic", "text": "Ϩⲁⲛ-", "dictionaryEntryId": "100" },
+              { "type": "coptic", "text": "Ϩⲁⲛ-", "dictionaryEntryId": "106" },
               { "type": "text", "text": " comes from " },
               { "type": "coptic", "text": "ϩⲟⲓ̈ⲛⲉ" },
               {
                 "type": "text",
                 "text": " “some”. There is no direct English equivalent for the indefinite plural article "
               },
-              { "type": "coptic", "text": "ϩⲁⲛ-", "dictionaryEntryId": "100" },
+              { "type": "coptic", "text": "ϩⲁⲛ-", "dictionaryEntryId": "106" },
               { "type": "text", "text": "." }
             ]
           }
@@ -62,14 +62,14 @@
           {
             "type": "paragraph",
             "content": [
-              { "type": "coptic", "text": "Ϩⲁⲛ-", "dictionaryEntryId": "100" },
+              { "type": "coptic", "text": "Ϩⲁⲛ-", "dictionaryEntryId": "106" },
               { "type": "text", "text": " < " },
               { "type": "coptic", "text": "ϩⲟⲓ̈ⲛⲉ" },
               {
                 "type": "text",
                 "text": " “sommige”. Er is geen Nederlands equivalent voor het onbepaald meervoud lidwoord "
               },
-              { "type": "coptic", "text": "ϩⲁⲛ-", "dictionaryEntryId": "100" },
+              { "type": "coptic", "text": "ϩⲁⲛ-", "dictionaryEntryId": "106" },
               { "type": "text", "text": "." }
             ]
           }
@@ -87,11 +87,7 @@
             "content": [
               { "type": "coptic", "text": "Ⲧ + ⲓ = ϯ" },
               { "type": "text", "text": ". Therefore: " },
-              {
-                "type": "coptic",
-                "text": "ϯⲥⲱⲛⲓ",
-                "dictionaryEntryId": "11422"
-              },
+              { "type": "coptic", "text": "ϯⲥⲱⲛⲓ", "dictionaryEntryId": "182" },
               { "type": "text", "text": "." }
             ]
           }
@@ -102,11 +98,7 @@
             "content": [
               { "type": "coptic", "text": "Ⲧ + ⲓ = ϯ" },
               { "type": "text", "text": ". Dus: " },
-              {
-                "type": "coptic",
-                "text": "ϯⲥⲱⲛⲓ",
-                "dictionaryEntryId": "11422"
-              },
+              { "type": "coptic", "text": "ϯⲥⲱⲛⲓ", "dictionaryEntryId": "182" },
               { "type": "text", "text": "." }
             ]
           }

@@ -1,6 +1,13 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const ENTRY_PATH = "/en/entry/173";
+import {
+  getDictionaryEntryPath,
+  getUniqueDictionaryEntryByHeadword,
+} from "./dictionary-fixtures";
+
+const ENTRY_PATH = getDictionaryEntryPath(
+  getUniqueDictionaryEntryByHeadword("ⲥⲟⲛ"),
+);
 const E2E_TEST_USER_EMAIL = process.env.E2E_TEST_USER_EMAIL;
 const E2E_TEST_USER_PASSWORD = process.env.E2E_TEST_USER_PASSWORD;
 const HAS_E2E_AUTH = Boolean(E2E_TEST_USER_EMAIL && E2E_TEST_USER_PASSWORD);

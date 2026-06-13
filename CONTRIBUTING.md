@@ -22,7 +22,7 @@ cp .env.example .env.local
 
 Do not commit `.env.local`. It is gitignored by default, while [`.env.example`](./.env.example) is tracked with placeholder values only.
 
-If you plan to run the browser smoke tests locally, install the Playwright browser once:
+If you plan to run the browser end-to-end tests locally, install the Playwright browser once:
 
 ```bash
 npx playwright install --with-deps chromium
@@ -116,7 +116,7 @@ Then review the generated files under `public/data/grammar/v1` and spot-check th
 
 ### Dictionary Changes
 
-The site currently serves the normalized checked-in dataset at `public/data/dictionary.json`. Runtime dictionary entries should use structured fields such as `dialects`, `senses`, `meanings.en`, `meanings.nl`, `greekContext`, `inflections`, and `relations` rather than raw/source-only text fields.
+The site currently serves the normalized checked-in dataset at `public/data/dictionary.json`. Runtime dictionary entries should use structured fields such as `dialects`, `senses`, `genderedMeanings`, `dialectMeanings`, `greekContext`, `inflections`, and `relations` rather than raw/source-only text fields.
 
 Before editing dictionary JSON, read [docs/dictionary-json.md](./docs/dictionary-json.md) for the field conventions, variant patterns, imperative forms, notes, and validation workflow.
 

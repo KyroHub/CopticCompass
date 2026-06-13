@@ -14,13 +14,6 @@ test("practice picker groups mixed, word, grammar, and saved practice", async ({
 
   await expect(dialog).toBeVisible();
 
-  console.log("Dialog textContent:");
-  console.log(await dialog.textContent());
-
-  const headings = await dialog.locator("h3").allTextContents();
-  console.log("H3 headings:");
-  console.log(headings);
-
   await expect(
     dialog.getByRole("heading", { name: "Mixed practice" }),
   ).toBeVisible();

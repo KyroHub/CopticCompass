@@ -161,7 +161,10 @@ When using sticky panels:
 
 Use these primitives:
 
-- `SegmentedControl` embedded inside expandable panels for option sets such as status, language, or dialect.
+- `SegmentedControl` for short option sets where all choices fit comfortably,
+  such as result mode, status, or language.
+- `FilterMenu` for longer option sets such as dialect, part of speech,
+  etymology, or analytics dimensions.
 - `trailingControls` nodes injected directly into search fields to contain filter toggle buttons.
 
 Preferred filter behavior:
@@ -169,11 +172,16 @@ Preferred filter behavior:
 - collapsed by default on mobile;
 - inline filter toggle icon buttons located directly inside the search bar (`trailingControls`);
 - clicking the toggle expands a clean `<section>` panel underneath the search bar;
-- simple SegmentedControl layouts stacked vertically with divider lines;
+- short segmented controls or compact filter menus, chosen according to option
+  count and label length;
 - one clear/reset action when filters are active;
 - keyboard support for opening, closing, and moving through options.
 
-Use vertical stacked rows of `SegmentedControl` inputs for most search filters. This keeps the interaction model consistent across Dictionary, Publications, and Analytics. Do not use dropdown-style menus or native selects for public result filtering unless there is a strong reason.
+Use vertical stacked rows for public filter groups. Prefer `SegmentedControl`
+when the full option set remains readable at mobile widths, and `FilterMenu`
+when exposing every option at once would create wrapping or scroll fatigue.
+Dictionary and Analytics use filter menus for their larger taxonomies;
+Publications uses segmented controls for its smaller sets.
 
 Use native selects for ordinary forms where the user is submitting data, not for
 public result filtering unless there is a strong reason.
@@ -312,7 +320,8 @@ Before merging a UI change, ask:
 - Are mobile CTAs full-width for single actions and equal-width for paired
   actions?
 - Is the filter toggle correctly placed within the search bar's `trailingControls`?
-- Are filter options rendered cleanly as `SegmentedControl` grids inside the expanded panel?
+- Are short filter sets rendered as readable segmented controls and longer sets
+  handled with compact filter menus?
 - Can the filter or setup block collapse to reduce scroll fatigue?
 - Are labels clear to non-technical users?
 - Does the page avoid card-on-card decoration?
@@ -320,7 +329,7 @@ Before merging a UI change, ask:
 - If the surface gained several panels, modes, or state transitions, is the
   page client still a shell with feature-owned components/hooks?
 - Is the same workflow coherent in English and Dutch?
-- Did the change pass formatting, linting, typechecking, tests, and smoke
+- Did the change pass formatting, linting, typechecking, tests, and end-to-end
   coverage when relevant?
 
 ## Code References
@@ -330,6 +339,7 @@ Current shared UI primitives that contributors should know:
 - `src/components/AppPageIntro.tsx`
 - `src/components/PageHeader.tsx`
 - `src/components/Button.tsx`
+- `src/components/FilterMenu.tsx`
 - `src/components/SegmentedControl.tsx`
 - `src/components/SurfacePanel.tsx`
 - `src/components/Badge.tsx`

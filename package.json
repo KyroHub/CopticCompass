@@ -42,6 +42,7 @@
     "distill:build": "node --experimental-strip-types scripts/distillBuildDatasets.mts",
     "distill:pipeline": "npm run distill:extract && npm run distill:teacher && npm run distill:build",
     "assets:icon": "node --experimental-strip-types scripts/generateAppIcons.mts",
+    "data:dictionary:compact": "node --experimental-strip-types scripts/compactDictionaryEntryIds.mts",
     "data:grammar:export": "node --experimental-strip-types scripts/exportGrammar.mts",
     "lint": "eslint --max-warnings=0",
     "typecheck": "tsc --noEmit",
@@ -49,6 +50,7 @@
     "format:check": "prettier --check .",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:e2e:smoke": "playwright test tests/e2e/smoke.spec.ts",
     "test:e2e:local": "npm run build && npm run test:e2e",
     "knip": "knip",
     "prepare": "husky"
@@ -108,7 +110,7 @@
     "sharp": "^0.34.5",
     "tailwindcss": "^4.2.4",
     "typescript": "^5",
-    "vite": "^6.4.3",
+    "vite": "^8.0.16",
     "vitest": "^4.1.8"
   },
   "lint-staged": {

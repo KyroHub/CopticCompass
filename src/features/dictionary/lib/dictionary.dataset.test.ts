@@ -29,6 +29,12 @@ function readDictionary() {
   return readDictionaryPayload() as LexicalEntry[];
 }
 
+function expectContiguousEntryIds(dictionary: LexicalEntry[]) {
+  expect(dictionary.map((entry) => entry.id)).toEqual(
+    dictionary.map((_, index) => index + 1),
+  );
+}
+
 function splitTopLevelCommaSeparatedValues(value: string) {
   const parts: string[] = [];
   let currentPart = "";
@@ -417,6 +423,10 @@ describe("dictionary dataset guardrails", () => {
     expect(formatDictionaryValidationIssues(result.issues, 200)).toEqual([]);
   });
 
+  it("keeps entry IDs contiguous and aligned with array order", () => {
+    expectContiguousEntryIds(readDictionary());
+  });
+
   it("keeps dialect and inflected-form keys within the configured dictionary sigla", () => {
     const dictionary = readDictionary();
     const allowedDialectCodes = new Set<string>(DICTIONARY_DIALECT_CODES);
@@ -734,10 +744,10 @@ describe("dictionary dataset guardrails", () => {
 
     expect(invalidEtymologyEntries).toEqual([]);
     expect(dictionary.filter((entry) => entry.etym === "Unknown")).toEqual([
-      expect.objectContaining({ headword: "ϫⲗⲉ", id: 7166 }),
+      expect.objectContaining({ headword: "ϫⲗⲉ", id: 6065 }),
       expect.objectContaining({
         headword: "ϯϫⲣⲉ ⲛϩⲏⲧ",
-        id: 7348,
+        id: 6066,
       }),
     ]);
   });
@@ -971,12 +981,12 @@ describe("dictionary dataset guardrails", () => {
         ?.grammar,
     ).toEqual({ gender: "M", pos: "N" });
     expect(
-      findSense(entriesById.get(100), (sense) => sense.grammar.number === "PL")
+      findSense(entriesById.get(106), (sense) => sense.grammar.number === "PL")
         ?.grammar,
     ).toEqual({ gender: "M", number: "PL", pos: "N" });
     expect(
       findSense(
-        entriesById.get(2639),
+        entriesById.get(2684),
         (sense) => sense.grammar.polarity === "NEG",
       )?.grammar,
     ).toEqual({ polarity: "NEG", pos: "N" });
@@ -1176,7 +1186,7 @@ describe("dictionary dataset guardrails", () => {
       .map((entry) => entry.id)
       .sort((left, right) => left - right);
 
-    expect(masculineEntriesWithFeminineForms).toEqual([18, 20, 550]);
+    expect(masculineEntriesWithFeminineForms).toEqual([18, 20, 182, 564]);
     expect(
       getGenderedHeadingParts(entriesById.get(18)!, "B").map(
         (part) => `${part.spelling} ${part.marker}`,
@@ -1217,6 +1227,50 @@ describe("dictionary dataset guardrails", () => {
         },
       },
     ]);
+    expect(
+      getGenderedHeadingParts(entriesById.get(182)!, "B").map(
+        (part) => `${part.spelling} ${part.marker}`,
+      ),
+    ).toEqual(["ⲥⲟⲛ m", "ⲥⲱⲛⲓ f", "ⲥⲛⲏⲟⲩ pl"]);
+    expect(entriesById.get(182)?.genderedMeanings).toEqual([
+      {
+        meanings: {
+          en: {
+            f: "sister",
+            m: "brother",
+            pl: "siblings",
+          },
+          nl: {
+            f: "zus",
+            m: "broer",
+            pl: "broers en zussen",
+          },
+        },
+      },
+    ]);
+    expect(entriesById.get(57)?.genderedMeanings).toEqual([
+      {
+        meanings: {
+          en: {
+            m: "father, parent",
+            pl: "fathers, parents",
+          },
+          nl: {
+            m: "vader, ouder",
+            pl: "vaders, ouders",
+          },
+        },
+      },
+    ]);
+    expect(entriesById.get(182)?.senses.map((group) => group.grammar)).toEqual([
+      { gender: "M", pos: "N" },
+      { pos: "ADJ" },
+    ]);
+    expect(
+      findSense(entriesById.get(182), (group) => group.grammar.pos === "ADJ")
+        ?.meanings?.en,
+    ).toEqual(["sibling-like, familial"]);
+    expect(dictionary.some((entry) => entry.headword === "ⲥⲱⲛⲓ")).toBe(false);
     expect(entriesById.get(17)?.genderedMeanings).toEqual([
       {
         meanings: {
@@ -1249,15 +1303,15 @@ describe("dictionary dataset guardrails", () => {
       findSense(entriesById.get(17), (group) => group.grammar.pos === "ADJ")
         ?.meanings?.en,
     ).toEqual(["noble"]);
-    expect(entriesById.get(550)?.senses).toEqual([
+    expect(entriesById.get(564)?.senses).toEqual([
       { grammar: { gender: "M", pos: "N" } },
     ]);
     expect(
-      getGenderedHeadingParts(entriesById.get(550)!, "B").map(
+      getGenderedHeadingParts(entriesById.get(564)!, "B").map(
         (part) => `${part.spelling} ${part.marker}`,
       ),
     ).toEqual(["ⲃⲱⲕ m", "ⲃⲱⲕⲓ f", "ⲉⲃⲓⲁⲓⲕ pl"]);
-    expect(entriesById.get(5345)).toMatchObject({
+    expect(entriesById.get(5247)).toMatchObject({
       headword: "ⲡⲏⲣⲁ",
       senses: [
         {
@@ -1267,19 +1321,37 @@ describe("dictionary dataset guardrails", () => {
     });
   });
 
+  it("keeps Greek case spellings merged as Coptic variants", () => {
+    const dictionary = readDictionary();
+    const sonEntry = dictionary.find((entry) => entry.headword === "ⲩⲓⲟⲥ");
+
+    expect(dictionary.some((entry) => entry.headword === "ⲩⲓⲟⲩ")).toBe(false);
+    expect(sonEntry).toMatchObject({
+      id: 5765,
+      headword: "ⲩⲓⲟⲥ",
+      dialects: {
+        B: {
+          absolute: "ⲩⲓⲟⲥ",
+          variants: { absolute: ["ⲩⲥ", "ⲩⲓⲟⲩ"] },
+        },
+      },
+      greekContext: { sources: ["υἱός", "υἱοῦ"] },
+    });
+  });
+
   it("keeps Oxyrhynchite coverage under dialect M", () => {
     const dictionary = readDictionary();
     const oxyrhynchiteEntries = dictionary.filter((entry) => entry.dialects.M);
 
     expect(oxyrhynchiteEntries.length).toBeGreaterThanOrEqual(483);
     expect(
-      dictionary.find((entry) => entry.id === 493)?.dialects.M,
+      dictionary.find((entry) => entry.id === 505)?.dialects.M,
     ).toMatchObject({
       absolute: "ⲁⲛⲁⲕ",
       nominal: "ⲁⲛⲕ-",
     });
     const oxyrhynchiteFenceEntry = dictionary.find(
-      (entry) => entry.id === 7166,
+      (entry) => entry.id === 6065,
     );
 
     expect(oxyrhynchiteFenceEntry).toMatchObject({
@@ -1351,7 +1423,7 @@ describe("dictionary dataset guardrails", () => {
     expect(secondaryCanonicalConstructParticiples).toEqual([]);
     expect(invalidConstructParticiples).toEqual([]);
     expect(
-      dictionary.find((entry) => entry.id === 130)?.dialects.B,
+      dictionary.find((entry) => entry.id === 137)?.dialects.B,
     ).toMatchObject({
       nominal: "ϭⲓ-",
       participles: ["ϭⲁⲓ~"],
@@ -1470,28 +1542,28 @@ describe("dictionary dataset guardrails", () => {
     const lexicalFormPlusRows = dictionary.flatMap(collectLexicalFormPlusRows);
 
     expect(lexicalFormPlusRows).toEqual([]);
-    expect(entriesById.get(857)?.headword).toBe("ⲕⲏⲩ†");
-    expect(entriesById.get(3086)?.headword).toBe("ⲧⲁϥⲉ†");
-    expect(entriesById.get(3089)?.headword).toBe("ⲑⲉⲙ†");
+    expect(entriesById.get(879)?.headword).toBe("ⲕⲏⲩ†");
+    expect(entriesById.get(3133)?.headword).toBe("ⲧⲁϥⲉ†");
+    expect(entriesById.get(3136)?.headword).toBe("ⲑⲉⲙ†");
   });
 
   it("stores representative bound-only prepositions without fake absolute forms", () => {
     const dictionary = readDictionary();
     const boundOnlyEntries = [
       {
-        id: 361,
+        id: 375,
         dialect: "B",
         nominal: "ⳳⲉⲛ-",
         pronominal: "ⲛ̀ⳳⲏⲧ=",
       },
       {
-        id: 892,
+        id: 915,
         dialect: "B",
         nominal: "ⲛⲉⲙ-",
         pronominal: "ⲛⲉⲙⲁ=",
       },
       {
-        id: 1713,
+        id: 1745,
         dialect: "B",
         nominal: "ⲟⲩⲧⲉ-",
         pronominal: "ⲟⲩⲧⲱ=",

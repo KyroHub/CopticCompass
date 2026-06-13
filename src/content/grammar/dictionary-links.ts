@@ -51,22 +51,43 @@ function normalizeBohairicLookupCandidate(value: string): string | null {
 
 function collectBohairicForms(entry: LexicalEntry): string[] {
   const bohairicForms = entry.dialects.B;
+  const bohairicInflections = Object.values(entry.inflections ?? {}).flatMap(
+    (dialectInflections) => {
+      const forms = dialectInflections?.B;
 
-  if (!bohairicForms) {
+      if (!forms) {
+        return [];
+      }
+
+      return [
+        ...(forms.default ?? []),
+        ...(forms.absolute ?? []),
+        ...(forms.nominal ?? []),
+        ...(forms.pronominal ?? []),
+        ...(forms.variants?.default ?? []),
+        ...(forms.variants?.absolute ?? []),
+        ...(forms.variants?.nominal ?? []),
+        ...(forms.variants?.pronominal ?? []),
+      ].map((form) => (typeof form === "string" ? form : form.form));
+    },
+  );
+
+  if (!bohairicForms && bohairicInflections.length === 0) {
     return [];
   }
 
   return [
-    bohairicForms.absolute,
-    bohairicForms.nominal,
-    bohairicForms.pronominal,
-    bohairicForms.stative,
-    ...(bohairicForms.participles ?? []),
-    ...(bohairicForms.variants?.absolute ?? []),
-    ...(bohairicForms.variants?.nominal ?? []),
-    ...(bohairicForms.variants?.pronominal ?? []),
-    ...(bohairicForms.variants?.stative ?? []),
-    ...(bohairicForms.variants?.constructParticiples ?? []),
+    bohairicForms?.absolute,
+    bohairicForms?.nominal,
+    bohairicForms?.pronominal,
+    bohairicForms?.stative,
+    ...(bohairicForms?.participles ?? []),
+    ...(bohairicForms?.variants?.absolute ?? []),
+    ...(bohairicForms?.variants?.nominal ?? []),
+    ...(bohairicForms?.variants?.pronominal ?? []),
+    ...(bohairicForms?.variants?.stative ?? []),
+    ...(bohairicForms?.variants?.constructParticiples ?? []),
+    ...bohairicInflections,
   ]
     .flatMap((form) => form?.split(",") ?? [])
     .map((form) => form.trim())

@@ -20,24 +20,27 @@ function getParagraphCopticNode(
 
 describe("grammar dictionary link enrichment", () => {
   it("resolves only unique Bohairic entry matches and ignores combining diacritics", () => {
-    expect(getBohairicDictionaryEntryIdForWord("Ⲥⲟⲛ")).toBe("173");
-    expect(getBohairicDictionaryEntryIdForWord("ⲥ̀ϩⲓⲙⲓ")).toBe("142");
-    expect(getBohairicDictionaryEntryIdForWord("Ⲥⲱⲛⲓ")).toBe("11422");
-    expect(getBohairicDictionaryEntryIdForWord("Ⲟⲩⲥⲱⲛⲓ")).toBe("11422");
-    expect(getBohairicDictionaryEntryIdForWord("Ⲡⲁⲓⲥⲟⲛ")).toBe("173");
+    expect(getBohairicDictionaryEntryIdForWord("Ⲥⲟⲛ")).toBe("182");
+    expect(getBohairicDictionaryEntryIdForWord("ⲥ̀ϩⲓⲙⲓ")).toBe("151");
+    expect(getBohairicDictionaryEntryIdForWord("Ⲥⲱⲛⲓ")).toBe("182");
+    expect(getBohairicDictionaryEntryIdForWord("Ⲟⲩⲥⲱⲛⲓ")).toBe("182");
+    expect(getBohairicDictionaryEntryIdForWord("Ⲡⲁⲓⲥⲟⲛ")).toBe("182");
     expect(getBohairicDictionaryEntryIdForWord("Ⲟⲩⲓⲱⲧ")).toBe("57");
+    expect(getBohairicDictionaryEntryIdForWord("Ⲩⲓⲟⲥ")).toBe("5765");
+    expect(getBohairicDictionaryEntryIdForWord("Ⲩⲥ")).toBe("5765");
+    expect(getBohairicDictionaryEntryIdForWord("Ⲩⲓⲟⲩ")).toBe("5765");
     expect(getBohairicDictionaryEntryIdForWord("ϭⲱⲓⲥ")).toBe("17");
     expect(getBohairicDictionaryEntryIdForWord("⳪")).toBe("17");
-    expect(getBohairicDictionaryEntryIdForWord("ⳳⲉⲗⲗⲱ")).toBe("11413");
-    expect(getBohairicDictionaryEntryIdForWord("ⳲⲈⲖⲖⲰ")).toBe("11413");
-    expect(getBohairicDictionaryEntryIdForWord("ⳳⲉⲛ-")).toBe("361");
-    expect(getBohairicDictionaryEntryIdForWord("ⳲⲈⲚ-")).toBe("361");
-    expect(getBohairicDictionaryEntryIdForWord("Ⲛ̀ⲑⲟⲥ")).toBe("11428");
-    expect(getBohairicDictionaryEntryIdForWord("Ⲛ̀ⲑⲱⲟⲩ")).toBe("11429");
+    expect(getBohairicDictionaryEntryIdForWord("ⳳⲉⲗⲗⲱ")).toBe("64");
+    expect(getBohairicDictionaryEntryIdForWord("ⳲⲈⲖⲖⲰ")).toBe("64");
+    expect(getBohairicDictionaryEntryIdForWord("ⳳⲉⲛ-")).toBe("375");
+    expect(getBohairicDictionaryEntryIdForWord("ⳲⲈⲚ-")).toBe("375");
+    expect(getBohairicDictionaryEntryIdForWord("Ⲛ̀ⲑⲟⲥ")).toBe("506");
+    expect(getBohairicDictionaryEntryIdForWord("Ⲛ̀ⲑⲱⲟⲩ")).toBe("507");
     expect(getBohairicDictionaryEntryIdForWord("Ϣⲏⲣⲓ")).toBeNull();
     expect(getBohairicDictionaryEntryIdForWord("ⲙⲁⲩ")).toBeNull();
     expect(getBohairicDictionaryEntryIdForWord("Ⲧⲁⲙⲁⲩ")).toBeNull();
-    expect(getBohairicDictionaryEntryIdForWord("Ⲛ̀ⲑⲟϥ")).toBe("1178");
+    expect(getBohairicDictionaryEntryIdForWord("Ⲛ̀ⲑⲟϥ")).toBe("1203");
   });
 
   it("annotates canonical lesson content when a unique Bohairic match exists", () => {
@@ -75,22 +78,22 @@ describe("grammar dictionary link enrichment", () => {
     expect(feminineWomanWord).toMatchObject({
       type: "coptic",
       text: "Ⲥ̀ϩⲓⲙⲓ",
-      dictionaryEntryId: "142",
+      dictionaryEntryId: "151",
     });
     expect(feminineMotherWord).toMatchObject({
       type: "coptic",
       text: "Ⲙⲁⲩ",
-      dictionaryEntryId: "215",
+      dictionaryEntryId: "228",
     });
     expect(feminineSisterWord).toMatchObject({
       type: "coptic",
       text: "Ⲥⲱⲛⲓ",
-      dictionaryEntryId: "11422",
+      dictionaryEntryId: "182",
     });
     expect(masculineBrotherWord).toMatchObject({
       type: "coptic",
       text: "Ⲥⲟⲛ",
-      dictionaryEntryId: "173",
+      dictionaryEntryId: "182",
     });
     expect(masculineSonWord).toMatchObject({
       type: "coptic",
@@ -108,7 +111,7 @@ describe("grammar dictionary link enrichment", () => {
     );
 
     expect(motherExample?.copticSegments).toMatchObject([
-      { text: "Ⲧⲁⲙⲁⲩ", dictionaryEntryId: "215" },
+      { text: "Ⲧⲁⲙⲁⲩ", dictionaryEntryId: "228" },
       { text: " " },
       { text: "ⲧⲉ" },
       { text: "." },
