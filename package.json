@@ -42,6 +42,7 @@
     "distill:build": "node --experimental-strip-types scripts/distillBuildDatasets.mts",
     "distill:pipeline": "npm run distill:extract && npm run distill:teacher && npm run distill:build",
     "assets:icon": "node --experimental-strip-types scripts/generateAppIcons.mts",
+    "data:dictionary:compact": "node --experimental-strip-types scripts/compactDictionaryEntryIds.mts",
     "data:grammar:export": "node --experimental-strip-types scripts/exportGrammar.mts",
     "lint": "eslint --max-warnings=0",
     "typecheck": "tsc --noEmit",

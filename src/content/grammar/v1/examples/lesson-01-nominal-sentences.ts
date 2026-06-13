@@ -59,7 +59,7 @@ export const grammarLesson01NominalSentenceExamples: readonly GrammarExampleDocu
       sectionId,
       coptic: "Ⲧⲁⲙⲁⲩ ⲧⲉ.",
       dictionaryTokenOverrides: {
-        Ⲧⲁⲙⲁⲩ: "215",
+        Ⲧⲁⲙⲁⲩ: "228",
       },
       translation: {
         en: "“She is my mother.”",

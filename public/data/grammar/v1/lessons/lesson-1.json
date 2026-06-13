@@ -339,7 +339,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲥ̀ϩⲓⲙⲓ",
-                              "dictionaryEntryId": "142"
+                              "dictionaryEntryId": "151"
                             }
                           ]
                         }
@@ -382,7 +382,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲙⲁⲩ",
-                              "dictionaryEntryId": "215"
+                              "dictionaryEntryId": "228"
                             }
                           ]
                         }
@@ -405,7 +405,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲥⲟⲛ",
-                              "dictionaryEntryId": "173"
+                              "dictionaryEntryId": "182"
                             }
                           ]
                         }
@@ -423,7 +423,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲥⲱⲛⲓ",
-                              "dictionaryEntryId": "11422"
+                              "dictionaryEntryId": "182"
                             }
                           ]
                         }
@@ -460,7 +460,13 @@
                       "feminineWord": [
                         {
                           "type": "paragraph",
-                          "content": [{ "type": "coptic", "text": "Ϣⲉⲣⲓ" }]
+                          "content": [
+                            {
+                              "type": "coptic",
+                              "text": "Ϣⲉⲣⲓ",
+                              "dictionaryEntryId": "20"
+                            }
+                          ]
                         }
                       ],
                       "feminineMeaning": [
@@ -481,7 +487,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲕⲁϩⲓ",
-                              "dictionaryEntryId": "108"
+                              "dictionaryEntryId": "114"
                             }
                           ]
                         }
@@ -524,7 +530,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲁⲅⲓⲟⲥ",
-                              "dictionaryEntryId": "3368"
+                              "dictionaryEntryId": "3414"
                             }
                           ]
                         }
@@ -542,7 +548,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲉⲕⲕ̀ⲗⲏⲥⲓⲁ̀",
-                              "dictionaryEntryId": "4042"
+                              "dictionaryEntryId": "4045"
                             }
                           ]
                         }
@@ -565,7 +571,7 @@
                             {
                               "type": "coptic",
                               "text": "Ϯⲙⲓ",
-                              "dictionaryEntryId": "180"
+                              "dictionaryEntryId": "191"
                             }
                           ]
                         }
@@ -583,7 +589,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲡⲟⲗⲓⲥ",
-                              "dictionaryEntryId": "5396"
+                              "dictionaryEntryId": "5294"
                             }
                           ]
                         }
@@ -762,7 +768,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲥ̀ϩⲓⲙⲓ",
-                              "dictionaryEntryId": "142"
+                              "dictionaryEntryId": "151"
                             }
                           ]
                         }
@@ -805,7 +811,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲙⲁⲩ",
-                              "dictionaryEntryId": "215"
+                              "dictionaryEntryId": "228"
                             }
                           ]
                         }
@@ -828,7 +834,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲥⲟⲛ",
-                              "dictionaryEntryId": "173"
+                              "dictionaryEntryId": "182"
                             }
                           ]
                         }
@@ -846,7 +852,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲥⲱⲛⲓ",
-                              "dictionaryEntryId": "11422"
+                              "dictionaryEntryId": "182"
                             }
                           ]
                         }
@@ -883,7 +889,13 @@
                       "feminineWord": [
                         {
                           "type": "paragraph",
-                          "content": [{ "type": "coptic", "text": "Ϣⲉⲣⲓ" }]
+                          "content": [
+                            {
+                              "type": "coptic",
+                              "text": "Ϣⲉⲣⲓ",
+                              "dictionaryEntryId": "20"
+                            }
+                          ]
                         }
                       ],
                       "feminineMeaning": [
@@ -904,7 +916,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲕⲁϩⲓ",
-                              "dictionaryEntryId": "108"
+                              "dictionaryEntryId": "114"
                             }
                           ]
                         }
@@ -945,7 +957,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲁⲅⲓⲟⲥ",
-                              "dictionaryEntryId": "3368"
+                              "dictionaryEntryId": "3414"
                             }
                           ]
                         }
@@ -965,7 +977,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲉⲕⲕ̀ⲗⲏⲥⲓⲁ̀",
-                              "dictionaryEntryId": "4042"
+                              "dictionaryEntryId": "4045"
                             }
                           ]
                         }
@@ -988,7 +1000,7 @@
                             {
                               "type": "coptic",
                               "text": "Ϯⲙⲓ",
-                              "dictionaryEntryId": "180"
+                              "dictionaryEntryId": "191"
                             }
                           ]
                         }
@@ -1006,7 +1018,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲡⲟⲗⲓⲥ",
-                              "dictionaryEntryId": "5396"
+                              "dictionaryEntryId": "5294"
                             }
                           ]
                         }
@@ -1261,7 +1273,7 @@
                             {
                               "type": "copticSpan",
                               "children": [{ "type": "text", "text": "ⲟⲩ" }],
-                              "dictionaryEntryId": "363"
+                              "dictionaryEntryId": "377"
                             }
                           ]
                         },
@@ -1482,7 +1494,7 @@
                             {
                               "type": "copticSpan",
                               "children": [{ "type": "text", "text": "ⲟⲩ" }],
-                              "dictionaryEntryId": "363"
+                              "dictionaryEntryId": "377"
                             }
                           ]
                         },
@@ -1531,19 +1543,19 @@
                   {
                     "type": "coptic",
                     "text": "Ⲥⲟⲛ",
-                    "dictionaryEntryId": "173"
+                    "dictionaryEntryId": "182"
                   },
                   { "type": "text", "text": " “brother” / " },
                   {
                     "type": "coptic",
                     "text": "Ⲥⲱⲛⲓ",
-                    "dictionaryEntryId": "11422"
+                    "dictionaryEntryId": "182"
                   },
                   { "type": "text", "text": " “sister” / " },
                   {
                     "type": "coptic",
                     "text": "Ⲥⲱⲛⲓ",
-                    "dictionaryEntryId": "11422"
+                    "dictionaryEntryId": "182"
                   },
                   { "type": "text", "text": " “sisters”" }
                 ]
@@ -1631,7 +1643,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲟⲩⲥⲟⲛ",
-                              "dictionaryEntryId": "173"
+                              "dictionaryEntryId": "182"
                             },
                             {
                               "type": "footnoteRef",
@@ -1648,7 +1660,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲟⲩⲥⲱⲛⲓ",
-                              "dictionaryEntryId": "11422"
+                              "dictionaryEntryId": "182"
                             },
                             { "type": "text", "text": " “a sister”" }
                           ]
@@ -1661,7 +1673,7 @@
                             {
                               "type": "coptic",
                               "text": "Ϩⲁⲛⲥⲱⲛⲓ",
-                              "dictionaryEntryId": "11422"
+                              "dictionaryEntryId": "182"
                             },
                             {
                               "type": "footnoteRef",
@@ -1691,7 +1703,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲡⲓⲥⲟⲛ",
-                              "dictionaryEntryId": "173"
+                              "dictionaryEntryId": "182"
                             },
                             { "type": "text", "text": " “the brother”" }
                           ]
@@ -1704,7 +1716,7 @@
                             {
                               "type": "coptic",
                               "text": "Ϯⲥⲱⲛⲓ",
-                              "dictionaryEntryId": "11422"
+                              "dictionaryEntryId": "182"
                             },
                             {
                               "type": "footnoteRef",
@@ -1721,7 +1733,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲛⲓⲥⲱⲛⲓ",
-                              "dictionaryEntryId": "11422"
+                              "dictionaryEntryId": "182"
                             },
                             { "type": "text", "text": " “the sisters”" }
                           ]
@@ -1747,7 +1759,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲡ̀ⲥⲟⲛ",
-                              "dictionaryEntryId": "173"
+                              "dictionaryEntryId": "182"
                             },
                             { "type": "text", "text": " “the brother”" }
                           ]
@@ -1760,7 +1772,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲧ̀ⲥⲱⲛⲓ",
-                              "dictionaryEntryId": "11422"
+                              "dictionaryEntryId": "182"
                             },
                             { "type": "text", "text": " “the sister”" }
                           ]
@@ -1792,7 +1804,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲡⲁⲥⲟⲛ",
-                              "dictionaryEntryId": "173"
+                              "dictionaryEntryId": "182"
                             },
                             { "type": "text", "text": " “my brother”" }
                           ]
@@ -1805,7 +1817,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲧⲁⲥⲱⲛⲓ",
-                              "dictionaryEntryId": "11422"
+                              "dictionaryEntryId": "182"
                             },
                             { "type": "text", "text": " “my sister”" }
                           ]
@@ -1818,7 +1830,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲛⲁⲥⲱⲛⲓ",
-                              "dictionaryEntryId": "11422"
+                              "dictionaryEntryId": "182"
                             },
                             { "type": "text", "text": " “my sisters”" }
                           ]
@@ -1844,7 +1856,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲡⲁⲓⲥⲟⲛ",
-                              "dictionaryEntryId": "173"
+                              "dictionaryEntryId": "182"
                             },
                             { "type": "text", "text": " “this brother”" }
                           ]
@@ -1857,7 +1869,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲧⲁⲓⲥⲱⲛⲓ",
-                              "dictionaryEntryId": "11422"
+                              "dictionaryEntryId": "182"
                             },
                             { "type": "text", "text": " “this sister”" }
                           ]
@@ -1870,7 +1882,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲛⲁⲓⲥⲱⲛⲓ",
-                              "dictionaryEntryId": "11422"
+                              "dictionaryEntryId": "182"
                             },
                             { "type": "text", "text": " “these sisters”" }
                           ]
@@ -1891,13 +1903,13 @@
                       {
                         "type": "coptic",
                         "text": "ⲡⲓ-",
-                        "dictionaryEntryId": "1223"
+                        "dictionaryEntryId": "1248"
                       },
                       { "type": "text", "text": " and " },
                       {
                         "type": "coptic",
                         "text": "ⲡ̀-",
-                        "dictionaryEntryId": "1220"
+                        "dictionaryEntryId": "1245"
                       },
                       {
                         "type": "text",
@@ -1922,19 +1934,19 @@
                   {
                     "type": "coptic",
                     "text": "Ⲥⲟⲛ",
-                    "dictionaryEntryId": "173"
+                    "dictionaryEntryId": "182"
                   },
                   { "type": "text", "text": " “broer” / " },
                   {
                     "type": "coptic",
                     "text": "Ⲥⲱⲛⲓ",
-                    "dictionaryEntryId": "11422"
+                    "dictionaryEntryId": "182"
                   },
                   { "type": "text", "text": " “zus” / " },
                   {
                     "type": "coptic",
                     "text": "Ⲥⲱⲛⲓ",
-                    "dictionaryEntryId": "11422"
+                    "dictionaryEntryId": "182"
                   },
                   { "type": "text", "text": " “zussen”" }
                 ]
@@ -2022,7 +2034,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲟⲩⲥⲟⲛ",
-                              "dictionaryEntryId": "173"
+                              "dictionaryEntryId": "182"
                             },
                             {
                               "type": "footnoteRef",
@@ -2039,7 +2051,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲟⲩⲥⲱⲛⲓ",
-                              "dictionaryEntryId": "11422"
+                              "dictionaryEntryId": "182"
                             },
                             { "type": "text", "text": " “een zus”" }
                           ]
@@ -2052,7 +2064,7 @@
                             {
                               "type": "coptic",
                               "text": "Ϩⲁⲛⲥⲱⲛⲓ",
-                              "dictionaryEntryId": "11422"
+                              "dictionaryEntryId": "182"
                             },
                             {
                               "type": "footnoteRef",
@@ -2082,7 +2094,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲡⲓⲥⲟⲛ",
-                              "dictionaryEntryId": "173"
+                              "dictionaryEntryId": "182"
                             },
                             { "type": "text", "text": " “de broer”" }
                           ]
@@ -2095,7 +2107,7 @@
                             {
                               "type": "coptic",
                               "text": "Ϯⲥⲱⲛⲓ",
-                              "dictionaryEntryId": "11422"
+                              "dictionaryEntryId": "182"
                             },
                             {
                               "type": "footnoteRef",
@@ -2112,7 +2124,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲛⲓⲥⲱⲛⲓ",
-                              "dictionaryEntryId": "11422"
+                              "dictionaryEntryId": "182"
                             },
                             { "type": "text", "text": " “de zussen”" }
                           ]
@@ -2138,7 +2150,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲡ̀ⲥⲟⲛ",
-                              "dictionaryEntryId": "173"
+                              "dictionaryEntryId": "182"
                             },
                             { "type": "text", "text": " “de broer”" }
                           ]
@@ -2151,7 +2163,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲧ̀ⲥⲱⲛⲓ",
-                              "dictionaryEntryId": "11422"
+                              "dictionaryEntryId": "182"
                             },
                             { "type": "text", "text": " “de zus”" }
                           ]
@@ -2183,7 +2195,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲡⲁⲥⲟⲛ",
-                              "dictionaryEntryId": "173"
+                              "dictionaryEntryId": "182"
                             },
                             { "type": "text", "text": " “mijn broer”" }
                           ]
@@ -2196,7 +2208,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲧⲁⲥⲱⲛⲓ",
-                              "dictionaryEntryId": "11422"
+                              "dictionaryEntryId": "182"
                             },
                             { "type": "text", "text": " “mijn zus”" }
                           ]
@@ -2209,7 +2221,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲛⲁⲥⲱⲛⲓ",
-                              "dictionaryEntryId": "11422"
+                              "dictionaryEntryId": "182"
                             },
                             { "type": "text", "text": " “mijn zussen”" }
                           ]
@@ -2233,7 +2245,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲡⲁⲓⲥⲟⲛ",
-                              "dictionaryEntryId": "173"
+                              "dictionaryEntryId": "182"
                             },
                             { "type": "text", "text": " “deze broer”" }
                           ]
@@ -2246,7 +2258,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲧⲁⲓⲥⲱⲛⲓ",
-                              "dictionaryEntryId": "11422"
+                              "dictionaryEntryId": "182"
                             },
                             { "type": "text", "text": " “deze zus”" }
                           ]
@@ -2259,7 +2271,7 @@
                             {
                               "type": "coptic",
                               "text": "Ⲛⲁⲓⲥⲱⲛⲓ",
-                              "dictionaryEntryId": "11422"
+                              "dictionaryEntryId": "182"
                             },
                             { "type": "text", "text": " “deze zussen”" }
                           ]
@@ -2280,13 +2292,13 @@
                       {
                         "type": "coptic",
                         "text": "ⲡⲓ-",
-                        "dictionaryEntryId": "1223"
+                        "dictionaryEntryId": "1248"
                       },
                       { "type": "text", "text": " en " },
                       {
                         "type": "coptic",
                         "text": "ⲡ̀-",
-                        "dictionaryEntryId": "1220"
+                        "dictionaryEntryId": "1245"
                       },
                       {
                         "type": "text",
@@ -2342,7 +2354,7 @@
                   {
                     "type": "coptic",
                     "text": "ⲛⲓⲃⲉⲛ",
-                    "dictionaryEntryId": "1152"
+                    "dictionaryEntryId": "1177"
                   },
                   { "type": "text", "text": " “every/each”." }
                 ]
@@ -2377,7 +2389,7 @@
                   {
                     "type": "coptic",
                     "text": "ⲛⲓⲃⲉⲛ",
-                    "dictionaryEntryId": "1152"
+                    "dictionaryEntryId": "1177"
                   },
                   { "type": "text", "text": " “elk/ieder”." }
                 ]
@@ -2494,7 +2506,7 @@
                           {
                             "type": "coptic",
                             "text": "ⲛⲉ",
-                            "dictionaryEntryId": "5101"
+                            "dictionaryEntryId": "5016"
                           },
                           { "type": "text", "text": " " },
                           {
@@ -2622,7 +2634,7 @@
                           {
                             "type": "coptic",
                             "text": "ⲛⲉ",
-                            "dictionaryEntryId": "5101"
+                            "dictionaryEntryId": "5016"
                           },
                           { "type": "text", "text": " " },
                           {
@@ -2748,7 +2760,7 @@
                           {
                             "type": "copticSpan",
                             "children": [{ "type": "text", "text": "Ⲛ̀ⲑⲟϥ" }],
-                            "dictionaryEntryId": "1178"
+                            "dictionaryEntryId": "1203"
                           },
                           { "type": "text", "text": " " },
                           {
@@ -2769,7 +2781,7 @@
                           {
                             "type": "copticSpan",
                             "children": [{ "type": "text", "text": "Ⲛ̀ⲑⲟⲥ" }],
-                            "dictionaryEntryId": "11428"
+                            "dictionaryEntryId": "506"
                           },
                           { "type": "text", "text": " " },
                           {
@@ -2790,7 +2802,7 @@
                           {
                             "type": "copticSpan",
                             "children": [{ "type": "text", "text": "Ⲛ̀ⲑⲱⲟⲩ" }],
-                            "dictionaryEntryId": "11429"
+                            "dictionaryEntryId": "507"
                           },
                           { "type": "text", "text": " " },
                           {
@@ -2988,7 +3000,7 @@
                           {
                             "type": "copticSpan",
                             "children": [{ "type": "text", "text": "Ⲛ̀ⲑⲟϥ" }],
-                            "dictionaryEntryId": "1178"
+                            "dictionaryEntryId": "1203"
                           },
                           { "type": "text", "text": " " },
                           {
@@ -3009,7 +3021,7 @@
                           {
                             "type": "copticSpan",
                             "children": [{ "type": "text", "text": "Ⲛ̀ⲑⲟⲥ" }],
-                            "dictionaryEntryId": "11428"
+                            "dictionaryEntryId": "506"
                           },
                           { "type": "text", "text": " " },
                           {
@@ -3030,7 +3042,7 @@
                           {
                             "type": "copticSpan",
                             "children": [{ "type": "text", "text": "Ⲛ̀ⲑⲱⲟⲩ" }],
-                            "dictionaryEntryId": "11429"
+                            "dictionaryEntryId": "507"
                           },
                           { "type": "text", "text": " " },
                           {
@@ -3283,7 +3295,7 @@
                               {
                                 "type": "coptic",
                                 "text": "ⲭⲉⲣⲉ",
-                                "dictionaryEntryId": "6002"
+                                "dictionaryEntryId": "5842"
                               },
                               { "type": "text", "text": " ⲛⲉ Ⲙⲁⲣⲓⲁ" }
                             ]
@@ -3330,7 +3342,7 @@
                           {
                             "type": "copticSpan",
                             "children": [{ "type": "text", "text": "ⲧ︦ⲱ︦ⲃ︦" }],
-                            "dictionaryEntryId": "1799"
+                            "dictionaryEntryId": "1831"
                           },
                           { "type": "text", "text": " = " },
                           {
@@ -3397,7 +3409,7 @@
                             {
                               "type": "copticSpan",
                               "children": [{ "type": "text", "text": "ⲁ̅ⲗ̅" }],
-                              "dictionaryEntryId": "407"
+                              "dictionaryEntryId": "421"
                             }
                           ]
                         }
@@ -3458,7 +3470,7 @@
                                 {
                                   "type": "coptic",
                                   "text": "Ⲥⲱⲧⲏⲣ",
-                                  "dictionaryEntryId": "5770"
+                                  "dictionaryEntryId": "5632"
                                 }
                               ]
                             },
@@ -3594,7 +3606,7 @@
                                 {
                                   "type": "coptic",
                                   "text": "Ⲭⲉⲣⲉ",
-                                  "dictionaryEntryId": "6002"
+                                  "dictionaryEntryId": "5842"
                                 }
                               ]
                             }
@@ -3634,7 +3646,7 @@
                               "children": [
                                 { "type": "text", "text": "Ⲓⲏⲥⲟⲩⲥ" }
                               ],
-                              "dictionaryEntryId": "4548"
+                              "dictionaryEntryId": "4531"
                             },
                             { "type": "text", "text": " " },
                             { "type": "text", "text": "N" },
@@ -3695,7 +3707,7 @@
                               "children": [
                                 { "type": "text", "text": "Ⲡⲓⲭⲣⲓⲥⲧⲟⲥ" }
                               ],
-                              "dictionaryEntryId": "6064"
+                              "dictionaryEntryId": "5896"
                             },
                             { "type": "text", "text": " " },
                             { "type": "text", "text": "N" },
@@ -3756,7 +3768,7 @@
                               "children": [
                                 { "type": "text", "text": "Ⲡ̀ⲛⲉⲩⲙⲁ" }
                               ],
-                              "dictionaryEntryId": "5377"
+                              "dictionaryEntryId": "5276"
                             },
                             { "type": "text", "text": " " },
                             {
@@ -3934,7 +3946,7 @@
                               {
                                 "type": "coptic",
                                 "text": "ⲭⲉⲣⲉ",
-                                "dictionaryEntryId": "6002"
+                                "dictionaryEntryId": "5842"
                               },
                               { "type": "text", "text": " ⲛⲉ Ⲙⲁⲣⲓⲁ" }
                             ]
@@ -3981,7 +3993,7 @@
                           {
                             "type": "copticSpan",
                             "children": [{ "type": "text", "text": "ⲧ︦ⲱ︦ⲃ︦" }],
-                            "dictionaryEntryId": "1799"
+                            "dictionaryEntryId": "1831"
                           },
                           { "type": "text", "text": " = " },
                           {
@@ -4048,7 +4060,7 @@
                             {
                               "type": "copticSpan",
                               "children": [{ "type": "text", "text": "ⲁ̅ⲗ̅" }],
-                              "dictionaryEntryId": "407"
+                              "dictionaryEntryId": "421"
                             }
                           ]
                         }
@@ -4107,7 +4119,7 @@
                                 {
                                   "type": "coptic",
                                   "text": "Ⲥⲱⲧⲏⲣ",
-                                  "dictionaryEntryId": "5770"
+                                  "dictionaryEntryId": "5632"
                                 }
                               ]
                             },
@@ -4243,7 +4255,7 @@
                                 {
                                   "type": "coptic",
                                   "text": "Ⲭⲉⲣⲉ",
-                                  "dictionaryEntryId": "6002"
+                                  "dictionaryEntryId": "5842"
                                 }
                               ]
                             }
@@ -4281,7 +4293,7 @@
                               "children": [
                                 { "type": "text", "text": "Ⲓⲏⲥⲟⲩⲥ" }
                               ],
-                              "dictionaryEntryId": "4548"
+                              "dictionaryEntryId": "4531"
                             },
                             { "type": "text", "text": " " },
                             { "type": "text", "text": "N" },
@@ -4342,7 +4354,7 @@
                               "children": [
                                 { "type": "text", "text": "Ⲡⲓⲭⲣⲓⲥⲧⲟⲥ" }
                               ],
-                              "dictionaryEntryId": "6064"
+                              "dictionaryEntryId": "5896"
                             },
                             { "type": "text", "text": " " },
                             { "type": "text", "text": "N" },
@@ -4405,7 +4417,7 @@
                               "children": [
                                 { "type": "text", "text": "Ⲡ̀ⲛⲉⲩⲙⲁ" }
                               ],
-                              "dictionaryEntryId": "5377"
+                              "dictionaryEntryId": "5276"
                             },
                             { "type": "text", "text": " " },
                             {
@@ -4721,7 +4733,7 @@
                 {
                   "type": "coptic",
                   "text": "ⲛⲓⲃⲉⲛ",
-                  "dictionaryEntryId": "1152"
+                  "dictionaryEntryId": "1177"
                 },
                 {
                   "type": "text",
@@ -4742,7 +4754,7 @@
                 {
                   "type": "coptic",
                   "text": "ⲛⲓⲃⲉⲛ",
-                  "dictionaryEntryId": "1152"
+                  "dictionaryEntryId": "1177"
                 },
                 {
                   "type": "text",
@@ -4779,7 +4791,7 @@
                 { "type": "coptic", "text": "ⲧⲉ" },
                 { "type": "text", "text": ", and " },
                 { "type": "text", "text": "≡" },
-                { "type": "coptic", "text": "ⲛⲉ", "dictionaryEntryId": "5101" },
+                { "type": "coptic", "text": "ⲛⲉ", "dictionaryEntryId": "5016" },
                 {
                   "type": "text",
                   "text": " that structure the bipartite nominal sentence."
@@ -4802,7 +4814,7 @@
                 { "type": "coptic", "text": "ⲧⲉ" },
                 { "type": "text", "text": " en " },
                 { "type": "text", "text": "≡" },
-                { "type": "coptic", "text": "ⲛⲉ", "dictionaryEntryId": "5101" },
+                { "type": "coptic", "text": "ⲛⲉ", "dictionaryEntryId": "5016" },
                 {
                   "type": "text",
                   "text": " die de tweeledige nominale zin structureren."
@@ -4872,19 +4884,19 @@
                 {
                   "type": "coptic",
                   "text": "ⲛ̀ⲑⲟϥ",
-                  "dictionaryEntryId": "1178"
+                  "dictionaryEntryId": "1203"
                 },
                 { "type": "text", "text": ", " },
                 {
                   "type": "coptic",
                   "text": "ⲛ̀ⲑⲟⲥ",
-                  "dictionaryEntryId": "11428"
+                  "dictionaryEntryId": "506"
                 },
                 { "type": "text", "text": ", and " },
                 {
                   "type": "coptic",
                   "text": "ⲛ̀ⲑⲱⲟⲩ",
-                  "dictionaryEntryId": "11429"
+                  "dictionaryEntryId": "507"
                 },
                 {
                   "type": "text",
@@ -4904,19 +4916,19 @@
                 {
                   "type": "coptic",
                   "text": "ⲛ̀ⲑⲟϥ",
-                  "dictionaryEntryId": "1178"
+                  "dictionaryEntryId": "1203"
                 },
                 { "type": "text", "text": ", " },
                 {
                   "type": "coptic",
                   "text": "ⲛ̀ⲑⲟⲥ",
-                  "dictionaryEntryId": "11428"
+                  "dictionaryEntryId": "506"
                 },
                 { "type": "text", "text": " en " },
                 {
                   "type": "coptic",
                   "text": "ⲛ̀ⲑⲱⲟⲩ",
-                  "dictionaryEntryId": "11429"
+                  "dictionaryEntryId": "507"
                 },
                 {
                   "type": "text",
@@ -4976,12 +4988,12 @@
         "coptic": "Ø-ⲣⲱⲙⲓ ⲛⲓⲃⲉⲛ",
         "translation": { "en": "“every man”", "nl": "“iedere mens”" },
         "conceptRefs": ["grammar.concept.zero-determination"],
-        "dictionaryRefs": ["21", "1152"],
+        "dictionaryRefs": ["21", "1177"],
         "tags": ["lesson-1", "zero-determination", "quantifier"],
         "copticSegments": [
           { "text": "Ø-ⲣⲱⲙⲓ", "dictionaryEntryId": "21" },
           { "text": " " },
-          { "text": "ⲛⲓⲃⲉⲛ", "dictionaryEntryId": "1152" }
+          { "text": "ⲛⲓⲃⲉⲛ", "dictionaryEntryId": "1177" }
         ]
       },
       {
@@ -4991,12 +5003,12 @@
         "coptic": "Ø-ⲥ̀ϩⲓⲙⲓ ⲛⲓⲃⲉⲛ",
         "translation": { "en": "“every woman”", "nl": "“elke vrouw”" },
         "conceptRefs": ["grammar.concept.zero-determination"],
-        "dictionaryRefs": ["142", "1152"],
+        "dictionaryRefs": ["151", "1177"],
         "tags": ["lesson-1", "zero-determination", "quantifier"],
         "copticSegments": [
-          { "text": "Ø-ⲥ̀ϩⲓⲙⲓ", "dictionaryEntryId": "142" },
+          { "text": "Ø-ⲥ̀ϩⲓⲙⲓ", "dictionaryEntryId": "151" },
           { "text": " " },
-          { "text": "ⲛⲓⲃⲉⲛ", "dictionaryEntryId": "1152" }
+          { "text": "ⲛⲓⲃⲉⲛ", "dictionaryEntryId": "1177" }
         ]
       },
       {
@@ -5006,12 +5018,12 @@
         "coptic": "Ø-ⲁⲅⲓⲟⲥ ⲛⲓⲃⲉⲛ",
         "translation": { "en": "“every saint”", "nl": "“iedere heilige”" },
         "conceptRefs": ["grammar.concept.zero-determination"],
-        "dictionaryRefs": ["3368", "1152"],
+        "dictionaryRefs": ["3414", "1177"],
         "tags": ["lesson-1", "zero-determination", "quantifier"],
         "copticSegments": [
-          { "text": "Ø-ⲁⲅⲓⲟⲥ", "dictionaryEntryId": "3368" },
+          { "text": "Ø-ⲁⲅⲓⲟⲥ", "dictionaryEntryId": "3414" },
           { "text": " " },
-          { "text": "ⲛⲓⲃⲉⲛ", "dictionaryEntryId": "1152" }
+          { "text": "ⲛⲓⲃⲉⲛ", "dictionaryEntryId": "1177" }
         ]
       },
       {
@@ -5021,12 +5033,12 @@
         "coptic": "Ø-ⲉⲕⲕ̀ⲗⲏⲥⲓⲁ̀ ⲛⲓⲃⲉⲛ",
         "translation": { "en": "“every church”", "nl": "“iedere kerk”" },
         "conceptRefs": ["grammar.concept.zero-determination"],
-        "dictionaryRefs": ["4042", "1152"],
+        "dictionaryRefs": ["4045", "1177"],
         "tags": ["lesson-1", "zero-determination", "quantifier"],
         "copticSegments": [
-          { "text": "Ø-ⲉⲕⲕ̀ⲗⲏⲥⲓⲁ̀", "dictionaryEntryId": "4042" },
+          { "text": "Ø-ⲉⲕⲕ̀ⲗⲏⲥⲓⲁ̀", "dictionaryEntryId": "4045" },
           { "text": " " },
-          { "text": "ⲛⲓⲃⲉⲛ", "dictionaryEntryId": "1152" }
+          { "text": "ⲛⲓⲃⲉⲛ", "dictionaryEntryId": "1177" }
         ]
       },
       {
@@ -5100,7 +5112,7 @@
         "lessonId": "grammar.lesson.01",
         "sectionId": "grammar.lesson.01.section.bipartite-nominal-sentence",
         "coptic": "Ⲧⲁⲙⲁⲩ ⲧⲉ.",
-        "dictionaryTokenOverrides": { "Ⲧⲁⲙⲁⲩ": "215" },
+        "dictionaryTokenOverrides": { "Ⲧⲁⲙⲁⲩ": "228" },
         "translation": {
           "en": "“She is my mother.”",
           "nl": "“Zij is mijn moeder.”"
@@ -5109,10 +5121,10 @@
           "grammar.concept.bipartite-nominal-sentence",
           "grammar.concept.nexus-pronouns"
         ],
-        "dictionaryRefs": ["215"],
+        "dictionaryRefs": ["228"],
         "tags": ["lesson-1", "nominal-sentence", "nexus-pronoun"],
         "copticSegments": [
-          { "text": "Ⲧⲁⲙⲁⲩ", "dictionaryEntryId": "215" },
+          { "text": "Ⲧⲁⲙⲁⲩ", "dictionaryEntryId": "228" },
           { "text": " " },
           { "text": "ⲧⲉ" },
           { "text": "." }
@@ -5131,10 +5143,10 @@
           "grammar.concept.bipartite-nominal-sentence",
           "grammar.concept.nexus-pronouns"
         ],
-        "dictionaryRefs": ["142"],
+        "dictionaryRefs": ["151"],
         "tags": ["lesson-1", "nominal-sentence", "nexus-pronoun"],
         "copticSegments": [
-          { "text": "Ⲟⲩⲥ̀ϩⲓⲙⲓ", "dictionaryEntryId": "142" },
+          { "text": "Ⲟⲩⲥ̀ϩⲓⲙⲓ", "dictionaryEntryId": "151" },
           { "text": " " },
           { "text": "ⲧⲉ" },
           { "text": "." }
@@ -5153,12 +5165,12 @@
           "grammar.concept.bipartite-nominal-sentence",
           "grammar.concept.nexus-pronouns"
         ],
-        "dictionaryRefs": ["11422", "5101"],
+        "dictionaryRefs": ["182", "5016"],
         "tags": ["lesson-1", "nominal-sentence", "nexus-pronoun"],
         "copticSegments": [
-          { "text": "Ϩⲁⲛⲥⲱⲛⲓ", "dictionaryEntryId": "11422" },
+          { "text": "Ϩⲁⲛⲥⲱⲛⲓ", "dictionaryEntryId": "182" },
           { "text": " " },
-          { "text": "ⲛⲉ", "dictionaryEntryId": "5101" },
+          { "text": "ⲛⲉ", "dictionaryEntryId": "5016" },
           { "text": "." }
         ]
       },
@@ -5172,12 +5184,12 @@
           "grammar.concept.bipartite-nominal-sentence",
           "grammar.concept.nexus-pronouns"
         ],
-        "dictionaryRefs": ["21", "5101"],
+        "dictionaryRefs": ["21", "5016"],
         "tags": ["lesson-1", "nominal-sentence", "nexus-pronoun"],
         "copticSegments": [
           { "text": "Ϩⲁⲛⲣⲱⲙⲓ", "dictionaryEntryId": "21" },
           { "text": " " },
-          { "text": "ⲛⲉ", "dictionaryEntryId": "5101" },
+          { "text": "ⲛⲉ", "dictionaryEntryId": "5016" },
           { "text": "." }
         ]
       },
@@ -5194,12 +5206,12 @@
           "grammar.concept.bipartite-nominal-sentence",
           "grammar.concept.nexus-pronouns"
         ],
-        "dictionaryRefs": ["3368", "5101"],
+        "dictionaryRefs": ["3414", "5016"],
         "tags": ["lesson-1", "nominal-sentence", "nexus-pronoun"],
         "copticSegments": [
-          { "text": "Ⲛⲓⲁⲅⲓⲟⲥ", "dictionaryEntryId": "3368" },
+          { "text": "Ⲛⲓⲁⲅⲓⲟⲥ", "dictionaryEntryId": "3414" },
           { "text": " " },
-          { "text": "ⲛⲉ", "dictionaryEntryId": "5101" },
+          { "text": "ⲛⲉ", "dictionaryEntryId": "5016" },
           { "text": "." }
         ]
       }
@@ -5574,7 +5586,7 @@
               "content": [
                 { "type": "coptic", "text": "Ⲟⲩ-" },
                 { "type": "text", "text": " comes from " },
-                { "type": "coptic", "text": "ⲟⲩⲁⲓ", "dictionaryEntryId": "68" },
+                { "type": "coptic", "text": "ⲟⲩⲁⲓ", "dictionaryEntryId": "72" },
                 {
                   "type": "text",
                   "text": " (the number “one”). Compare with French un/une (articles), but also: un, deux, trois, ... (numbers)."
@@ -5588,7 +5600,7 @@
               "content": [
                 { "type": "coptic", "text": "Ⲟⲩ-" },
                 { "type": "text", "text": " < " },
-                { "type": "coptic", "text": "ⲟⲩⲁⲓ", "dictionaryEntryId": "68" },
+                { "type": "coptic", "text": "ⲟⲩⲁⲓ", "dictionaryEntryId": "72" },
                 {
                   "type": "text",
                   "text": " (het getal “een”). Vgl. Frans un/une (lidwoorden), maar ook: un, deux, trois, ... (getallen)."
@@ -5610,7 +5622,7 @@
                 {
                   "type": "coptic",
                   "text": "Ϩⲁⲛ-",
-                  "dictionaryEntryId": "100"
+                  "dictionaryEntryId": "106"
                 },
                 { "type": "text", "text": " comes from " },
                 { "type": "coptic", "text": "ϩⲟⲓ̈ⲛⲉ" },
@@ -5621,7 +5633,7 @@
                 {
                   "type": "coptic",
                   "text": "ϩⲁⲛ-",
-                  "dictionaryEntryId": "100"
+                  "dictionaryEntryId": "106"
                 },
                 { "type": "text", "text": "." }
               ]
@@ -5634,7 +5646,7 @@
                 {
                   "type": "coptic",
                   "text": "Ϩⲁⲛ-",
-                  "dictionaryEntryId": "100"
+                  "dictionaryEntryId": "106"
                 },
                 { "type": "text", "text": " < " },
                 { "type": "coptic", "text": "ϩⲟⲓ̈ⲛⲉ" },
@@ -5645,7 +5657,7 @@
                 {
                   "type": "coptic",
                   "text": "ϩⲁⲛ-",
-                  "dictionaryEntryId": "100"
+                  "dictionaryEntryId": "106"
                 },
                 { "type": "text", "text": "." }
               ]
@@ -5667,7 +5679,7 @@
                 {
                   "type": "coptic",
                   "text": "ϯⲥⲱⲛⲓ",
-                  "dictionaryEntryId": "11422"
+                  "dictionaryEntryId": "182"
                 },
                 { "type": "text", "text": "." }
               ]
@@ -5682,7 +5694,7 @@
                 {
                   "type": "coptic",
                   "text": "ϯⲥⲱⲛⲓ",
-                  "dictionaryEntryId": "11422"
+                  "dictionaryEntryId": "182"
                 },
                 { "type": "text", "text": "." }
               ]

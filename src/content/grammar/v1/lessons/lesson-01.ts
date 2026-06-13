@@ -329,7 +329,7 @@ export const grammarLesson01Document: GrammarLessonDocument = {
                 cells: {
                   masculineWord: paragraphCell(coptic("Ⲓⲱⲧ")),
                   masculineMeaning: paragraphCell(text("“father”")),
-                  feminineWord: paragraphCell(coptic("Ⲙⲁⲩ", "215")),
+                  feminineWord: paragraphCell(coptic("Ⲙⲁⲩ", "228")),
                   feminineMeaning: paragraphCell(text("“mother”")),
                 },
               },
@@ -471,7 +471,7 @@ export const grammarLesson01Document: GrammarLessonDocument = {
                 cells: {
                   masculineWord: paragraphCell(coptic("Ⲓⲱⲧ")),
                   masculineMeaning: paragraphCell(text("“vader”")),
-                  feminineWord: paragraphCell(coptic("Ⲙⲁⲩ", "215")),
+                  feminineWord: paragraphCell(coptic("Ⲙⲁⲩ", "228")),
                   feminineMeaning: paragraphCell(text("“moeder”")),
                 },
               },
@@ -1623,7 +1623,7 @@ export const grammarLesson01Document: GrammarLessonDocument = {
                   paragraph(
                     copticSpan(text("ⲭ︦ⲉ︦")),
                     text(" = "),
-                    copticSpan(coptic("ⲭⲉⲣⲉ", "6002"), text(" ⲛⲉ Ⲙⲁⲣⲓⲁ")),
+                    copticSpan(coptic("ⲭⲉⲣⲉ", "5842"), text(" ⲛⲉ Ⲙⲁⲣⲓⲁ")),
                     text(" “Hail Mary”"),
                   ),
                 ],
@@ -1690,7 +1690,7 @@ export const grammarLesson01Document: GrammarLessonDocument = {
                 cells: {
                   fullWord: [
                     paragraph(
-                      copticSpan(coptic("Ⲥⲱⲧⲏⲣ", "5770")),
+                      copticSpan(coptic("Ⲥⲱⲧⲏⲣ", "5632")),
                       text(" "),
                       smallCaps("m"),
                     ),
@@ -1733,7 +1733,7 @@ export const grammarLesson01Document: GrammarLessonDocument = {
               {
                 id: `${lessonId}.section.abbreviations.row.6`,
                 cells: {
-                  fullWord: [paragraph(copticSpan(coptic("Ⲭⲉⲣⲉ", "6002")))],
+                  fullWord: [paragraph(copticSpan(coptic("Ⲭⲉⲣⲉ", "5842")))],
                   abbreviation: [paragraph(copticSpan(text("ⲭ̅ⲉ̅")))],
                   meaning: [paragraph(text("“hail / greetings”"))],
                 },
@@ -1847,7 +1847,7 @@ export const grammarLesson01Document: GrammarLessonDocument = {
                   paragraph(
                     copticSpan(text("ⲭ︦ⲉ︦")),
                     text(" = "),
-                    copticSpan(coptic("ⲭⲉⲣⲉ", "6002"), text(" ⲛⲉ Ⲙⲁⲣⲓⲁ")),
+                    copticSpan(coptic("ⲭⲉⲣⲉ", "5842"), text(" ⲛⲉ Ⲙⲁⲣⲓⲁ")),
                     text(" “wees gegroet Maria”"),
                   ),
                 ],
@@ -1914,7 +1914,7 @@ export const grammarLesson01Document: GrammarLessonDocument = {
                 cells: {
                   fullWord: [
                     paragraph(
-                      copticSpan(coptic("Ⲥⲱⲧⲏⲣ", "5770")),
+                      copticSpan(coptic("Ⲥⲱⲧⲏⲣ", "5632")),
                       text(" "),
                       smallCaps("m"),
                     ),
@@ -1957,7 +1957,7 @@ export const grammarLesson01Document: GrammarLessonDocument = {
               {
                 id: `${lessonId}.section.abbreviations.row.6.nl`,
                 cells: {
-                  fullWord: [paragraph(copticSpan(coptic("Ⲭⲉⲣⲉ", "6002")))],
+                  fullWord: [paragraph(copticSpan(coptic("Ⲭⲉⲣⲉ", "5842")))],
                   abbreviation: [paragraph(copticSpan(text("ⲭ̅ⲉ̅")))],
                   meaning: [paragraph(text("“gegroet”"))],
                 },

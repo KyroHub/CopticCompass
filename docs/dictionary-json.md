@@ -19,6 +19,7 @@ behind those rules.
 - [Etymology](#etymology)
 - [Dialects](#dialects)
 - [Senses, Meanings, And Notes](#senses-meanings-and-notes)
+- [Gendered And Numbered Meanings](#gendered-and-numbered-meanings)
 - [Dialect-Restricted Meanings](#dialect-restricted-meanings)
 - [Relations](#relations)
 - [Grammar Equivalence Notes](#grammar-equivalence-notes)
@@ -35,7 +36,9 @@ behind those rules.
 ## Editing Rules
 
 - Keep entries structured. Prefer specific fields over source-style prose.
-- Put translations in `senses[].meanings`, and commentary in `senses[].notes`.
+- Put ordinary translations in `senses[].meanings`, form-linked `m`, `f`, and
+  `pl` translations in `genderedMeanings`, and commentary in
+  `senses[].notes`.
 - Put dialect spellings in `dialects`.
 - Put alternate spellings in the matching `variants` object.
 - Put semantic cross-references in `relations`, not inside translations.
@@ -77,9 +80,11 @@ A normal entry has these core fields:
 }
 ```
 
-Use stable numeric `id` values. When entries are merged, remove the duplicate
-entry only after its useful forms, Greek context, notes, or meanings have been
-folded into the canonical entry.
+Use contiguous numeric `id` values matching the entry's position in the JSON
+array. After entries are added, removed, merged, or reordered, run
+`npm run data:dictionary:compact` and update repository-owned references. Entry
+URLs and persisted entry references are intentionally positional rather than
+stable across dictionary migrations.
 
 ## Greek Context
 
@@ -261,6 +266,59 @@ Avoid:
 }
 ```
 
+## Gendered And Numbered Meanings
+
+Use `genderedMeanings` when one lexical entry has meanings tied to masculine,
+feminine, or plural forms. Allowed markers are `m`, `f`, and `pl`; each marker
+stores one non-empty localized string. The UI displays them in marker order and
+attaches them to the first noun sense.
+
+```json
+{
+  "genderedMeanings": [
+    {
+      "meanings": {
+        "en": {
+          "m": "brother",
+          "f": "sister",
+          "pl": "siblings"
+        },
+        "nl": {
+          "m": "broer",
+          "f": "zus",
+          "pl": "broers en zussen"
+        }
+      }
+    }
+  ],
+  "senses": [
+    {
+      "grammar": {
+        "pos": "N",
+        "gender": "M"
+      }
+    }
+  ]
+}
+```
+
+Keep the corresponding spellings under `dialects` and `inflections`. Do not
+repeat the same translations in the noun sense. A separate adjective or other
+part-of-speech sense can still keep its own `senses[].meanings`:
+
+```json
+{
+  "grammar": { "pos": "ADJ" },
+  "meanings": {
+    "en": ["sibling-like, familial"],
+    "nl": ["broederlijk, familiaal"]
+  }
+}
+```
+
+`genderedMeanings` does not require every marker. For example, an entry with a
+masculine singular and a plural form may use only `m` and `pl`.
+
 ## Dialect-Restricted Meanings
 
 Use `dialectMeanings` for translations that are restricted to one or more
@@ -353,7 +411,7 @@ Allowed relation types:
 
 Use `relations[].notes` only for metadata about the relationship itself, such as
 source uncertainty or a dialect restriction. If the target cannot be resolved to
-a stable entry id, keep the derivation as a localized `senses[].notes` item
+an existing entry id, keep the derivation as a localized `senses[].notes` item
 instead of creating a speculative relation.
 
 Keep relation edges canonical:
@@ -376,7 +434,7 @@ Good:
 "relations": [
   {
     "type": "SEE_ALSO",
-    "targetId": 2559,
+    "targetId": 2604,
     "notes": {
       "en": ["Always equivalent to Bohairic ϭⲏⲡⲓ."],
       "nl": ["Altijd gelijkwaardig aan Bohairisch ϭⲏⲡⲓ."]
@@ -399,7 +457,7 @@ Compound entries use `relations`:
 "relations": [
   {
     "type": "COMPOUND_WITH",
-    "targetId": 130
+    "targetId": 137
   }
 ]
 ```
@@ -689,6 +747,7 @@ Do not use `notes` to repeat structural information. If a form is in
 | Alternate dialect spelling        | `dialects.<dialect>.variants.<state>`               |
 | Source-form inventory             | `dialects` / `inflections`                          |
 | Translation                       | `senses[].meanings.en` / `senses[].meanings.nl`     |
+| Gendered or numbered translation  | `genderedMeanings[].meanings.<locale>.<marker>`     |
 | Dialect-restricted translation    | `dialectMeanings[]`                                 |
 | Explanation or derivation note    | `senses[].notes.en` / `senses[].notes.nl`           |
 | Greek or grammar equivalence      | `senses[].notes.en` / `senses[].notes.nl`           |
@@ -711,13 +770,17 @@ When merging duplicate entries:
    inflections into the canonical entry.
 3. Remove the duplicate entry object.
 4. Search the repo for stale references to the removed id.
-5. Regenerate grammar data if grammar links referenced the removed id.
-6. Update current dataset tests that count structured forms.
+5. Run `npm run data:dictionary:compact` to close ID gaps and remap dictionary
+   relations and inflected-form references.
+6. Update repository-owned references to the new IDs.
+7. Regenerate grammar data if grammar links referenced a changed id.
+8. Update current dataset tests that count structured forms.
 
 Useful checks:
 
 ```bash
 rg '"id": 428|dictionaryEntryId": "428"' public src tests
+npm run data:dictionary:compact
 npm run data:grammar:export
 npm run test -- src/features/dictionary/lib/dictionary.dataset.test.ts
 ```
@@ -740,7 +803,9 @@ page. For inflection changes, check at least:
 - the relevant grouped `src/features/dictionary/lib/dictionaryValidation*.ts`
   module
 - `src/features/dictionary/lib/entryDisplay.ts`
+- `src/features/dictionary/lib/entryText.ts`
 - `src/features/dictionary/search.ts`
+- `src/content/grammar/dictionary-links.ts`
 - `src/features/dictionary/lib/dictionary.dataset.test.ts`
 
 ## Quick Checklist
@@ -753,6 +818,8 @@ Before committing dictionary JSON changes:
   meanings.
 - Variants live under `variants`, not as comma-separated text.
 - Notes are real notes, not hidden translations or structural labels.
+- Form-linked `m`, `f`, and `pl` glosses use `genderedMeanings` without
+  duplicating the noun translation in `senses`.
 - Related forms are searchable.
 - The relevant entry page still renders cleanly.
 - `npm run format:check`, focused dataset tests, and the broader test/build
