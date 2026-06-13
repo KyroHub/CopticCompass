@@ -2,11 +2,8 @@
 
 import {
   ArrowRight,
-  BarChart3,
   Bot,
-  Compass,
   GraduationCap,
-  Layers3,
   LibraryBig,
   Search,
   type LucideIcon,
@@ -18,30 +15,20 @@ import { buttonClassName } from "@/components/Button";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PageHeader } from "@/components/PageHeader";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
-import { SurfacePanel, surfacePanelClassName } from "@/components/SurfacePanel";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import { DEFAULT_PRACTICE_DECK_ID } from "@/features/practice/lib/practiceDeckDefaults";
 import { cx } from "@/lib/classes";
 import {
   getAnalyticsPath,
   getDevelopersPath,
   getDictionaryPath,
-  getPracticePath,
   getGrammarPath,
+  getPracticePath,
   getPublicationsPath,
   getShenutePath,
 } from "@/lib/locale";
 
 type Tone = "coptic" | "gold" | "ink" | "surface";
-
-type LearningLoopStepProps = {
-  cta: string;
-  description: string;
-  href: string;
-  icon: LucideIcon;
-  stepLabel: string;
-  title: string;
-  tone: Tone;
-};
 
 type PlatformPillarLink = {
   href: string;
@@ -56,12 +43,6 @@ type PlatformPillarCardProps = {
   tone: Tone;
 };
 
-type IconTileProps = {
-  icon: LucideIcon;
-  size?: "sm" | "md";
-  tone: Tone;
-};
-
 const TONE_CLASSES: Record<
   Tone,
   {
@@ -72,104 +53,37 @@ const TONE_CLASSES: Record<
 > = {
   coptic: {
     borderClassName: "hover:border-coptic/35",
-    iconClassName: "bg-coptic-soft text-coptic",
+    iconClassName: "border-coptic/20 bg-coptic-soft text-coptic",
     linkClassName: "text-coptic",
   },
   gold: {
     borderClassName: "hover:border-accent/45",
-    iconClassName: "bg-accent-soft text-accent-strong dark:text-ink",
+    iconClassName:
+      "border-accent/25 bg-accent-soft text-accent-strong dark:text-ink",
     linkClassName: "text-accent-strong dark:text-ink",
   },
   ink: {
     borderClassName: "hover:border-ink/25 dark:hover:border-paper/25",
-    iconClassName: "bg-elevated text-ink",
+    iconClassName: "border-line bg-elevated text-ink",
     linkClassName: "text-ink",
   },
   surface: {
     borderClassName: "hover:border-line",
-    iconClassName: "bg-surface text-muted",
+    iconClassName: "border-line bg-surface text-muted",
     linkClassName: "text-ink",
   },
 };
 
-const learningLoopCardClassName = surfacePanelClassName({
-  rounded: "lg",
-  interactive: true,
-  className: "group flex h-full flex-col overflow-hidden p-5 text-left md:p-7",
-});
-
 const platformPillarCardClassName = surfacePanelClassName({
   rounded: "lg",
-  className:
-    "flex h-full flex-col overflow-hidden p-5 text-left md:min-h-[220px] md:p-6 xl:min-h-[280px]",
+  interactive: true,
+  shadow: "soft",
+  className: "group flex h-full flex-col p-5 text-left md:p-6",
 });
-
-function IconTile({ icon: Icon, size = "md", tone }: IconTileProps) {
-  const isSmall = size === "sm";
-
-  return (
-    <span
-      className={cx(
-        "inline-flex shrink-0 items-center justify-center rounded-lg",
-        isSmall ? "h-9 w-9 md:h-10 md:w-10" : "h-10 w-10 md:h-12 md:w-12",
-        TONE_CLASSES[tone].iconClassName,
-      )}
-    >
-      <Icon
-        className={isSmall ? "h-4 w-4 md:h-5 md:w-5" : "h-5 w-5 md:h-6 md:w-6"}
-      />
-    </span>
-  );
-}
-
-function LearningLoopStep({
-  cta,
-  description,
-  href,
-  icon,
-  stepLabel,
-  title,
-  tone,
-}: LearningLoopStepProps) {
-  const theme = TONE_CLASSES[tone];
-
-  return (
-    <li className="min-w-0">
-      <Link
-        href={href}
-        prefetch={false}
-        className={cx(learningLoopCardClassName, theme.borderClassName)}
-      >
-        <div className="flex items-start justify-between gap-3">
-          <IconTile icon={icon} size="sm" tone={tone} />
-          <span className="rounded-full border border-line bg-paper/80 px-2.5 py-1 text-xs font-semibold text-muted">
-            {stepLabel}
-          </span>
-        </div>
-
-        <h3 className="mt-4 text-lg font-semibold tracking-tight text-ink md:mt-5 md:text-xl">
-          {title}
-        </h3>
-        <p className="mt-3 flex-1 text-sm leading-6 text-muted">
-          {description}
-        </p>
-        <span
-          className={cx(
-            "mt-5 inline-flex items-center gap-2 text-sm font-semibold",
-            theme.linkClassName,
-          )}
-        >
-          {cta}
-          <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-        </span>
-      </Link>
-    </li>
-  );
-}
 
 function PlatformPillarCard({
   description,
-  icon,
+  icon: Icon,
   links,
   title,
   tone,
@@ -178,27 +92,35 @@ function PlatformPillarCard({
 
   return (
     <article className={cx(platformPillarCardClassName, theme.borderClassName)}>
-      <IconTile icon={icon} size="sm" tone={tone} />
-      <h3 className="mt-4 text-xl font-semibold tracking-tight text-ink">
+      <span
+        className={cx(
+          "inline-flex h-10 w-10 items-center justify-center rounded-md border",
+          theme.iconClassName,
+        )}
+      >
+        <Icon className="h-5 w-5" />
+      </span>
+
+      <h3 className="mt-5 text-xl font-semibold tracking-tight text-ink">
         {title}
       </h3>
-      <p className="mt-2 flex-1 text-sm leading-6 text-muted md:text-base md:leading-7 xl:text-sm xl:leading-6">
+      <p className="mt-2 flex-1 text-sm leading-6 text-muted md:text-base md:leading-7">
         {description}
       </p>
 
-      <ul className="mt-5 flex flex-col gap-2 border-t border-line/70 pt-4">
+      <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-2 border-t border-line/70 pt-4">
         {links.map((link) => (
           <li key={link.href}>
             <Link
               href={link.href}
               prefetch={false}
               className={cx(
-                "group/link inline-flex max-w-full items-center gap-2 text-sm font-semibold transition hover:text-ink focus-visible:rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30",
+                "group/link inline-flex items-center gap-2 text-sm font-semibold transition hover:text-ink focus-visible:rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/30",
                 theme.linkClassName,
               )}
             >
-              <span className="min-w-0 break-words">{link.label}</span>
-              <ArrowRight className="h-3.5 w-3.5 shrink-0 transition-transform group-hover/link:translate-x-0.5" />
+              {link.label}
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover/link:translate-x-0.5" />
             </Link>
           </li>
         ))}
@@ -217,55 +139,7 @@ export default function HomePageClient() {
   const shenuteHref = getShenutePath();
   const developersHref = getDevelopersPath(language);
 
-  const learningLoopSteps: LearningLoopStepProps[] = [
-    {
-      href: dictionaryHref,
-      icon: Search,
-      stepLabel: "01",
-      title: t("home.learningLoop.searchTitle"),
-      description: t("home.learningLoop.searchDesc"),
-      cta: t("home.learningLoop.searchCta"),
-      tone: "coptic",
-    },
-    {
-      href: grammarHref,
-      icon: GraduationCap,
-      stepLabel: "02",
-      title: t("home.learningLoop.learnTitle"),
-      description: t("home.learningLoop.learnDesc"),
-      cta: t("home.learningLoop.learnCta"),
-      tone: "ink",
-    },
-    {
-      href: practiceHref,
-      icon: Layers3,
-      stepLabel: "03",
-      title: t("home.learningLoop.practiceTitle"),
-      description: t("home.learningLoop.practiceDesc"),
-      cta: t("home.learningLoop.practiceCta"),
-      tone: "coptic",
-    },
-    {
-      href: analyticsHref,
-      icon: BarChart3,
-      stepLabel: "04",
-      title: t("home.learningLoop.exploreTitle"),
-      description: t("home.learningLoop.exploreDesc"),
-      cta: t("home.learningLoop.exploreCta"),
-      tone: "gold",
-    },
-  ];
   const platformPillars: PlatformPillarCardProps[] = [
-    {
-      icon: GraduationCap,
-      title: t("home.pillars.learnTitle"),
-      description: t("home.pillars.learnDesc"),
-      tone: "coptic",
-      links: [
-        { href: grammarHref, label: t("home.pillars.grammarLink") },
-        { href: practiceHref, label: t("home.pillars.practiceLink") },
-      ],
-    },
     {
       icon: Search,
       title: t("home.pillars.referenceTitle"),
@@ -274,6 +148,16 @@ export default function HomePageClient() {
       links: [
         { href: dictionaryHref, label: t("home.pillars.dictionaryLink") },
         { href: analyticsHref, label: t("home.pillars.analyticsLink") },
+      ],
+    },
+    {
+      icon: GraduationCap,
+      title: t("home.pillars.learnTitle"),
+      description: t("home.pillars.learnDesc"),
+      tone: "coptic",
+      links: [
+        { href: grammarHref, label: t("home.pillars.grammarLink") },
+        { href: practiceHref, label: t("home.pillars.practiceLink") },
       ],
     },
     {
@@ -297,167 +181,163 @@ export default function HomePageClient() {
 
   return (
     <PageShell
-      className="min-h-screen px-4 pb-8 pt-2 sm:px-6 md:pb-10"
-      contentClassName="mx-auto w-full max-w-6xl space-y-10 text-center sm:space-y-12 md:space-y-16"
+      className="min-h-screen px-4 pb-10 pt-3 sm:px-6 md:pb-14"
+      contentClassName="mx-auto w-full max-w-6xl space-y-14 text-left md:space-y-20"
       accents={[
         pageShellAccents.heroGoldBand,
         pageShellAccents.topRightCopticWashInset,
       ]}
     >
-      <section className="mx-auto flex max-w-4xl flex-col items-center">
-        <div className="relative mb-1 h-36 w-36 transition-transform duration-500 hover:scale-[1.03] sm:h-44 sm:w-44 md:mb-2 md:h-60 md:w-60 lg:h-64 lg:w-64">
-          <Image
-            src="/logo/Coptic_Compass_Primary.svg"
-            alt="Coptic Compass Logo"
-            fill
-            sizes="(max-width: 640px) 144px, (max-width: 768px) 176px, (max-width: 1024px) 240px, 256px"
-            className="object-contain dark:hidden"
-            priority
-            loading="eager"
+      <section className="grid items-center gap-8 py-6 sm:py-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(300px,0.85fr)] lg:gap-12 lg:py-14">
+        <div className="order-2 lg:order-1">
+          <PageHeader
+            align="left"
+            className="[&_h1]:text-5xl [&_p]:text-base [&_p]:leading-7 sm:[&_h1]:text-6xl sm:[&_p]:text-lg md:[&_h1]:text-7xl md:[&_p]:text-xl"
+            eyebrow={t("home.eyebrow")}
+            eyebrowClassName="text-coptic"
+            title={
+              <span className="font-coptic font-normal tracking-normal">
+                {t("home.title")}
+              </span>
+            }
+            description={t("home.subtitle")}
+            size="hero"
+            tone="brand"
           />
-          <Image
-            src="/logo/Coptic_Compass_Secondary.svg"
-            alt="Coptic Compass Logo"
-            fill
-            sizes="(max-width: 640px) 144px, (max-width: 768px) 176px, (max-width: 1024px) 240px, 256px"
-            className="hidden object-contain dark:block"
-            priority
-            loading="eager"
-          />
+
+          <div className="mt-7 grid w-full grid-cols-1 gap-3 sm:flex sm:w-auto sm:flex-wrap">
+            <Link
+              href={dictionaryHref}
+              prefetch={false}
+              className={buttonClassName({
+                className: "w-full sm:w-auto",
+                size: "lg",
+                variant: "primary",
+              })}
+            >
+              {t("home.hero.primaryCta")}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+            <Link
+              href={practiceHref}
+              prefetch={false}
+              className={buttonClassName({
+                className: "w-full sm:w-auto",
+                size: "lg",
+                variant: "secondary",
+              })}
+            >
+              {t("home.hero.secondaryCta")}
+            </Link>
+          </div>
         </div>
 
-        <PageHeader
-          className="[&_h1]:text-4xl [&_p]:text-base [&_p]:leading-7 sm:[&_h1]:text-5xl sm:[&_p]:text-lg md:[&_h1]:text-7xl md:[&_p]:text-xl"
-          eyebrow={t("home.eyebrow")}
-          eyebrowVariant="badge"
-          title={
-            <span className="font-coptic font-normal tracking-normal">
-              {t("home.title")}
-            </span>
-          }
-          description={t("home.subtitle")}
-          size="hero"
-          tone="brand"
-        />
-
-        <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row">
-          <Link
-            href={dictionaryHref}
-            prefetch={false}
-            className={buttonClassName({ size: "lg", variant: "primary" })}
-          >
-            {t("home.hero.primaryCta")}
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-          <Link
-            href={practiceHref}
-            prefetch={false}
-            className={buttonClassName({ size: "lg", variant: "secondary" })}
-          >
-            {t("home.hero.secondaryCta")}
-          </Link>
+        <div className="order-1 flex items-center justify-center border-b border-line/70 pb-7 lg:order-2 lg:min-h-[360px] lg:border-b-0 lg:border-l lg:pb-0 lg:pl-12">
+          <div className="relative h-44 w-44 sm:h-52 sm:w-52 lg:h-72 lg:w-72">
+            <Image
+              src="/logo/Coptic_Compass_Primary.svg"
+              alt="Coptic Compass Logo"
+              fill
+              sizes="(max-width: 640px) 176px, (max-width: 1024px) 208px, 288px"
+              className="object-contain dark:hidden"
+              priority
+              loading="eager"
+            />
+            <Image
+              src="/logo/Coptic_Compass_Secondary.svg"
+              alt="Coptic Compass Logo"
+              fill
+              sizes="(max-width: 640px) 176px, (max-width: 1024px) 208px, 288px"
+              className="hidden object-contain dark:block"
+              priority
+              loading="eager"
+            />
+          </div>
         </div>
       </section>
 
       <section
         id="mission"
-        className="scroll-mt-28 grid gap-4 text-left sm:gap-5 lg:grid-cols-[0.95fr_1.05fr] lg:items-stretch"
+        className="scroll-mt-28 overflow-hidden rounded-lg border border-ink/10 bg-ink text-paper shadow-panel dark:border-line dark:bg-surface/90 dark:text-ink lg:grid lg:grid-cols-[1.15fr_0.85fr]"
       >
-        <div className="rounded-lg border border-line bg-ink p-6 text-paper shadow-panel dark:bg-surface/88 dark:text-ink md:p-10">
+        <div className="p-6 sm:p-8 md:p-10 lg:p-12">
           <p className="text-xs font-semibold uppercase tracking-widest text-gold">
             {t("home.mission.eyebrow")}
           </p>
-          <h2 className="mt-4 text-2xl font-bold tracking-tight text-paper dark:text-ink md:text-4xl">
+          <h2 className="mt-4 max-w-xl text-3xl font-bold tracking-tight text-paper dark:text-ink md:text-4xl">
             {t("home.mission.title")}
           </h2>
-          <p className="mt-4 text-base leading-7 text-paper/70 dark:text-muted md:mt-5 md:text-lg md:leading-8">
+          <p className="mt-5 max-w-2xl text-base leading-7 text-paper/70 dark:text-muted md:text-lg md:leading-8">
             {t("home.mission.body")}
           </p>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
-          <SurfacePanel shadow="soft" className="p-5 md:p-6">
-            <p className="text-xs font-semibold uppercase tracking-widest text-accent-strong dark:text-accent">
+        <div className="border-t border-paper/15 dark:border-line lg:border-l lg:border-t-0">
+          <div className="p-6 sm:p-8 lg:p-9">
+            <p className="text-xs font-semibold uppercase tracking-widest text-gold dark:text-accent">
               {t("home.promise.title")}
             </p>
-            <p className="mt-4 leading-7 text-muted">
+            <p className="mt-3 leading-7 text-paper/70 dark:text-muted">
               {t("home.promise.body")}
             </p>
-          </SurfacePanel>
-          <SurfacePanel shadow="soft" className="p-5 md:p-6">
-            <p className="text-xs font-semibold uppercase tracking-widest text-coptic">
+          </div>
+          <div className="border-t border-paper/15 p-6 sm:p-8 dark:border-line lg:p-9">
+            <p className="text-xs font-semibold uppercase tracking-widest text-coptic-soft dark:text-coptic">
               {t("home.audience.title")}
             </p>
-            <p className="mt-4 leading-7 text-muted">
+            <p className="mt-3 leading-7 text-paper/70 dark:text-muted">
               {t("home.audience.body")}
             </p>
-          </SurfacePanel>
+          </div>
         </div>
       </section>
 
       <section className="space-y-8 md:space-y-10">
-        <div className="mx-auto max-w-3xl space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-widest text-coptic">
-            {t("home.learningLoop.eyebrow")}
-          </p>
-          <h2 className="text-2xl font-bold tracking-tight text-ink md:text-4xl">
-            {t("home.learningLoop.title")}
-          </h2>
-          <p className="text-base leading-7 text-muted md:text-lg md:leading-8">
-            {t("home.learningLoop.desc")}
-          </p>
-        </div>
-
-        <ol className="grid gap-3 text-left md:grid-cols-2 xl:grid-cols-4">
-          {learningLoopSteps.map((step) => (
-            <LearningLoopStep key={step.href} {...step} />
-          ))}
-        </ol>
-
-        <div className="mx-auto max-w-3xl space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-widest text-accent-strong dark:text-accent">
-            {t("home.platform.eyebrow")}
-          </p>
-          <h2 className="text-2xl font-bold tracking-tight text-ink md:text-4xl">
-            {t("home.platform.title")}
-          </h2>
-          <p className="text-base leading-7 text-muted md:text-lg md:leading-8">
+        <div className="grid gap-5 md:grid-cols-[0.8fr_1.2fr] md:items-end">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-widest text-coptic">
+              {t("home.platform.eyebrow")}
+            </p>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight text-ink md:text-4xl">
+              {t("home.platform.title")}
+            </h2>
+          </div>
+          <p className="max-w-2xl text-base leading-7 text-muted md:justify-self-end md:text-lg md:leading-8">
             {t("home.platform.desc")}
           </p>
         </div>
 
-        <div className="grid gap-4 text-left md:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2">
           {platformPillars.map((pillar) => (
             <PlatformPillarCard key={pillar.title} {...pillar} />
           ))}
         </div>
       </section>
 
-      <section className="mx-auto max-w-4xl text-center">
-        <div className="mx-auto mb-5 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-accent-soft text-accent-strong dark:text-accent">
-          <Compass className="h-6 w-6" />
+      <section className="grid gap-6 border-t border-line py-10 md:grid-cols-[1fr_auto] md:items-end md:py-12">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-widest text-accent-strong dark:text-accent">
+            {t("home.closing.eyebrow")}
+          </p>
+          <h2 className="mt-3 text-2xl font-bold tracking-tight text-ink md:text-3xl">
+            {t("home.closing.title")}
+          </h2>
+          <p className="mt-4 max-w-3xl text-base leading-7 text-muted md:text-lg md:leading-8">
+            {t("home.closing.body")}
+          </p>
         </div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-accent-strong dark:text-accent">
-          {t("home.closing.eyebrow")}
-        </p>
-        <h2 className="mt-3 text-2xl font-bold tracking-tight text-ink md:text-4xl">
-          {t("home.closing.title")}
-        </h2>
-        <p className="mx-auto mt-4 max-w-3xl text-base leading-7 text-muted md:mt-5 md:text-lg md:leading-8">
-          {t("home.closing.body")}
-        </p>
-        <div className="mt-7 flex justify-center">
-          <Link
-            href={publicationsHref}
-            prefetch={false}
-            className={buttonClassName({
-              size: "md",
-              variant: "secondary",
-            })}
-          >
-            {t("home.publications.cta")}
-          </Link>
-        </div>
+        <Link
+          href={publicationsHref}
+          prefetch={false}
+          className={buttonClassName({
+            className: "w-full md:w-auto",
+            size: "md",
+            variant: "secondary",
+          })}
+        >
+          {t("home.publications.cta")}
+          <ArrowRight className="h-4 w-4" />
+        </Link>
       </section>
     </PageShell>
   );

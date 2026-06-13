@@ -21,26 +21,6 @@ export const homeMessages = defineMessages({
     "home.audience.title": "For a living tradition",
     "home.audience.body":
       "Coptic Compass serves learners, clergy, scholars, translators, developers, and communities.",
-    "home.learningLoop.eyebrow": "Learning loop",
-    "home.learningLoop.title": "Search, learn, practice, and explore",
-    "home.learningLoop.desc":
-      "Look up forms, build grammar context, review what matters, and inspect patterns when you need depth.",
-    "home.learningLoop.searchTitle": "Search",
-    "home.learningLoop.searchDesc":
-      "Find Coptic forms, meanings, parts of speech, and dialect context.",
-    "home.learningLoop.searchCta": "Search words",
-    "home.learningLoop.learnTitle": "Learn",
-    "home.learningLoop.learnDesc":
-      "Study grammar lessons, examples, and guided explanations.",
-    "home.learningLoop.learnCta": "Study grammar",
-    "home.learningLoop.practiceTitle": "Practice",
-    "home.learningLoop.practiceDesc":
-      "Review dictionary forms and grammar concepts in daily mixed practice.",
-    "home.learningLoop.practiceCta": "Start practice",
-    "home.learningLoop.exploreTitle": "Explore",
-    "home.learningLoop.exploreDesc":
-      "Inspect coverage, dialect distribution, and part-of-speech patterns.",
-    "home.learningLoop.exploreCta": "View analytics",
     "home.platform.eyebrow": "Platform pillars",
     "home.platform.title": "A complete environment for Coptology",
     "home.platform.desc":
@@ -88,26 +68,6 @@ export const homeMessages = defineMessages({
     "home.audience.title": "Voor een levende traditie",
     "home.audience.body":
       "Coptic Compass dient studenten, geestelijken, onderzoekers, vertalers, ontwikkelaars en gemeenschappen.",
-    "home.learningLoop.eyebrow": "Leerroute",
-    "home.learningLoop.title": "Zoek, leer, oefen en verken",
-    "home.learningLoop.desc":
-      "Zoek vormen op, bouw grammaticale context op, herhaal wat telt en verken patronen wanneer u verdieping nodig hebt.",
-    "home.learningLoop.searchTitle": "Zoeken",
-    "home.learningLoop.searchDesc":
-      "Vind Koptische vormen, betekenissen, woordsoorten en dialectcontext.",
-    "home.learningLoop.searchCta": "Zoek woorden",
-    "home.learningLoop.learnTitle": "Leren",
-    "home.learningLoop.learnDesc":
-      "Bestudeer grammaticalessen, voorbeelden en begeleide uitleg.",
-    "home.learningLoop.learnCta": "Bestudeer grammatica",
-    "home.learningLoop.practiceTitle": "Oefenen",
-    "home.learningLoop.practiceDesc":
-      "Herhaal woordenboekvormen en grammaticabegrippen in dagelijkse gemengde oefening.",
-    "home.learningLoop.practiceCta": "Begin met oefenen",
-    "home.learningLoop.exploreTitle": "Verkennen",
-    "home.learningLoop.exploreDesc":
-      "Bekijk dekking, dialectverdeling en patronen per woordsoort.",
-    "home.learningLoop.exploreCta": "Bekijk analytics",
     "home.platform.eyebrow": "Platformpijlers",
     "home.platform.title": "Eén omgeving voor Koptologiewerk",
     "home.platform.desc":
