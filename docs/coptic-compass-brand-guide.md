@@ -535,6 +535,29 @@ Publication surfaces may use stronger ceremonial brand treatments. Gold and dark
 brand variants are appropriate here when they support the seriousness of the
 material.
 
+### Coptic Compass Journal
+
+The Coptic Compass Journal is a proposed open-access, peer-reviewed academic
+journal published under the Coptic Compass imprint. It is envisioned as a
+venue led by a new generation of Coptology scholars with a shared objective:
+actively reviving and modernising the Coptic language for contemporary use.
+
+The journal's research programme centres on four pillars:
+
+| Pillar                | Scope                                                                                               |
+| :-------------------- | :-------------------------------------------------------------------------------------------------- |
+| Modern translation    | Rendering contemporary literature into Coptic to demonstrate the language's expressive range.       |
+| Lexical expansion     | Coining modern vocabulary through rigorous linguistic methodology and attested derivation patterns. |
+| Streamlined grammar   | Adapting grammatical structures to support modern fluency without sacrificing scholarly integrity.  |
+| Dialect harmonisation | Working toward a standardised, unified "Super-Bohairic" with a single agreed pronunciation.         |
+
+The journal should be presented as a serious scholarly initiative, not a
+speculative side project. Brand treatments may draw on the same ceremonial
+palette used for other publication surfaces (gold, dark, Antinoou typography).
+Copy describing the journal should use clear, forward-looking language that
+reflects the ambition of the programme while remaining honest about its
+current status as a proposal under development.
+
 ### Documentation
 
 Technical documentation should be precise and plain. It should help developers

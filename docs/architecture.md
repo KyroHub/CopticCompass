@@ -13,7 +13,7 @@ The app is a Next.js App Router project with a feature-oriented structure:
 - `src/content/grammar` owns typed grammar source content.
 - `public/data` owns checked-in generated datasets consumed by the app and public API.
 - `supabase` owns SQL migrations and Edge Functions.
-- `tests/e2e` owns Playwright smoke coverage.
+- `tests/e2e` owns Playwright smoke and browser-level feature regressions.
 
 ## Architecture Contract
 
@@ -212,7 +212,11 @@ The grammar source is typed and reviewed in source form, then exported into JSON
 
 The dictionary currently ships from a normalized checked-in dataset and is read by the public dictionary UI, analytics drill-downs, the dictionary search API, and sitemap/SEO helpers.
 
-The app-facing JSON should contain structured fields such as dialect forms, localized senses, Greek context, hierarchical inflections, and entry relations. Raw/source-only text fields, attestations, source notes, source dumps, and one-off migration artifacts should stay out of the runtime payload.
+The app-facing JSON should contain structured fields such as dialect forms,
+localized senses, gendered and dialect-restricted meanings, Greek context,
+hierarchical inflections, and entry relations. Raw/source-only text fields,
+attestations, source dumps, and one-off migration artifacts should stay out of
+the runtime payload.
 
 For field-level dictionary conventions, use the [Dictionary JSON Guide](./dictionary-json.md).
 
@@ -225,14 +229,19 @@ SEO is centralized instead of being improvised page by page.
 Main entry points:
 
 - `src/lib/metadata.ts`
-- `src/lib/structuredData.ts`
+- `src/features/seo/lib/structuredData.ts`
+- `src/features/seo/lib/openGraph.ts`
+- `src/features/seo/lib/openGraphCards.tsx`
+- `src/features/seo/lib/server/sitemaps.ts`
 - `src/app/sitemap.xml/route.ts`
 - `src/app/sitemaps/[id]/route.ts`
-- `src/lib/server/sitemaps.ts`
 - `src/app/robots.ts`
 - `src/app/api/og/route.tsx`
 
-Public localized pages should usually use the shared metadata helpers and, when appropriate, inject JSON-LD through `src/components/StructuredData.tsx`.
+Low-level URL, JSON-LD, Open Graph, and sitemap primitives remain under
+`src/lib`; feature-facing SEO composition belongs under `src/features/seo`.
+Public localized pages should usually use those feature helpers and, when
+appropriate, inject JSON-LD through `src/components/StructuredData.tsx`.
 
 Private routes, redirect routes, and transient auth flows should use `noindex` metadata.
 
@@ -275,7 +284,7 @@ control surfaces, CTA behavior, and mobile layout conventions.
 Current testing layers:
 
 - unit and integration-style coverage with Vitest in `src/**/*.test.ts`
-- end-to-end smoke coverage with Playwright in `tests/e2e`
+- end-to-end smoke and feature-regression coverage with Playwright in `tests/e2e`
 - source guardrails for routing/layout and raw error disclosure regressions
 - CI enforcement in `.github/workflows/ci.yml`
 
@@ -289,12 +298,13 @@ variable names outside technical/developer surfaces.
 
 CI currently runs:
 
-- formatting check
+- high-severity dependency audit
+- formatting checks for changed source and documentation files
 - dead-code check with Knip
 - lint
 - Vitest
 - production build
-- Playwright smoke tests
+- Playwright end-to-end tests
 
 If you add routing, metadata, or SEO behavior, prefer small regression tests close to the helper or route surface.
 

@@ -66,23 +66,14 @@ copy.
 
 THOTH AI is credited to Dr. So Miyagawa (Associate Professor of Linguistics and Egyptology, University of Tsukuba). His research integrates computational linguistic methods with traditional philological approaches.
 
-- Contact: miyagawa.so.kb@u.tsukuba.ac.jp
-- Reference: https://somiyagawa.github.io/THOTH.AI/
+- Public profile: https://github.com/somiyagawa
 
-Technical Specifications:
-
-- Platform: Dify
-- Base LLM: Claude 4.5 Sonnet (upgraded from 3.5)
-- Architecture: RAG (Retrieval Augmented Generation)
-
-Knowledge Base:
-
-- Comprehensive Coptic Lexicon v1.2 (2020)
-- Burns, D., Feder, F., John, K., Kupreyev, M., et al. (Freie Universitat Berlin)
-- A Concise Dictionary of Middle Egyptian (1962) - Raymond Oliver Faulkner
-- Custom instruction prompts (500 plus lines)
-
-This list documents THOTH AI's external knowledge context. The Coptic Compass runtime dictionary is the normalized JSON dataset described below.
+The integration uses THOTH's Dify-compatible API through `THOTH_BASE_URL` and
+`THOTH_API_KEY`. The provider's active model and knowledge-base composition are
+managed externally and may change independently of this repository, so do not
+hard-code those provider-internal details into app behavior or documentation.
+The Coptic Compass runtime dictionary remains the normalized JSON dataset
+described below.
 
 ### OCR Proxy (`/api/ocr`)
 
@@ -174,7 +165,11 @@ The export writes to `public/data/grammar/v1` and also runs automatically before
 
 The public dictionary currently ships from the normalized checked-in dataset at `public/data/dictionary.json`.
 
-Runtime dictionary data should stay structured and app-facing: dialect forms, localized senses, Greek context, hierarchical inflections, entry relations, etymology, part of speech, and gender. Raw/source-only text fields, attestations, source notes, source dumps, and one-off migration artifacts are intentionally not part of the runtime payload.
+Runtime dictionary data should stay structured and app-facing: dialect forms,
+localized senses, gendered meanings, dialect-restricted meanings, Greek context,
+hierarchical inflections, entry relations, etymology, part of speech, and
+gender. Raw/source-only text fields, attestations, source dumps, and one-off
+migration artifacts are intentionally not part of the runtime payload.
 
 For field-level dictionary editing rules, use the [Dictionary JSON Guide](./dictionary-json.md).
 

@@ -64,8 +64,12 @@ Examples:
 - Use `statief` for `stative`.
 - Use `voorvoegsel` for general learner-facing copy, and `prefix` where the grammar discussion is technical or tied to established terminology.
 - Use `onbepaald`, `bepaald`, `bezittelijk`, and `aanwijzend` for determiner categories.
-- Use `v` for feminine in Dutch grammar sigla, from `vrouwelijk`. English grammar copy may keep `f` for `feminine`.
-- Keep other established grammar sigla such as `m`, `s`, and `p` unchanged unless a grammar-content review explicitly changes them.
+- Keep structured dictionary and grammar sigla such as `m`, `f`, `sg`, and
+  `pl` unchanged across locales. Localize their accessible labels and tooltips,
+  for example `f` with the Dutch label `Vrouwelijk`.
+- Do not introduce locale-specific replacements such as `v`, `s`, or `p` in
+  code-facing markers unless the underlying shared data contract is
+  intentionally changed for every consumer.
 
 ## Technical and Developer Terms
 

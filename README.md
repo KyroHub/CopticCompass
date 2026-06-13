@@ -51,14 +51,14 @@ The application is built on Next.js 16 (App Router), React 19, Tailwind CSS 4, a
 git clone https://github.com/KyroHub/CopticCompass.git
 cd CopticCompass
 nvm use
-npm install
+npm ci
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 > [!NOTE]  
-> To enable Supabase auth, AI routing, or email features locally, copy `.env.example` to `.env.local` and add your credentials. See our [Architecture Docs](docs/architecture.md) for more details.
+> To enable Supabase auth, AI routing, or email features locally, copy `.env.example` to `.env.local` and add your credentials. See [Environment & Deployment Setup](docs/environment-setup.md) for details.
 
 ## Repository Guide
 
@@ -71,7 +71,7 @@ This repo is organized around a few clear layers:
 - `src/content/grammar` owns typed grammar source files that are exported into checked-in data.
 - `public/data` owns the generated or checked-in datasets consumed by the app and public API.
 - `supabase` owns SQL migrations and Edge Functions.
-- `tests/e2e` owns the Playwright smoke tests used in CI.
+- `tests/e2e` owns Playwright smoke and feature-regression coverage used in CI.
 
 For structural changes, treat [docs/architecture.md](docs/architecture.md) as
 the source of truth. Product logic should default to `src/features/<feature>`;
@@ -89,7 +89,8 @@ The main scripts in `package.json` are:
 - `npm run lint` - run ESLint with zero-warnings enforcement.
 - `npm run test` - run the Vitest suite.
 - `npm run test:e2e` - run Playwright end-to-end tests.
-- `npm run test:e2e:local` - build first, then run the Playwright smoke tests.
+- `npm run test:e2e:smoke` - run the fast routing, localization, auth-redirect, and API smoke checks.
+- `npm run test:e2e:local` - build first, then run the Playwright end-to-end suite.
 - `npm run knip` - check for dead code and unused exports.
 - `npm run format:check` - verify formatting with Prettier.
 - `npm run data:grammar:export` - regenerate the public grammar JSON bundle from source.
@@ -122,7 +123,7 @@ npm run test
 npm run build
 ```
 
-If you change routing, auth, metadata, redirects, or major UI flows, also install the Playwright browser and run the smoke suite:
+If you change routing, auth, metadata, redirects, or major UI flows, also install the Playwright browser and run the end-to-end suite:
 
 ```bash
 npx playwright install --with-deps chromium
@@ -137,9 +138,11 @@ For deep dives into the technical architecture, environment setup, API surfaces,
 - [Coptic Compass Brand Book](docs/coptic-compass-brand-guide.md)
 - [UI Guide](docs/ui-guide.md)
 - [Dictionary JSON Guide](docs/dictionary-json.md)
+- [Practice Feature Guide](docs/practice.md)
 - [Environment & Deployment Setup](docs/environment-setup.md)
 - [API, AI, and Data Workflows](docs/api-and-workflows.md)
 - [AI & RAG Distillation Pipeline](docs/distillation.md)
+- [Dependency Maintenance](docs/dependency-maintenance.md)
 - [Dutch Localization Style Guide](docs/dutch-localization-style-guide.md)
 
 ## Contributing
@@ -152,4 +155,4 @@ Please read [CONTRIBUTING.md](CONTRIBUTING.md) and review our [Code of Conduct](
 
 - **Source code:** [MIT License](LICENSE)
 - **Content & Data:** Grammar lessons, dictionary data, and publication metadata are subject to specific academic rights. Please preserve scholarly attribution and source context when reusing material.
-- **THOTH AI Credits:** Created by Dr. So Miyagawa (University of Tsukuba). [Learn more](https://somiyagawa.github.io/THOTH.AI/).
+- **THOTH AI Credits:** Created by Prof. So Miyagawa (University of Tsukuba). [Public profile](https://github.com/somiyagawa).

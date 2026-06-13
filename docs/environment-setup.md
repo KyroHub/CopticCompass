@@ -232,11 +232,10 @@ npm run db:push
 ```
 
 The migration scripts expect the Supabase CLI to be available on `PATH`. Install
-it through a trusted external channel rather than adding the `supabase` npm CLI
-package to this dependency tree while its critical malware advisory remains
-active. If the Supabase CLI reports that a newer version is available, update it
-through the same install channel you originally used before important production
-rollouts when practical.
+the official CLI through a trusted supported channel instead of adding it to
+this app's dependency tree. If the CLI reports that a newer version is
+available, update it through the same install channel you originally used
+before important production rollouts when practical.
 
 ### Resend Audience Sync
 
