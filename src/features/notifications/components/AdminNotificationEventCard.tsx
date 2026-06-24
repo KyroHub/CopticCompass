@@ -9,6 +9,7 @@ import {
   formatLocalizedNotificationEventType,
   formatNotificationTimestamp,
   getNotificationContextBadges,
+  isNotificationFailureStatus,
   type AdminNotificationEvent,
 } from "@/features/notifications/lib/notifications";
 
@@ -115,7 +116,7 @@ export function AdminNotificationEventCard({
         </div>
       ) : null}
 
-      {event.status === "failed" && event.last_error ? (
+      {isNotificationFailureStatus(event.status) && event.last_error ? (
         <AdminErrorDisclosure
           language={language}
           message={copy.notificationFailed}

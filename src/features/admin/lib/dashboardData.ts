@@ -17,7 +17,12 @@ import { getAdminContactMessages } from "@/features/contact/lib/server/queries";
 import { getDictionaryEntryById } from "@/features/dictionary/lib/dictionary";
 import type { EntryReportWithEntry } from "@/features/dictionary/lib/entryActions";
 import { getAdminEntryReports } from "@/features/dictionary/lib/server/queries";
-import type { AdminNotificationEvent } from "@/features/notifications/lib/notifications";
+import {
+  isNotificationFailureStatus,
+  isNotificationHistoryStatus,
+  notificationFailureStatuses,
+  type AdminNotificationEvent,
+} from "@/features/notifications/lib/notifications";
 import { getAdminNotificationEvents } from "@/features/notifications/lib/server/queries";
 import { getAdminSubmissions } from "@/features/submissions/lib/server/queries";
 import type { AdminSubmission } from "@/features/submissions/types";
@@ -241,11 +246,13 @@ export function buildAdminNotificationMetrics(
   events: readonly Pick<AdminNotificationEvent, "status">[],
 ): AdminNotificationMetrics {
   return {
-    failedNotificationCount: events.filter((event) => event.status === "failed")
-      .length,
+    failedNotificationCount: events.filter((event) =>
+      isNotificationFailureStatus(event.status),
+    ).length,
     recentNotificationCount: events.length,
-    sentNotificationCount: events.filter((event) => event.status === "sent")
-      .length,
+    sentNotificationCount: events.filter((event) =>
+      isNotificationHistoryStatus(event.status),
+    ).length,
   };
 }
 
@@ -376,7 +383,7 @@ export async function loadAdminWorkspaceOverview(
           supabase
             .from("notification_events")
             .select("id", { count: "exact", head: true })
-            .eq("status", "failed"),
+            .in("status", [...notificationFailureStatuses]),
         ),
       ]);
 

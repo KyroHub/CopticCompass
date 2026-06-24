@@ -9,6 +9,7 @@ import { AdminPersistentSection } from "@/features/admin/components/AdminPersist
 import type { AdminDashboardData } from "@/features/admin/lib/dashboardData";
 import { splitAdminVisibleItems } from "@/features/admin/lib/listPrimitives";
 import { AdminNotificationEventCard } from "@/features/notifications/components/AdminNotificationEventCard";
+import { isNotificationHistoryStatus } from "@/features/notifications/lib/notifications";
 import { cx } from "@/lib/classes";
 import type { Language } from "@/types/i18n";
 
@@ -24,10 +25,10 @@ export function AdminNotificationsSection({
   const copy = adminDashboardSectionsCopy[language].notifications;
   const { metrics } = notifications;
   const attentionNotifications = notifications.items.filter(
-    (event) => event.status === "failed" || event.status === "queued",
+    (event) => !isNotificationHistoryStatus(event.status),
   );
-  const historyNotifications = notifications.items.filter(
-    (event) => event.status === "sent",
+  const historyNotifications = notifications.items.filter((event) =>
+    isNotificationHistoryStatus(event.status),
   );
   const defaultOpen =
     Boolean(notifications.error) || metrics.failedNotificationCount > 0;

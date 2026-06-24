@@ -1,15 +1,17 @@
 import {
   compareAdminNotificationPriority,
+  notificationFailureStatuses,
+  notificationHistoryStatuses,
+  notificationInFlightStatuses,
   type AdminNotificationEvent,
   type NotificationDeliveryRow,
 } from "@/features/notifications/lib/notifications";
 import type { AppSupabaseClient, QueryResult } from "@/lib/supabase/queryTypes";
 
 const ADMIN_NOTIFICATION_SENT_HISTORY_LIMIT = 18;
-
 /**
- * Loads all failed/queued notifications plus a capped recent sent history
- * window, then attaches delivery attempts for the admin log UI.
+ * Loads all attention-worthy notifications plus a capped accepted/delivered
+ * history window, then attaches delivery attempts for the admin log UI.
  */
 export async function getAdminNotificationEvents(
   supabase: AppSupabaseClient,
@@ -19,12 +21,15 @@ export async function getAdminNotificationEvents(
     supabase
       .from("notification_events")
       .select("*")
-      .in("status", ["failed", "queued"])
+      .in("status", [
+        ...notificationFailureStatuses,
+        ...notificationInFlightStatuses,
+      ])
       .order("created_at", { ascending: false }),
     supabase
       .from("notification_events")
       .select("*")
-      .eq("status", "sent")
+      .in("status", [...notificationHistoryStatuses])
       .order("created_at", { ascending: false })
       .limit(limit),
   ]);

@@ -6,6 +6,7 @@ import type {
   AdminDashboardData,
   AdminWorkspaceOverview,
 } from "@/features/admin/lib/dashboardData";
+import { isNotificationInFlightStatus } from "@/features/notifications/lib/notifications";
 import { cx } from "@/lib/classes";
 import type { Language } from "@/types/i18n";
 
@@ -21,8 +22,8 @@ export function AdminSystemHealthSummary({
   notifications: AdminDashboardData["notifications"];
 }) {
   const copy = adminDashboardSectionsCopy[language].systemHealth;
-  const queuedNotificationCount = notifications.items.filter(
-    (event) => event.status === "queued",
+  const queuedNotificationCount = notifications.items.filter((event) =>
+    isNotificationInFlightStatus(event.status),
   ).length;
 
   return (

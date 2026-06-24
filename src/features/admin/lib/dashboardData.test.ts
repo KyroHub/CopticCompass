@@ -74,14 +74,16 @@ describe("admin dashboard data helpers", () => {
     expect(
       buildAdminNotificationMetrics([
         { status: "failed" },
+        { status: "bounced" },
+        { status: "delivered" },
         { status: "sent" },
         { status: "sent" },
         { status: "queued" },
       ]),
     ).toEqual({
-      failedNotificationCount: 1,
-      recentNotificationCount: 4,
-      sentNotificationCount: 2,
+      failedNotificationCount: 2,
+      recentNotificationCount: 6,
+      sentNotificationCount: 3,
     });
   });
 
