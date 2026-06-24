@@ -97,6 +97,11 @@ type ParsedContactSubmission = {
   language: Language;
   message: string;
   name: string;
+  requestedTopics: {
+    books: boolean;
+    generalUpdates: boolean;
+    lessons: boolean;
+  };
   wantsUpdates: boolean;
 };
 
@@ -106,6 +111,11 @@ type ParsedContactSubmission = {
  */
 function parseContactSubmission(formData: FormData): ParsedContactSubmission {
   const language = getFormLanguage(formData);
+  const requestedTopics = {
+    books: formData.has("updates_books"),
+    generalUpdates: formData.has("updates_general"),
+    lessons: formData.has("updates_lessons"),
+  };
 
   return {
     copy: CONTACT_ACTION_COPY[language],
@@ -115,7 +125,8 @@ function parseContactSubmission(formData: FormData): ParsedContactSubmission {
     language,
     message: normalizeMultiline(getFormString(formData, "message")),
     name: normalizeWhitespace(getFormString(formData, "name")),
-    wantsUpdates: formData.has("wants_updates"),
+    requestedTopics,
+    wantsUpdates: Object.values(requestedTopics).some(Boolean),
   };
 }
 
@@ -251,14 +262,15 @@ async function sendContactUpdatesConfirmation(options: {
   email: string;
   language: Language;
   name: string;
+  requestedTopics: ParsedContactSubmission["requestedTopics"];
 }) {
   try {
     const { request, token } = await createAudienceOptInRequest({
-      booksRequested: true,
+      booksRequested: options.requestedTopics.books,
       email: options.email,
       fullName: options.name,
-      generalUpdatesRequested: true,
-      lessonsRequested: true,
+      generalUpdatesRequested: options.requestedTopics.generalUpdates,
+      lessonsRequested: options.requestedTopics.lessons,
       locale: options.language,
       source: "contact_form",
     });
@@ -276,9 +288,9 @@ async function sendContactUpdatesConfirmation(options: {
         locale: options.language,
         source: "contact_form",
         topics: {
-          books: true,
-          general_updates: true,
-          lessons: true,
+          books: options.requestedTopics.books,
+          general_updates: options.requestedTopics.generalUpdates,
+          lessons: options.requestedTopics.lessons,
         },
       },
       to: options.email,
@@ -287,6 +299,7 @@ async function sendContactUpdatesConfirmation(options: {
         confirmationUrl,
         language: options.language,
         recipientName: options.name,
+        requestedTopics: options.requestedTopics,
       }),
       text: [
         options.language === "nl"
@@ -390,6 +403,7 @@ async function processStoredContactSubmission(
           email: submission.email,
           language: submission.language,
           name: submission.name,
+          requestedTopics: submission.requestedTopics,
         })
       : submission.copy.success;
 

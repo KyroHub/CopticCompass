@@ -768,7 +768,13 @@ export type Database = {
           lessons_opt_in: boolean;
           locale: "en" | "nl";
           profile_id: string | null;
-          source: "contact_form" | "dashboard" | "signup";
+          source:
+            | "contact_form"
+            | "dashboard"
+            | "public_preferences"
+            | "resend_webhook"
+            | "signup"
+            | "system";
           unsubscribed_at: string | null;
           updated_at: string;
         };
@@ -783,7 +789,13 @@ export type Database = {
           lessons_opt_in?: boolean;
           locale?: "en" | "nl";
           profile_id?: string | null;
-          source: "contact_form" | "dashboard" | "signup";
+          source:
+            | "contact_form"
+            | "dashboard"
+            | "public_preferences"
+            | "resend_webhook"
+            | "signup"
+            | "system";
           unsubscribed_at?: string | null;
           updated_at?: string;
         };
@@ -798,7 +810,13 @@ export type Database = {
           lessons_opt_in?: boolean;
           locale?: "en" | "nl";
           profile_id?: string | null;
-          source?: "contact_form" | "dashboard" | "signup";
+          source?:
+            | "contact_form"
+            | "dashboard"
+            | "public_preferences"
+            | "resend_webhook"
+            | "signup"
+            | "system";
           unsubscribed_at?: string | null;
           updated_at?: string;
         };
@@ -898,6 +916,44 @@ export type Database = {
         };
         Relationships: [];
       };
+      audience_preference_requests: {
+        Row: {
+          audience_contact_id: string;
+          created_at: string;
+          expires_at: string;
+          id: string;
+          locale: "en" | "nl";
+          token_hash: string;
+          used_at: string | null;
+        };
+        Insert: {
+          audience_contact_id: string;
+          created_at?: string;
+          expires_at: string;
+          id?: string;
+          locale?: "en" | "nl";
+          token_hash: string;
+          used_at?: string | null;
+        };
+        Update: {
+          audience_contact_id?: string;
+          created_at?: string;
+          expires_at?: string;
+          id?: string;
+          locale?: "en" | "nl";
+          token_hash?: string;
+          used_at?: string | null;
+        };
+        Relationships: [
+          {
+            columns: ["audience_contact_id"];
+            foreignKeyName: "audience_preference_requests_audience_contact_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "audience_contacts";
+          },
+        ];
+      };
       audience_consent_events: {
         Row: {
           action:
@@ -920,6 +976,7 @@ export type Database = {
             | "dashboard"
             | "public_preferences"
             | "resend_webhook"
+            | "signup"
             | "system";
           topic: "all" | "books" | "general_updates" | "lessons";
         };
@@ -944,6 +1001,7 @@ export type Database = {
             | "dashboard"
             | "public_preferences"
             | "resend_webhook"
+            | "signup"
             | "system";
           topic: "all" | "books" | "general_updates" | "lessons";
         };
@@ -968,6 +1026,7 @@ export type Database = {
             | "dashboard"
             | "public_preferences"
             | "resend_webhook"
+            | "signup"
             | "system";
           topic?: "all" | "books" | "general_updates" | "lessons";
         };
@@ -1485,6 +1544,45 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      apply_audience_preference_request: {
+        Args: {
+          p_books_opt_in: boolean;
+          p_general_updates_opt_in: boolean;
+          p_lessons_opt_in: boolean;
+          p_occurred_at: string;
+          p_policy_version: string;
+          p_token_hash: string;
+        };
+        Returns: {
+          audience_contact_id: string | null;
+          books_opt_in: boolean | null;
+          email: string | null;
+          full_name: string | null;
+          general_updates_opt_in: boolean | null;
+          lessons_opt_in: boolean | null;
+          locale: string | null;
+          request_id: string | null;
+          status: string;
+        }[];
+      };
+      apply_audience_preferences: {
+        Args: {
+          p_actor: string;
+          p_books_opt_in: boolean;
+          p_dedupe_prefix: string | null;
+          p_email: string;
+          p_full_name: string | null;
+          p_general_updates_opt_in: boolean;
+          p_lessons_opt_in: boolean;
+          p_locale: string;
+          p_occurred_at: string;
+          p_opt_in_request_id: string | null;
+          p_policy_version: string;
+          p_profile_id: string | null;
+          p_source: string;
+        };
+        Returns: Database["public"]["Tables"]["audience_contacts"]["Row"];
+      };
       claim_notification_email_jobs: {
         Args: {
           p_job_id?: string;
@@ -1520,6 +1618,24 @@ export type Database = {
           subject: string;
           text_body: string;
           to_recipients: string[];
+        }[];
+      };
+      confirm_audience_opt_in_request: {
+        Args: {
+          p_occurred_at: string;
+          p_policy_version: string;
+          p_token_hash: string;
+        };
+        Returns: {
+          audience_contact_id: string | null;
+          books_opt_in: boolean | null;
+          email: string | null;
+          full_name: string | null;
+          general_updates_opt_in: boolean | null;
+          lessons_opt_in: boolean | null;
+          locale: string | null;
+          request_id: string | null;
+          status: string;
         }[];
       };
       is_admin: {

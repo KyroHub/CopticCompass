@@ -5,7 +5,7 @@ type CommunicationsModuleContext = {
   getProfileMock: ReturnType<typeof vi.fn>;
   hasSupabaseServiceRoleEnvMock: ReturnType<typeof vi.fn>;
   revalidatePathMock: ReturnType<typeof vi.fn>;
-  syncAudienceContactMock: ReturnType<typeof vi.fn>;
+  applyAudiencePreferencesMock: ReturnType<typeof vi.fn>;
   updateCommunicationPreferences: typeof import("./communications").updateCommunicationPreferences;
 };
 
@@ -51,7 +51,7 @@ async function loadCommunicationsModule(options?: {
   vi.resetModules();
 
   const revalidatePathMock = vi.fn();
-  const syncAudienceContactMock = vi.fn().mockResolvedValue({
+  const applyAudiencePreferencesMock = vi.fn().mockResolvedValue({
     id: "audience_123",
   });
   const getAuthenticatedServerContextMock = vi.fn().mockResolvedValue(
@@ -84,7 +84,8 @@ async function loadCommunicationsModule(options?: {
     revalidatePath: revalidatePathMock,
   }));
   vi.doMock("@/features/communications/lib/server/audience", () => ({
-    syncAudienceContact: syncAudienceContactMock,
+    applyAudiencePreferences: applyAudiencePreferencesMock,
+    COMMUNICATIONS_POLICY_VERSION: "privacy-2026-06-22",
   }));
   vi.doMock("@/lib/supabase/auth", () => ({
     getAuthenticatedServerContext: getAuthenticatedServerContextMock,
@@ -104,7 +105,7 @@ async function loadCommunicationsModule(options?: {
     getProfileMock,
     hasSupabaseServiceRoleEnvMock,
     revalidatePathMock,
-    syncAudienceContactMock,
+    applyAudiencePreferencesMock,
   } satisfies CommunicationsModuleContext;
 }
 
@@ -116,7 +117,7 @@ describe("communication preferences action", () => {
   it("returns a friendly error when audience storage is unavailable", async () => {
     const {
       getAuthenticatedServerContextMock,
-      syncAudienceContactMock,
+      applyAudiencePreferencesMock,
       updateCommunicationPreferences,
     } = await loadCommunicationsModule({
       hasStorageEnv: false,
@@ -131,11 +132,11 @@ describe("communication preferences action", () => {
     });
 
     expect(getAuthenticatedServerContextMock).not.toHaveBeenCalled();
-    expect(syncAudienceContactMock).not.toHaveBeenCalled();
+    expect(applyAudiencePreferencesMock).not.toHaveBeenCalled();
   });
 
   it("requires an authenticated user", async () => {
-    const { syncAudienceContactMock, updateCommunicationPreferences } =
+    const { applyAudiencePreferencesMock, updateCommunicationPreferences } =
       await loadCommunicationsModule({
         authContext: null,
       });
@@ -147,13 +148,13 @@ describe("communication preferences action", () => {
       success: false,
     });
 
-    expect(syncAudienceContactMock).not.toHaveBeenCalled();
+    expect(applyAudiencePreferencesMock).not.toHaveBeenCalled();
   });
 
   it("syncs selected topics and revalidates the dashboard", async () => {
     const {
       revalidatePathMock,
-      syncAudienceContactMock,
+      applyAudiencePreferencesMock,
       updateCommunicationPreferences,
     } = await loadCommunicationsModule();
 
@@ -170,13 +171,15 @@ describe("communication preferences action", () => {
       success: true,
     });
 
-    expect(syncAudienceContactMock).toHaveBeenCalledWith({
+    expect(applyAudiencePreferencesMock).toHaveBeenCalledWith({
+      actor: "authenticated_user",
       booksOptIn: true,
       email: "user@example.com",
       fullName: "Kyrillos Wannes",
       generalUpdatesOptIn: false,
       lessonsOptIn: true,
       locale: "nl",
+      policyVersion: "privacy-2026-06-22",
       profileId: "user-1",
       source: "dashboard",
     });

@@ -264,13 +264,41 @@ infrastructure:
 
 - audience preferences, content releases, and release email builders live under
   `src/features/communications`
-- server-side audience sync, double opt-in requests, and Resend contact sync
+- server-side audience commands, double opt-in and private preference requests,
+  and Resend contact sync
   live under `src/features/communications/lib/server`
 - contact-message email templates live under `src/features/contact`
 - shared notification dispatch, queueing, and generic branded fallback HTML live
   under `src/lib/notifications`
 - product communication constants and email color tokens live in
   `src/lib/communications/mailBrand.ts`
+
+The database keeps mailing state separated by responsibility:
+
+- `audience_contacts` stores the current topic preference snapshot
+- `audience_consent_events` stores append-only topic consent evidence
+- `audience_opt_in_requests` stores hashed double opt-in tokens and exact
+  requested topics
+- `audience_preference_requests` stores short-lived, single-use hashed tokens
+  for no-account preference management
+- `audience_suppressions` stores active and historical delivery restrictions
+- `provider_webhook_events` is the idempotent inbox for provider callbacks
+- `notification_events` stores logical notification intent
+- `notification_deliveries` stores provider delivery attempts and outcomes
+- `notification_email_jobs` stores durable worker state, retry timing, and leases
+
+Only trusted service-role workflows write consent evidence, suppressions,
+provider events, and queued email jobs. The
+`claim_notification_email_jobs` database function is deliberately unavailable
+to browser roles and uses bounded leases plus row locking to support later retry
+workers without duplicate claims.
+
+All user-driven topic changes pass through `apply_audience_preferences`. The
+service-role-only function serializes updates per normalized email, updates the
+current snapshot, and appends evidence only for topics that actually changed.
+The contact confirmation and public preference functions lock and consume their
+token rows inside the same transaction. Token GET pages are request-bound,
+`noindex`, and read-only; only explicit POST actions mutate preferences.
 
 Public-facing documentation is part of the product surface. Keep `README.md`,
 the docs in `docs/`, and README screenshots in `public/readme` aligned with the

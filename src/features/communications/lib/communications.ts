@@ -103,7 +103,11 @@ export function getAudienceSourceLabel(
   const labels = {
     contact_form: language === "nl" ? "Contactformulier" : "Contact form",
     dashboard: language === "nl" ? "Dashboard" : "Dashboard",
+    public_preferences:
+      language === "nl" ? "Openbare voorkeuren" : "Public preferences",
+    resend_webhook: language === "nl" ? "Resend-webhook" : "Resend webhook",
     signup: language === "nl" ? "Aanmelding" : "Signup",
+    system: language === "nl" ? "Systeem" : "System",
   } as const satisfies Record<AudienceContactRow["source"], string>;
 
   return labels[source];

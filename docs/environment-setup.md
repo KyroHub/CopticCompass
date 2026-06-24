@@ -216,6 +216,37 @@ To enable queued notification email sends in a Supabase project:
 3. Make sure the latest notification email migrations have been pushed so
    `public.notification_email_jobs` exists.
 
+The mailing-system foundation migration also adds retry metadata and the
+service-role-only `claim_notification_email_jobs` database function. The
+current worker remains compatible with the legacy `sent` state until the retry
+worker rollout is enabled in a later phase. Do not grant this claim function to
+`anon` or `authenticated`; it leases jobs and is intended only for trusted
+background workers.
+
+The same migration creates three RLS-protected audit tables:
+
+- `audience_consent_events` for append-only topic consent evidence
+- `audience_suppressions` for restrictions that override marketing preferences
+- `provider_webhook_events` for idempotent provider webhook intake
+
+Only admins receive read policies. Writes are reserved for trusted service-role
+workflows so browser clients cannot manufacture consent, suppression, or
+provider-delivery evidence.
+
+The audience-preference management migration adds the service-role-only
+`apply_audience_preferences`, `confirm_audience_opt_in_request`, and
+`apply_audience_preference_request` functions. It also adds
+`audience_preference_requests` for hashed, 30-minute, single-use links. Keep all
+three functions unavailable to `anon` and `authenticated`; the Next.js server
+actions enforce explicit POSTs and IP plus email-hash rate limits before issuing
+preference links.
+
+The localized privacy policy now documents the implemented contact and mailing
+data flow, processors, consent handling, delivery events, and proposed retention
+periods. The site owner or qualified legal reviewer should approve that wording
+and the retention periods before the related application release reaches
+production.
+
 ### Migration Rollout
 
 Supabase migrations live under `supabase/migrations`. Before deployment, compare and preview the linked project state:
