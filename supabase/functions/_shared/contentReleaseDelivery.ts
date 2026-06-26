@@ -22,12 +22,6 @@ export type ContentReleaseItemRecord = {
   url_snapshot: string;
 };
 
-export type AudienceContactRecord = {
-  email: string;
-  full_name: string | null;
-  locale: Language | null;
-};
-
 export type ContentReleaseDeliverySummary = {
   broadcasts?: Partial<Record<Language, ContentReleaseBroadcastDelivery>>;
   eligible_recipient_count: number;
@@ -45,6 +39,7 @@ export type ContentReleaseBroadcastDelivery = {
   segment_id: string;
   status: "sent";
   subject: string;
+  topic_id: string;
 };
 
 const MAIL_BRAND = {
@@ -78,6 +73,20 @@ function readSummaryCount(
   return asOptionalNumber(summary?.[key]) ?? 0;
 }
 
+function getMarketingUnsubscribeLines(language: Language) {
+  return language === "nl"
+    ? [
+        "U ontvangt deze e-mail omdat u zich hebt aangemeld voor updates van Coptic Compass.",
+        "U kunt uw voorkeuren wijzigen of u uitschrijven:",
+        "{{{RESEND_UNSUBSCRIBE_URL}}}",
+      ]
+    : [
+        "You are receiving this email because you subscribed to Coptic Compass updates.",
+        "You can change your preferences or unsubscribe:",
+        "{{{RESEND_UNSUBSCRIBE_URL}}}",
+      ];
+}
+
 /**
  * Validates the raw edge-function invocation payload and extracts the release id
  * needed to resume or start delivery work.
@@ -93,7 +102,7 @@ export function parseContentReleaseInvocationPayload(payload: unknown) {
   return { releaseId };
 }
 
-export function normalizeEmail(email: string) {
+function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
 }
 
@@ -157,6 +166,7 @@ export function getContentReleaseCopyForLocale(
  */
 export function buildContentReleaseEmailText(options: {
   body: string;
+  includeMarketingFooter?: boolean;
   items: Pick<ContentReleaseItemRecord, "title_snapshot" | "url_snapshot">[];
   language: Language;
 }) {
@@ -180,8 +190,19 @@ export function buildContentReleaseEmailText(options: {
           MAIL_BRAND.descriptorEn,
           `Continue reading on Coptic Compass: ${MAIL_BRAND.liveUrl}`,
         ];
+  const unsubscribeLines = options.includeMarketingFooter
+    ? ["", ...getMarketingUnsubscribeLines(options.language)]
+    : [];
 
-  return [intro, "", itemsHeading, itemsList, "", ...footerLines].join("\n");
+  return [
+    intro,
+    "",
+    itemsHeading,
+    itemsList,
+    "",
+    ...footerLines,
+    ...unsubscribeLines,
+  ].join("\n");
 }
 
 /**
@@ -191,6 +212,7 @@ export function buildContentReleaseEmailText(options: {
  */
 export function buildContentReleaseEmailHtml(options: {
   body: string;
+  includeMarketingFooter?: boolean;
   items: Pick<ContentReleaseItemRecord, "title_snapshot" | "url_snapshot">[];
   language: Language;
   subject: string;
@@ -212,6 +234,15 @@ export function buildContentReleaseEmailHtml(options: {
           MAIL_BRAND.descriptorEn,
           `Continue reading on Coptic Compass: ${MAIL_BRAND.liveUrl}`,
         ];
+  const unsubscribeLines = getMarketingUnsubscribeLines(options.language);
+  const unsubscribeHtml = options.includeMarketingFooter
+    ? `
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid #e7e5e4;color:#78716c;">
+          <div>${escapeHtml(unsubscribeLines[0])}</div>
+          <div>${escapeHtml(unsubscribeLines[1])}</div>
+          <div style="margin-top:6px;"><a href="{{{RESEND_UNSUBSCRIBE_URL}}}" style="color:#059669;text-decoration:none;">{{{RESEND_UNSUBSCRIBE_URL}}}</a></div>
+        </div>`
+    : "";
 
   const itemsHtml = options.items
     .map(
@@ -243,29 +274,11 @@ export function buildContentReleaseEmailHtml(options: {
         <div style="font-weight:700;color:#1c1917;">${escapeHtml(footerLines[1])}</div>
         <div>${escapeHtml(footerLines[2])}</div>
         <div style="margin-top:8px;"><a href="${MAIL_BRAND.liveUrl}" style="color:#059669;text-decoration:none;">${escapeHtml(footerLines[3])}</a></div>
+        ${unsubscribeHtml}
       </div>
     </div>
   </body>
 </html>`;
-}
-
-export function buildContentReleaseNotificationPayload(options: {
-  contact: AudienceContactRecord;
-  itemCount: number;
-  language: Language;
-  release: Pick<
-    ContentReleaseRecord,
-    "audience_segment" | "locale_mode" | "release_type"
-  >;
-}) {
-  return {
-    audience_segment: options.release.audience_segment,
-    item_count: options.itemCount,
-    locale: options.language,
-    locale_mode: options.release.locale_mode,
-    recipient_name: options.contact.full_name,
-    release_type: options.release.release_type,
-  };
 }
 
 export function buildContentReleaseNotificationDedupeKey(options: {
@@ -350,6 +363,7 @@ function getBroadcastDeliveryEntry(
   const id = asOptionalString(entry?.id);
   const segmentId = asOptionalString(entry?.segment_id);
   const subject = asOptionalString(entry?.subject);
+  const topicId = asOptionalString(entry?.topic_id);
   const recipientCount = asOptionalNumber(entry?.recipient_count);
   const status = asOptionalString(entry?.status);
   const parsedEntry = {
@@ -358,6 +372,7 @@ function getBroadcastDeliveryEntry(
     segmentId,
     status,
     subject,
+    topicId,
   };
 
   if (!hasCompleteSentBroadcastDelivery(parsedEntry)) {
@@ -372,6 +387,7 @@ function getBroadcastDeliveryEntry(
       segment_id: parsedEntry.segmentId,
       status: parsedEntry.status,
       subject: parsedEntry.subject,
+      topic_id: parsedEntry.topicId,
     } satisfies ContentReleaseBroadcastDelivery,
   ] as const;
 }
@@ -382,48 +398,23 @@ function hasCompleteSentBroadcastDelivery(options: {
   segmentId: string | null;
   status: string | null;
   subject: string | null;
+  topicId: string | null;
 }): options is {
   id: string;
   recipientCount: number;
   segmentId: string;
   status: "sent";
   subject: string;
+  topicId: string;
 } {
   return (
     options.id !== null &&
     options.segmentId !== null &&
     options.subject !== null &&
+    options.topicId !== null &&
     options.recipientCount !== null &&
     options.status === "sent"
   );
-}
-
-/**
- * Merges one delivery batch into the running summary while preserving the total
- * eligible recipient and item counts for the overall release.
- */
-export function mergeContentReleaseDeliverySummary(options: {
-  batch: {
-    failedCount: number;
-    processedCount: number;
-    remainingCount: number;
-    sentCount: number;
-    skippedCount: number;
-  };
-  previous: ContentReleaseDeliverySummary;
-  totalEligibleRecipients: number;
-  totalItemCount: number;
-}) {
-  return {
-    eligible_recipient_count: options.totalEligibleRecipients,
-    failed_count: options.previous.failed_count + options.batch.failedCount,
-    item_count: options.totalItemCount,
-    processed_recipient_count:
-      options.previous.processed_recipient_count + options.batch.processedCount,
-    remaining_recipient_count: options.batch.remainingCount,
-    sent_count: options.previous.sent_count + options.batch.sentCount,
-    skipped_count: options.previous.skipped_count + options.batch.skippedCount,
-  } satisfies ContentReleaseDeliverySummary;
 }
 
 function asOptionalNumber(value: unknown) {

@@ -190,11 +190,13 @@ must send the configured bearer auth header.
 
 ### Background Release Delivery
 
-This repo includes a Supabase Edge Function at `supabase/functions/process-content-release` for background delivery of approved content releases. When Resend segment configuration is available, the worker hands release sends off to provider-native broadcasts. If that configuration is missing, it falls back to direct per-recipient delivery from the worker.
+This repo includes a Supabase Edge Function at `supabase/functions/process-content-release` for background delivery of approved content releases. Marketing releases are delivered only through provider-native Resend Broadcasts with Segments and Topics. If the required Broadcast configuration is missing, sending fails closed with an actionable admin error; the worker does not fall back to direct per-recipient Email API sends.
 
 To enable background release sends in a Supabase project:
 
-1. Set function secrets for `NOTIFICATION_FROM_EMAIL` and at least one Resend key: `RESEND_API_KEY` or `RESEND_API_KEY_FULL_ACCESS`.
+1. Set function secrets for `NOTIFICATION_FROM_EMAIL`,
+   `RESEND_API_KEY_FULL_ACCESS`, the relevant Resend Segment IDs, and the
+   matching Resend Topic IDs.
 2. Deploy the function: `supabase functions deploy process-content-release --project-ref <your-project-ref>`
 3. Make sure the latest release delivery migrations have been pushed so `content_releases` includes the queue metadata columns.
 
@@ -247,6 +249,38 @@ periods. The site owner or qualified legal reviewer should approve that wording
 and the retention periods before the related application release reaches
 production.
 
+### Resend Webhook Capture
+
+The Next.js route `POST /api/resend/webhook` receives Resend provider events.
+Configure the webhook in Resend with these event types:
+
+- `contact.updated`
+- `email.sent`
+- `email.delivered`
+- `email.delivery_delayed`
+- `email.failed`
+- `email.bounced`
+- `email.complained`
+- `email.suppressed`
+
+Set `RESEND_WEBHOOK_SECRET` to the Svix signing secret Resend gives you. The
+route reads the raw body and verifies the `svix-id`, `svix-timestamp`, and
+`svix-signature` headers before storing the event in
+`provider_webhook_events`.
+
+Roll out processing in two steps:
+
+1. Leave `RESEND_WEBHOOK_PROCESSING_ENABLED=false` to capture verified events
+   without side effects.
+2. After captured payloads match expectations, set
+   `RESEND_WEBHOOK_PROCESSING_ENABLED=true`.
+
+When processing is enabled, provider events may only make local state more
+restrictive: global unsubscribes clear all marketing topics and create an active
+suppression, Topic opt-outs clear only the matching local topic, and bounces,
+complaints, or suppressed events create active suppressions. Provider webhooks
+never opt a local topic in.
+
 ### Migration Rollout
 
 Supabase migrations live under `supabase/migrations`. Before deployment, compare and preview the linked project state:
@@ -270,17 +304,24 @@ before important production rollouts when practical.
 
 ### Resend Audience Sync
 
-Audience opt-ins can be mirrored into Resend Contacts and Segments so provider-native broadcasts are possible.
+Audience opt-ins can be mirrored into Resend Contacts, Segments, and Topics so provider-native broadcasts are possible.
 Set these app environment variables where your Next.js server runs:
 
 - `RESEND_API_KEY_FULL_ACCESS`
 - `RESEND_LESSONS_SEGMENT_ID`
 - `RESEND_BOOKS_SEGMENT_ID`
 - `RESEND_GENERAL_SEGMENT_ID`
+- `RESEND_LESSONS_TOPIC_ID`
+- `RESEND_BOOKS_TOPIC_ID`
+- `RESEND_GENERAL_TOPIC_ID`
 - Optional localized segment ids:
   `RESEND_LESSONS_EN_SEGMENT_ID`, `RESEND_LESSONS_NL_SEGMENT_ID`,
   `RESEND_BOOKS_EN_SEGMENT_ID`, `RESEND_BOOKS_NL_SEGMENT_ID`,
   `RESEND_GENERAL_EN_SEGMENT_ID`, and `RESEND_GENERAL_NL_SEGMENT_ID`
+
+Segments are targeting groups only. Do not treat Segment membership as consent
+evidence. Topic subscriptions are synchronized explicitly from Supabase topic
+booleans, and Broadcast sends require the matching Topic ID.
 
 ### Communication Branding
 

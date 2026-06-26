@@ -12,6 +12,7 @@ import {
   isContentReleaseEditableStatus,
   isContentReleaseLocaleMode,
 } from "@/features/communications/lib/releases";
+import { getContentReleaseBroadcastConfigurationError } from "@/features/communications/lib/server/resend";
 import { getNotificationEmailEnv } from "@/lib/notifications/config";
 import { dispatchLoggedNotificationEmail } from "@/lib/notifications/events";
 import { revalidateAdminPaths } from "@/lib/server/revalidation";
@@ -496,6 +497,14 @@ async function getReleaseWorkerStartFailureState(options: {
   };
 }
 
+function getReleaseBroadcastConfigurationState(
+  release: Pick<ContentReleaseRow, "audience_segment" | "locale_mode">,
+): SendContentReleaseState | null {
+  const message = getContentReleaseBroadcastConfigurationError(release);
+
+  return message ? { message, success: false } : null;
+}
+
 /**
  * Queues a reviewed release for background delivery, or resumes an already
  * queued release whose worker chain stalled before completion.
@@ -534,6 +543,10 @@ export async function sendContentRelease(
   }
   const { items: releaseItems, release } = deliveryContext;
   const isResumingQueuedRelease = release.status === "queued";
+  const configurationState = getReleaseBroadcastConfigurationState(release);
+  if (configurationState) {
+    return configurationState;
+  }
 
   if (!isResumingQueuedRelease) {
     const blockedMessage = getReleaseSendBlockedMessage(release);

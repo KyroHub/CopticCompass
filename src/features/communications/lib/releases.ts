@@ -30,6 +30,7 @@ type ContentReleaseDeliverySummary = {
     recipientCount: number;
     segmentId: string;
     subject: string;
+    topicId: string;
   }>;
   eligibleRecipientCount?: number;
   failedCount?: number;
@@ -493,9 +494,16 @@ function getBroadcastSummaryEntries(summary: Record<string, Json | undefined>) {
       const id = asOptionalString(entry.id);
       const segmentId = asOptionalString(entry.segment_id);
       const subject = asOptionalString(entry.subject);
+      const topicId = asOptionalString(entry.topic_id);
       const recipientCount = asOptionalNumber(entry.recipient_count);
 
-      if (!id || !segmentId || !subject || recipientCount === undefined) {
+      if (
+        !id ||
+        !segmentId ||
+        !subject ||
+        !topicId ||
+        recipientCount === undefined
+      ) {
         return null;
       }
 
@@ -505,6 +513,7 @@ function getBroadcastSummaryEntries(summary: Record<string, Json | undefined>) {
         recipientCount,
         segmentId,
         subject,
+        topicId,
       };
     })
     .filter((entry) => entry !== null);

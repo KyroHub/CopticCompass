@@ -184,6 +184,27 @@ describe("admin content release actions", () => {
     expect(revalidatePathMock).toHaveBeenCalledWith("/admin");
   });
 
+  it("blocks release queueing when Broadcast Topic configuration is incomplete", async () => {
+    const {
+      contentReleaseUpdateEqMock,
+      invokeSupabaseEdgeFunctionMock,
+      sendContentRelease,
+    } = await loadAdminModule({
+      hasResendBroadcastEnv: false,
+    });
+
+    await expect(
+      sendContentRelease(null, createContentReleaseStatusFormData()),
+    ).resolves.toEqual({
+      message:
+        "Resend Broadcast delivery is missing required configuration: RESEND_LESSONS_TOPIC_ID.",
+      success: false,
+    });
+
+    expect(contentReleaseUpdateEqMock).not.toHaveBeenCalled();
+    expect(invokeSupabaseEdgeFunctionMock).not.toHaveBeenCalled();
+  });
+
   it("sends a localized preview email to the admin inbox without marking the release sent", async () => {
     const {
       contentReleaseUpdateEqMock,

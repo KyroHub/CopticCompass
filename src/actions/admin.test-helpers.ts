@@ -48,6 +48,7 @@ type AdminHarnessOptions = {
     | { error: string; success: false }
     | { eventId: string; jobId: string; success: true };
   hasEnv?: boolean;
+  hasResendBroadcastEnv?: boolean;
   hasResendAudienceEnv?: boolean;
   invokeWorkerResult?:
     | { data?: Record<string, unknown> | null; status: number; success: true }
@@ -582,6 +583,11 @@ function mockAdminDependencies(
     invokeSupabaseEdgeFunction: invokeSupabaseEdgeFunctionMock,
   }));
   vi.doMock("@/features/communications/lib/server/resend", () => ({
+    getContentReleaseBroadcastConfigurationError: vi.fn(() =>
+      options.hasResendBroadcastEnv === false
+        ? "Resend Broadcast delivery is missing required configuration: RESEND_LESSONS_TOPIC_ID."
+        : null,
+    ),
     hasResendAudienceEnv: vi.fn(() => options.hasResendAudienceEnv ?? true),
     syncStoredAudienceContactToResend: syncStoredAudienceContactToResendMock,
   }));

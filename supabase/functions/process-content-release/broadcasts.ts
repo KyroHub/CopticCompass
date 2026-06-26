@@ -31,6 +31,14 @@ type ReleaseBroadcastTarget = {
   segmentId: string;
   subject: string;
   text: string;
+  topicId: string;
+};
+
+type ReleaseBroadcastCopy = ReturnType<
+  typeof getContentReleaseCopyForLocale
+> & {
+  body: string;
+  subject: string;
 };
 
 type BroadcastDeliveryOptions = {
@@ -46,6 +54,36 @@ type BroadcastTargetResult =
   | { status: "sent"; broadcast: ContentReleaseBroadcastDelivery }
   | { status: "skipped" };
 
+function buildReleaseBroadcastTarget(options: {
+  copy: ReleaseBroadcastCopy;
+  language: Language;
+  recipientCount: number;
+  releaseItems: ContentReleaseItemRecord[];
+  segmentId: string;
+  topicId: string;
+}): ReleaseBroadcastTarget {
+  return {
+    html: buildContentReleaseEmailHtml({
+      body: options.copy.body,
+      includeMarketingFooter: true,
+      items: options.releaseItems,
+      language: options.language,
+      subject: options.copy.subject,
+    }),
+    language: options.language,
+    recipientCount: options.recipientCount,
+    segmentId: options.segmentId,
+    subject: options.copy.subject,
+    text: buildContentReleaseEmailText({
+      body: options.copy.body,
+      includeMarketingFooter: true,
+      items: options.releaseItems,
+      language: options.language,
+    }),
+    topicId: options.topicId,
+  };
+}
+
 /**
  * Creates and immediately sends a Resend broadcast for one managed segment.
  * The returned broadcast id is recorded as the provider delivery identifier.
@@ -58,6 +96,7 @@ async function createResendBroadcast(options: {
   segmentId: string;
   subject: string;
   text: string;
+  topicId: string;
 }) {
   const response = await fetch("https://api.resend.com/broadcasts", {
     body: JSON.stringify({
@@ -68,6 +107,7 @@ async function createResendBroadcast(options: {
       send: true,
       subject: options.subject,
       text: options.text,
+      topic_id: options.topicId,
     }),
     headers: {
       Authorization: `Bearer ${options.resendApiKey}`,
@@ -88,6 +128,22 @@ async function createResendBroadcast(options: {
     error: (await response.text()) || "Failed to create Resend broadcast.",
     success: false as const,
   };
+}
+
+function getBroadcastTopicId(
+  audienceSegment: ContentReleaseRecord["audience_segment"],
+  env: ResendBroadcastEnv,
+) {
+  switch (audienceSegment) {
+    case "lessons":
+      return env.topics.lessons;
+    case "books":
+      return env.topics.books;
+    case "general":
+      return env.topics.general;
+    default:
+      return null;
+  }
 }
 
 function getBroadcastBaseSegmentId(
@@ -157,10 +213,22 @@ async function countLocalizedContacts(options: {
   return { englishCount, dutchCount };
 }
 
+function buildMissingLocalizedBroadcastConfigResult(
+  totalEligibleRecipients: number,
+) {
+  return {
+    error:
+      "Resend Broadcasts require localized Segment IDs and a Topic ID for this release audience.",
+    targets: null,
+    totalEligibleRecipients,
+    usedBroadcasts: true as const,
+  };
+}
+
 /**
  * Builds the localized broadcast plan. If locale-specific segment ids are not
- * fully configured, this returns `usedBroadcasts: false` so the caller can fall
- * back to the standard per-recipient delivery path.
+ * fully configured, this returns a blocking error because marketing releases
+ * must fail closed instead of falling back to direct Email API sends.
  */
 async function buildLocalizedReleaseBroadcastTargets(options: {
   broadcastEnv: ResendBroadcastEnv;
@@ -184,6 +252,16 @@ async function buildLocalizedReleaseBroadcastTargets(options: {
     };
   }
 
+  const topicId = getBroadcastTopicId(
+    options.release.audience_segment,
+    options.broadcastEnv,
+  );
+  if (!topicId) {
+    return buildMissingLocalizedBroadcastConfigResult(
+      englishCount + dutchCount,
+    );
+  }
+
   const targets: ReleaseBroadcastTarget[] = [];
   for (const language of ["en", "nl"] as const) {
     const recipientCount = language === "en" ? englishCount : dutchCount;
@@ -198,12 +276,9 @@ async function buildLocalizedReleaseBroadcastTargets(options: {
     );
 
     if (!segmentId) {
-      return {
-        error: null,
-        targets: null,
-        totalEligibleRecipients: null,
-        usedBroadcasts: false as const,
-      };
+      return buildMissingLocalizedBroadcastConfigResult(
+        englishCount + dutchCount,
+      );
     }
 
     const copy = getContentReleaseCopyForLocale(options.release, language);
@@ -217,23 +292,16 @@ async function buildLocalizedReleaseBroadcastTargets(options: {
       };
     }
 
-    targets.push({
-      html: buildContentReleaseEmailHtml({
-        body: copy.body,
-        items: options.releaseItems,
+    targets.push(
+      buildReleaseBroadcastTarget({
+        copy: copy as ReleaseBroadcastCopy,
         language,
-        subject: copy.subject,
+        recipientCount,
+        releaseItems: options.releaseItems,
+        segmentId,
+        topicId,
       }),
-      language,
-      recipientCount,
-      segmentId,
-      subject: copy.subject,
-      text: buildContentReleaseEmailText({
-        body: copy.body,
-        items: options.releaseItems,
-        language,
-      }),
-    });
+    );
   }
 
   return {
@@ -274,13 +342,18 @@ async function buildSingleLocaleReleaseBroadcastTargets(options: {
     options.release.audience_segment,
     options.broadcastEnv,
   );
+  const topicId = getBroadcastTopicId(
+    options.release.audience_segment,
+    options.broadcastEnv,
+  );
 
-  if (!segmentId) {
+  if (!segmentId || !topicId) {
     return {
-      error: null,
+      error:
+        "Resend Broadcasts require a Segment ID and Topic ID for this release audience.",
       targets: null,
-      totalEligibleRecipients: null,
-      usedBroadcasts: false as const,
+      totalEligibleRecipients,
+      usedBroadcasts: true as const,
     };
   }
 
@@ -300,23 +373,14 @@ async function buildSingleLocaleReleaseBroadcastTargets(options: {
   return {
     error: null,
     targets: [
-      {
-        html: buildContentReleaseEmailHtml({
-          body: copy.body,
-          items: options.releaseItems,
-          language,
-          subject: copy.subject,
-        }),
+      buildReleaseBroadcastTarget({
+        copy: copy as ReleaseBroadcastCopy,
         language,
         recipientCount: totalEligibleRecipients,
+        releaseItems: options.releaseItems,
         segmentId,
-        subject: copy.subject,
-        text: buildContentReleaseEmailText({
-          body: copy.body,
-          items: options.releaseItems,
-          language,
-        }),
-      },
+        topicId,
+      }),
     ],
     totalEligibleRecipients,
     usedBroadcasts: true as const,
@@ -531,6 +595,7 @@ async function createBroadcastNotificationEvent(options: {
       recipient_count: options.target.recipientCount,
       release_type: options.release.release_type,
       segment_id: options.target.segmentId,
+      topic_id: options.target.topicId,
     },
     recipient: options.recipient,
     serviceRoleKey: options.serviceRoleKey,
@@ -541,7 +606,7 @@ async function createBroadcastNotificationEvent(options: {
 
 /**
  * Sends one broadcast target and records the provider outcome through the same
- * notification event/delivery tables used by per-recipient delivery.
+ * notification event/delivery tables used by the rest of the mail pipeline.
  */
 async function deliverBroadcastTarget(options: {
   notificationFromEmail: string;
@@ -578,6 +643,7 @@ async function deliverBroadcastTarget(options: {
     segmentId: options.target.segmentId,
     subject: options.target.subject,
     text: options.target.text,
+    topicId: options.target.topicId,
   });
 
   if (!broadcastResult.success || !broadcastResult.id) {
@@ -621,14 +687,14 @@ async function deliverBroadcastTarget(options: {
       segment_id: options.target.segmentId,
       status: "sent",
       subject: options.target.subject,
+      topic_id: options.target.topicId,
     },
   };
 }
 
 /**
- * Attempts release delivery via Resend broadcasts. When broadcasts are not
- * fully available for the release shape, the caller can fall back to the
- * standard queued per-recipient delivery flow.
+ * Attempts release delivery via Resend broadcasts. Marketing sends fail closed
+ * when Segment or Topic configuration is incomplete.
  */
 export async function deliverReleaseByBroadcast(options: {
   broadcastEnv: ResendBroadcastEnv;

@@ -4,6 +4,12 @@ export type BroadcastSegmentMap = {
   lessons: string | null;
 };
 
+export type BroadcastTopicMap = {
+  books: string;
+  general: string;
+  lessons: string;
+};
+
 export type LocalizedBroadcastSegmentMap = {
   books: {
     en: string | null;
@@ -23,6 +29,7 @@ export type ResendBroadcastEnv = {
   localizedSegments: LocalizedBroadcastSegmentMap;
   resendApiKey: string;
   segments: BroadcastSegmentMap;
+  topics: BroadcastTopicMap;
 };
 
 type ProcessContentReleaseEnv = {
@@ -87,8 +94,9 @@ export function getProcessContentReleaseEnv(): ProcessContentReleaseEnv | null {
 }
 
 /**
- * Loads the optional broadcast configuration. Returning null signals that the
- * worker should skip broadcast delivery and fall back to per-recipient sends.
+ * Loads the required broadcast configuration. Returning null blocks release
+ * sending because marketing delivery must use Resend Broadcasts, Segments, and
+ * Topics rather than direct per-recipient Email API calls.
  */
 export function getResendBroadcastEnv(): ResendBroadcastEnv | null {
   const resendApiKey = normalizeOptionalEnvValue(
@@ -103,8 +111,25 @@ export function getResendBroadcastEnv(): ResendBroadcastEnv | null {
   const general = normalizeOptionalEnvValue(
     Deno.env.get("RESEND_GENERAL_SEGMENT_ID"),
   );
+  const lessonsTopic = normalizeOptionalEnvValue(
+    Deno.env.get("RESEND_LESSONS_TOPIC_ID"),
+  );
+  const booksTopic = normalizeOptionalEnvValue(
+    Deno.env.get("RESEND_BOOKS_TOPIC_ID"),
+  );
+  const generalTopic = normalizeOptionalEnvValue(
+    Deno.env.get("RESEND_GENERAL_TOPIC_ID"),
+  );
 
-  if (!resendApiKey || !lessons || !books || !general) {
+  if (
+    !resendApiKey ||
+    !lessons ||
+    !books ||
+    !general ||
+    !lessonsTopic ||
+    !booksTopic ||
+    !generalTopic
+  ) {
     return null;
   }
 
@@ -140,6 +165,11 @@ export function getResendBroadcastEnv(): ResendBroadcastEnv | null {
       books,
       general,
       lessons,
+    },
+    topics: {
+      books: booksTopic,
+      general: generalTopic,
+      lessons: lessonsTopic,
     },
   };
 }

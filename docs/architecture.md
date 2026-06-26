@@ -300,6 +300,24 @@ The contact confirmation and public preference functions lock and consume their
 token rows inside the same transaction. Token GET pages are request-bound,
 `noindex`, and read-only; only explicit POST actions mutate preferences.
 
+Resend integration keeps consent and targeting separate. Segments identify the
+audience slice for Broadcast delivery, while Topics represent the provider-side
+preference state. Audience sync explicitly writes every managed Topic as
+`opt_in` or `opt_out`; it does not infer consent from Segment membership.
+Content release sends require a full-access Resend key, the relevant Segment
+ID, the matching Topic ID, and a visible provider unsubscribe footer. Missing
+configuration blocks queueing or finalizes the release back to `approved` with
+an admin-facing error instead of falling back to direct Email API sends.
+
+The Resend webhook route verifies Svix signatures before parsing JSON, inserts
+the provider event into `provider_webhook_events` before side effects, and
+returns idempotent success for duplicate `svix-id` deliveries. Webhook side
+effects are disabled unless `RESEND_WEBHOOK_PROCESSING_ENABLED=true`. When
+enabled, provider events may only make local marketing state more restrictive:
+global unsubscribes clear all local topics and create a suppression, Topic
+opt-outs clear only that topic, and bounces, complaints, or suppressed events
+create active suppressions. Provider webhooks must never opt a topic in.
+
 Public-facing documentation is part of the product surface. Keep `README.md`,
 the docs in `docs/`, and README screenshots in `public/readme` aligned with the
 current brand assets, typography, product vocabulary, and UI patterns. The brand

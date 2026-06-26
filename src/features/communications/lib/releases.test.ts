@@ -69,4 +69,39 @@ describe("content release helpers", () => {
       skippedCount: 1,
     });
   });
+
+  it("requires Topic IDs in saved broadcast summaries", () => {
+    expect(
+      getContentReleaseDeliverySummary({
+        delivery_summary: {
+          broadcasts: {
+            en: {
+              id: "broadcast_en",
+              recipient_count: 12,
+              segment_id: "segment_lessons_en",
+              status: "sent",
+              subject: "New lesson",
+              topic_id: "topic_lessons",
+            },
+            nl: {
+              id: "broadcast_nl",
+              recipient_count: 9,
+              segment_id: "segment_lessons_nl",
+              status: "sent",
+              subject: "Nieuwe les",
+            },
+          },
+        },
+      }).broadcasts,
+    ).toEqual([
+      {
+        id: "broadcast_en",
+        language: "en",
+        recipientCount: 12,
+        segmentId: "segment_lessons_en",
+        subject: "New lesson",
+        topicId: "topic_lessons",
+      },
+    ]);
+  });
 });

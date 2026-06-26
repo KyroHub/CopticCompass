@@ -1,6 +1,5 @@
 import {
   getAudienceSegmentOptInColumn,
-  type AudienceContactRecord,
   type ContentReleaseDeliverySummary,
   type ContentReleaseItemRecord,
   type ContentReleaseRecord,
@@ -233,90 +232,6 @@ export async function countAudienceContacts(options: {
 }
 
 /**
- * Loads one page of subscribed contacts ordered by email so the worker can use
- * the last delivered email address as a stable cursor between batches.
- */
-export async function loadAudienceContacts(options: {
-  audienceSegment: ContentReleaseRecord["audience_segment"];
-  cursor: string | null;
-  limit: number;
-  serviceRoleKey: string;
-  supabaseUrl: string;
-}) {
-  const optInColumn = getAudienceSegmentOptInColumn(options.audienceSegment);
-  const filters = [
-    `select=email,full_name,locale`,
-    `${optInColumn}=eq.true`,
-    `unsubscribed_at=is.null`,
-  ];
-
-  if (options.cursor) {
-    filters.push(`email=gt.${encodeURIComponent(options.cursor)}`);
-  }
-
-  filters.push(`order=email.asc`);
-  filters.push(`limit=${options.limit}`);
-
-  const result = await fetchSupabaseJson<AudienceContactRecord[]>({
-    path: `audience_contacts?${filters.join("&")}`,
-    serviceRoleKey: options.serviceRoleKey,
-    supabaseUrl: options.supabaseUrl,
-  });
-
-  if (result.error) {
-    console.error("Failed to load audience contacts for content release.", {
-      audienceSegment: options.audienceSegment,
-      cursor: options.cursor,
-      error: result.error,
-      status: result.status,
-    });
-    return null;
-  }
-
-  return (result.data ?? []).filter(
-    (contact) =>
-      typeof contact.email === "string" && contact.email.trim().length > 0,
-  );
-}
-
-/**
- * Persists the worker's intermediate cursor and delivery summary before the
- * next batch is queued, keeping partial progress visible in the admin state.
- */
-export async function updateQueuedReleaseProgress(options: {
-  cursor: string | null;
-  lastDeliveryError: string | null;
-  releaseId: string;
-  serviceRoleKey: string;
-  summary: ContentReleaseDeliverySummary;
-  supabaseUrl: string;
-}) {
-  const now = new Date().toISOString();
-  const response = await fetch(
-    `${options.supabaseUrl}/rest/v1/content_releases?id=eq.${encodeURIComponent(options.releaseId)}`,
-    {
-      body: JSON.stringify({
-        delivery_cursor: options.cursor,
-        delivery_summary: options.summary,
-        last_delivery_error: options.lastDeliveryError,
-        status: "queued",
-        updated_at: now,
-      }),
-      headers: buildSupabaseRestHeaders(options.serviceRoleKey),
-      method: "PATCH",
-    },
-  );
-
-  if (!response.ok) {
-    console.error("Failed to update queued content release progress.", {
-      error: await response.text(),
-      releaseId: options.releaseId,
-      status: response.status,
-    });
-  }
-}
-
-/**
  * Writes the terminal delivery state for a release, including the final cursor,
  * summary, error message, and sent timestamp when delivery fully succeeded.
  */
@@ -354,46 +269,4 @@ export async function finalizeRelease(options: {
       status: response.status,
     });
   }
-}
-
-/**
- * Calls the next worker batch through the Edge Function endpoint so large
- * releases can continue asynchronously without one long-running invocation.
- */
-export async function invokeNextBatch(options: {
-  releaseId: string;
-  serviceRoleKey: string;
-  supabaseUrl: string;
-}) {
-  const response = await fetch(
-    `${options.supabaseUrl}/functions/v1/process-content-release`,
-    {
-      body: JSON.stringify({
-        releaseId: options.releaseId,
-      }),
-      headers: {
-        Authorization: `Bearer ${options.serviceRoleKey}`,
-        "Content-Type": "application/json",
-      },
-      method: "POST",
-    },
-  );
-
-  if (!response.ok) {
-    const error = await response.text();
-    console.error("Failed to queue the next content release batch.", {
-      error,
-      releaseId: options.releaseId,
-      status: response.status,
-    });
-    return {
-      error,
-      status: response.status,
-      success: false as const,
-    };
-  }
-
-  return {
-    success: true as const,
-  };
 }
