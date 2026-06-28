@@ -756,6 +756,51 @@ export type Database = {
           },
         ];
       };
+      notification_email_job_audit_events: {
+        Row: {
+          action: "manual_retry";
+          actor_id: string | null;
+          created_at: string;
+          id: string;
+          metadata: Json;
+          notification_email_job_id: string;
+          reason: string;
+        };
+        Insert: {
+          action: "manual_retry";
+          actor_id?: string | null;
+          created_at?: string;
+          id?: string;
+          metadata?: Json;
+          notification_email_job_id: string;
+          reason: string;
+        };
+        Update: {
+          action?: "manual_retry";
+          actor_id?: string | null;
+          created_at?: string;
+          id?: string;
+          metadata?: Json;
+          notification_email_job_id?: string;
+          reason?: string;
+        };
+        Relationships: [
+          {
+            columns: ["actor_id"];
+            foreignKeyName: "notification_email_job_audit_events_actor_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "profiles";
+          },
+          {
+            columns: ["notification_email_job_id"];
+            foreignKeyName: "notification_email_job_audit_events_notification_email_job_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "notification_email_jobs";
+          },
+        ];
+      };
       audience_contacts: {
         Row: {
           books_opt_in: boolean;
@@ -1583,6 +1628,50 @@ export type Database = {
         };
         Returns: Database["public"]["Tables"]["audience_contacts"]["Row"];
       };
+      enqueue_notification_email_job: {
+        Args: {
+          p_aggregate_id: string;
+          p_aggregate_type: string;
+          p_bcc_recipients?: string[];
+          p_cc_recipients?: string[];
+          p_dedupe_key?: string | null;
+          p_event_type: string;
+          p_from_email?: string | null;
+          p_html_body?: string | null;
+          p_max_attempts?: number;
+          p_payload?: Json;
+          p_recipient: string;
+          p_reply_to_recipients?: string[];
+          p_subject: string;
+          p_text_body: string;
+          p_to_recipients: string[];
+        };
+        Returns: {
+          event_id: string;
+          event_status:
+            | "accepted"
+            | "bounced"
+            | "complained"
+            | "dead_letter"
+            | "delayed"
+            | "delivered"
+            | "failed"
+            | "processing"
+            | "queued"
+            | "sent"
+            | "suppressed";
+          job_already_existed: boolean;
+          job_id: string;
+          job_status:
+            | "accepted"
+            | "dead_letter"
+            | "failed"
+            | "processing"
+            | "queued"
+            | "retry_scheduled"
+            | "sent";
+        }[];
+      };
       claim_notification_email_jobs: {
         Args: {
           p_job_id?: string;
@@ -1618,6 +1707,24 @@ export type Database = {
           subject: string;
           text_body: string;
           to_recipients: string[];
+        }[];
+      };
+      retry_notification_email_job: {
+        Args: {
+          p_job_id: string;
+          p_reason: string;
+        };
+        Returns: {
+          event_id: string;
+          job_id: string;
+          job_status:
+            | "accepted"
+            | "dead_letter"
+            | "failed"
+            | "processing"
+            | "queued"
+            | "retry_scheduled"
+            | "sent";
         }[];
       };
       confirm_audience_opt_in_request: {

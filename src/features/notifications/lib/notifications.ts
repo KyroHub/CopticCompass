@@ -4,10 +4,15 @@ import type { Json, Tables } from "@/types/supabase";
 
 export type NotificationEventRow = Tables<"notification_events">;
 export type NotificationDeliveryRow = Tables<"notification_deliveries">;
+export type NotificationEmailJobRow = Tables<"notification_email_jobs">;
+export type NotificationEmailJobAuditEventRow =
+  Tables<"notification_email_job_audit_events">;
 
 export type AdminNotificationEvent = NotificationEventRow & {
   deliveries: NotificationDeliveryRow[];
+  emailJob: NotificationEmailJobRow | null;
   latestDelivery: NotificationDeliveryRow | null;
+  retryAuditEvents: NotificationEmailJobAuditEventRow[];
 };
 
 const NOTIFICATION_STATUS_PRIORITY = {
@@ -44,6 +49,11 @@ export const notificationInFlightStatuses = [
   "queued",
 ] as const satisfies readonly NotificationEventRow["status"][];
 
+const notificationRetryableJobStatuses = [
+  "dead_letter",
+  "failed",
+] as const satisfies readonly NotificationEmailJobRow["status"][];
+
 const NOTIFICATION_FAILURE_STATUS_SET = new Set<NotificationEventRow["status"]>(
   notificationFailureStatuses,
 );
@@ -53,6 +63,9 @@ const NOTIFICATION_HISTORY_STATUS_SET = new Set<NotificationEventRow["status"]>(
 const NOTIFICATION_IN_FLIGHT_STATUS_SET = new Set<
   NotificationEventRow["status"]
 >(notificationInFlightStatuses);
+const NOTIFICATION_RETRYABLE_JOB_STATUS_SET = new Set<
+  NotificationEmailJobRow["status"]
+>(notificationRetryableJobStatuses);
 
 /**
  * Narrows JSON payload fragments to plain objects before field extraction.
@@ -130,6 +143,16 @@ export function isNotificationInFlightStatus(
   status: NotificationEventRow["status"],
 ) {
   return NOTIFICATION_IN_FLIGHT_STATUS_SET.has(status);
+}
+
+/**
+ * Identifies durable email jobs that an admin can safely send back to queued
+ * through the audited manual retry action.
+ */
+export function isNotificationRetryableJobStatus(
+  status: NotificationEmailJobRow["status"],
+) {
+  return NOTIFICATION_RETRYABLE_JOB_STATUS_SET.has(status);
 }
 
 /**

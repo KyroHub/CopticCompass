@@ -10,10 +10,12 @@ import {
   formatNotificationTimestamp,
   getNotificationContextBadges,
   isNotificationFailureStatus,
+  isNotificationRetryableJobStatus,
   type AdminNotificationEvent,
 } from "@/features/notifications/lib/notifications";
 
 import { NotificationEventStatusBadge } from "./NotificationEventStatusBadge";
+import { RetryNotificationEmailJobForm } from "./RetryNotificationEmailJobForm";
 
 type AdminNotificationEventCardProps = {
   event: AdminNotificationEvent;
@@ -25,7 +27,10 @@ const adminNotificationEventCardCopy = {
     createdOn: "Created on",
     lastError: "Last error",
     latestDeliveryStatus: "Latest delivery status",
+    nextAttempt: "Next attempt",
     notificationFailed: "This notification did not deliver.",
+    retryAttempts: "Attempts",
+    retryAudit: "Manual retries",
     processedOn: "Processed on",
     providerMessageId: "Provider message ID",
     recipient: "Recipient",
@@ -35,7 +40,10 @@ const adminNotificationEventCardCopy = {
     createdOn: "Aangemaakt op",
     lastError: "Laatste fout",
     latestDeliveryStatus: "Laatste leveringsstatus",
+    nextAttempt: "Volgende poging",
     notificationFailed: "Deze melding werd niet bezorgd.",
+    retryAttempts: "Pogingen",
+    retryAudit: "Handmatige retries",
     processedOn: "Verwerkt op",
     providerMessageId: "Providerbericht-ID",
     recipient: "Ontvanger",
@@ -48,6 +56,10 @@ export function AdminNotificationEventCard({
   const { language } = useLanguage();
   const copy = adminNotificationEventCardCopy[language];
   const contextBadges = getNotificationContextBadges(event, language);
+  const shouldShowNextAttempt =
+    event.emailJob?.status === "processing" ||
+    event.emailJob?.status === "queued" ||
+    event.emailJob?.status === "retry_scheduled";
 
   return (
     <SurfacePanel
@@ -131,6 +143,39 @@ export function AdminNotificationEventCard({
           </span>
         </div>
       )}
+
+      {event.emailJob ? (
+        <div className="mt-4 rounded-lg border border-line bg-elevated px-5 py-4 text-sm leading-7 text-muted">
+          <p>
+            {copy.retryAttempts}:{" "}
+            <span className="font-semibold text-ink">
+              {event.emailJob.attempt_count}/{event.emailJob.max_attempts}
+            </span>
+          </p>
+          {shouldShowNextAttempt ? (
+            <p>
+              {copy.nextAttempt}:{" "}
+              {formatNotificationTimestamp(
+                event.emailJob.next_attempt_at,
+                language,
+              )}
+            </p>
+          ) : null}
+          {event.retryAuditEvents.length > 0 ? (
+            <p>
+              {copy.retryAudit}:{" "}
+              <span className="font-semibold text-ink">
+                {event.retryAuditEvents.length}
+              </span>
+            </p>
+          ) : null}
+        </div>
+      ) : null}
+
+      {event.emailJob &&
+      isNotificationRetryableJobStatus(event.emailJob.status) ? (
+        <RetryNotificationEmailJobForm jobId={event.emailJob.id} />
+      ) : null}
     </SurfacePanel>
   );
 }

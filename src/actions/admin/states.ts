@@ -16,6 +16,11 @@ export type SendContentReleaseState = {
   success: boolean;
 };
 
+export type RetryNotificationEmailJobState = {
+  message?: string;
+  success: boolean;
+};
+
 export type SyncAudienceContactsState = {
   message?: string;
   success: boolean;

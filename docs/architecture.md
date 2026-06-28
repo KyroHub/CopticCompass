@@ -286,12 +286,18 @@ The database keeps mailing state separated by responsibility:
 - `notification_events` stores logical notification intent
 - `notification_deliveries` stores provider delivery attempts and outcomes
 - `notification_email_jobs` stores durable worker state, retry timing, and leases
+- `notification_email_job_audit_events` stores audited manual recovery actions
 
 Only trusted service-role workflows write consent evidence, suppressions,
 provider events, and queued email jobs. The
-`claim_notification_email_jobs` database function is deliberately unavailable
-to browser roles and uses bounded leases plus row locking to support later retry
-workers without duplicate claims.
+`enqueue_notification_email_job` function creates or reuses the logical event
+and durable job in one transaction, so app code does not report queue success
+unless the job row exists. The `claim_notification_email_jobs` database
+function is deliberately unavailable to browser roles and uses bounded leases
+plus row locking so concurrent workers cannot double-claim a job. Direct Edge
+Function invocation after enqueue is a wake-up optimization; scheduled
+invocations with no `jobId` can drain queued, retry-scheduled, and
+expired-lease jobs.
 
 All user-driven topic changes pass through `apply_audience_preferences`. The
 service-role-only function serializes updates per normalized email, updates the
@@ -317,6 +323,14 @@ enabled, provider events may only make local marketing state more restrictive:
 global unsubscribes clear all local topics and create a suppression, Topic
 opt-outs clear only that topic, and bounces, complaints, or suppressed events
 create active suppressions. Provider webhooks must never opt a topic in.
+
+Transactional notification sends use Resend Email API idempotency keys derived
+from notification event and job IDs. Retryable provider/network failures are
+scheduled with deterministic jitter and eventually move to `dead_letter` after
+the configured attempt budget. Permanent provider failures move to `failed`.
+Admins can manually retry failed or dead-letter jobs only with an explicit audit
+reason; suppressed recipients remain blocked unless the event is classified as
+required transactional mail.
 
 Public-facing documentation is part of the product surface. Keep `README.md`,
 the docs in `docs/`, and README screenshots in `public/readme` aligned with the

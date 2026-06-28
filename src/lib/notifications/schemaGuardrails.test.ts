@@ -7,6 +7,8 @@ import type { Database, TablesInsert, TablesUpdate } from "@/types/supabase";
 
 const MIGRATION_PATH =
   "supabase/migrations/20260622120000_mailing_system_foundations.sql";
+const DURABLE_QUEUE_MIGRATION_PATH =
+  "supabase/migrations/20260626213000_durable_notification_queue.sql";
 
 function readProjectFile(relativePath: string) {
   return fs.readFileSync(path.join(process.cwd(), relativePath), "utf8");
@@ -15,6 +17,18 @@ function readProjectFile(relativePath: string) {
 function extractClaimFunction(source: string) {
   const start = source.indexOf(
     "create or replace function public.claim_notification_email_jobs(",
+  );
+  const end = source.indexOf("$$;", start);
+
+  expect(start).toBeGreaterThanOrEqual(0);
+  expect(end).toBeGreaterThan(start);
+
+  return source.slice(start, end + 3);
+}
+
+function extractFunction(source: string, functionName: string) {
+  const start = source.indexOf(
+    `create or replace function public.${functionName}(`,
   );
   const end = source.indexOf("$$;", start);
 
@@ -122,6 +136,47 @@ describe("mailing system schema guardrails", () => {
     }
   });
 
+  it("keeps durable enqueue and manual retry setup in parity", () => {
+    const migration = readProjectFile(DURABLE_QUEUE_MIGRATION_PATH);
+    const setup = readProjectFile("supabase/setup.sql");
+
+    for (const source of [migration, setup]) {
+      expect(source).toContain(
+        "create table if not exists public.notification_email_job_audit_events",
+      );
+      expect(source).toContain(
+        'create policy "Admins can read all notification email jobs"',
+      );
+      expect(source).toContain(
+        'create policy "Admins can read all notification email job audit events"',
+      );
+
+      const enqueueFunction = extractFunction(
+        source,
+        "enqueue_notification_email_job",
+      );
+      expect(enqueueFunction).toContain("security invoker");
+      expect(enqueueFunction).toContain(
+        "on conflict (notification_event_id) do nothing",
+      );
+      expect(enqueueFunction).toContain("return query");
+
+      const retryFunction = extractFunction(
+        source,
+        "retry_notification_email_job",
+      );
+      expect(retryFunction).toContain("security definer");
+      expect(retryFunction).toContain("if not public.is_admin()");
+      expect(retryFunction).toContain("v_event.payload @>");
+      expect(retryFunction).toContain(
+        "Recipient is actively suppressed and this notification is not classified as required transactional mail",
+      );
+      expect(retryFunction).toContain(
+        "insert into public.notification_email_job_audit_events",
+      );
+    }
+  });
+
   it("retains legacy sent states during the additive rollout", () => {
     const migration = readProjectFile(MIGRATION_PATH);
 
@@ -139,11 +194,24 @@ describe("mailing system schema guardrails", () => {
   it("exposes typed contracts for future consent and retry workers", () => {
     type ClaimArgs =
       Database["public"]["Functions"]["claim_notification_email_jobs"]["Args"];
+    type EnqueueArgs =
+      Database["public"]["Functions"]["enqueue_notification_email_job"]["Args"];
+    type RetryArgs =
+      Database["public"]["Functions"]["retry_notification_email_job"]["Args"];
 
     expectTypeOf<ClaimArgs>().toMatchTypeOf<{
       p_job_id?: string;
       p_lease_seconds?: number;
       p_limit?: number;
+    }>();
+    expectTypeOf<EnqueueArgs>().toMatchTypeOf<{
+      p_event_type: string;
+      p_text_body: string;
+      p_to_recipients: string[];
+    }>();
+    expectTypeOf<RetryArgs>().toEqualTypeOf<{
+      p_job_id: string;
+      p_reason: string;
     }>();
 
     expectTypeOf<TablesInsert<"audience_consent_events">>().toMatchTypeOf<{
@@ -189,5 +257,13 @@ describe("mailing system schema guardrails", () => {
       | "sent"
       | undefined
     >();
+
+    expectTypeOf<
+      TablesInsert<"notification_email_job_audit_events">
+    >().toMatchTypeOf<{
+      action: "manual_retry";
+      notification_email_job_id: string;
+      reason: string;
+    }>();
   });
 });

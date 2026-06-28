@@ -207,8 +207,10 @@ configured bearer auth header.
 
 This repo includes a Supabase Edge Function at
 `supabase/functions/process-notification-email` for generic notification emails.
-The Next.js app inserts jobs into `public.notification_email_jobs` and invokes
-the worker with the queued `jobId`.
+The Next.js app calls `enqueue_notification_email_job` so the logical
+`notification_events` row and durable `notification_email_jobs` row are created
+or reused atomically. Direct function invocation after enqueue is only a
+low-latency wake-up; the durable job row is the source of truth.
 
 To enable queued notification email sends in a Supabase project:
 
@@ -216,14 +218,42 @@ To enable queued notification email sends in a Supabase project:
    `RESEND_API_KEY`, and `NOTIFICATION_FROM_EMAIL`.
 2. Deploy the function: `supabase functions deploy process-notification-email --project-ref <your-project-ref>`
 3. Make sure the latest notification email migrations have been pushed so
-   `public.notification_email_jobs` exists.
+   `public.notification_email_jobs`, `enqueue_notification_email_job`,
+   `claim_notification_email_jobs`, and `retry_notification_email_job` exist.
 
-The mailing-system foundation migration also adds retry metadata and the
-service-role-only `claim_notification_email_jobs` database function. The
-current worker remains compatible with the legacy `sent` state until the retry
-worker rollout is enabled in a later phase. Do not grant this claim function to
-`anon` or `authenticated`; it leases jobs and is intended only for trusted
-background workers.
+The worker claims eligible jobs through the service-role-only
+`claim_notification_email_jobs` database function. A claim sets `processing`,
+increments `attempt_count`, and writes a five-minute lease. Queued,
+retry-scheduled, and expired-lease jobs are all claimable, which lets the
+worker recover after crashes. Do not grant this claim function to `anon` or
+`authenticated`; it leases jobs and is intended only for trusted background
+workers.
+
+Provider retry policy:
+
+- retryable: network errors, HTTP 408, 429, most 5xx responses, and Resend
+  `409 concurrent_idempotent_requests`
+- permanent: malformed requests, invalid sender/recipient, unauthorized keys,
+  and Resend `409 invalid_idempotent_request`
+- schedule: roughly 1 minute, 5 minutes, 30 minutes, 2 hours, and 12 hours,
+  with deterministic jitter
+
+Every Resend Email API request includes a stable `Idempotency-Key` derived from
+the notification event and job IDs. The job payload is not rewritten between
+retries, so the same key is reused with the same body.
+
+For scheduled recovery, invoke `process-notification-email` every minute without
+a `jobId`; the worker will claim a bounded batch of eligible jobs. Supabase
+supports this with `pg_cron` plus `pg_net`, and recommends storing the project
+URL and auth token in Supabase Vault. Use a service-role bearer token for this
+worker because it calls the service-role-only claim RPC.
+
+Manual recovery is available from the admin notification card for failed and
+dead-letter jobs. Admins must enter a reason; the
+`retry_notification_email_job` function writes
+`notification_email_job_audit_events`, resets the job to `queued`, and blocks
+retry for actively suppressed recipients unless the event payload is classified
+as required transactional mail.
 
 The same migration creates three RLS-protected audit tables:
 
