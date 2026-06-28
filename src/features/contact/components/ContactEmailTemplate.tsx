@@ -1,12 +1,3 @@
-import {
-  Body,
-  Container,
-  Head,
-  Heading,
-  Html,
-  Hr,
-  Text,
-} from "@react-email/components";
 import * as React from "react";
 
 import { mailBrand, mailBrandColors } from "@/lib/communications/mailBrand";
@@ -25,32 +16,29 @@ export function ContactEmailTemplate({
   message,
 }: ContactEmailTemplateProps) {
   return (
-    <Html>
-      <Head />
-      <Body style={main}>
-        <Container style={container}>
-          <Text style={brandLine}>
+    <html>
+      <body style={main}>
+        <div style={container}>
+          <p style={brandLine}>
             {mailBrand.brandName} • {mailBrand.descriptor}
-          </Text>
-          <Heading as="h2" style={heading}>
+          </p>
+          <h2 style={heading}>
             {mailBrand.brandName} contact message: {inquiryLabel}
-          </Heading>
-          <Text style={paragraph}>
+          </h2>
+          <p style={paragraph}>
             <strong>From:</strong> {name}
-          </Text>
-          <Text style={paragraph}>
+          </p>
+          <p style={paragraph}>
             <strong>Email:</strong> {email}
-          </Text>
-          <Text style={paragraph}>
+          </p>
+          <p style={paragraph}>
             <strong>Platform:</strong> {mailBrand.brandName}
-          </Text>
-          <Hr style={hr} />
-          <Text style={{ ...paragraph, whiteSpace: "pre-wrap" }}>
-            {message}
-          </Text>
-        </Container>
-      </Body>
-    </Html>
+          </p>
+          <hr style={hr} />
+          <p style={{ ...paragraph, whiteSpace: "pre-wrap" }}>{message}</p>
+        </div>
+      </body>
+    </html>
   );
 }
 

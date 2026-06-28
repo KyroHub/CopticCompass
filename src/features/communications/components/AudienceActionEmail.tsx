@@ -1,14 +1,3 @@
-import {
-  Body,
-  Button,
-  Container,
-  Head,
-  Heading,
-  Hr,
-  Html,
-  Link,
-  Text,
-} from "@react-email/components";
 import * as React from "react";
 
 import { mailBrand, mailBrandColors } from "@/lib/communications/mailBrand";
@@ -40,39 +29,36 @@ export function AudienceActionEmail({
   const normalizedName = recipientName?.trim();
 
   return (
-    <Html>
-      <Head />
-      <Body style={main}>
-        <Container style={container}>
-          <Text style={brandLine}>
+    <html>
+      <body style={main}>
+        <div style={container}>
+          <p style={brandLine}>
             {mailBrand.brandName} • {mailBrand.descriptor}
-          </Text>
-          <Heading as="h2" style={heading}>
-            {title}
-          </Heading>
-          <Text style={paragraph}>
+          </p>
+          <h2 style={heading}>{title}</h2>
+          <p style={paragraph}>
             {greeting}
             {normalizedName ? ` ${normalizedName}` : ""},
-          </Text>
-          <Text style={paragraph}>{body}</Text>
-          {topicSummary ? <Text style={paragraph}>{topicSummary}</Text> : null}
-          <Button href={actionUrl} style={button}>
+          </p>
+          <p style={paragraph}>{body}</p>
+          {topicSummary ? <p style={paragraph}>{topicSummary}</p> : null}
+          <a href={actionUrl} style={button}>
             {cta}
-          </Button>
-          <Hr style={hr} />
-          <Text style={paragraph}>{fallback}</Text>
-          <Link href={actionUrl} style={link}>
+          </a>
+          <hr style={hr} />
+          <p style={paragraph}>{fallback}</p>
+          <a href={actionUrl} style={link}>
             {actionUrl}
-          </Link>
-          <Text style={footer}>
+          </a>
+          <p style={footer}>
             {mailBrand.brandName}
             <br />
             {mailBrand.descriptor}
-          </Text>
-          <Text style={footer}>{footerNote}</Text>
-        </Container>
-      </Body>
-    </Html>
+          </p>
+          <p style={footer}>{footerNote}</p>
+        </div>
+      </body>
+    </html>
   );
 }
 
