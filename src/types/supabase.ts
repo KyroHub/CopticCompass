@@ -1217,6 +1217,7 @@ export type Database = {
             | "approved"
             | "cancelled"
             | "draft"
+            | "partially_failed"
             | "queued"
             | "sending"
             | "sent";
@@ -1244,6 +1245,7 @@ export type Database = {
             | "approved"
             | "cancelled"
             | "draft"
+            | "partially_failed"
             | "queued"
             | "sending"
             | "sent";
@@ -1271,6 +1273,7 @@ export type Database = {
             | "approved"
             | "cancelled"
             | "draft"
+            | "partially_failed"
             | "queued"
             | "sending"
             | "sent";
@@ -1320,6 +1323,104 @@ export type Database = {
           {
             columns: ["release_id"];
             foreignKeyName: "content_release_items_release_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "content_releases";
+          },
+        ];
+      };
+      content_release_targets: {
+        Row: {
+          accepted_at: string | null;
+          attempt_count: number;
+          cancelled_at: string | null;
+          created_at: string;
+          created_provider_at: string | null;
+          creating_started_at: string | null;
+          failed_at: string | null;
+          id: string;
+          language: "en" | "nl";
+          last_error: string | null;
+          next_attempt_at: string;
+          provider_broadcast_id: string | null;
+          recipient_count_snapshot: number;
+          release_id: string;
+          segment_id: string;
+          sending_started_at: string | null;
+          status:
+            | "accepted"
+            | "cancelled"
+            | "created"
+            | "creating"
+            | "failed"
+            | "pending"
+            | "sending";
+          subject_snapshot: string;
+          topic_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          accepted_at?: string | null;
+          attempt_count?: number;
+          cancelled_at?: string | null;
+          created_at?: string;
+          created_provider_at?: string | null;
+          creating_started_at?: string | null;
+          failed_at?: string | null;
+          id?: string;
+          language: "en" | "nl";
+          last_error?: string | null;
+          next_attempt_at?: string;
+          provider_broadcast_id?: string | null;
+          recipient_count_snapshot: number;
+          release_id: string;
+          segment_id: string;
+          sending_started_at?: string | null;
+          status?:
+            | "accepted"
+            | "cancelled"
+            | "created"
+            | "creating"
+            | "failed"
+            | "pending"
+            | "sending";
+          subject_snapshot: string;
+          topic_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          accepted_at?: string | null;
+          attempt_count?: number;
+          cancelled_at?: string | null;
+          created_at?: string;
+          created_provider_at?: string | null;
+          creating_started_at?: string | null;
+          failed_at?: string | null;
+          id?: string;
+          language?: "en" | "nl";
+          last_error?: string | null;
+          next_attempt_at?: string;
+          provider_broadcast_id?: string | null;
+          recipient_count_snapshot?: number;
+          release_id?: string;
+          segment_id?: string;
+          sending_started_at?: string | null;
+          status?:
+            | "accepted"
+            | "cancelled"
+            | "created"
+            | "creating"
+            | "failed"
+            | "pending"
+            | "sending";
+          subject_snapshot?: string;
+          topic_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            columns: ["release_id"];
+            foreignKeyName: "content_release_targets_release_id_fkey";
             isOneToOne: false;
             referencedColumns: ["id"];
             referencedRelation: "content_releases";
@@ -1670,6 +1771,26 @@ export type Database = {
             | "queued"
             | "retry_scheduled"
             | "sent";
+        }[];
+      };
+      queue_content_release_delivery_with_targets: {
+        Args: {
+          p_item_count: number;
+          p_release_id: string;
+          p_targets: Json;
+        };
+        Returns: {
+          release_id: string;
+          release_status:
+            | "approved"
+            | "cancelled"
+            | "draft"
+            | "partially_failed"
+            | "queued"
+            | "sending"
+            | "sent";
+          target_count: number;
+          total_recipient_count: number;
         }[];
       };
       claim_notification_email_jobs: {

@@ -178,6 +178,8 @@ export function formatContentReleaseStatus(
         return "Wordt verzonden";
       case "sent":
         return "Verzonden";
+      case "partially_failed":
+        return "Gedeeltelijk mislukt";
       case "cancelled":
         return "Geannuleerd";
       default:
@@ -196,6 +198,8 @@ export function formatContentReleaseStatus(
       return "Sending";
     case "sent":
       return "Sent";
+    case "partially_failed":
+      return "Partially failed";
     case "cancelled":
       return "Cancelled";
     default:
@@ -278,10 +282,11 @@ export function compareContentReleasePriority(
   const statusPriority = {
     queued: 0,
     sending: 1,
-    approved: 2,
-    draft: 3,
-    sent: 4,
-    cancelled: 5,
+    partially_failed: 2,
+    approved: 3,
+    draft: 4,
+    sent: 5,
+    cancelled: 6,
   } as const;
 
   const byStatus = statusPriority[left.status] - statusPriority[right.status];

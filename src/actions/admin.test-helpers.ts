@@ -4,6 +4,7 @@ type AdminModuleContext = {
   contactUpdateEqMock: ReturnType<typeof vi.fn>;
   contentReleaseDeleteEqMock: ReturnType<typeof vi.fn>;
   contentReleaseItemInsertMock: ReturnType<typeof vi.fn>;
+  contentReleaseQueueRpcMock: ReturnType<typeof vi.fn>;
   contentReleaseUpdateEqMock: ReturnType<typeof vi.fn>;
   createContentReleaseDraft: typeof import("./admin").createContentReleaseDraft;
   deleteContentReleaseDraft: typeof import("./admin").deleteContentReleaseDraft;
@@ -43,6 +44,7 @@ type AdminHarnessOptions = {
   contentReleaseInsertError?: { message?: string } | null;
   contentReleaseItems?: ContentReleaseItemFixture[];
   contentReleaseItemsInsertError?: { message?: string } | null;
+  contentReleaseQueueError?: { message?: string } | null;
   contentReleaseUpdateError?: { message?: string } | null;
   feedbackNotificationResult?:
     | { error: string; success: false }
@@ -101,7 +103,14 @@ type ContentReleaseFixture = {
   locale_mode: "en_only" | "localized" | "nl_only";
   release_type: "lesson" | "mixed" | "publication";
   sent_at: string | null;
-  status: "approved" | "cancelled" | "draft" | "queued" | "sending" | "sent";
+  status:
+    | "approved"
+    | "cancelled"
+    | "draft"
+    | "partially_failed"
+    | "queued"
+    | "sending"
+    | "sent";
   subject_en: string | null;
   subject_nl: string | null;
   updated_at: string;
@@ -343,6 +352,17 @@ function createSupabaseMocks(options: AdminHarnessOptions = {}) {
   const contentReleaseUpdateEqMock = vi.fn().mockResolvedValue({
     error: options.contentReleaseUpdateError ?? null,
   });
+  const contentReleaseQueueRpcMock = vi.fn().mockResolvedValue({
+    data: [
+      {
+        release_id: "44444444-4444-4444-8444-444444444444",
+        release_status: "queued",
+        target_count: 2,
+        total_recipient_count: 1,
+      },
+    ],
+    error: options.contentReleaseQueueError ?? null,
+  });
   const contentReleaseDeleteMaybeSingleMock = vi.fn().mockResolvedValue(
     options.contentReleaseDeleteResult ?? {
       data: { id: "44444444-4444-4444-8444-444444444444" },
@@ -400,14 +420,50 @@ function createSupabaseMocks(options: AdminHarnessOptions = {}) {
   });
   const audienceContacts =
     options.audienceContacts ?? createDefaultAudienceContacts();
-  const audienceContactsIsMock = vi.fn().mockResolvedValue({
-    data: audienceContacts,
-    error: null,
-  });
   const audienceContactsOrderMock = vi.fn().mockResolvedValue({
     data: audienceContacts,
     error: null,
   });
+  const audienceContactsSelectMock = vi.fn(
+    (
+      _columns?: string,
+      selectOptions?: { count?: "exact"; head?: boolean },
+    ) => {
+      const filters: Record<string, unknown> = {};
+      const resolveQuery = () => {
+        const filteredContacts = audienceContacts.filter((contact) =>
+          Object.entries(filters).every(
+            ([key, filterValue]) =>
+              contact[key as keyof AudienceContactFixture] === filterValue,
+          ),
+        );
+
+        return {
+          count:
+            selectOptions?.count === "exact" ? filteredContacts.length : null,
+          data: selectOptions?.head ? null : filteredContacts,
+          error: null,
+        };
+      };
+      const query = {
+        eq: vi.fn((column: string, value: unknown) => {
+          filters[column] = value;
+          return query;
+        }),
+        is: vi.fn((column: string, value: unknown) => {
+          filters[column] = value;
+          return query;
+        }),
+        order: audienceContactsOrderMock,
+        then: (
+          resolve: (value: ReturnType<typeof resolveQuery>) => unknown,
+          reject?: (reason: unknown) => unknown,
+        ) => Promise.resolve(resolveQuery()).then(resolve, reject),
+      };
+
+      return query;
+    },
+  );
   const notificationEventsEqStatusMock = vi.fn().mockResolvedValue({
     data:
       options.existingReleaseEvents?.map((event) => ({
@@ -479,12 +535,7 @@ function createSupabaseMocks(options: AdminHarnessOptions = {}) {
 
       if (table === "audience_contacts") {
         return {
-          select: vi.fn(() => ({
-            eq: vi.fn(() => ({
-              is: audienceContactsIsMock,
-            })),
-            order: audienceContactsOrderMock,
-          })),
+          select: audienceContactsSelectMock,
         };
       }
 
@@ -504,12 +555,20 @@ function createSupabaseMocks(options: AdminHarnessOptions = {}) {
 
       throw new Error(`Unexpected table requested in test: ${table}`);
     }),
+    rpc: vi.fn((functionName: string, args: Record<string, unknown>) => {
+      if (functionName === "queue_content_release_delivery_with_targets") {
+        return contentReleaseQueueRpcMock(args);
+      }
+
+      throw new Error(`Unexpected RPC requested in test: ${functionName}`);
+    }),
   };
 
   return {
     contactUpdateEqMock,
     contentReleaseDeleteEqMock,
     contentReleaseItemInsertMock,
+    contentReleaseQueueRpcMock,
     contentReleaseUpdateEqMock,
     profileMaybeSingleMock,
     reportUpdateEqMock,
@@ -588,6 +647,17 @@ function mockAdminDependencies(
         ? "Resend Broadcast delivery is missing required configuration: RESEND_LESSONS_TOPIC_ID."
         : null,
     ),
+    getContentReleaseBroadcastTargetConfig: vi.fn(() =>
+      options.hasResendBroadcastEnv === false
+        ? null
+        : {
+            segments: {
+              en: "segment_lessons_en",
+              nl: "segment_lessons_nl",
+            },
+            topicId: "topic_lessons",
+          },
+    ),
     hasResendAudienceEnv: vi.fn(() => options.hasResendAudienceEnv ?? true),
     syncStoredAudienceContactToResend: syncStoredAudienceContactToResendMock,
   }));
@@ -621,6 +691,7 @@ export async function loadAdminModule(
     contactUpdateEqMock: supabaseMocks.contactUpdateEqMock,
     contentReleaseDeleteEqMock: supabaseMocks.contentReleaseDeleteEqMock,
     contentReleaseItemInsertMock: supabaseMocks.contentReleaseItemInsertMock,
+    contentReleaseQueueRpcMock: supabaseMocks.contentReleaseQueueRpcMock,
     contentReleaseUpdateEqMock: supabaseMocks.contentReleaseUpdateEqMock,
     deleteContentReleaseDraft: mod.deleteContentReleaseDraft,
     profileMaybeSingleMock: supabaseMocks.profileMaybeSingleMock,

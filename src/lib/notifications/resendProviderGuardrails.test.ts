@@ -33,24 +33,35 @@ describe("Resend provider integration guardrails", () => {
     const broadcastWorker = readProjectFile(
       "supabase/functions/process-content-release/broadcasts.ts",
     );
+    const supabaseRestWorker = readProjectFile(
+      "supabase/functions/process-content-release/supabaseRest.ts",
+    );
 
     expect(sharedRelease).toContain("{{{RESEND_UNSUBSCRIBE_URL}}}");
+    expect(broadcastWorker).toContain("segment_id: options.segmentId");
     expect(broadcastWorker).toContain("topic_id: options.topicId");
+    expect(broadcastWorker).toContain("send: false");
+    expect(broadcastWorker).toContain("/broadcasts/${encodeURIComponent");
+    expect(broadcastWorker).toContain("getResendBroadcastStatus");
+    expect(broadcastWorker).toContain('providerBroadcast.status === "sent"');
     expect(broadcastWorker).toContain("includeMarketingFooter: true");
-    expect(broadcastWorker).toContain(
-      "Resend Broadcasts require a Segment ID and Topic ID",
-    );
+    expect(broadcastWorker).toContain("provider_broadcast_id");
+    expect(supabaseRestWorker).toContain("content_release_targets");
   });
 
   it("keeps direct marketing Email API sends unreachable from the release worker", () => {
     const releaseWorker = readProjectFile(
       "supabase/functions/process-content-release/index.ts",
     );
+    const broadcastWorker = readProjectFile(
+      "supabase/functions/process-content-release/broadcasts.ts",
+    );
 
     expect(releaseWorker).not.toContain("https://api.resend.com/emails");
     expect(releaseWorker).not.toContain("sendResendEmail");
     expect(releaseWorker).not.toContain("loadAudienceContacts");
     expect(releaseWorker).not.toContain("processReleaseContacts");
+    expect(broadcastWorker).not.toContain("https://api.resend.com/emails");
   });
 
   it("keeps signed webhook capture idempotent and capture-only by default", () => {

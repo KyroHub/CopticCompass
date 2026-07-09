@@ -4,6 +4,8 @@ import type {
   ContentReleaseRow,
 } from "@/features/communications/lib/releases";
 import type { QueryResult } from "@/lib/supabase/queryTypes";
+import type { Language } from "@/types/i18n";
+import type { Json } from "@/types/supabase";
 
 import type { AdminSupabase } from "./shared";
 
@@ -15,9 +17,31 @@ type ContentReleaseDeliveryContext = {
   items: ContentReleaseItemRow[];
   release: ContentReleaseRow;
 };
+export type ContentReleaseDeliveryTargetInput = {
+  language: Language;
+  recipient_count_snapshot: number;
+  segment_id: string;
+  subject_snapshot: string;
+  topic_id: string;
+};
 type ContentReleaseIdRecord = Pick<ContentReleaseRow, "id">;
 type ContentReleaseStatusRecord = Pick<ContentReleaseRow, "id" | "status">;
 type ContentReleaseMutationResult = QueryResult<null>;
+
+function getContentReleaseAudienceOptInColumn(
+  audienceSegment: ContentReleaseRow["audience_segment"],
+) {
+  switch (audienceSegment) {
+    case "lessons":
+      return "lessons_opt_in";
+    case "books":
+      return "books_opt_in";
+    case "general":
+      return "general_updates_opt_in";
+    default:
+      return "general_updates_opt_in";
+  }
+}
 
 /**
  * Loads the release row plus its snapshotted items so delivery, preview, and
@@ -164,35 +188,57 @@ export async function deleteContentReleaseRecord(options: {
 }
 
 /**
- * Transitions a reviewed release into the queued state and resets delivery
- * cursors so the background worker can start from a clean batch boundary.
+ * Counts the currently eligible recipients for one release target without
+ * loading contact rows into memory.
+ */
+export async function countContentReleaseAudienceContacts(options: {
+  audienceSegment: ContentReleaseRow["audience_segment"];
+  locale?: Language;
+  supabase: AdminSupabase;
+}): Promise<QueryResult<null> & { count: number | null }> {
+  const optInColumn = getContentReleaseAudienceOptInColumn(
+    options.audienceSegment,
+  );
+  const query = options.supabase
+    .from("audience_contacts")
+    .select("id", { count: "exact", head: true })
+    .eq(optInColumn, true)
+    .is("unsubscribed_at", null);
+
+  const result = await (options.locale
+    ? query.eq("locale", options.locale)
+    : query);
+
+  return {
+    count: result.count ?? null,
+    data: null,
+    error: result.error,
+  };
+}
+
+/**
+ * Atomically persists the release target plan and transitions the release into
+ * the queued state so worker retries have durable per-target state.
  */
 export async function queueContentReleaseDeliveryRecord(options: {
   itemCount: number;
-  release: Pick<ContentReleaseRow, "delivery_summary">;
   releaseId: string;
-  requestedBy: string;
   supabase: AdminSupabase;
+  targets: ContentReleaseDeliveryTargetInput[];
 }): Promise<ContentReleaseMutationResult> {
-  const now = new Date().toISOString();
+  const { error } = await options.supabase.rpc(
+    "queue_content_release_delivery_with_targets",
+    {
+      p_item_count: options.itemCount,
+      p_release_id: options.releaseId,
+      p_targets: options.targets as unknown as Json,
+    },
+  );
 
-  return options.supabase
-    .from("content_releases")
-    .update({
-      delivery_cursor: null,
-      delivery_finished_at: null,
-      delivery_requested_at: now,
-      delivery_requested_by: options.requestedBy,
-      delivery_started_at: null,
-      delivery_summary: options.release.delivery_summary ?? {
-        item_count: options.itemCount,
-      },
-      last_delivery_error: null,
-      sent_at: null,
-      status: "queued",
-      updated_at: now,
-    })
-    .eq("id", options.releaseId);
+  return {
+    data: null,
+    error,
+  };
 }
 
 /**

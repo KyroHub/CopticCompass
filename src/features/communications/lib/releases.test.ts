@@ -4,6 +4,7 @@ import { listContentReleaseCandidates } from "./releaseCandidates";
 import {
   compareContentReleasePriority,
   deriveContentReleaseType,
+  formatContentReleaseStatus,
   getContentReleaseDeliverySummary,
 } from "./releases";
 
@@ -42,6 +43,30 @@ describe("content release helpers", () => {
     const right = {
       items: [],
       status: "sent",
+      updated_at: "2026-03-28T12:00:00.000Z",
+    } as unknown as Parameters<typeof compareContentReleasePriority>[1];
+
+    expect(compareContentReleasePriority(left, right)).toBeLessThan(0);
+  });
+
+  it("formats partially failed releases for both admin languages", () => {
+    expect(formatContentReleaseStatus("partially_failed", "en")).toBe(
+      "Partially failed",
+    );
+    expect(formatContentReleaseStatus("partially_failed", "nl")).toBe(
+      "Gedeeltelijk mislukt",
+    );
+  });
+
+  it("surfaces partially failed releases ahead of unsent approved releases", () => {
+    const left = {
+      items: [],
+      status: "partially_failed",
+      updated_at: "2026-03-28T10:00:00.000Z",
+    } as unknown as Parameters<typeof compareContentReleasePriority>[0];
+    const right = {
+      items: [],
+      status: "approved",
       updated_at: "2026-03-28T12:00:00.000Z",
     } as unknown as Parameters<typeof compareContentReleasePriority>[1];
 

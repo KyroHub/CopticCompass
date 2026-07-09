@@ -287,6 +287,8 @@ The database keeps mailing state separated by responsibility:
 - `notification_deliveries` stores provider delivery attempts and outcomes
 - `notification_email_jobs` stores durable worker state, retry timing, and leases
 - `notification_email_job_audit_events` stores audited manual recovery actions
+- `content_release_targets` stores one durable Resend Broadcast target per
+  release locale, Segment, and Topic
 
 Only trusted service-role workflows write consent evidence, suppressions,
 provider events, and queued email jobs. The
@@ -314,6 +316,12 @@ Content release sends require a full-access Resend key, the relevant Segment
 ID, the matching Topic ID, and a visible provider unsubscribe footer. Missing
 configuration blocks queueing or finalizes the release back to `approved` with
 an admin-facing error instead of falling back to direct Email API sends.
+Release queueing persists the exact Broadcast target plan before waking the
+worker. The worker creates each Broadcast as a draft, stores the provider
+Broadcast ID, and then sends that existing Broadcast in a separate step.
+Accepted targets are skipped on retry, failed targets can resume from a saved
+provider ID, and mixed outcomes leave the release as `partially_failed` for
+explicit admin retry.
 
 The Resend webhook route verifies Svix signatures before parsing JSON, inserts
 the provider event into `provider_webhook_events` before side effects, and

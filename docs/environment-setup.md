@@ -190,7 +190,7 @@ must send the configured bearer auth header.
 
 ### Background Release Delivery
 
-This repo includes a Supabase Edge Function at `supabase/functions/process-content-release` for background delivery of approved content releases. Marketing releases are delivered only through provider-native Resend Broadcasts with Segments and Topics. If the required Broadcast configuration is missing, sending fails closed with an actionable admin error; the worker does not fall back to direct per-recipient Email API sends.
+This repo includes a Supabase Edge Function at `supabase/functions/process-content-release` for background delivery of approved content releases. Marketing releases are delivered only through provider-native Resend Broadcasts with Segments and Topics. Queueing writes durable `content_release_targets` first, so retries can skip accepted targets and resume failed targets without recreating provider Broadcasts. If the required Broadcast configuration is missing, sending fails closed with an actionable admin error; the worker does not fall back to direct per-recipient Email API sends.
 
 To enable background release sends in a Supabase project:
 
@@ -198,10 +198,18 @@ To enable background release sends in a Supabase project:
    `RESEND_API_KEY_FULL_ACCESS`, the relevant Resend Segment IDs, and the
    matching Resend Topic IDs.
 2. Deploy the function: `supabase functions deploy process-content-release --project-ref <your-project-ref>`
-3. Make sure the latest release delivery migrations have been pushed so `content_releases` includes the queue metadata columns.
+3. Make sure the latest release delivery migrations have been pushed so
+   `content_releases` includes the queue metadata columns and
+   `content_release_targets` exists.
 
 The worker validates its bearer token in code, so callers must send the
 configured bearer auth header.
+
+Each release target follows a two-step Resend lifecycle: create a draft
+Broadcast, persist its provider ID, then send the saved Broadcast. A fully
+successful run marks the release `sent`; a mixed result marks it
+`partially_failed` and leaves accepted targets immutable for the next admin
+retry.
 
 ### Queued Notification Email Delivery
 

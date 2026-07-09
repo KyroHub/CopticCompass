@@ -225,6 +225,90 @@ export function getContentReleaseBroadcastConfigurationError(
   return `Resend Broadcast delivery is missing required configuration: ${missingKeys.join(", ")}.`;
 }
 
+function getResendBroadcastTopicId(
+  audienceSegment: ContentReleaseRow["audience_segment"],
+  env: ResendAudienceEnv,
+) {
+  switch (audienceSegment) {
+    case "lessons":
+      return env.topics.lessons;
+    case "books":
+      return env.topics.books;
+    case "general":
+      return env.topics.general;
+    default:
+      return env.topics.general;
+  }
+}
+
+function getResendBroadcastBaseSegmentId(
+  audienceSegment: ContentReleaseRow["audience_segment"],
+  env: ResendAudienceEnv,
+) {
+  switch (audienceSegment) {
+    case "lessons":
+      return env.segments.lessons;
+    case "books":
+      return env.segments.books;
+    case "general":
+      return env.segments.general;
+    default:
+      return env.segments.general;
+  }
+}
+
+function getResendBroadcastLocalizedSegments(
+  audienceSegment: ContentReleaseRow["audience_segment"],
+  env: ResendAudienceEnv,
+) {
+  switch (audienceSegment) {
+    case "lessons":
+      return env.localizedSegments.lessons;
+    case "books":
+      return env.localizedSegments.books;
+    case "general":
+      return env.localizedSegments.general;
+    default:
+      return env.localizedSegments.general;
+  }
+}
+
+/**
+ * Returns the provider Topic and Segment IDs needed to persist a durable
+ * content-release target plan before the release worker starts.
+ */
+export function getContentReleaseBroadcastTargetConfig(
+  release: Pick<ContentReleaseRow, "audience_segment" | "locale_mode">,
+) {
+  assertServerOnly("getContentReleaseBroadcastTargetConfig");
+
+  const env = getResendAudienceEnv();
+  if (!env) {
+    return null;
+  }
+
+  const topicId = getResendBroadcastTopicId(release.audience_segment, env);
+  const baseSegmentId = getResendBroadcastBaseSegmentId(
+    release.audience_segment,
+    env,
+  );
+  const localizedSegments = getResendBroadcastLocalizedSegments(
+    release.audience_segment,
+    env,
+  );
+
+  return {
+    topicId,
+    segments:
+      release.locale_mode === "localized"
+        ? localizedSegments
+        : {
+            en: baseSegmentId,
+            nl: baseSegmentId,
+          },
+  };
+}
+
 async function persistSuccessfulResendSyncState(options: {
   audienceContactId: string;
   contactId: string;

@@ -3,12 +3,19 @@ import path from "node:path";
 
 import { describe, expect, expectTypeOf, it } from "vitest";
 
-import type { Database, TablesInsert, TablesUpdate } from "@/types/supabase";
+import type {
+  Database,
+  Json,
+  TablesInsert,
+  TablesUpdate,
+} from "@/types/supabase";
 
 const MIGRATION_PATH =
   "supabase/migrations/20260622120000_mailing_system_foundations.sql";
 const DURABLE_QUEUE_MIGRATION_PATH =
   "supabase/migrations/20260626213000_durable_notification_queue.sql";
+const CONTENT_RELEASE_TARGETS_MIGRATION_PATH =
+  "supabase/migrations/20260628213000_content_release_targets.sql";
 
 function readProjectFile(relativePath: string) {
   return fs.readFileSync(path.join(process.cwd(), relativePath), "utf8");
@@ -177,6 +184,48 @@ describe("mailing system schema guardrails", () => {
     }
   });
 
+  it("keeps resumable content release target setup in parity", () => {
+    const migration = readProjectFile(CONTENT_RELEASE_TARGETS_MIGRATION_PATH);
+    const setup = readProjectFile("supabase/setup.sql");
+
+    for (const source of [migration, setup]) {
+      expect(source).toContain(
+        "create table if not exists public.content_release_targets",
+      );
+      expect(source).toContain("'partially_failed'");
+      expect(source).toContain("provider_broadcast_id text");
+      expect(source).toContain(
+        "unique (release_id, language, segment_id, topic_id)",
+      );
+      expect(source).toContain("unique (provider_broadcast_id)");
+      expect(source).toContain(
+        'create policy "Admins can read all content release targets"',
+      );
+      expect(source).toContain(
+        "comment on table public.content_release_targets",
+      );
+
+      const queueFunction = extractFunction(
+        source,
+        "queue_content_release_delivery_with_targets",
+      );
+      expect(queueFunction).toContain("security definer");
+      expect(queueFunction).toContain("if not public.is_admin()");
+      expect(queueFunction).toContain("for update");
+      expect(queueFunction).toContain(
+        "v_release.status not in ('approved', 'partially_failed')",
+      );
+      expect(queueFunction).toContain(
+        "on conflict (release_id, language, segment_id, topic_id) do update",
+      );
+      expect(queueFunction).toContain(
+        "when public.content_release_targets.status = 'accepted'",
+      );
+      expect(queueFunction).toContain("status = 'queued'");
+      expect(queueFunction).toContain("jsonb_build_object");
+    }
+  });
+
   it("retains legacy sent states during the additive rollout", () => {
     const migration = readProjectFile(MIGRATION_PATH);
 
@@ -265,5 +314,63 @@ describe("mailing system schema guardrails", () => {
       notification_email_job_id: string;
       reason: string;
     }>();
+  });
+
+  it("exposes typed contracts for resumable content release delivery", () => {
+    type QueueReleaseArgs =
+      Database["public"]["Functions"]["queue_content_release_delivery_with_targets"]["Args"];
+    type QueueReleaseResult =
+      Database["public"]["Functions"]["queue_content_release_delivery_with_targets"]["Returns"][number];
+
+    expectTypeOf<QueueReleaseArgs>().toEqualTypeOf<{
+      p_item_count: number;
+      p_release_id: string;
+      p_targets: Json;
+    }>();
+    expectTypeOf<QueueReleaseResult>().toMatchTypeOf<{
+      release_id: string;
+      target_count: number;
+      total_recipient_count: number;
+    }>();
+    expectTypeOf<QueueReleaseResult["release_status"]>().toEqualTypeOf<
+      | "approved"
+      | "cancelled"
+      | "draft"
+      | "partially_failed"
+      | "queued"
+      | "sending"
+      | "sent"
+    >();
+
+    expectTypeOf<TablesInsert<"content_release_targets">>().toMatchTypeOf<{
+      language: "en" | "nl";
+      recipient_count_snapshot: number;
+      release_id: string;
+      segment_id: string;
+      subject_snapshot: string;
+      topic_id: string;
+    }>();
+    expectTypeOf<
+      TablesUpdate<"content_release_targets">["status"]
+    >().toEqualTypeOf<
+      | "accepted"
+      | "cancelled"
+      | "created"
+      | "creating"
+      | "failed"
+      | "pending"
+      | "sending"
+      | undefined
+    >();
+    expectTypeOf<TablesUpdate<"content_releases">["status"]>().toEqualTypeOf<
+      | "approved"
+      | "cancelled"
+      | "draft"
+      | "partially_failed"
+      | "queued"
+      | "sending"
+      | "sent"
+      | undefined
+    >();
   });
 });

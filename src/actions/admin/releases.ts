@@ -12,7 +12,10 @@ import {
   isContentReleaseEditableStatus,
   isContentReleaseLocaleMode,
 } from "@/features/communications/lib/releases";
-import { getContentReleaseBroadcastConfigurationError } from "@/features/communications/lib/server/resend";
+import {
+  getContentReleaseBroadcastConfigurationError,
+  getContentReleaseBroadcastTargetConfig,
+} from "@/features/communications/lib/server/resend";
 import { getNotificationEmailEnv } from "@/lib/notifications/config";
 import { dispatchLoggedNotificationEmail } from "@/lib/notifications/events";
 import { revalidateAdminPaths } from "@/lib/server/revalidation";
@@ -27,6 +30,8 @@ import {
 import type { Language } from "@/types/i18n";
 
 import {
+  type ContentReleaseDeliveryTargetInput,
+  countContentReleaseAudienceContacts,
   createContentReleaseItemSnapshots,
   createContentReleaseRecord,
   deleteContentReleaseRecord,
@@ -62,6 +67,10 @@ type ParsedContentReleaseDraft = {
 
 const RELEASE_COPY_VALIDATION_ERROR =
   "Provide the required localized subject and message copy for this release.";
+const RELEASE_ZERO_RECIPIENTS_MESSAGE =
+  "No subscribed recipients match this release segment yet.";
+const RELEASE_TARGET_COUNT_ERROR =
+  "Could not count subscribed recipients for this release.";
 
 /**
  * Reads the checked release-item ids from form data and returns them in the
@@ -445,11 +454,194 @@ function getReleaseSendBlockedMessage(
     return "This release has already been delivered.";
   }
 
-  if (release.status !== "approved") {
+  if (release.status !== "approved" && release.status !== "partially_failed") {
     return "Approve the release draft before sending it.";
   }
 
   return null;
+}
+
+function getReleaseTargetCopyState(
+  release: ContentReleaseRow,
+  language: Language,
+): { body: string; subject: string } | { message: string } {
+  const copy = getContentReleaseCopyForLocale(release, language);
+  if (!copy.subject || !copy.body) {
+    return {
+      message:
+        "This release is missing complete copy for one or more target audiences.",
+    };
+  }
+
+  return {
+    body: copy.body,
+    subject: copy.subject,
+  };
+}
+
+async function countReleaseTargetRecipients(options: {
+  audienceSegment: ContentReleaseRow["audience_segment"];
+  language?: Language;
+  supabase: AdminSupabase;
+}) {
+  const result = await countContentReleaseAudienceContacts({
+    audienceSegment: options.audienceSegment,
+    ...(options.language ? { locale: options.language } : {}),
+    supabase: options.supabase,
+  });
+
+  if (result.error || result.count === null) {
+    console.error("Could not count content release recipients.", {
+      audienceSegment: options.audienceSegment,
+      error: result.error,
+      language: options.language,
+    });
+    return null;
+  }
+
+  return result.count;
+}
+
+async function buildLocalizedReleaseTargetPlan(options: {
+  release: ContentReleaseRow;
+  supabase: AdminSupabase;
+}): Promise<
+  | { message: string; success: false }
+  | { message: string; success: true }
+  | { targets: ContentReleaseDeliveryTargetInput[] }
+> {
+  const targetConfig = getContentReleaseBroadcastTargetConfig(options.release);
+  if (!targetConfig) {
+    return {
+      message:
+        "Resend Broadcast delivery is missing required Segment or Topic configuration.",
+      success: false,
+    };
+  }
+
+  const targets: ContentReleaseDeliveryTargetInput[] = [];
+  for (const language of ["en", "nl"] as const) {
+    const recipientCount = await countReleaseTargetRecipients({
+      audienceSegment: options.release.audience_segment,
+      language,
+      supabase: options.supabase,
+    });
+    if (recipientCount === null) {
+      return {
+        message: RELEASE_TARGET_COUNT_ERROR,
+        success: false,
+      };
+    }
+
+    if (recipientCount === 0) {
+      continue;
+    }
+
+    const segmentId = targetConfig.segments[language];
+    if (!segmentId) {
+      return {
+        message:
+          "Resend Broadcast delivery is missing a localized Segment ID for this release.",
+        success: false,
+      };
+    }
+
+    const copy = getReleaseTargetCopyState(options.release, language);
+    if ("message" in copy) {
+      return {
+        message: copy.message,
+        success: false,
+      };
+    }
+
+    targets.push({
+      language,
+      recipient_count_snapshot: recipientCount,
+      segment_id: segmentId,
+      subject_snapshot: copy.subject,
+      topic_id: targetConfig.topicId,
+    });
+  }
+
+  return targets.length === 0
+    ? { message: RELEASE_ZERO_RECIPIENTS_MESSAGE, success: true }
+    : { targets };
+}
+
+async function buildSingleLocaleReleaseTargetPlan(options: {
+  release: ContentReleaseRow;
+  supabase: AdminSupabase;
+}): Promise<
+  | { message: string; success: false }
+  | { message: string; success: true }
+  | { targets: ContentReleaseDeliveryTargetInput[] }
+> {
+  const targetConfig = getContentReleaseBroadcastTargetConfig(options.release);
+  if (!targetConfig) {
+    return {
+      message:
+        "Resend Broadcast delivery is missing required Segment or Topic configuration.",
+      success: false,
+    };
+  }
+
+  const recipientCount = await countReleaseTargetRecipients({
+    audienceSegment: options.release.audience_segment,
+    supabase: options.supabase,
+  });
+  if (recipientCount === null) {
+    return {
+      message: RELEASE_TARGET_COUNT_ERROR,
+      success: false,
+    };
+  }
+
+  if (recipientCount === 0) {
+    return {
+      message: RELEASE_ZERO_RECIPIENTS_MESSAGE,
+      success: true,
+    };
+  }
+
+  const language: Language =
+    options.release.locale_mode === "nl_only" ? "nl" : "en";
+  const segmentId = targetConfig.segments[language];
+  if (!segmentId) {
+    return {
+      message:
+        "Resend Broadcast delivery is missing a Segment ID for this release.",
+      success: false,
+    };
+  }
+
+  const copy = getReleaseTargetCopyState(options.release, language);
+  if ("message" in copy) {
+    return {
+      message: copy.message,
+      success: false,
+    };
+  }
+
+  return {
+    targets: [
+      {
+        language,
+        recipient_count_snapshot: recipientCount,
+        segment_id: segmentId,
+        subject_snapshot: copy.subject,
+        topic_id: targetConfig.topicId,
+      },
+    ],
+  };
+}
+
+async function buildReleaseTargetPlan(options: {
+  release: ContentReleaseRow;
+  supabase: AdminSupabase;
+}) {
+  return options.release.locale_mode === "localized"
+    ? buildLocalizedReleaseTargetPlan(options)
+    : buildSingleLocaleReleaseTargetPlan(options);
 }
 
 /**
@@ -457,18 +649,63 @@ function getReleaseSendBlockedMessage(
  */
 async function queueReleaseForDelivery(options: {
   itemCount: number;
-  release: ContentReleaseRow;
   releaseId: string;
-  requestedBy: string;
   supabase: AdminSupabase;
+  targets: ContentReleaseDeliveryTargetInput[];
 }) {
   return queueContentReleaseDeliveryRecord({
     itemCount: options.itemCount,
-    release: options.release,
     releaseId: options.releaseId,
-    requestedBy: options.requestedBy,
+    supabase: options.supabase,
+    targets: options.targets,
+  });
+}
+
+async function queueReleaseForDeliveryIfNeeded(options: {
+  isResumingQueuedRelease: boolean;
+  release: ContentReleaseRow;
+  releaseId: string;
+  releaseItems: NonNullable<
+    Awaited<ReturnType<typeof loadContentReleaseForDelivery>>
+  >["items"];
+  supabase: AdminSupabase;
+}): Promise<SendContentReleaseState | null> {
+  if (options.isResumingQueuedRelease) {
+    return null;
+  }
+
+  const blockedMessage = getReleaseSendBlockedMessage(options.release);
+  if (blockedMessage) {
+    return {
+      success: false,
+      message: blockedMessage,
+    };
+  }
+
+  const targetPlan = await buildReleaseTargetPlan({
+    release: options.release,
     supabase: options.supabase,
   });
+  if ("message" in targetPlan) {
+    return targetPlan;
+  }
+
+  const { error: queueError } = await queueReleaseForDelivery({
+    itemCount: options.releaseItems.length,
+    releaseId: options.releaseId,
+    supabase: options.supabase,
+    targets: targetPlan.targets,
+  });
+
+  if (queueError) {
+    console.error("Error queueing content release delivery:", queueError);
+    return {
+      success: false,
+      message: "Could not queue this release for delivery.",
+    };
+  }
+
+  return null;
 }
 
 /**
@@ -505,6 +742,21 @@ function getReleaseBroadcastConfigurationState(
   return message ? { message, success: false } : null;
 }
 
+function getReleaseSendSuccessMessage(options: {
+  isResumingQueuedRelease: boolean;
+  release: Pick<ContentReleaseRow, "status">;
+}) {
+  if (options.isResumingQueuedRelease) {
+    return "Queued release resumed. Delivery will continue in the background.";
+  }
+
+  if (options.release.status === "partially_failed") {
+    return "Release retry queued. Delivery will continue in the background.";
+  }
+
+  return "Release queued. Delivery will continue in the background.";
+}
+
 /**
  * Queues a reviewed release for background delivery, or resumes an already
  * queued release whose worker chain stalled before completion.
@@ -521,7 +773,7 @@ export async function sendContentRelease(
     };
   }
 
-  const { supabase, user } = adminContext;
+  const { supabase } = adminContext;
   const releaseId = normalizeWhitespace(getFormString(formData, "release_id"));
 
   if (!isUuid(releaseId)) {
@@ -548,30 +800,15 @@ export async function sendContentRelease(
     return configurationState;
   }
 
-  if (!isResumingQueuedRelease) {
-    const blockedMessage = getReleaseSendBlockedMessage(release);
-    if (blockedMessage) {
-      return {
-        success: false,
-        message: blockedMessage,
-      };
-    }
-
-    const { error: queueError } = await queueReleaseForDelivery({
-      itemCount: releaseItems.length,
-      release,
-      releaseId,
-      requestedBy: user.id,
-      supabase,
-    });
-
-    if (queueError) {
-      console.error("Error queueing content release delivery:", queueError);
-      return {
-        success: false,
-        message: "Could not queue this release for delivery.",
-      };
-    }
+  const queueState = await queueReleaseForDeliveryIfNeeded({
+    isResumingQueuedRelease,
+    release,
+    releaseId,
+    releaseItems,
+    supabase,
+  });
+  if (queueState) {
+    return queueState;
   }
 
   const invokeResult = await invokeSupabaseEdgeFunction(
@@ -593,9 +830,10 @@ export async function sendContentRelease(
 
   return {
     success: true,
-    message: isResumingQueuedRelease
-      ? "Queued release resumed. Delivery will continue in the background."
-      : "Release queued. Delivery will continue in the background.",
+    message: getReleaseSendSuccessMessage({
+      isResumingQueuedRelease,
+      release,
+    }),
   };
 }
 

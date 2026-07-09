@@ -1,9 +1,8 @@
 import {
-  getAudienceSegmentOptInColumn,
   type ContentReleaseDeliverySummary,
   type ContentReleaseItemRecord,
   type ContentReleaseRecord,
-  type Language,
+  type ContentReleaseTargetRecord,
 } from "../_shared/contentReleaseDelivery.ts";
 
 /**
@@ -63,46 +62,6 @@ async function fetchSupabaseJson<T>(options: {
 
   return {
     data: JSON.parse(responseText) as T,
-    error: null,
-    status: response.status,
-  };
-}
-
-/**
- * Fetches an exact row count through the REST API and normalizes missing or
- * malformed count metadata to zero when the request itself succeeds.
- */
-async function fetchSupabaseCount(options: {
-  path: string;
-  serviceRoleKey: string;
-  supabaseUrl: string;
-}) {
-  const response = await fetch(
-    `${options.supabaseUrl}/rest/v1/${options.path}`,
-    {
-      headers: {
-        ...buildSupabaseRestHeaders(options.serviceRoleKey),
-        Prefer: "count=exact",
-        Range: "0-0",
-      },
-      method: "GET",
-    },
-  );
-
-  if (!response.ok) {
-    return {
-      count: null,
-      error: await response.text(),
-      status: response.status,
-    };
-  }
-
-  const contentRange = response.headers.get("content-range");
-  const total = contentRange?.split("/")[1];
-  const count = total ? Number.parseInt(total, 10) : Number.NaN;
-
-  return {
-    count: Number.isFinite(count) ? count : 0,
     error: null,
     status: response.status,
   };
@@ -200,35 +159,65 @@ export async function loadReleaseItems(options: {
 }
 
 /**
- * Counts the currently subscribed contacts for the requested segment, with an
- * optional locale filter for localized broadcast eligibility checks.
+ * Loads durable Broadcast targets for a release. Cancelled targets are excluded
+ * from delivery summaries and processing.
  */
-export async function countAudienceContacts(options: {
-  audienceSegment: ContentReleaseRecord["audience_segment"];
-  locale?: Language;
+export async function loadReleaseTargets(options: {
+  releaseId: string;
   serviceRoleKey: string;
   supabaseUrl: string;
 }) {
-  const optInColumn = getAudienceSegmentOptInColumn(options.audienceSegment);
-  const localeFilter = options.locale
-    ? `&locale=eq.${encodeURIComponent(options.locale)}`
-    : "";
-  const result = await fetchSupabaseCount({
-    path: `audience_contacts?select=id&${optInColumn}=eq.true&unsubscribed_at=is.null${localeFilter}`,
+  const result = await fetchSupabaseJson<ContentReleaseTargetRecord[]>({
+    path: `content_release_targets?release_id=eq.${encodeURIComponent(options.releaseId)}&status=neq.cancelled&select=*&order=created_at.asc`,
     serviceRoleKey: options.serviceRoleKey,
     supabaseUrl: options.supabaseUrl,
   });
 
   if (result.error) {
-    console.error("Failed to count audience contacts for content release.", {
-      audienceSegment: options.audienceSegment,
+    console.error("Failed to load content release targets.", {
       error: result.error,
+      releaseId: options.releaseId,
       status: result.status,
     });
     return null;
   }
 
-  return result.count ?? 0;
+  return result.data ?? [];
+}
+
+/**
+ * Updates one durable content release target. Returns false when the target
+ * state could not be persisted, which lets the caller stop before sending an
+ * untracked provider Broadcast.
+ */
+export async function updateContentReleaseTarget(options: {
+  payload: Record<string, unknown>;
+  serviceRoleKey: string;
+  supabaseUrl: string;
+  targetId: string;
+}) {
+  const result = await fetchSupabaseJson<ContentReleaseTargetRecord[]>({
+    body: {
+      ...options.payload,
+      updated_at: new Date().toISOString(),
+    },
+    method: "PATCH",
+    path: `content_release_targets?id=eq.${encodeURIComponent(options.targetId)}&select=id`,
+    preferRepresentation: true,
+    serviceRoleKey: options.serviceRoleKey,
+    supabaseUrl: options.supabaseUrl,
+  });
+
+  if (result.error) {
+    console.error("Failed to update content release target.", {
+      error: result.error,
+      status: result.status,
+      targetId: options.targetId,
+    });
+    return false;
+  }
+
+  return true;
 }
 
 /**

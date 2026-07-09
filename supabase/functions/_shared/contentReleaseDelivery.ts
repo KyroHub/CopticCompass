@@ -10,9 +10,46 @@ export type ContentReleaseRecord = {
   last_delivery_error: string | null;
   locale_mode: "en_only" | "localized" | "nl_only";
   release_type: "lesson" | "mixed" | "publication";
-  status: "approved" | "cancelled" | "draft" | "queued" | "sending" | "sent";
+  status:
+    | "approved"
+    | "cancelled"
+    | "draft"
+    | "partially_failed"
+    | "queued"
+    | "sending"
+    | "sent";
   subject_en: string | null;
   subject_nl: string | null;
+};
+
+export type ContentReleaseTargetRecord = {
+  accepted_at: string | null;
+  attempt_count: number;
+  cancelled_at: string | null;
+  created_at: string;
+  created_provider_at: string | null;
+  creating_started_at: string | null;
+  failed_at: string | null;
+  id: string;
+  language: Language;
+  last_error: string | null;
+  next_attempt_at: string;
+  provider_broadcast_id: string | null;
+  recipient_count_snapshot: number;
+  release_id: string;
+  segment_id: string;
+  sending_started_at: string | null;
+  status:
+    | "accepted"
+    | "cancelled"
+    | "created"
+    | "creating"
+    | "failed"
+    | "pending"
+    | "sending";
+  subject_snapshot: string;
+  topic_id: string;
+  updated_at: string;
 };
 
 export type ContentReleaseItemRecord = {
@@ -104,21 +141,6 @@ export function parseContentReleaseInvocationPayload(payload: unknown) {
 
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
-}
-
-export function getAudienceSegmentOptInColumn(
-  audienceSegment: ContentReleaseRecord["audience_segment"],
-) {
-  switch (audienceSegment) {
-    case "lessons":
-      return "lessons_opt_in";
-    case "books":
-      return "books_opt_in";
-    case "general":
-      return "general_updates_opt_in";
-    default:
-      return "general_updates_opt_in";
-  }
 }
 
 function getContentReleaseDeliveryLanguage(
@@ -325,7 +347,7 @@ export function getContentReleaseDeliverySummary(
  * Invalid or partial entries are ignored so downstream reporting can rely on a
  * consistent "sent broadcast" shape.
  */
-export function getContentReleaseBroadcastDeliveries(
+function getContentReleaseBroadcastDeliveries(
   release: Pick<ContentReleaseRecord, "delivery_summary">,
 ) {
   const summary = asObject(release.delivery_summary);
