@@ -397,6 +397,32 @@ create table if not exists public.content_release_targets (
   accepted_at timestamptz,
   failed_at timestamptz,
   cancelled_at timestamptz,
+  last_provider_status text check (
+    last_provider_status is null
+    or last_provider_status in (
+      'accepted',
+      'delayed',
+      'delivered',
+      'failed',
+      'bounced',
+      'complained',
+      'suppressed'
+    )
+  ),
+  provider_status_updated_at timestamptz,
+  last_provider_event_id text check (
+    last_provider_event_id is null
+    or char_length(btrim(last_provider_event_id)) between 1 and 255
+  ),
+  last_provider_error text check (
+    last_provider_error is null
+    or char_length(btrim(last_provider_error)) between 1 and 255
+  ),
+  delivered_at timestamptz,
+  delayed_at timestamptz,
+  bounced_at timestamptz,
+  complained_at timestamptz,
+  suppressed_at timestamptz,
   unique (release_id, language, segment_id, topic_id),
   unique (provider_broadcast_id),
   check (
@@ -688,6 +714,10 @@ create index if not exists content_release_targets_release_status_idx
 create index if not exists content_release_targets_provider_broadcast_idx
   on public.content_release_targets (provider_broadcast_id)
   where provider_broadcast_id is not null;
+
+create index if not exists content_release_targets_provider_status_idx
+  on public.content_release_targets (last_provider_status, provider_status_updated_at desc)
+  where last_provider_status is not null;
 
 create index if not exists lesson_progress_user_id_idx
   on public.lesson_progress (user_id);
@@ -1414,6 +1444,10 @@ comment on table public.notification_email_job_audit_events is
   'Admin recovery actions for durable notification email jobs.';
 comment on table public.content_release_targets is
   'Durable per-locale/per-segment Broadcast targets for resumable content release delivery.';
+comment on column public.content_release_targets.last_provider_status is
+  'Most recent normalized provider lifecycle state observed from signed webhooks.';
+comment on column public.content_release_targets.last_provider_error is
+  'Sanitized provider diagnostic code for the latest actionable delivery feedback.';
 comment on function public.enqueue_notification_email_job(
   text,
   text,

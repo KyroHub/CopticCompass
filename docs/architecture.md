@@ -327,10 +327,15 @@ The Resend webhook route verifies Svix signatures before parsing JSON, inserts
 the provider event into `provider_webhook_events` before side effects, and
 returns idempotent success for duplicate `svix-id` deliveries. Webhook side
 effects are disabled unless `RESEND_WEBHOOK_PROCESSING_ENABLED=true`. When
-enabled, provider events may only make local marketing state more restrictive:
-global unsubscribes clear all local topics and create a suppression, Topic
-opt-outs clear only that topic, and bounces, complaints, or suppressed events
-create active suppressions. Provider webhooks must never opt a topic in.
+enabled, provider email events update matching notification deliveries by
+`email_id` and matching content release targets by Broadcast ID. Release target
+feedback keeps provider acceptance, delay, delivery, bounce, complaint, and
+suppression states distinct, stores only sanitized diagnostic codes, and uses
+status precedence so late webhook deliveries cannot downgrade terminal state.
+Provider events may only make local marketing state more restrictive: global
+unsubscribes clear all local topics and create a suppression, Topic opt-outs
+clear only that topic, and bounces, complaints, or suppressed events create
+active suppressions. Provider webhooks must never opt a topic in.
 
 Transactional notification sends use Resend Email API idempotency keys derived
 from notification event and job IDs. Retryable provider/network failures are
@@ -339,6 +344,12 @@ the configured attempt budget. Permanent provider failures move to `failed`.
 Admins can manually retry failed or dead-letter jobs only with an explicit audit
 reason; suppressed recipients remain blocked unless the event is classified as
 required transactional mail.
+
+The admin system workspace uses bounded operational queries for queue depth,
+expired leases, retry timing, failed webhooks, active suppressions, stale
+releases, and delivery feedback counts. It derives visible operational alerts
+from those metrics instead of depending on the same email queue when the queue
+itself may be unhealthy.
 
 Public-facing documentation is part of the product surface. Keep `README.md`,
 the docs in `docs/`, and README screenshots in `public/readme` aligned with the

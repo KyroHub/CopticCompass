@@ -76,6 +76,7 @@ function createEmailEvent(type: string, data?: Record<string, unknown>) {
 
 async function loadWebhookModule(options?: {
   audienceContact?: typeof audienceContact | null;
+  contentReleaseTargetProviderStatus?: string | null;
   duplicateProviderEvent?: boolean;
   event?: Record<string, unknown>;
   notificationDeliveryStatus?: string;
@@ -171,6 +172,26 @@ async function loadWebhookModule(options?: {
     eq: notificationEventUpdateEqMock,
   }));
 
+  const contentReleaseTargetUpdateEqMock = vi
+    .fn()
+    .mockResolvedValue({ error: null });
+  const contentReleaseTargetUpdateMock = vi.fn(() => ({
+    eq: contentReleaseTargetUpdateEqMock,
+  }));
+  const contentReleaseTargetMaybeSingleMock = vi.fn().mockResolvedValue({
+    data: {
+      accepted_at: "2026-06-24T10:00:00.000Z",
+      id: "release_target_123",
+      last_provider_status: options?.contentReleaseTargetProviderStatus ?? null,
+    },
+    error: null,
+  });
+  const contentReleaseTargetSelectMock = vi.fn(() => ({
+    eq: vi.fn(() => ({
+      maybeSingle: contentReleaseTargetMaybeSingleMock,
+    })),
+  }));
+
   const audienceSuppressionInsertMock = vi
     .fn()
     .mockResolvedValue({ error: null });
@@ -225,6 +246,13 @@ async function loadWebhookModule(options?: {
       };
     }
 
+    if (table === "content_release_targets") {
+      return {
+        select: contentReleaseTargetSelectMock,
+        update: contentReleaseTargetUpdateMock,
+      };
+    }
+
     throw new Error(`Unexpected table: ${table}`);
   });
   const supabase = {
@@ -267,10 +295,13 @@ async function loadWebhookModule(options?: {
     audienceContactMaybeSingleMock,
     audienceSuppressionInsertMock,
     consentEventInsertMock,
+    contentReleaseTargetUpdateEqMock,
+    contentReleaseTargetUpdateMock,
     createResend: vi.fn(() => resend),
     createSupabase: vi.fn(() => supabase),
     fromMock,
     notificationDeliveryUpdateEqMock,
+    notificationDeliveryUpdateMock,
     notificationEventUpdateEqMock,
     providerEventInsertMock,
     providerEventUpdateEqMock,
@@ -482,5 +513,80 @@ describe("Resend webhook handler", () => {
         reason: "hard_bounce",
       }),
     );
+  });
+
+  it("matches broadcast webhooks to release targets with sanitized delivery feedback", async () => {
+    const {
+      contentReleaseTargetUpdateEqMock,
+      contentReleaseTargetUpdateMock,
+      createResend,
+      createSupabase,
+      handleResendWebhookRequest,
+      notificationDeliveryUpdateMock,
+    } = await loadWebhookModule({
+      event: createEmailEvent("email.delivered", {
+        broadcast_id: "broadcast_123",
+      }),
+    });
+
+    const response = await handleResendWebhookRequest(createWebhookRequest(), {
+      createResend,
+      createSupabase,
+      env: {
+        ...baseEnv,
+        RESEND_WEBHOOK_PROCESSING_ENABLED: "true",
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(notificationDeliveryUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        error: null,
+        status: "delivered",
+      }),
+    );
+    expect(contentReleaseTargetUpdateMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        delivered_at: "2026-06-24T10:30:00.000Z",
+        last_provider_error: null,
+        last_provider_event_id: "msg_webhook_123",
+        last_provider_status: "delivered",
+        provider_status_updated_at: "2026-06-24T10:30:00.000Z",
+      }),
+    );
+    expect(contentReleaseTargetUpdateEqMock).toHaveBeenCalledWith(
+      "id",
+      "release_target_123",
+    );
+  });
+
+  it("does not downgrade release target delivery feedback from out-of-order webhooks", async () => {
+    const {
+      contentReleaseTargetUpdateMock,
+      createResend,
+      createSupabase,
+      handleResendWebhookRequest,
+      notificationDeliveryUpdateMock,
+    } = await loadWebhookModule({
+      contentReleaseTargetProviderStatus: "delivered",
+      event: createEmailEvent("email.delivery_delayed", {
+        broadcast_id: "broadcast_123",
+      }),
+      notificationDeliveryStatus: "delivered",
+      notificationEventStatus: "delivered",
+    });
+
+    const response = await handleResendWebhookRequest(createWebhookRequest(), {
+      createResend,
+      createSupabase,
+      env: {
+        ...baseEnv,
+        RESEND_WEBHOOK_PROCESSING_ENABLED: "true",
+      },
+    });
+
+    expect(response.status).toBe(200);
+    expect(notificationDeliveryUpdateMock).not.toHaveBeenCalled();
+    expect(contentReleaseTargetUpdateMock).not.toHaveBeenCalled();
   });
 });

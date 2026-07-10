@@ -8,6 +8,7 @@ import type { Json, Tables } from "@/types/supabase";
 
 export type ContentReleaseRow = Tables<"content_releases">;
 export type ContentReleaseItemRow = Tables<"content_release_items">;
+export type ContentReleaseTargetRow = Tables<"content_release_targets">;
 
 export type ContentReleaseCandidate = {
   id: string;
@@ -21,6 +22,7 @@ export type ContentReleaseCandidate = {
 
 export type AdminContentRelease = ContentReleaseRow & {
   items: ContentReleaseItemRow[];
+  targets: ContentReleaseTargetRow[];
 };
 
 type ContentReleaseDeliverySummary = {
@@ -204,6 +206,76 @@ export function formatContentReleaseStatus(
       return "Cancelled";
     default:
       return status;
+  }
+}
+
+/**
+ * Formats the persisted release target lifecycle for admin operations panels.
+ */
+export function formatContentReleaseTargetStatus(
+  status:
+    | ContentReleaseTargetRow["last_provider_status"]
+    | ContentReleaseTargetRow["status"],
+  language: Language = "en",
+) {
+  if (language === "nl") {
+    switch (status) {
+      case "accepted":
+        return "Geaccepteerd";
+      case "bounced":
+        return "Bounce";
+      case "cancelled":
+        return "Geannuleerd";
+      case "complained":
+        return "Klacht";
+      case "created":
+        return "Aangemaakt";
+      case "creating":
+        return "Wordt aangemaakt";
+      case "delayed":
+        return "Vertraagd";
+      case "delivered":
+        return "Bezorgd";
+      case "failed":
+        return "Mislukt";
+      case "pending":
+        return "Wachtend";
+      case "sending":
+        return "Wordt verzonden";
+      case "suppressed":
+        return "Onderdrukt";
+      default:
+        return status ?? "Onbekend";
+    }
+  }
+
+  switch (status) {
+    case "accepted":
+      return "Accepted";
+    case "bounced":
+      return "Bounced";
+    case "cancelled":
+      return "Cancelled";
+    case "complained":
+      return "Complaint";
+    case "created":
+      return "Created";
+    case "creating":
+      return "Creating";
+    case "delayed":
+      return "Delayed";
+    case "delivered":
+      return "Delivered";
+    case "failed":
+      return "Failed";
+    case "pending":
+      return "Pending";
+    case "sending":
+      return "Sending";
+    case "suppressed":
+      return "Suppressed";
+    default:
+      return status ?? "Unknown";
   }
 }
 

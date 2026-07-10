@@ -82,6 +82,10 @@ type NotificationEventRow = Pick<
   Tables<"notification_events">,
   "id" | "status"
 >;
+type ContentReleaseTargetLifecycleRow = Pick<
+  Tables<"content_release_targets">,
+  "accepted_at" | "id" | "last_provider_status"
+>;
 type AudienceContactRow = Tables<"audience_contacts">;
 type AudienceSuppressionReason =
   TablesInsert<"audience_suppressions">["reason"];
@@ -271,6 +275,20 @@ function shouldApplyLifecycleStatus(
   );
 }
 
+function shouldApplyProviderLifecycleStatus(
+  currentStatus: ContentReleaseTargetLifecycleRow["last_provider_status"],
+  nextStatus: ResendEmailLifecycleStatus,
+) {
+  if (!currentStatus) {
+    return true;
+  }
+
+  return (
+    DELIVERY_STATUS_PRECEDENCE[nextStatus] >=
+    DELIVERY_STATUS_PRECEDENCE[currentStatus]
+  );
+}
+
 async function updateNotificationEvents(options: {
   error: string | null;
   eventIds: string[];
@@ -382,20 +400,137 @@ function getEmailEventMessageId(event: ResendWebhookPayload) {
   return event.data.email_id;
 }
 
-function getEmailEventError(event: ResendWebhookPayload) {
+function getEmailEventBroadcastId(event: ResendWebhookPayload) {
+  if (
+    !event.type.startsWith("email.") ||
+    !("broadcast_id" in event.data) ||
+    typeof event.data.broadcast_id !== "string"
+  ) {
+    return null;
+  }
+
+  return event.data.broadcast_id;
+}
+
+function sanitizeDiagnosticToken(value: unknown) {
+  if (typeof value !== "string") {
+    return null;
+  }
+
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_.:-]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 80);
+
+  return normalized.length > 0 ? normalized : null;
+}
+
+function getEmailEventDiagnosticCode(event: ResendWebhookPayload) {
   if (event.type === "email.failed") {
-    return event.data.failed.reason;
+    return `failed:${sanitizeDiagnosticToken(event.data.failed.reason) ?? "unknown"}`;
   }
 
   if (event.type === "email.bounced") {
-    return event.data.bounce.message;
+    const bounceType = sanitizeDiagnosticToken(event.data.bounce.type);
+    const bounceSubType = sanitizeDiagnosticToken(event.data.bounce.subType);
+    return ["bounced", bounceType, bounceSubType].filter(Boolean).join(":");
   }
 
   if (event.type === "email.suppressed") {
-    return event.data.suppressed.message;
+    return "suppressed";
+  }
+
+  if (event.type === "email.complained") {
+    return "complained";
+  }
+
+  if (event.type === "email.delivery_delayed") {
+    return "delayed";
   }
 
   return null;
+}
+
+function getTargetLifecycleTimestampColumn(status: ResendEmailLifecycleStatus) {
+  switch (status) {
+    case "bounced":
+      return "bounced_at";
+    case "complained":
+      return "complained_at";
+    case "delayed":
+      return "delayed_at";
+    case "delivered":
+      return "delivered_at";
+    case "suppressed":
+      return "suppressed_at";
+    default:
+      return null;
+  }
+}
+
+async function updateContentReleaseTargetLifecycle(options: {
+  event: ResendWebhookPayload;
+  providerEventId: string;
+  status: ResendEmailLifecycleStatus;
+  supabase: ServiceRoleLike;
+}) {
+  const providerBroadcastId = getEmailEventBroadcastId(options.event);
+  if (!providerBroadcastId) {
+    return;
+  }
+
+  const selectQuery = options.supabase
+    .from("content_release_targets")
+    .select(
+      "accepted_at,id,last_provider_status",
+    ) as SupabaseSelectEqMaybeSingleQuery<ContentReleaseTargetLifecycleRow | null>;
+  const { data: target, error } = await selectQuery
+    .eq("provider_broadcast_id", providerBroadcastId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (
+    !target ||
+    !shouldApplyProviderLifecycleStatus(
+      target.last_provider_status,
+      options.status,
+    )
+  ) {
+    return;
+  }
+
+  const occurredAt =
+    getProviderCreatedAt(options.event) ?? new Date().toISOString();
+  const timestampColumn = getTargetLifecycleTimestampColumn(options.status);
+  const payload: Record<string, unknown> = {
+    last_provider_error: getEmailEventDiagnosticCode(options.event),
+    last_provider_event_id: options.providerEventId,
+    last_provider_status: options.status,
+    provider_status_updated_at: occurredAt,
+  };
+
+  if (timestampColumn) {
+    payload[timestampColumn] = occurredAt;
+  }
+
+  if (options.status === "accepted" && !target.accepted_at) {
+    payload.accepted_at = occurredAt;
+    payload.status = "accepted";
+  }
+
+  const { error: updateError } = await options.supabase
+    .from("content_release_targets")
+    .update(payload)
+    .eq("id", target.id);
+
+  if (updateError) {
+    throw new Error(updateError.message);
+  }
 }
 
 function getSuppressionReasonForEvent(
@@ -594,8 +729,15 @@ async function processEmailEvent(options: {
   }
 
   await updateNotificationLifecycle({
-    error: getEmailEventError(options.event),
+    error: getEmailEventDiagnosticCode(options.event),
     providerMessageId: getEmailEventMessageId(options.event),
+    status,
+    supabase: options.supabase,
+  });
+
+  await updateContentReleaseTargetLifecycle({
+    event: options.event,
+    providerEventId: options.providerEventId,
     status,
     supabase: options.supabase,
   });

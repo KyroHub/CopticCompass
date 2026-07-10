@@ -16,6 +16,8 @@ const DURABLE_QUEUE_MIGRATION_PATH =
   "supabase/migrations/20260626213000_durable_notification_queue.sql";
 const CONTENT_RELEASE_TARGETS_MIGRATION_PATH =
   "supabase/migrations/20260628213000_content_release_targets.sql";
+const DELIVERY_FEEDBACK_MIGRATION_PATH =
+  "supabase/migrations/20260709120000_delivery_feedback_operational_state.sql";
 
 function readProjectFile(relativePath: string) {
   return fs.readFileSync(path.join(process.cwd(), relativePath), "utf8");
@@ -226,6 +228,48 @@ describe("mailing system schema guardrails", () => {
     }
   });
 
+  it("keeps content release delivery feedback setup in parity", () => {
+    const migration = readProjectFile(DELIVERY_FEEDBACK_MIGRATION_PATH);
+    const setup = readProjectFile("supabase/setup.sql");
+
+    for (const source of [migration, setup]) {
+      for (const column of [
+        "last_provider_status",
+        "provider_status_updated_at",
+        "last_provider_event_id",
+        "last_provider_error",
+        "delivered_at",
+        "delayed_at",
+        "bounced_at",
+        "complained_at",
+        "suppressed_at",
+      ]) {
+        expect(source, column).toContain(column);
+      }
+
+      expect(source).toContain("content_release_targets_provider_status_idx");
+      expect(source).toContain(
+        "comment on column public.content_release_targets.last_provider_status",
+      );
+      expect(source).toContain(
+        "comment on column public.content_release_targets.last_provider_error",
+      );
+    }
+
+    expect(migration).toContain(
+      "content_release_targets_last_provider_status_check",
+    );
+    expect(migration).toContain(
+      "content_release_targets_last_provider_event_id_check",
+    );
+    expect(migration).toContain(
+      "content_release_targets_last_provider_error_check",
+    );
+    expect(setup).toContain("last_provider_status text check");
+    expect(setup).toContain("last_provider_event_id text check");
+    expect(setup).toContain("last_provider_error text check");
+  });
+
   it("retains legacy sent states during the additive rollout", () => {
     const migration = readProjectFile(MIGRATION_PATH);
 
@@ -360,6 +404,19 @@ describe("mailing system schema guardrails", () => {
       | "failed"
       | "pending"
       | "sending"
+      | undefined
+    >();
+    expectTypeOf<
+      TablesUpdate<"content_release_targets">["last_provider_status"]
+    >().toEqualTypeOf<
+      | "accepted"
+      | "bounced"
+      | "complained"
+      | "delayed"
+      | "delivered"
+      | "failed"
+      | "suppressed"
+      | null
       | undefined
     >();
     expectTypeOf<TablesUpdate<"content_releases">["status"]>().toEqualTypeOf<

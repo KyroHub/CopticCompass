@@ -102,6 +102,16 @@ export const adminDashboardSectionsCopy = {
       historyLabel: "Recent delivery log",
       historyOverflowLabel: "history event",
       historyOverflowPluralLabel: "history events",
+      metrics: {
+        accepted: "Accepted",
+        bounced: "Bounced",
+        complained: "Complaints",
+        delayed: "Delayed",
+        delivered: "Delivered",
+        queued: "Queued",
+        suppressed: "Suppressed",
+        title: "Operational snapshot",
+      },
       noSummary: "No notification activity yet",
       notificationOverflowLabel: "notification",
       notificationOverflowPluralLabel: "notifications",
@@ -194,7 +204,12 @@ export const adminDashboardSectionsCopy = {
       title: "Exercise submissions",
     },
     systemHealth: {
+      activeSuppressionsDescription:
+        "Current suppressions that override marketing preferences.",
+      activeSuppressionsLabel: "Active suppressions",
+      alertsTitle: "Operational alerts",
       badge: "System Health",
+      deadLetterLabel: "Dead-letter",
       description:
         "This mode is meant for quiet operational checks. Failures and queued sends surface first, while successful delivery history sits below as a reference log.",
       failedDescription: "Notifications that need investigation or a resend.",
@@ -202,13 +217,67 @@ export const adminDashboardSectionsCopy = {
       failedNotifications: "Failed notifications",
       issuePlural: "delivery issues need attention",
       issueSingular: "delivery issue needs attention",
+      nextRetryLabel: "Next retry",
+      noneLabel: "None",
+      noAlerts: "No operational alerts are active.",
+      oldestEligibleLabel: "Oldest eligible",
+      operationalAlertDetails: {
+        "audience-sync-error-rate": {
+          detail: "Audience sync errors are above the dashboard threshold.",
+          label: "Audience sync drift",
+        },
+        "complaint-events": {
+          detail: "Complaint events require immediate deliverability review.",
+          label: "Complaint event recorded",
+        },
+        "dead-letter-email-jobs": {
+          detail:
+            "Dead-letter jobs need an admin retry decision with an audit reason.",
+          label: "Dead-letter notification jobs",
+        },
+        "expired-processing-email-jobs": {
+          detail:
+            "At least one processing notification email job has exceeded its lease.",
+          label: "Processing job lease expired",
+        },
+        "failed-provider-webhooks": {
+          detail:
+            "One or more provider webhook events were captured but failed processing.",
+          label: "Webhook processing failures",
+        },
+        "recent-bounce-rate": {
+          detail:
+            "Recent bounce rate is above the initial dashboard threshold.",
+          label: "Bounce rate elevated",
+        },
+        "stale-content-releases": {
+          detail:
+            "A content release has remained queued or sending beyond the operational window.",
+          label: "Content release incomplete",
+        },
+        "stale-email-queue": {
+          detail:
+            "The oldest eligible notification email job is older than five minutes.",
+          label: "Queued email job is stale",
+        },
+      },
+      processingLabel: "Processing",
+      processingExpiredLabel: "Expired leases",
       queuedDescription:
         "Events that are waiting to process or still completing.",
       queuedLabel: "Queued",
+      queueOperationsDescription:
+        "Email job depth by status, with stale lease and retry timing signals.",
+      queueOperationsLabel: "Queue operations",
       recentSentDescription:
         "Successfully delivered notifications in the recent log window.",
       recentSentLabel: "Recent sent",
+      receivedWebhooksLabel: "Received webhooks",
       steadyTitle: "Delivery health is steady",
+      staleReleasesLabel: "Stale releases",
+      webhookFailuresDescription:
+        "Provider webhook events captured but not processed successfully.",
+      webhookFailuresLabel: "Webhook failures",
     },
   },
   nl: {
@@ -314,6 +383,16 @@ export const adminDashboardSectionsCopy = {
       historyLabel: "Recent leveringslog",
       historyOverflowLabel: "geschiedenisitem",
       historyOverflowPluralLabel: "geschiedenisitems",
+      metrics: {
+        accepted: "Geaccepteerd",
+        bounced: "Bounced",
+        complained: "Klachten",
+        delayed: "Vertraagd",
+        delivered: "Bezorgd",
+        queued: "In wachtrij",
+        suppressed: "Geblokkeerd",
+        title: "Operationele momentopname",
+      },
       noSummary: "Nog geen meldingsactiviteit",
       notificationOverflowLabel: "melding",
       notificationOverflowPluralLabel: "meldingen",
@@ -406,7 +485,12 @@ export const adminDashboardSectionsCopy = {
       title: "Oefeninzendingen",
     },
     systemHealth: {
+      activeSuppressionsDescription:
+        "Actieve onderdrukkingen die marketingvoorkeuren overschrijven.",
+      activeSuppressionsLabel: "Actieve onderdrukkingen",
+      alertsTitle: "Operationele waarschuwingen",
       badge: "Systeemstatus",
+      deadLetterLabel: "Definitief mislukt",
       description:
         "Deze modus is bedoeld voor rustige operationele controles. Mislukkingen en wachtrij-items komen eerst; succesvolle leveringsgeschiedenis staat daaronder als referentielog.",
       failedDescription:
@@ -415,13 +499,69 @@ export const adminDashboardSectionsCopy = {
       failedNotifications: "Mislukte meldingen",
       issuePlural: "leveringsproblemen vragen aandacht",
       issueSingular: "leveringsprobleem vraagt aandacht",
+      nextRetryLabel: "Volgende retry",
+      noneLabel: "Geen",
+      noAlerts: "Er zijn geen actieve operationele waarschuwingen.",
+      oldestEligibleLabel: "Oudste gereed",
+      operationalAlertDetails: {
+        "audience-sync-error-rate": {
+          detail:
+            "Publiekssynchronisatiefouten liggen boven de dashboarddrempel.",
+          label: "Drift in publiekssynchronisatie",
+        },
+        "complaint-events": {
+          detail:
+            "Klachtevents vragen onmiddellijke controle van de deliverability.",
+          label: "Klachtevent vastgelegd",
+        },
+        "dead-letter-email-jobs": {
+          detail:
+            "Definitief mislukte jobs vragen een adminbeslissing met auditreden.",
+          label: "Definitief mislukte meldingjobs",
+        },
+        "expired-processing-email-jobs": {
+          detail:
+            "Minstens een meldingjob in verwerking heeft de lease overschreden.",
+          label: "Verwerkingslease verlopen",
+        },
+        "failed-provider-webhooks": {
+          detail:
+            "Een of meer providerwebhooks zijn vastgelegd maar konden niet worden verwerkt.",
+          label: "Webhookverwerking mislukt",
+        },
+        "recent-bounce-rate": {
+          detail:
+            "Het recente bouncepercentage ligt boven de startdrempel van het dashboard.",
+          label: "Bouncepercentage verhoogd",
+        },
+        "stale-content-releases": {
+          detail:
+            "Een contentrelease staat langer dan het operationele venster in wachtrij of verzending.",
+          label: "Contentrelease niet afgerond",
+        },
+        "stale-email-queue": {
+          detail:
+            "De oudste gereedstaande meldingjob is ouder dan vijf minuten.",
+          label: "E-mailjob blijft te lang staan",
+        },
+      },
+      processingLabel: "In verwerking",
+      processingExpiredLabel: "Verlopen leases",
       queuedDescription:
         "Events die wachten op verwerking of nog worden afgerond.",
       queuedLabel: "In wachtrij",
+      queueOperationsDescription:
+        "Diepte van e-mailjobs per status, met signalen voor verlopen leases en retry-timing.",
+      queueOperationsLabel: "Wachtrijstatus",
       recentSentDescription:
         "Succesvol bezorgde meldingen in het recente logvenster.",
       recentSentLabel: "Recent verzonden",
+      receivedWebhooksLabel: "Ontvangen webhooks",
       steadyTitle: "De leveringsstatus is stabiel",
+      staleReleasesLabel: "Vastgelopen releases",
+      webhookFailuresDescription:
+        "Providerwebhooks die wel zijn vastgelegd maar niet succesvol verwerkt.",
+      webhookFailuresLabel: "Webhookfouten",
     },
   },
 } as const;

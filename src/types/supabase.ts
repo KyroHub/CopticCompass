@@ -1337,12 +1337,28 @@ export type Database = {
           created_at: string;
           created_provider_at: string | null;
           creating_started_at: string | null;
+          bounced_at: string | null;
+          complained_at: string | null;
+          delayed_at: string | null;
+          delivered_at: string | null;
           failed_at: string | null;
           id: string;
           language: "en" | "nl";
           last_error: string | null;
+          last_provider_error: string | null;
+          last_provider_event_id: string | null;
+          last_provider_status:
+            | "accepted"
+            | "bounced"
+            | "complained"
+            | "delayed"
+            | "delivered"
+            | "failed"
+            | "suppressed"
+            | null;
           next_attempt_at: string;
           provider_broadcast_id: string | null;
+          provider_status_updated_at: string | null;
           recipient_count_snapshot: number;
           release_id: string;
           segment_id: string;
@@ -1366,12 +1382,28 @@ export type Database = {
           created_at?: string;
           created_provider_at?: string | null;
           creating_started_at?: string | null;
+          bounced_at?: string | null;
+          complained_at?: string | null;
+          delayed_at?: string | null;
+          delivered_at?: string | null;
           failed_at?: string | null;
           id?: string;
           language: "en" | "nl";
           last_error?: string | null;
+          last_provider_error?: string | null;
+          last_provider_event_id?: string | null;
+          last_provider_status?:
+            | "accepted"
+            | "bounced"
+            | "complained"
+            | "delayed"
+            | "delivered"
+            | "failed"
+            | "suppressed"
+            | null;
           next_attempt_at?: string;
           provider_broadcast_id?: string | null;
+          provider_status_updated_at?: string | null;
           recipient_count_snapshot: number;
           release_id: string;
           segment_id: string;
@@ -1395,12 +1427,28 @@ export type Database = {
           created_at?: string;
           created_provider_at?: string | null;
           creating_started_at?: string | null;
+          bounced_at?: string | null;
+          complained_at?: string | null;
+          delayed_at?: string | null;
+          delivered_at?: string | null;
           failed_at?: string | null;
           id?: string;
           language?: "en" | "nl";
           last_error?: string | null;
+          last_provider_error?: string | null;
+          last_provider_event_id?: string | null;
+          last_provider_status?:
+            | "accepted"
+            | "bounced"
+            | "complained"
+            | "delayed"
+            | "delivered"
+            | "failed"
+            | "suppressed"
+            | null;
           next_attempt_at?: string;
           provider_broadcast_id?: string | null;
+          provider_status_updated_at?: string | null;
           recipient_count_snapshot?: number;
           release_id?: string;
           segment_id?: string;

@@ -319,6 +319,20 @@ suppression, Topic opt-outs clear only the matching local topic, and bounces,
 complaints, or suppressed events create active suppressions. Provider webhooks
 never opt a local topic in.
 
+Signed email lifecycle events also update stored delivery state. Events with an
+`email_id` are matched to transactional notification deliveries, while events
+with a Resend `broadcast_id` are matched to `content_release_targets`. Broadcast
+feedback stores provider acceptance, delay, delivery, bounce, complaint, and
+suppression separately, keeps only sanitized diagnostic codes, and applies
+status precedence so a late delayed webhook cannot downgrade a delivered or
+terminal target.
+
+The admin system workspace surfaces operational alerts from bounded database
+metrics for stale email jobs, expired leases, dead-letter jobs, failed webhooks,
+complaints, stale content releases, audience sync drift, and elevated recent
+bounces. Treat those dashboard alerts as the first fallback when email delivery
+itself is degraded.
+
 ### Migration Rollout
 
 Supabase migrations live under `supabase/migrations`. Before deployment, compare and preview the linked project state:
