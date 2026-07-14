@@ -6,10 +6,10 @@ type NotificationsEventsModuleContext = {
   enqueueNotificationEmailJobRpcMock: ReturnType<typeof vi.fn>;
   getNotificationEmailEnvMock: ReturnType<typeof vi.fn>;
   hasSupabaseServiceRoleEnvMock: ReturnType<typeof vi.fn>;
+  wakeNotificationEmailWorkerMock: ReturnType<typeof vi.fn>;
   notificationDeliveriesInsertMock: ReturnType<typeof vi.fn>;
   notificationEventsInsertMock: ReturnType<typeof vi.fn>;
   notificationEventsUpdateEqMock: ReturnType<typeof vi.fn>;
-  invokeSupabaseEdgeFunctionMock: ReturnType<typeof vi.fn>;
   queueLoggedNotificationEmail: typeof import("./events").queueLoggedNotificationEmail;
   queueLoggedOwnerAlertEmail: typeof import("./events").queueLoggedOwnerAlertEmail;
   sendNotificationEmailMock: ReturnType<typeof vi.fn>;
@@ -92,7 +92,7 @@ async function loadNotificationsEventsModule(options?: {
     .mockResolvedValue(
       options?.sendNotificationResult ?? { success: true, id: "email_123" },
     );
-  const invokeSupabaseEdgeFunctionMock = vi.fn().mockResolvedValue(
+  const wakeNotificationEmailWorkerMock = vi.fn().mockResolvedValue(
     options?.invokeWorkerResult ?? {
       data: { jobId: "job_123", queued: true, success: true },
       status: 202,
@@ -119,8 +119,8 @@ async function loadNotificationsEventsModule(options?: {
   vi.doMock("@/lib/supabase/serviceRole", () => ({
     createServiceRoleClient: createServiceRoleClientMock,
   }));
-  vi.doMock("@/lib/supabase/functions", () => ({
-    invokeSupabaseEdgeFunction: invokeSupabaseEdgeFunctionMock,
+  vi.doMock("@/lib/notifications/worker", () => ({
+    wakeNotificationEmailWorker: wakeNotificationEmailWorkerMock,
   }));
 
   const mod = await import("./events");
@@ -131,10 +131,10 @@ async function loadNotificationsEventsModule(options?: {
     enqueueNotificationEmailJobRpcMock,
     getNotificationEmailEnvMock,
     hasSupabaseServiceRoleEnvMock,
+    wakeNotificationEmailWorkerMock,
     notificationDeliveriesInsertMock,
     notificationEventsInsertMock,
     notificationEventsUpdateEqMock,
-    invokeSupabaseEdgeFunctionMock,
     sendNotificationEmailMock,
   } satisfies NotificationsEventsModuleContext;
 }
@@ -267,9 +267,9 @@ describe("logged notification events", () => {
   it("atomically enqueues the notification job and starts the worker", async () => {
     const {
       enqueueNotificationEmailJobRpcMock,
-      invokeSupabaseEdgeFunctionMock,
       notificationEventsInsertMock,
       queueLoggedNotificationEmail,
+      wakeNotificationEmailWorkerMock,
     } = await loadNotificationsEventsModule();
 
     await expect(
@@ -300,12 +300,9 @@ describe("logged notification events", () => {
         p_to_recipients: ["owner@example.com"],
       }),
     );
-    expect(invokeSupabaseEdgeFunctionMock).toHaveBeenCalledWith(
-      "process-notification-email",
-      {
-        jobId: "job_123",
-      },
-    );
+    expect(wakeNotificationEmailWorkerMock).toHaveBeenCalledWith({
+      jobId: "job_123",
+    });
   });
 
   it("queues owner alerts with the configured owner recipient", async () => {

@@ -1,6 +1,8 @@
 import "server-only";
 import { assertServerOnly } from "@/lib/server/assertServerOnly";
 
+const MIN_WORKER_BEARER_TOKEN_LENGTH = 32;
+
 /**
  * Returns the notification-email environment only when the required Resend and
  * sender configuration is present.
@@ -28,4 +30,20 @@ export function getNotificationEmailEnv() {
  */
 function _hasNotificationEmailEnv() {
   return getNotificationEmailEnv() !== null;
+}
+
+/**
+ * Returns the shared bearer token used to wake the queued notification worker.
+ * The service-role key is still used for database access, but it is no longer
+ * reused as this function-to-function caller secret.
+ */
+export function getNotificationWorkerBearerToken() {
+  assertServerOnly("getNotificationWorkerBearerToken");
+
+  const token = process.env.NOTIFICATION_WORKER_BEARER_TOKEN?.trim();
+  if (!token || token.length < MIN_WORKER_BEARER_TOKEN_LENGTH) {
+    return null;
+  }
+
+  return token;
 }

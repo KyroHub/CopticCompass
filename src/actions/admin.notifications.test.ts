@@ -28,7 +28,7 @@ async function loadAdminNotificationsAction(options?: {
       error: null,
     },
   );
-  const invokeSupabaseEdgeFunctionMock = vi.fn().mockResolvedValue(
+  const wakeNotificationEmailWorkerMock = vi.fn().mockResolvedValue(
     options?.workerResult ?? {
       data: { jobId: "job_123", queued: true, success: true },
       status: 202,
@@ -54,17 +54,17 @@ async function loadAdminNotificationsAction(options?: {
   vi.doMock("@/lib/server/revalidation", () => ({
     revalidateAdminPaths: revalidateAdminPathsMock,
   }));
-  vi.doMock("@/lib/supabase/functions", () => ({
-    invokeSupabaseEdgeFunction: invokeSupabaseEdgeFunctionMock,
+  vi.doMock("@/lib/notifications/worker", () => ({
+    wakeNotificationEmailWorker: wakeNotificationEmailWorkerMock,
   }));
 
   const mod = await import("./admin/notifications");
 
   return {
     ...mod,
-    invokeSupabaseEdgeFunctionMock,
     retryNotificationEmailJobRpcMock,
     revalidateAdminPathsMock,
+    wakeNotificationEmailWorkerMock,
   };
 }
 
@@ -89,10 +89,10 @@ describe("admin notification retry actions", () => {
 
   it("queues an audited retry and wakes the worker", async () => {
     const {
-      invokeSupabaseEdgeFunctionMock,
       retryNotificationEmailJob,
       retryNotificationEmailJobRpcMock,
       revalidateAdminPathsMock,
+      wakeNotificationEmailWorkerMock,
     } = await loadAdminNotificationsAction();
     const formData = new FormData();
     formData.set("job_id", "job_123");
@@ -107,10 +107,9 @@ describe("admin notification retry actions", () => {
       p_job_id: "job_123",
       p_reason: "Provider outage resolved.",
     });
-    expect(invokeSupabaseEdgeFunctionMock).toHaveBeenCalledWith(
-      "process-notification-email",
-      { jobId: "job_123" },
-    );
+    expect(wakeNotificationEmailWorkerMock).toHaveBeenCalledWith({
+      jobId: "job_123",
+    });
     expect(revalidateAdminPathsMock).toHaveBeenCalledOnce();
   });
 

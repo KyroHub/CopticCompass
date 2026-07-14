@@ -3,7 +3,7 @@ import { assertServerOnly } from "@/lib/server/assertServerOnly";
 import { getSupabaseServiceRoleEnv } from "@/lib/supabase/config";
 import type { Json } from "@/types/supabase";
 
-type InvokeSupabaseEdgeFunctionResult<T = unknown> =
+export type InvokeSupabaseEdgeFunctionResult<T = unknown> =
   | {
       data: T | null;
       status: number;
@@ -15,13 +15,19 @@ type InvokeSupabaseEdgeFunctionResult<T = unknown> =
       success: false;
     };
 
+type InvokeSupabaseEdgeFunctionOptions = {
+  bearerToken?: string;
+};
+
 /**
- * Invokes a Supabase Edge Function with the service-role key and returns a
- * non-throwing success/error envelope for callers.
+ * Invokes a Supabase Edge Function and returns a non-throwing success/error
+ * envelope for callers. By default it authenticates with the service-role key;
+ * callers may provide a narrower function-specific bearer token instead.
  */
 export async function invokeSupabaseEdgeFunction<T = unknown>(
   functionName: string,
   payload?: Json,
+  options?: InvokeSupabaseEdgeFunctionOptions,
 ): Promise<InvokeSupabaseEdgeFunctionResult<T>> {
   assertServerOnly("invokeSupabaseEdgeFunction");
 
@@ -34,22 +40,21 @@ export async function invokeSupabaseEdgeFunction<T = unknown>(
     };
   }
 
+  const bearerToken = options?.bearerToken ?? env.serviceRoleKey;
+
   let response: Response;
   try {
     response = await fetch(`${env.url}/functions/v1/${functionName}`, {
       method: "POST",
       headers: {
-        Authorization: `Bearer ${env.serviceRoleKey}`,
+        Authorization: `Bearer ${bearerToken}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload ?? {}),
     });
   } catch (error) {
     return {
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to reach the Supabase Edge Function.",
+      error: getFetchFailureMessage(error),
       status: 500,
       success: false,
     };
@@ -59,13 +64,8 @@ export async function invokeSupabaseEdgeFunction<T = unknown>(
   const responseJson = responseText ? safeParseJson(responseText) : null;
 
   if (!response.ok) {
-    const responseError =
-      responseJson && typeof responseJson.error === "string"
-        ? responseJson.error
-        : responseText || "Supabase Edge Function invocation failed.";
-
     return {
-      error: responseError,
+      error: getEdgeFunctionResponseError(responseJson, responseText),
       status: response.status,
       success: false,
     };
@@ -76,6 +76,25 @@ export async function invokeSupabaseEdgeFunction<T = unknown>(
     status: response.status,
     success: true,
   };
+}
+
+function getFetchFailureMessage(error: unknown) {
+  if (error instanceof Error) {
+    return error.message;
+  }
+
+  return "Failed to reach the Supabase Edge Function.";
+}
+
+function getEdgeFunctionResponseError(
+  responseJson: Record<string, unknown> | null,
+  responseText: string,
+) {
+  if (typeof responseJson?.error === "string") {
+    return responseJson.error;
+  }
+
+  return responseText || "Supabase Edge Function invocation failed.";
 }
 
 /**
