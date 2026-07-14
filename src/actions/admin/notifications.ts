@@ -1,8 +1,8 @@
 "use server";
 
 import { getValidatedAdminContext } from "@/actions/admin/shared";
+import { wakeNotificationEmailWorker } from "@/lib/notifications/worker";
 import { revalidateAdminPaths } from "@/lib/server/revalidation";
-import { invokeSupabaseEdgeFunction } from "@/lib/supabase/functions";
 import { getFormString, normalizeWhitespace } from "@/lib/validation";
 
 import type { RetryNotificationEmailJobState } from "./states";
@@ -55,12 +55,9 @@ function getRetryNotificationEmailJobInput(formData: FormData):
 async function wakeRetriedNotificationWorker(
   retryResult: RetryNotificationEmailJobRow,
 ) {
-  const invocation = await invokeSupabaseEdgeFunction(
-    "process-notification-email",
-    {
-      jobId: retryResult.job_id,
-    },
-  );
+  const invocation = await wakeNotificationEmailWorker({
+    jobId: retryResult.job_id,
+  });
 
   if (!invocation.success) {
     console.error("Failed to wake notification email worker after retry.", {

@@ -22,6 +22,7 @@ declare const EdgeRuntime:
 
 const NOTIFICATION_JOB_BATCH_SIZE = 5;
 const NOTIFICATION_JOB_LEASE_SECONDS = 300;
+const MIN_WORKER_BEARER_TOKEN_LENGTH = 32;
 
 type NotificationEmailJobStatus =
   | "accepted"
@@ -58,6 +59,7 @@ type ProcessNotificationEmailEnv = {
   resendApiKey: string;
   serviceRoleKey: string;
   supabaseUrl: string;
+  workerBearerToken: string;
 };
 
 type SendNotificationEmailResult =
@@ -78,17 +80,28 @@ function jsonResponse(status: number, body: Record<string, unknown>) {
   });
 }
 
+function getRequiredWorkerBearerToken() {
+  const token = Deno.env.get("NOTIFICATION_WORKER_BEARER_TOKEN")?.trim();
+  if (!token || token.length < MIN_WORKER_BEARER_TOKEN_LENGTH) {
+    return null;
+  }
+
+  return token;
+}
+
 function getProcessNotificationEmailEnv() {
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
   const resendApiKey = Deno.env.get("RESEND_API_KEY");
   const notificationFromEmail = Deno.env.get("NOTIFICATION_FROM_EMAIL");
+  const workerBearerToken = getRequiredWorkerBearerToken();
 
   if (
     !supabaseUrl ||
     !serviceRoleKey ||
     !resendApiKey ||
-    !notificationFromEmail
+    !notificationFromEmail ||
+    !workerBearerToken
   ) {
     return null;
   }
@@ -98,6 +111,7 @@ function getProcessNotificationEmailEnv() {
     resendApiKey,
     serviceRoleKey,
     supabaseUrl,
+    workerBearerToken,
   } satisfies ProcessNotificationEmailEnv;
 }
 
@@ -543,7 +557,7 @@ async function handleProcessNotificationEmailRequest(request: Request) {
     });
   }
 
-  if (!hasExpectedBearerToken(request, env.serviceRoleKey)) {
+  if (!hasExpectedBearerToken(request, env.workerBearerToken)) {
     return jsonResponse(401, { error: "Unauthorized." });
   }
 

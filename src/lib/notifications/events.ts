@@ -5,10 +5,10 @@ import {
   sendNotificationEmail,
   type NotificationEmailResult,
 } from "@/lib/notifications/email";
+import { wakeNotificationEmailWorker } from "@/lib/notifications/worker";
 import { redactEmailAddress } from "@/lib/privacy";
 import { assertServerOnly } from "@/lib/server/assertServerOnly";
 import { hasSupabaseServiceRoleEnv } from "@/lib/supabase/config";
-import { invokeSupabaseEdgeFunction } from "@/lib/supabase/functions";
 import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 import type { Json, TablesInsert, TablesUpdate } from "@/types/supabase";
 
@@ -416,12 +416,9 @@ export async function queueLoggedNotificationEmail(
     };
   }
 
-  const invocation = await invokeSupabaseEdgeFunction(
-    "process-notification-email",
-    {
-      jobId: queuedJob.jobId,
-    },
-  );
+  const invocation = await wakeNotificationEmailWorker({
+    jobId: queuedJob.jobId,
+  });
 
   if (!invocation.success) {
     console.error("Failed to start queued notification email worker", {

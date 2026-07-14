@@ -22,6 +22,13 @@ describe("notification email worker guardrails", () => {
     expect(worker).toContain("buildNotificationEmailIdempotencyKey");
     expect(worker).toContain("retry_scheduled");
     expect(worker).toContain("dead_letter");
+    expect(worker).toContain("NOTIFICATION_WORKER_BEARER_TOKEN");
+    expect(worker).toContain(
+      "hasExpectedBearerToken(request, env.workerBearerToken)",
+    );
     expect(worker).not.toContain("status=eq.queued");
+    expect(worker).not.toContain(
+      "hasExpectedBearerToken(request, env.serviceRoleKey)",
+    );
   });
 });
