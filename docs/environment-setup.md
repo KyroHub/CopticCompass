@@ -26,6 +26,7 @@ Additional notes:
 - `OWNER_ALERT_EMAIL` is for operational alerts such as new signups or exercise submissions.
 - `NOTIFICATION_FROM_EMAIL` is the sender identity used by app-generated notification emails.
 - `NOTIFICATION_WORKER_BEARER_TOKEN` is a long random shared secret used by the Next.js app and Supabase Edge Function to wake queued notification delivery without comparing service-role keys.
+- `SIGNUP_ALERT_WEBHOOK_TOKEN` is a long random shared secret sent by the profile signup webhook in `X-Signup-Alert-Webhook-Token` so signup alerts do not compare service-role keys.
 
 Important:
 
@@ -50,6 +51,7 @@ add it to `.env.example` and this guide together.
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `NOTIFICATION_WORKER_BEARER_TOKEN`
+- `SIGNUP_ALERT_WEBHOOK_TOKEN`
 
 In production, set `NEXT_PUBLIC_SITE_URL` and `SITE_URL` to `https://www.copticcompass.com` so auth callbacks, metadata, sitemaps, structured data, and generated share links use the canonical domain.
 
@@ -182,13 +184,20 @@ This repo includes a Supabase Edge Function at `supabase/functions/profile-signu
 
 To enable signup alerts in a Supabase project:
 
-1. Set function secrets for `RESEND_API_KEY`, `OWNER_ALERT_EMAIL`, and `NOTIFICATION_FROM_EMAIL`.
+1. Set function secrets for `RESEND_API_KEY`, `OWNER_ALERT_EMAIL`,
+   `NOTIFICATION_FROM_EMAIL`, and `SIGNUP_ALERT_WEBHOOK_TOKEN`. Generate the
+   token with a command such as `openssl rand -base64 48`.
 2. Deploy the function: `supabase functions deploy profile-signup-alert --project-ref <your-project-ref>`
 3. Create a database webhook on `public.profiles` for `INSERT` events.
-4. Choose `Supabase Edge Functions` as the webhook target, select `profile-signup-alert`, and configure the required auth header.
+4. Configure the webhook request with a valid Supabase JWT in the
+   `Authorization` bearer header for the Edge Function gateway, and the same
+   `SIGNUP_ALERT_WEBHOOK_TOKEN` in `X-Signup-Alert-Webhook-Token` for the
+   function's own authorization check. If the Supabase Edge Functions target
+   does not expose custom headers, use the HTTP request target pointed at
+   `/functions/v1/profile-signup-alert`.
 
 The function rejects unauthenticated requests in code as well, so the webhook
-must send the configured bearer auth header.
+must send the configured signup-alert token header.
 
 ### Background Release Delivery
 

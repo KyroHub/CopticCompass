@@ -5,7 +5,7 @@ import {
   parseProfileSignupPayload,
   redactEmailAddress,
 } from "../_shared/profileSignupAlert.ts";
-import { hasExpectedBearerToken } from "../_shared/requestAuth.ts";
+import { hasExpectedHeaderValue } from "../_shared/requestAuth.ts";
 import { sendResendEmail } from "../_shared/resendEmail.ts";
 
 declare const Deno: {
@@ -19,9 +19,13 @@ type SignupAlertEnv = {
   notificationFromEmail: string;
   ownerAlertEmail: string;
   resendApiKey: string;
+  signupAlertWebhookToken: string;
   supabaseServiceRoleKey: string;
   supabaseUrl: string;
 };
+
+const SIGNUP_ALERT_WEBHOOK_TOKEN_HEADER = "x-signup-alert-webhook-token";
+const MIN_SIGNUP_ALERT_WEBHOOK_TOKEN_LENGTH = 32;
 
 /**
  * Builds small JSON responses for the webhook handler.
@@ -45,6 +49,15 @@ function buildSupabaseRestHeaders(serviceRoleKey: string) {
     "Content-Type": "application/json",
     apikey: serviceRoleKey,
   };
+}
+
+function getRequiredSignupAlertWebhookToken() {
+  const token = Deno.env.get("SIGNUP_ALERT_WEBHOOK_TOKEN")?.trim();
+  if (!token || token.length < MIN_SIGNUP_ALERT_WEBHOOK_TOKEN_LENGTH) {
+    return null;
+  }
+
+  return token;
 }
 
 /**
@@ -195,13 +208,15 @@ function getSignupAlertEnv() {
   const resendApiKey = Deno.env.get("RESEND_API_KEY");
   const ownerAlertEmail = Deno.env.get("OWNER_ALERT_EMAIL");
   const notificationFromEmail = Deno.env.get("NOTIFICATION_FROM_EMAIL");
+  const signupAlertWebhookToken = getRequiredSignupAlertWebhookToken();
 
   if (
     !supabaseUrl ||
     !supabaseServiceRoleKey ||
     !resendApiKey ||
     !ownerAlertEmail ||
-    !notificationFromEmail
+    !notificationFromEmail ||
+    !signupAlertWebhookToken
   ) {
     return null;
   }
@@ -210,6 +225,7 @@ function getSignupAlertEnv() {
     notificationFromEmail,
     ownerAlertEmail,
     resendApiKey,
+    signupAlertWebhookToken,
     supabaseServiceRoleKey,
     supabaseUrl,
   } satisfies SignupAlertEnv;
@@ -395,7 +411,13 @@ async function handleProfileSignupAlertRequest(request: Request) {
     });
   }
 
-  if (!hasExpectedBearerToken(request, env.supabaseServiceRoleKey)) {
+  if (
+    !hasExpectedHeaderValue(
+      request,
+      SIGNUP_ALERT_WEBHOOK_TOKEN_HEADER,
+      env.signupAlertWebhookToken,
+    )
+  ) {
     return jsonResponse(401, { error: "Unauthorized." });
   }
 
