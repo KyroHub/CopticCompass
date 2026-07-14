@@ -19,3 +19,15 @@ export function hasExpectedBearerToken(
   const providedToken = authorizationHeader.slice(bearerPrefix.length).trim();
   return providedToken.length > 0 && providedToken === expectedToken;
 }
+
+/**
+ * Verifies an exact shared-secret value in an internal request header.
+ */
+export function hasExpectedHeaderValue(
+  request: Request,
+  headerName: string,
+  expectedValue: string,
+) {
+  const providedValue = request.headers.get(headerName)?.trim();
+  return Boolean(providedValue) && providedValue === expectedValue;
+}
