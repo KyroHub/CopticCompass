@@ -162,7 +162,7 @@ function getResendApiKey(env: EnvSource) {
   return (
     env.RESEND_API_KEY_FULL_ACCESS?.trim() ||
     env.RESEND_API_KEY?.trim() ||
-    "re_webhook_verification_placeholder"
+    "resend_webhook_verification_placeholder"
   );
 }
 
