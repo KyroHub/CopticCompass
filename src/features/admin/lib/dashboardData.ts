@@ -22,6 +22,7 @@ import {
   isNotificationHistoryStatus,
   notificationFailureStatuses,
   type AdminNotificationEvent,
+  type NotificationEventRow,
 } from "@/features/notifications/lib/notifications";
 import { getAdminNotificationEvents } from "@/features/notifications/lib/server/queries";
 import { getAdminSubmissions } from "@/features/submissions/lib/server/queries";
@@ -59,6 +60,7 @@ type AdminOperationalAlertId =
   | "dead-letter-email-jobs"
   | "expired-processing-email-jobs"
   | "failed-provider-webhooks"
+  | "missing-signup-alerts"
   | "recent-bounce-rate"
   | "stale-content-releases"
   | "stale-email-queue";
@@ -77,6 +79,13 @@ export interface AdminNotificationOperations {
   expiredProcessingEmailJobCount: number;
   failedEmailJobCount: number;
   failedWebhookEventCount: number;
+  latestAcceptedEmailJobAt: string | null;
+  latestExerciseSubmissionNotificationAt: string | null;
+  latestExerciseSubmissionNotificationStatus:
+    | NotificationEventRow["status"]
+    | null;
+  latestSignupNotificationAt: string | null;
+  latestSignupNotificationStatus: NotificationEventRow["status"] | null;
   nextRetryEmailJobAt: string | null;
   oldestEligibleEmailJobAt: string | null;
   oldestReceivedWebhookAt: string | null;
@@ -84,6 +93,7 @@ export interface AdminNotificationOperations {
   processingEmailJobCount: number;
   queuedEmailJobCount: number;
   receivedWebhookEventCount: number;
+  recentSignupMissingNotificationCount: number;
   retryScheduledEmailJobCount: number;
   staleContentReleaseCount: number;
   totalAudienceContactCount: number;
@@ -101,11 +111,6 @@ export interface AdminWorkspaceOverview {
 type LoadedDashboardSection<T> = {
   error: QueryResult<T>["error"];
   items: T;
-};
-
-type OperationalTimestampRow = {
-  next_attempt_at?: string | null;
-  received_at?: string | null;
 };
 
 export type AdminDashboardData = {
@@ -183,7 +188,7 @@ async function getExactCount(
   return result.count ?? 0;
 }
 
-async function getFirstOperationalRow<T extends OperationalTimestampRow>(
+async function getFirstOperationalRow<T>(
   label: string,
   query: PromiseLike<{
     data: T[] | null;
@@ -214,6 +219,37 @@ async function getFirstOperationalRow<T extends OperationalTimestampRow>(
   return result.data?.[0] ?? null;
 }
 
+async function getOperationalRows<T>(
+  label: string,
+  query: PromiseLike<{
+    data: T[] | null;
+    error: {
+      code?: string;
+      details?: string | null;
+      hint?: string | null;
+      message?: string;
+    } | null;
+  }>,
+) {
+  const result = await query;
+
+  if (result.error) {
+    const errorDetails = {
+      code: result.error.code,
+      details: result.error.details,
+      hint: result.error.hint,
+      message: result.error.message ?? "Unknown query error",
+    };
+
+    console.warn(`Unable to load admin ${label}; falling back to empty.`, {
+      error: errorDetails,
+    });
+    return [];
+  }
+
+  return result.data ?? [];
+}
+
 function hasCountErrorMessage(error: {
   code?: string;
   details?: string | null;
@@ -239,6 +275,8 @@ function shouldRetryPendingCountWithoutDeletedAt(error: {
 
 const OPERATIONAL_QUEUE_STALE_MS = 5 * 60 * 1000;
 const OPERATIONAL_AUDIENCE_SYNC_ERROR_RATE_THRESHOLD = 0.1;
+const OPERATIONAL_RECENT_SIGNUP_ALERT_WINDOW_MS = 7 * 24 * 60 * 60 * 1000;
+const OPERATIONAL_RECENT_SIGNUP_SAMPLE_SIZE = 100;
 
 export function buildAdminOperationalAlerts(options: {
   metrics: Pick<
@@ -285,6 +323,13 @@ export function buildAdminOperationalAlerts(options: {
     });
   }
 
+  if (options.operations.recentSignupMissingNotificationCount > 0) {
+    alerts.push({
+      id: "missing-signup-alerts",
+      tone: "warning",
+    });
+  }
+
   if (options.operations.complainedNotificationCount > 0) {
     alerts.push({
       id: "complaint-events",
@@ -327,6 +372,49 @@ export function buildAdminOperationalAlerts(options: {
   }
 
   return alerts;
+}
+
+async function countRecentSignupProfilesMissingNotifications(
+  supabase: AppSupabaseClient,
+  cutoffIso: string,
+) {
+  const recentProfiles = await getOperationalRows<
+    Pick<Tables<"profiles">, "id">
+  >(
+    "recent signup profiles",
+    supabase
+      .from("profiles")
+      .select("id")
+      .gte("created_at", cutoffIso)
+      .order("created_at", { ascending: false })
+      .limit(OPERATIONAL_RECENT_SIGNUP_SAMPLE_SIZE),
+  );
+
+  const profileIds = recentProfiles
+    .map((profile) => profile.id)
+    .filter((id): id is string => Boolean(id));
+
+  if (profileIds.length === 0) {
+    return 0;
+  }
+
+  const signupNotifications = await getOperationalRows<
+    Pick<Tables<"notification_events">, "aggregate_id">
+  >(
+    "recent signup notification events",
+    supabase
+      .from("notification_events")
+      .select("aggregate_id")
+      .eq("aggregate_type", "profile")
+      .eq("event_type", "profile_signup")
+      .in("aggregate_id", profileIds),
+  );
+  const alertedProfileIds = new Set(
+    signupNotifications.map((event) => event.aggregate_id),
+  );
+
+  return profileIds.filter((profileId) => !alertedProfileIds.has(profileId))
+    .length;
 }
 
 async function getPendingSubmissionCount(supabase: AppSupabaseClient) {
@@ -775,6 +863,9 @@ async function loadAdminNotificationOperations(
   const staleContentReleaseIso = new Date(
     now.getTime() - 2 * 60 * 60 * 1000,
   ).toISOString();
+  const recentSignupAlertCutoffIso = new Date(
+    now.getTime() - OPERATIONAL_RECENT_SIGNUP_ALERT_WINDOW_MS,
+  ).toISOString();
 
   const [
     queuedEmailJobCount,
@@ -794,6 +885,10 @@ async function loadAdminNotificationOperations(
     oldestEligibleEmailJob,
     nextRetryEmailJob,
     oldestReceivedWebhook,
+    latestAcceptedEmailJob,
+    latestSignupNotification,
+    latestExerciseSubmissionNotification,
+    recentSignupMissingNotificationCount,
   ] = await Promise.all([
     getExactCount(
       "queued notification email jobs",
@@ -929,6 +1024,44 @@ async function loadAdminNotificationOperations(
         .order("received_at", { ascending: true })
         .limit(1),
     ),
+    getFirstOperationalRow<
+      Pick<Tables<"notification_email_jobs">, "processed_at">
+    >(
+      "latest accepted notification email job",
+      supabase
+        .from("notification_email_jobs")
+        .select("processed_at")
+        .eq("status", "accepted")
+        .not("processed_at", "is", null)
+        .order("processed_at", { ascending: false })
+        .limit(1),
+    ),
+    getFirstOperationalRow<
+      Pick<Tables<"notification_events">, "created_at" | "status">
+    >(
+      "latest signup notification event",
+      supabase
+        .from("notification_events")
+        .select("created_at,status")
+        .eq("event_type", "profile_signup")
+        .order("created_at", { ascending: false })
+        .limit(1),
+    ),
+    getFirstOperationalRow<
+      Pick<Tables<"notification_events">, "created_at" | "status">
+    >(
+      "latest exercise submission notification event",
+      supabase
+        .from("notification_events")
+        .select("created_at,status")
+        .eq("event_type", "exercise_submission_received")
+        .order("created_at", { ascending: false })
+        .limit(1),
+    ),
+    countRecentSignupProfilesMissingNotifications(
+      supabase,
+      recentSignupAlertCutoffIso,
+    ),
   ]);
 
   const operations = {
@@ -940,12 +1073,20 @@ async function loadAdminNotificationOperations(
     expiredProcessingEmailJobCount,
     failedEmailJobCount,
     failedWebhookEventCount,
+    latestAcceptedEmailJobAt: latestAcceptedEmailJob?.processed_at ?? null,
+    latestExerciseSubmissionNotificationAt:
+      latestExerciseSubmissionNotification?.created_at ?? null,
+    latestExerciseSubmissionNotificationStatus:
+      latestExerciseSubmissionNotification?.status ?? null,
+    latestSignupNotificationAt: latestSignupNotification?.created_at ?? null,
+    latestSignupNotificationStatus: latestSignupNotification?.status ?? null,
     nextRetryEmailJobAt: nextRetryEmailJob?.next_attempt_at ?? null,
     oldestEligibleEmailJobAt: oldestEligibleEmailJob?.next_attempt_at ?? null,
     oldestReceivedWebhookAt: oldestReceivedWebhook?.received_at ?? null,
     processingEmailJobCount,
     queuedEmailJobCount,
     receivedWebhookEventCount,
+    recentSignupMissingNotificationCount,
     retryScheduledEmailJobCount,
     staleContentReleaseCount,
     totalAudienceContactCount,

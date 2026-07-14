@@ -16,6 +16,8 @@ const DURABLE_QUEUE_MIGRATION_PATH =
   "supabase/migrations/20260626213000_durable_notification_queue.sql";
 const CONTENT_RELEASE_TARGETS_MIGRATION_PATH =
   "supabase/migrations/20260628213000_content_release_targets.sql";
+const CONTENT_RELEASE_TARGETS_LINT_FIX_MIGRATION_PATH =
+  "supabase/migrations/20260714134000_fix_content_release_target_conflict_lint.sql";
 const DELIVERY_FEEDBACK_MIGRATION_PATH =
   "supabase/migrations/20260709120000_delivery_feedback_operational_state.sql";
 
@@ -225,6 +227,17 @@ describe("mailing system schema guardrails", () => {
       );
       expect(queueFunction).toContain("status = 'queued'");
       expect(queueFunction).toContain("jsonb_build_object");
+
+      const lintFixSource = readProjectFile(
+        CONTENT_RELEASE_TARGETS_LINT_FIX_MIGRATION_PATH,
+      );
+      const lintFixQueueFunction = extractFunction(
+        lintFixSource,
+        "queue_content_release_delivery_with_targets",
+      );
+      expect(lintFixQueueFunction).toContain(
+        "on conflict on constraint content_release_targets_release_id_language_segment_id_topi_key do update",
+      );
     }
   });
 

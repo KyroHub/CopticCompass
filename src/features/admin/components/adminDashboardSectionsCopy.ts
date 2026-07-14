@@ -212,11 +212,26 @@ export const adminDashboardSectionsCopy = {
       deadLetterLabel: "Dead-letter",
       description:
         "This mode is meant for quiet operational checks. Failures and queued sends surface first, while successful delivery history sits below as a reference log.",
+      deliverySignalsDescription:
+        "Recent worker and owner-alert signals that confirm the notification paths are alive.",
+      deliverySignalsLabel: "Delivery signals",
       failedDescription: "Notifications that need investigation or a resend.",
       failedLabel: "Failed",
       failedNotifications: "Failed notifications",
       issuePlural: "delivery issues need attention",
       issueSingular: "delivery issue needs attention",
+      lastWorkerSuccessDescription:
+        "Most recent durable email job accepted by the background worker.",
+      lastWorkerSuccessLabel: "Worker accepted",
+      latestExerciseAlertDescription:
+        "Latest owner alert created for an exercise submission.",
+      latestExerciseAlertLabel: "Exercise alert",
+      latestSignupAlertDescription:
+        "Latest owner alert created for a profile signup.",
+      latestSignupAlertLabel: "Signup alert",
+      missingSignupAlertsDescription:
+        "Recent profile rows without a matching signup-alert notification event.",
+      missingSignupAlertsLabel: "Missing signup alerts",
       nextRetryLabel: "Next retry",
       noneLabel: "None",
       noAlerts: "No operational alerts are active.",
@@ -244,6 +259,11 @@ export const adminDashboardSectionsCopy = {
           detail:
             "One or more provider webhook events were captured but failed processing.",
           label: "Webhook processing failures",
+        },
+        "missing-signup-alerts": {
+          detail:
+            "Recent profile rows do not all have matching signup-alert notification events.",
+          label: "Signup alert coverage gap",
         },
         "recent-bounce-rate": {
           detail:
@@ -493,12 +513,27 @@ export const adminDashboardSectionsCopy = {
       deadLetterLabel: "Definitief mislukt",
       description:
         "Deze modus is bedoeld voor rustige operationele controles. Mislukkingen en wachtrij-items komen eerst; succesvolle leveringsgeschiedenis staat daaronder als referentielog.",
+      deliverySignalsDescription:
+        "Recente worker- en eigenaarsmeldingssignalen die bevestigen dat de meldingspaden actief zijn.",
+      deliverySignalsLabel: "Leveringssignalen",
       failedDescription:
         "Meldingen waarvoor onderzoek of opnieuw verzenden nodig is.",
       failedLabel: "Mislukt",
       failedNotifications: "Mislukte meldingen",
       issuePlural: "leveringsproblemen vragen aandacht",
       issueSingular: "leveringsprobleem vraagt aandacht",
+      lastWorkerSuccessDescription:
+        "Meest recente duurzame e-mailjob die door de achtergrondworker is geaccepteerd.",
+      lastWorkerSuccessLabel: "Worker geaccepteerd",
+      latestExerciseAlertDescription:
+        "Nieuwste eigenaarsmelding voor een oefeninzending.",
+      latestExerciseAlertLabel: "Oefenmelding",
+      latestSignupAlertDescription:
+        "Nieuwste eigenaarsmelding voor een profielaanmelding.",
+      latestSignupAlertLabel: "Aanmeldingsmelding",
+      missingSignupAlertsDescription:
+        "Recente profielrijen zonder overeenkomend aanmeldingsmeldingevent.",
+      missingSignupAlertsLabel: "Ontbrekende aanmeldingsmeldingen",
       nextRetryLabel: "Volgende retry",
       noneLabel: "Geen",
       noAlerts: "Er zijn geen actieve operationele waarschuwingen.",
@@ -528,6 +563,11 @@ export const adminDashboardSectionsCopy = {
           detail:
             "Een of meer providerwebhooks zijn vastgelegd maar konden niet worden verwerkt.",
           label: "Webhookverwerking mislukt",
+        },
+        "missing-signup-alerts": {
+          detail:
+            "Niet alle recente profielrijen hebben een overeenkomend aanmeldingsmeldingevent.",
+          label: "Kloof in aanmeldingsmeldingen",
         },
         "recent-bounce-rate": {
           detail:
