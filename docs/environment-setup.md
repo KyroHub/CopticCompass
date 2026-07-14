@@ -188,13 +188,16 @@ To enable signup alerts in a Supabase project:
    `NOTIFICATION_FROM_EMAIL`, and `SIGNUP_ALERT_WEBHOOK_TOKEN`. Generate the
    token with a command such as `openssl rand -base64 48`.
 2. Deploy the function: `supabase functions deploy profile-signup-alert --project-ref <your-project-ref>`
-3. Create a database webhook on `public.profiles` for `INSERT` events.
-4. Configure the webhook request with a valid Supabase JWT in the
-   `Authorization` bearer header for the Edge Function gateway, and the same
-   `SIGNUP_ALERT_WEBHOOK_TOKEN` in `X-Signup-Alert-Webhook-Token` for the
-   function's own authorization check. If the Supabase Edge Functions target
-   does not expose custom headers, use the HTTP request target pointed at
-   `/functions/v1/profile-signup-alert`.
+3. Add these **Database Vault** secrets for the migration-managed profile
+   trigger:
+   - `profile_signup_alert_project_url`: `https://<project-ref>.supabase.co`
+   - `profile_signup_alert_service_role_key`: current Supabase service-role key
+   - `profile_signup_alert_webhook_token`: same value as
+     `SIGNUP_ALERT_WEBHOOK_TOKEN`
+4. Push the signup trigger migration. It replaces dashboard-created database
+   webhooks on `public.profiles` with `public.invoke_profile_signup_alert()`, a
+   `pg_net` trigger function that reads credentials from Vault. This keeps
+   secret-bearing headers out of trigger definitions and schema diffs.
 
 The function rejects unauthenticated requests in code as well, so the webhook
 must send the configured signup-alert token header.
@@ -265,15 +268,38 @@ Every Resend Email API request includes a stable `Idempotency-Key` derived from
 the notification event and job IDs. The job payload is not rewritten between
 retries, so the same key is reused with the same body.
 
-For scheduled recovery, invoke `process-notification-email` every minute without
-a `jobId`; the worker will claim a bounded batch of eligible jobs. Supabase
-supports this with `pg_cron` plus `pg_net`, and recommends storing the project
-URL and auth token in Supabase Vault. Keep a valid Supabase JWT in the
+For scheduled recovery, invoke `process-notification-email` every five minutes
+without a `jobId`; the worker will claim a bounded batch of eligible jobs.
+Supabase supports this with `pg_cron` plus `pg_net`, and recommends storing the
+project URL and auth token in Supabase Vault. Keep a valid Supabase JWT in the
 `Authorization` bearer header for the Edge Function gateway, and send the
 dedicated `NOTIFICATION_WORKER_BEARER_TOKEN` in the
 `X-Notification-Worker-Token` header for the worker's own authorization check.
 The worker uses the service-role key internally only for service-role-only
 database RPCs.
+
+The scheduled recovery migrations create `public.invoke_notification_email_worker`
+and a `process-notification-email-recovery` cron job that runs every five
+minutes. Before relying on the schedule, add these **Database Vault** secrets
+(not Edge Function secrets):
+
+- `notification_worker_project_url`: `https://<project-ref>.supabase.co`
+- `notification_worker_service_role_key`: current Supabase service-role key
+- `notification_worker_bearer_token`: same value as
+  `NOTIFICATION_WORKER_BEARER_TOKEN`
+
+Manual verification:
+
+```sql
+select * from public.invoke_notification_email_worker(1);
+
+select jobid, jobname, schedule, active
+from cron.job
+where jobname = 'process-notification-email-recovery';
+```
+
+The function returns `missing_vault_secret` without making an HTTP request when
+one of the required Vault secrets is absent.
 
 Manual recovery is available from the admin notification card for failed and
 dead-letter jobs. Admins must enter a reason; the

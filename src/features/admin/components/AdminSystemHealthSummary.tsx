@@ -6,6 +6,7 @@ import type {
   AdminDashboardData,
   AdminWorkspaceOverview,
 } from "@/features/admin/lib/dashboardData";
+import { formatLocalizedNotificationEventStatus } from "@/features/notifications/lib/notifications";
 import { cx } from "@/lib/classes";
 import type { Language } from "@/types/i18n";
 
@@ -61,6 +62,53 @@ export function AdminSystemHealthSummary({
           timeStyle: "short",
         })
       : copy.noneLabel;
+  const formatNotificationSignal = (
+    timestamp: string | null,
+    status: typeof operations.latestSignupNotificationStatus,
+  ) => {
+    if (!timestamp) {
+      return copy.noneLabel;
+    }
+
+    const formattedTimestamp = formatOptionalTimestamp(timestamp);
+    return status
+      ? `${formatLocalizedNotificationEventStatus(
+          status,
+          language,
+        )} · ${formattedTimestamp}`
+      : formattedTimestamp;
+  };
+  const notificationHealthSignals = [
+    {
+      description: copy.lastWorkerSuccessDescription,
+      label: copy.lastWorkerSuccessLabel,
+      value: formatOptionalTimestamp(operations.latestAcceptedEmailJobAt),
+    },
+    {
+      description: copy.latestSignupAlertDescription,
+      label: copy.latestSignupAlertLabel,
+      value: formatNotificationSignal(
+        operations.latestSignupNotificationAt,
+        operations.latestSignupNotificationStatus,
+      ),
+    },
+    {
+      description: copy.latestExerciseAlertDescription,
+      label: copy.latestExerciseAlertLabel,
+      value: formatNotificationSignal(
+        operations.latestExerciseSubmissionNotificationAt,
+        operations.latestExerciseSubmissionNotificationStatus,
+      ),
+    },
+    {
+      description: copy.missingSignupAlertsDescription,
+      label: copy.missingSignupAlertsLabel,
+      value: formatAdminNumber(
+        operations.recentSignupMissingNotificationCount,
+        language,
+      ),
+    },
+  ];
 
   return (
     <section className={adminSummaryPanelClassName()}>
@@ -218,6 +266,33 @@ export function AdminSystemHealthSummary({
                   )}`
                 : ""}
             </p>
+          </div>
+
+          <div className="mt-4 rounded-lg border border-line bg-elevated px-3 py-3">
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
+              {copy.deliverySignalsLabel}
+            </p>
+            <p className="mt-1 text-xs leading-5 text-muted">
+              {copy.deliverySignalsDescription}
+            </p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-2">
+              {notificationHealthSignals.map((signal) => (
+                <div
+                  key={signal.label}
+                  className="rounded-lg border border-line bg-canvas px-3 py-2"
+                >
+                  <p className="text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-muted">
+                    {signal.label}
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-ink">
+                    {signal.value}
+                  </p>
+                  <p className="mt-1 text-xs leading-5 text-muted">
+                    {signal.description}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
 

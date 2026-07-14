@@ -215,6 +215,48 @@ export function formatLocalizedNotificationEventType(
 }
 
 /**
+ * Formats a stored notification event status into a short localized label.
+ */
+export function formatLocalizedNotificationEventStatus(
+  status: NotificationEventRow["status"],
+  language: Language = "en",
+) {
+  const englishLabels = {
+    accepted: "Accepted",
+    bounced: "Bounced",
+    complained: "Complaint",
+    dead_letter: "Dead letter",
+    delayed: "Delayed",
+    delivered: "Delivered",
+    failed: "Failed",
+    processing: "Processing",
+    queued: "Queued",
+    sent: "Sent",
+    suppressed: "Suppressed",
+  } satisfies Record<NotificationEventRow["status"], string>;
+
+  if (language === "en") {
+    return englishLabels[status];
+  }
+
+  return (
+    {
+      accepted: "Geaccepteerd",
+      bounced: "Teruggestuurd",
+      complained: "Spamklacht",
+      dead_letter: "Definitief mislukt",
+      delayed: "Vertraagd",
+      delivered: "Afgeleverd",
+      failed: "Mislukt",
+      processing: "Wordt verwerkt",
+      queued: "In wachtrij",
+      sent: "Verzonden",
+      suppressed: "Geblokkeerd",
+    } satisfies Record<NotificationEventRow["status"], string>
+  )[status];
+}
+
+/**
  * Formats a stored aggregate type into a short admin-facing label.
  */
 export function formatNotificationAggregateType(aggregateType: string) {

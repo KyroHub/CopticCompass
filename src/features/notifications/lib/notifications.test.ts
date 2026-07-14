@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   compareAdminNotificationPriority,
+  formatLocalizedNotificationEventStatus,
   formatNotificationAggregateType,
   formatNotificationEventType,
   getNotificationContextBadges,
@@ -78,6 +79,15 @@ describe("notification formatting helpers", () => {
     expect(formatNotificationAggregateType("profile")).toBe("Profile");
     expect(formatNotificationAggregateType("content_release")).toBe(
       "Content release",
+    );
+  });
+
+  it("formats localized notification statuses", () => {
+    expect(formatLocalizedNotificationEventStatus("accepted", "en")).toBe(
+      "Accepted",
+    );
+    expect(formatLocalizedNotificationEventStatus("dead_letter", "nl")).toBe(
+      "Definitief mislukt",
     );
   });
 
