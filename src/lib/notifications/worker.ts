@@ -22,7 +22,7 @@ type WakeNotificationEmailWorkerResult = InvokeSupabaseEdgeFunctionResult<{
 }>;
 
 /**
- * Wakes the queued notification email worker with its dedicated bearer token.
+ * Wakes the queued notification email worker with its dedicated auth token.
  * Returning a non-throwing envelope keeps durable job creation independent from
  * low-latency worker wake-up.
  */
@@ -46,7 +46,9 @@ export async function wakeNotificationEmailWorker(
       ...payload,
     } satisfies Json,
     {
-      bearerToken,
+      headers: {
+        "X-Notification-Worker-Token": bearerToken,
+      },
     },
   );
 }

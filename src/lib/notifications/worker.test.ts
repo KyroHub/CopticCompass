@@ -55,7 +55,11 @@ describe("notification worker wake-up helper", () => {
     expect(mocks.invokeSupabaseEdgeFunction).toHaveBeenCalledWith(
       "process-notification-email",
       { jobId: "job_123" },
-      { bearerToken: "notification-worker-token-1234567890" },
+      {
+        headers: {
+          "X-Notification-Worker-Token": "notification-worker-token-1234567890",
+        },
+      },
     );
   });
 });

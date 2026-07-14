@@ -17,6 +17,7 @@ export type InvokeSupabaseEdgeFunctionResult<T = unknown> =
 
 type InvokeSupabaseEdgeFunctionOptions = {
   bearerToken?: string;
+  headers?: Record<string, string>;
 };
 
 /**
@@ -49,6 +50,7 @@ export async function invokeSupabaseEdgeFunction<T = unknown>(
       headers: {
         Authorization: `Bearer ${bearerToken}`,
         "Content-Type": "application/json",
+        ...(options?.headers ?? {}),
       },
       body: JSON.stringify(payload ?? {}),
     });

@@ -33,7 +33,7 @@ function _hasNotificationEmailEnv() {
 }
 
 /**
- * Returns the shared bearer token used to wake the queued notification worker.
+ * Returns the shared auth token used to wake the queued notification worker.
  * The service-role key is still used for database access, but it is no longer
  * reused as this function-to-function caller secret.
  */

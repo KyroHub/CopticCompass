@@ -25,7 +25,7 @@ Additional notes:
 - `CONTACT_EMAIL` is the public contact inbox destination.
 - `OWNER_ALERT_EMAIL` is for operational alerts such as new signups or exercise submissions.
 - `NOTIFICATION_FROM_EMAIL` is the sender identity used by app-generated notification emails.
-- `NOTIFICATION_WORKER_BEARER_TOKEN` is a long random shared secret used by the Next.js app and Supabase Edge Function to wake queued notification delivery without reusing the service-role key as the caller token.
+- `NOTIFICATION_WORKER_BEARER_TOKEN` is a long random shared secret used by the Next.js app and Supabase Edge Function to wake queued notification delivery without comparing service-role keys.
 
 Important:
 
@@ -259,9 +259,12 @@ retries, so the same key is reused with the same body.
 For scheduled recovery, invoke `process-notification-email` every minute without
 a `jobId`; the worker will claim a bounded batch of eligible jobs. Supabase
 supports this with `pg_cron` plus `pg_net`, and recommends storing the project
-URL and auth token in Supabase Vault. Use the dedicated
-`NOTIFICATION_WORKER_BEARER_TOKEN` as the invocation bearer; the worker uses the
-service-role key internally only for service-role-only database RPCs.
+URL and auth token in Supabase Vault. Keep a valid Supabase JWT in the
+`Authorization` bearer header for the Edge Function gateway, and send the
+dedicated `NOTIFICATION_WORKER_BEARER_TOKEN` in the
+`X-Notification-Worker-Token` header for the worker's own authorization check.
+The worker uses the service-role key internally only for service-role-only
+database RPCs.
 
 Manual recovery is available from the admin notification card for failed and
 dead-letter jobs. Admins must enter a reason; the

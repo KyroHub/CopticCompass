@@ -4,7 +4,7 @@ import {
   getNotificationRetryDelaySeconds,
   type NotificationProviderFailure,
 } from "../_shared/notificationEmailPolicy.ts";
-import { hasExpectedBearerToken } from "../_shared/requestAuth.ts";
+import { hasExpectedHeaderValue } from "../_shared/requestAuth.ts";
 import { sendResendEmail } from "../_shared/resendEmail.ts";
 
 declare const Deno: {
@@ -22,6 +22,7 @@ declare const EdgeRuntime:
 
 const NOTIFICATION_JOB_BATCH_SIZE = 5;
 const NOTIFICATION_JOB_LEASE_SECONDS = 300;
+const NOTIFICATION_WORKER_TOKEN_HEADER = "x-notification-worker-token";
 const MIN_WORKER_BEARER_TOKEN_LENGTH = 32;
 
 type NotificationEmailJobStatus =
@@ -557,7 +558,13 @@ async function handleProcessNotificationEmailRequest(request: Request) {
     });
   }
 
-  if (!hasExpectedBearerToken(request, env.workerBearerToken)) {
+  if (
+    !hasExpectedHeaderValue(
+      request,
+      NOTIFICATION_WORKER_TOKEN_HEADER,
+      env.workerBearerToken,
+    )
+  ) {
     return jsonResponse(401, { error: "Unauthorized." });
   }
 
