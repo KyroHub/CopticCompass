@@ -6,6 +6,7 @@ import {
   redactEmailAddress,
 } from "../_shared/profileSignupAlert.ts";
 import { hasExpectedBearerToken } from "../_shared/requestAuth.ts";
+import { sendResendEmail } from "../_shared/resendEmail.ts";
 
 declare const Deno: {
   env: {
@@ -32,43 +33,6 @@ function jsonResponse(status: number, body: Record<string, unknown>) {
     },
     status,
   });
-}
-
-/**
- * Sends the owner-alert email through Resend and returns a non-throwing result
- * that callers can audit and persist.
- */
-async function sendResendEmail(options: {
-  from: string;
-  resendApiKey: string;
-  subject: string;
-  text: string;
-  to: string;
-}) {
-  const response = await fetch("https://api.resend.com/emails", {
-    body: JSON.stringify({
-      from: options.from,
-      subject: options.subject,
-      text: options.text,
-      to: [options.to],
-    }),
-    headers: {
-      Authorization: `Bearer ${options.resendApiKey}`,
-      "Content-Type": "application/json",
-    },
-    method: "POST",
-  });
-
-  if (response.ok) {
-    const data = (await response.json()) as { id?: string };
-    return { success: true as const, id: data.id ?? null };
-  }
-
-  const errorText = await response.text();
-  return {
-    success: false as const,
-    error: errorText || "Failed to send email via Resend.",
-  };
 }
 
 /**
@@ -311,11 +275,11 @@ async function deliverSignupOwnerAlert(options: {
   profileId: string;
 }) {
   const emailResult = await sendResendEmail({
+    apiKey: options.env.resendApiKey,
     from: options.env.notificationFromEmail,
-    resendApiKey: options.env.resendApiKey,
     subject: options.ownerAlert.subject,
     text: options.ownerAlert.text,
-    to: options.env.ownerAlertEmail,
+    to: [options.env.ownerAlertEmail],
   });
 
   if (!emailResult.success) {

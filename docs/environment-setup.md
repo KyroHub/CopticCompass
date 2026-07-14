@@ -379,8 +379,10 @@ booleans, and Broadcast sends require the matching Topic ID.
 
 Email and release copy should identify the product as `Coptic Compass` with the
 descriptor `Digital Coptology Platform`. The shared runtime constants live in
-`src/lib/communications/mailBrand.ts`; update that file first when the public
-communication identity changes.
+`supabase/functions/_shared/mailRendering.ts`, with
+`src/lib/communications/mailBrand.ts` kept as the Next.js compatibility
+re-export; update the shared module first when the public communication
+identity changes.
 
 The branded email surfaces currently include:
 
@@ -393,6 +395,96 @@ The branded email surfaces currently include:
 Keep `NOTIFICATION_FROM_EMAIL` configured with a verified sender identity in
 Resend. If the sender display name is managed in Resend rather than the env var,
 it should still read as Coptic Compass in delivered mail clients.
+
+Supabase Edge Functions that call the direct Resend Email API should use
+`supabase/functions/_shared/resendEmail.ts` for payload construction,
+idempotency headers, reply-to handling, tags, and non-throwing error results.
+Resend Broadcasts remain separate because release sends create, persist, and
+send provider Broadcast drafts.
+
+### Email Tracking Policy
+
+The application does not intentionally enable email open or click tracking in
+code. Prefer provider acceptance, delivery, delay, bounce, complaint,
+unsubscribe, and suppression events for operational observability. Do not use
+engagement data to silently expand consent, add Topics, or widen audience
+membership. If tracking is enabled in a provider dashboard later, update the
+privacy policy and this guide before rollout.
+
+### Mailing Retention
+
+The database function `run_mailing_retention` reports or applies cleanup for
+short-lived mailing tokens and detailed delivery payloads. It defaults to
+dry-run mode and is executable only by trusted service-role/database-owner
+contexts.
+
+Preview the current impact before enabling cleanup:
+
+```sql
+select *
+from public.run_mailing_retention(true);
+```
+
+Apply the cleanup only after the preview matches expectations:
+
+```sql
+select *
+from public.run_mailing_retention(false);
+```
+
+Current retention windows:
+
+- expired, unconfirmed double opt-in requests: delete after 30 days
+- expired preference-management links: delete after 30 days
+- raw provider webhook payloads: redact after 90 days
+- terminal notification-event payloads: redact after 90 days
+- successful queued email HTML/text bodies: redact after 90 days
+
+The function preserves append-only consent evidence, active preferences,
+suppression records, failed/dead-letter job bodies, sanitized delivery states,
+and aggregate counts. Keep failed or dead-letter records intact until an admin
+has completed recovery or intentionally abandoned the job.
+
+For scheduled execution, create the job only after at least one successful
+manual dry run. Supabase projects can use `pg_cron`; keep the job body limited
+to the same database function so manual and scheduled cleanup cannot drift:
+
+```sql
+select cron.schedule(
+  'mailing-retention-daily',
+  '17 2 * * *',
+  $$select public.run_mailing_retention(false);$$
+);
+```
+
+### DMARC Rollout
+
+As of 2026-07-14, the public root-domain DMARC record resolves as:
+
+```txt
+v=DMARC1; p=none; rua=mailto:dmarc@kyrilloswannes.com
+```
+
+Treat that value as the immediate rollback record before each enforcement step.
+Before changing DNS, confirm every legitimate mail source aligns SPF or DKIM
+with the visible From domain. At minimum, verify Resend still marks
+`updates.copticcompass.com` as verified, the DKIM selector
+`resend._domainkey.updates.copticcompass.com` resolves, and no other service is
+sending as `@copticcompass.com` without alignment.
+
+Recommended staged rollout:
+
+1. Keep `p=none` while collecting at least two normal sending cycles of DMARC
+   aggregate reports.
+2. Move to `p=quarantine; pct=25` after aligned traffic is confirmed.
+3. Increase to full `p=quarantine` for at least two normal sending cycles.
+4. Move to `p=reject` only after aggregate reports show no legitimate
+   misaligned senders.
+
+Do not combine a DMARC enforcement change with a sender-domain, From-address,
+or Resend-domain reconfiguration. If legitimate traffic starts failing, restore
+the rollback record above, wait for DNS propagation, and re-check provider
+alignment before retrying enforcement.
 
 ## CI/CD (GitHub Actions + Vercel)
 

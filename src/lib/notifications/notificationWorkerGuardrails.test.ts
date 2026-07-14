@@ -12,10 +12,13 @@ describe("notification email worker guardrails", () => {
     const worker = readProjectFile(
       "supabase/functions/process-notification-email/index.ts",
     );
+    const resendEmailAdapter = readProjectFile(
+      "supabase/functions/_shared/resendEmail.ts",
+    );
 
     expect(worker).toContain("rpc/claim_notification_email_jobs");
     expect(worker).toContain("NOTIFICATION_JOB_LEASE_SECONDS = 300");
-    expect(worker).toContain("Idempotency-Key");
+    expect(resendEmailAdapter).toContain("Idempotency-Key");
     expect(worker).toContain("buildNotificationEmailIdempotencyKey");
     expect(worker).toContain("retry_scheduled");
     expect(worker).toContain("dead_letter");

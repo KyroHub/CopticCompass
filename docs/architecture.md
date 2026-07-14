@@ -271,7 +271,12 @@ infrastructure:
 - shared notification dispatch, queueing, and generic branded fallback HTML live
   under `src/lib/notifications`
 - product communication constants and email color tokens live in
-  `src/lib/communications/mailBrand.ts`
+  `supabase/functions/_shared/mailRendering.ts`;
+  `src/lib/communications/mailBrand.ts` re-exports that runtime-neutral module
+  for Next.js callers
+- direct Resend Email API calls from Supabase Edge Functions go through
+  `supabase/functions/_shared/resendEmail.ts`; Broadcast delivery keeps its
+  separate adapter because it uses a draft-and-send lifecycle
 
 The database keeps mailing state separated by responsibility:
 
@@ -350,6 +355,24 @@ expired leases, retry timing, failed webhooks, active suppressions, stale
 releases, and delivery feedback counts. It derives visible operational alerts
 from those metrics instead of depending on the same email queue when the queue
 itself may be unhealthy.
+
+Mail templates should use the shared rendering module for brand constants,
+footer lines, unsubscribe copy, and HTML escaping. Transactional templates must
+not inherit marketing unsubscribe language unless their classification requires
+it. The current tracking posture favors delivery, bounce, complaint,
+unsubscribe, and suppression events over open/click engagement tracking.
+
+Mailing retention is centralized in the service-role-only
+`run_mailing_retention` database function. It defaults to dry-run mode, deletes
+only short-lived expired token rows, and redacts detailed provider/job payloads
+after the documented retention window. Consent evidence, active preference
+state, suppression records, aggregate delivery state, and unresolved recovery
+records remain intact.
+
+DMARC enforcement is an operational rollout, not an application toggle. Keep
+the verified sender domain, Resend DKIM alignment, and aggregate reports
+healthy before moving beyond monitoring-only policy. Do not pair DMARC
+enforcement with sender-domain or From-address changes in the same release.
 
 Public-facing documentation is part of the product surface. Keep `README.md`,
 the docs in `docs/`, and README screenshots in `public/readme` aligned with the

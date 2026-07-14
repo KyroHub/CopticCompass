@@ -1,5 +1,5 @@
 import "server-only";
-import { mailBrand, mailBrandColors } from "@/lib/communications/mailBrand";
+import { buildBrandedTransactionalEmailHtml } from "@/lib/communications/mailBrand";
 import { getNotificationEmailEnv } from "@/lib/notifications/config";
 import {
   sendNotificationEmail,
@@ -89,48 +89,6 @@ function redactRecipients(value: EmailRecipients) {
   return normalizeRecipients(value)
     .map((recipient) => redactEmailAddress(recipient) ?? "[redacted email]")
     .join(", ");
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
-function buildBrandedNotificationEmailHtml(options: {
-  subject: string;
-  text: string;
-}) {
-  const colors = mailBrandColors;
-  const body = escapeHtml(options.text.trim()).replace(/\n/g, "<br />");
-
-  return `<!doctype html>
-<html>
-  <body style="margin:0;background:${colors.paper};padding:24px 12px;font-family:Aptos,Segoe UI,Helvetica Neue,Arial,sans-serif;color:${colors.ink};">
-    <div style="max-width:640px;margin:0 auto;background:${colors.surface};border:1px solid ${colors.line};border-radius:10px;overflow:hidden;">
-      <div style="height:6px;background:${colors.gold};"></div>
-      <div style="padding:28px 32px;border-bottom:1px solid ${colors.line};">
-        <div style="margin-bottom:14px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:${colors.goldStrong};font-weight:700;">${escapeHtml(
-          mailBrand.brandName,
-        )} • ${escapeHtml(mailBrand.descriptor)}</div>
-        <h1 style="margin:0;font-size:24px;line-height:1.3;color:${colors.ink};">${escapeHtml(
-          options.subject,
-        )}</h1>
-      </div>
-      <div style="padding:32px;">
-        <p style="margin:0;font-size:15px;line-height:1.7;color:${colors.ink};">${body}</p>
-      </div>
-      <div style="padding:24px 32px;border-top:1px solid ${colors.line};background:${colors.elevated};font-size:13px;line-height:1.7;color:${colors.muted};">
-        <div>${escapeHtml(mailBrand.brandName)}</div>
-        <div>${escapeHtml(mailBrand.descriptor)}</div>
-        <div style="margin-top:8px;"><a href="${mailBrand.liveUrl}" style="color:${colors.coptic};text-decoration:none;">${mailBrand.liveUrl}</a></div>
-      </div>
-    </div>
-  </body>
-</html>`;
 }
 
 function isJsonRecord(value: Json | undefined): value is Record<string, Json> {
@@ -316,7 +274,7 @@ async function renderNotificationEmailHtml(options: {
     return renderToStaticMarkup(options.react);
   }
 
-  return buildBrandedNotificationEmailHtml({
+  return buildBrandedTransactionalEmailHtml({
     subject: options.subject,
     text: options.text,
   });

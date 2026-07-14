@@ -36,7 +36,7 @@ const PRIVACY_DOCUMENTS = {
       },
       {
         title: "5. Delivery Events and Suppression",
-        body: "We process provider delivery events to diagnose failures, prevent repeated sends to invalid addresses, honor unsubscribes, and suppress marketing after hard bounces or spam complaints. Suppression records override ordinary topic settings and are kept as needed to respect the request and protect sending integrity.",
+        body: "We process provider delivery events to diagnose failures, prevent repeated sends to invalid addresses, honor unsubscribes, and suppress marketing after hard bounces or spam complaints. We prefer delivery, bounce, complaint, and unsubscribe observability over open-rate optimization, and we do not use email open or click engagement data to silently expand consent or audience membership. Suppression records override ordinary topic settings and are kept as needed to respect the request and protect sending integrity.",
       },
       {
         title: "6. Retention",
@@ -79,7 +79,7 @@ const PRIVACY_DOCUMENTS = {
       },
       {
         title: "5. Bezorggebeurtenissen en onderdrukking",
-        body: "We verwerken bezorggebeurtenissen van de provider om fouten te onderzoeken, herhaalde verzending naar ongeldige adressen te voorkomen, uitschrijvingen te respecteren en marketing te blokkeren na harde bounces of spamklachten. Onderdrukkingsrecords hebben voorrang op gewone onderwerpkeuzes en worden bewaard zolang dat nodig is om het verzoek te respecteren en betrouwbare verzending te beschermen.",
+        body: "We verwerken bezorggebeurtenissen van de provider om fouten te onderzoeken, herhaalde verzending naar ongeldige adressen te voorkomen, uitschrijvingen te respecteren en marketing te blokkeren na harde bounces of spamklachten. We geven de voorkeur aan observatie van bezorging, bounces, klachten en uitschrijvingen boven optimalisatie van openpercentages, en gebruiken open- of klikbetrokkenheid uit e-mail niet om toestemming of publiekslidmaatschap stilzwijgend uit te breiden. Onderdrukkingsrecords hebben voorrang op gewone onderwerpkeuzes en worden bewaard zolang dat nodig is om het verzoek te respecteren en betrouwbare verzending te beschermen.",
       },
       {
         title: "6. Bewaartermijnen",

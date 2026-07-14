@@ -27,6 +27,9 @@ describe("Resend provider integration guardrails", () => {
   });
 
   it("requires Broadcast Topics and provider unsubscribe links for releases", () => {
+    const sharedMailRendering = readProjectFile(
+      "supabase/functions/_shared/mailRendering.ts",
+    );
     const sharedRelease = readProjectFile(
       "supabase/functions/_shared/contentReleaseDelivery.ts",
     );
@@ -37,7 +40,11 @@ describe("Resend provider integration guardrails", () => {
       "supabase/functions/process-content-release/supabaseRest.ts",
     );
 
-    expect(sharedRelease).toContain("{{{RESEND_UNSUBSCRIBE_URL}}}");
+    expect(sharedMailRendering).toContain("{{{RESEND_UNSUBSCRIBE_URL}}}");
+    expect(sharedRelease).toContain("./mailRendering.ts");
+    expect(sharedRelease).toContain("getMarketingUnsubscribeLines");
+    expect(sharedRelease).toContain("resendUnsubscribeUrlPlaceholder");
+    expect(sharedRelease).not.toContain("const MAIL_BRAND");
     expect(broadcastWorker).toContain("segment_id: options.segmentId");
     expect(broadcastWorker).toContain("topic_id: options.topicId");
     expect(broadcastWorker).toContain("send: false");
@@ -64,6 +71,27 @@ describe("Resend provider integration guardrails", () => {
     expect(broadcastWorker).not.toContain("https://api.resend.com/emails");
   });
 
+  it("keeps direct Resend Email API calls behind the shared Edge adapter", () => {
+    const resendEmailAdapter = readProjectFile(
+      "supabase/functions/_shared/resendEmail.ts",
+    );
+    const notificationWorker = readProjectFile(
+      "supabase/functions/process-notification-email/index.ts",
+    );
+    const signupAlertWorker = readProjectFile(
+      "supabase/functions/profile-signup-alert/index.ts",
+    );
+
+    expect(resendEmailAdapter).toContain("https://api.resend.com/emails");
+    expect(resendEmailAdapter).toContain('"Idempotency-Key"');
+    expect(resendEmailAdapter).toContain("reply_to");
+    expect(resendEmailAdapter).toContain("tags");
+    expect(notificationWorker).toContain("../_shared/resendEmail.ts");
+    expect(signupAlertWorker).toContain("../_shared/resendEmail.ts");
+    expect(notificationWorker).not.toContain("https://api.resend.com/emails");
+    expect(signupAlertWorker).not.toContain("https://api.resend.com/emails");
+  });
+
   it("keeps signed webhook capture idempotent and capture-only by default", () => {
     const webhookHandler = readProjectFile(
       "src/features/communications/lib/server/resendWebhooks.ts",
@@ -77,5 +105,33 @@ describe("Resend provider integration guardrails", () => {
     expect(webhookHandler).toContain("duplicate: true");
     expect(webhookHandler).toContain("apply_audience_preferences");
     expect(webhookHandler).toContain("audience_suppressions");
+  });
+
+  it("keeps mailing retention dry-run first and away from consent evidence", () => {
+    const retentionMigration = readProjectFile(
+      "supabase/migrations/20260714120000_mailing_retention_jobs.sql",
+    );
+
+    expect(retentionMigration).toContain("p_dry_run boolean default true");
+    expect(retentionMigration).toContain(
+      "revoke all on function public.run_mailing_retention",
+    );
+    expect(retentionMigration).toContain("from public, anon, authenticated");
+    expect(retentionMigration).toContain("to service_role");
+    expect(retentionMigration).toContain("confirmed_at is null");
+    expect(retentionMigration).toContain("redact_raw_payload");
+    expect(retentionMigration).toContain("redact_successful_bodies");
+    expect(retentionMigration).not.toMatch(
+      /delete\s+from\s+public\.audience_consent_events/i,
+    );
+    expect(retentionMigration).not.toMatch(
+      /delete\s+from\s+public\.audience_suppressions/i,
+    );
+    expect(retentionMigration).not.toMatch(
+      /update\s+public\.audience_consent_events/i,
+    );
+    expect(retentionMigration).not.toMatch(
+      /update\s+public\.audience_suppressions/i,
+    );
   });
 });

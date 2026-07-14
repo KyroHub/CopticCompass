@@ -5,6 +5,7 @@ import {
   type NotificationProviderFailure,
 } from "../_shared/notificationEmailPolicy.ts";
 import { hasExpectedBearerToken } from "../_shared/requestAuth.ts";
+import { sendResendEmail } from "../_shared/resendEmail.ts";
 
 declare const Deno: {
   env: {
@@ -59,7 +60,7 @@ type ProcessNotificationEmailEnv = {
   supabaseUrl: string;
 };
 
-type SendResendEmailResult =
+type SendNotificationEmailResult =
   | {
       id: string | null;
       success: true;
@@ -108,31 +109,7 @@ function buildSupabaseRestHeaders(serviceRoleKey: string) {
   };
 }
 
-function buildResendEmailBody(options: {
-  from: string;
-  html?: string | null;
-  subject: string;
-  text: string;
-  to: string[];
-  bcc?: string[];
-  cc?: string[];
-  replyTo?: string[];
-}) {
-  return {
-    ...(options.bcc && options.bcc.length > 0 ? { bcc: options.bcc } : {}),
-    ...(options.cc && options.cc.length > 0 ? { cc: options.cc } : {}),
-    ...(options.html ? { html: options.html } : {}),
-    ...(options.replyTo && options.replyTo.length > 0
-      ? { reply_to: options.replyTo }
-      : {}),
-    from: options.from,
-    subject: options.subject,
-    text: options.text,
-    to: options.to,
-  };
-}
-
-async function sendResendEmail(options: {
+async function sendNotificationEmailThroughResend(options: {
   from: string;
   html?: string | null;
   idempotencyKey: string;
@@ -143,43 +120,31 @@ async function sendResendEmail(options: {
   bcc?: string[];
   cc?: string[];
   replyTo?: string[];
-}): Promise<SendResendEmailResult> {
-  try {
-    const response = await fetch("https://api.resend.com/emails", {
-      body: JSON.stringify(buildResendEmailBody(options)),
-      headers: {
-        Authorization: `Bearer ${options.resendApiKey}`,
-        "Content-Type": "application/json",
-        "Idempotency-Key": options.idempotencyKey,
-      },
-      method: "POST",
-    });
+}): Promise<SendNotificationEmailResult> {
+  const result = await sendResendEmail({
+    apiKey: options.resendApiKey,
+    bcc: options.bcc,
+    cc: options.cc,
+    from: options.from,
+    html: options.html,
+    idempotencyKey: options.idempotencyKey,
+    replyTo: options.replyTo,
+    subject: options.subject,
+    text: options.text,
+    to: options.to,
+  });
 
-    if (response.ok) {
-      const data = (await response.json()) as { id?: string };
-      return { success: true as const, id: data.id ?? null };
-    }
-
-    const errorText = await response.text();
-    return {
-      ...classifyNotificationProviderFailure({
-        errorText,
-        status: response.status,
-      }),
-      success: false as const,
-    };
-  } catch (error) {
-    return {
-      ...classifyNotificationProviderFailure({
-        errorText:
-          error instanceof Error
-            ? error.message
-            : "Network error while sending notification email.",
-        status: null,
-      }),
-      success: false as const,
-    };
+  if (result.success) {
+    return result;
   }
+
+  return {
+    ...classifyNotificationProviderFailure({
+      errorText: result.error,
+      status: result.status,
+    }),
+    success: false as const,
+  };
 }
 
 async function claimNotificationEmailJobs(options: {
@@ -432,7 +397,7 @@ async function processClaimedNotificationEmailJob(options: {
   env: ProcessNotificationEmailEnv;
   job: NotificationEmailJobRecord;
 }) {
-  const emailResult = await sendResendEmail({
+  const emailResult = await sendNotificationEmailThroughResend({
     ...(options.job.bcc_recipients.length > 0
       ? { bcc: options.job.bcc_recipients }
       : {}),

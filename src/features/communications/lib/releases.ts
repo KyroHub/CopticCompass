@@ -1,4 +1,5 @@
 import {
+  escapeMailHtml,
   getMailFooterLines,
   mailBrand,
   mailBrandColors,
@@ -477,10 +478,10 @@ export function buildContentReleaseEmailHtml(options: {
   language: Language;
   subject: string;
 }) {
-  const intro = escapeHtml(options.body.trim()).replace(/\n/g, "<br />");
+  const intro = escapeMailHtml(options.body.trim()).replace(/\n/g, "<br />");
   const itemsHeading =
     options.language === "nl" ? "In deze release" : "In this release";
-  const footer = getMailFooterLines(options.language).map(escapeHtml);
+  const footer = getMailFooterLines(options.language).map(escapeMailHtml);
   const introLabel =
     options.language === "nl"
       ? "Nieuwe updates van Coptic Compass"
@@ -491,10 +492,10 @@ export function buildContentReleaseEmailHtml(options: {
     .map(
       (item) => `
         <li style="margin:0 0 14px;">
-          <a href="${escapeHtml(item.url_snapshot)}" style="color:${colors.coptic};text-decoration:none;font-weight:700;">
-            ${escapeHtml(item.title_snapshot)}
+          <a href="${escapeMailHtml(item.url_snapshot)}" style="color:${colors.coptic};text-decoration:none;font-weight:700;">
+            ${escapeMailHtml(item.title_snapshot)}
           </a>
-          <div style="margin-top:4px;font-size:13px;color:${colors.muted};">${escapeHtml(item.url_snapshot)}</div>
+          <div style="margin-top:4px;font-size:13px;color:${colors.muted};">${escapeMailHtml(item.url_snapshot)}</div>
         </li>`,
     )
     .join("");
@@ -505,19 +506,19 @@ export function buildContentReleaseEmailHtml(options: {
     <div style="max-width:640px;margin:0 auto;background:${colors.surface};border:1px solid ${colors.line};border-radius:10px;overflow:hidden;">
       <div style="height:6px;background:${colors.gold};"></div>
       <div style="padding:28px 32px;background:${colors.surface};border-bottom:1px solid ${colors.line};">
-        <div style="margin-bottom:14px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:${colors.goldStrong};font-weight:700;">${escapeHtml(
+        <div style="margin-bottom:14px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:${colors.goldStrong};font-weight:700;">${escapeMailHtml(
           mailBrand.brandName,
-        )} • ${escapeHtml(mailBrand.descriptor)}</div>
-        <div style="font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:${colors.coptic};font-weight:700;">${escapeHtml(
+        )} • ${escapeMailHtml(mailBrand.descriptor)}</div>
+        <div style="font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:${colors.coptic};font-weight:700;">${escapeMailHtml(
           introLabel,
         )}</div>
-        <h1 style="margin:10px 0 0;font-size:28px;line-height:1.2;color:${colors.ink};">${escapeHtml(
+        <h1 style="margin:10px 0 0;font-size:28px;line-height:1.2;color:${colors.ink};">${escapeMailHtml(
           options.subject,
         )}</h1>
       </div>
       <div style="padding:32px;">
         <p style="margin:0 0 20px;font-size:16px;line-height:1.7;color:${colors.ink};">${intro}</p>
-        <h2 style="margin:0 0 14px;font-size:18px;line-height:1.4;color:${colors.ink};">${escapeHtml(
+        <h2 style="margin:0 0 14px;font-size:18px;line-height:1.4;color:${colors.ink};">${escapeMailHtml(
           itemsHeading,
         )}</h2>
         <ul style="margin:0;padding-left:20px;">${itemsHtml}</ul>
@@ -596,13 +597,4 @@ function getBroadcastSummaryEntries(summary: Record<string, Json | undefined>) {
     .filter((entry) => entry !== null);
 
   return entries.length > 0 ? entries : undefined;
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
 }
