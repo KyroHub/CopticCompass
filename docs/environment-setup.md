@@ -190,23 +190,35 @@ must send the configured bearer auth header.
 
 ### Background Release Delivery
 
-This repo includes a Supabase Edge Function at `supabase/functions/process-content-release` for background delivery of approved content releases. When Resend segment configuration is available, the worker hands release sends off to provider-native broadcasts. If that configuration is missing, it falls back to direct per-recipient delivery from the worker.
+This repo includes a Supabase Edge Function at `supabase/functions/process-content-release` for background delivery of approved content releases. Marketing releases are delivered only through provider-native Resend Broadcasts with Segments and Topics. Queueing writes durable `content_release_targets` first, so retries can skip accepted targets and resume failed targets without recreating provider Broadcasts. If the required Broadcast configuration is missing, sending fails closed with an actionable admin error; the worker does not fall back to direct per-recipient Email API sends.
 
 To enable background release sends in a Supabase project:
 
-1. Set function secrets for `NOTIFICATION_FROM_EMAIL` and at least one Resend key: `RESEND_API_KEY` or `RESEND_API_KEY_FULL_ACCESS`.
+1. Set function secrets for `NOTIFICATION_FROM_EMAIL`,
+   `RESEND_API_KEY_FULL_ACCESS`, the relevant Resend Segment IDs, and the
+   matching Resend Topic IDs.
 2. Deploy the function: `supabase functions deploy process-content-release --project-ref <your-project-ref>`
-3. Make sure the latest release delivery migrations have been pushed so `content_releases` includes the queue metadata columns.
+3. Make sure the latest release delivery migrations have been pushed so
+   `content_releases` includes the queue metadata columns and
+   `content_release_targets` exists.
 
 The worker validates its bearer token in code, so callers must send the
 configured bearer auth header.
+
+Each release target follows a two-step Resend lifecycle: create a draft
+Broadcast, persist its provider ID, then send the saved Broadcast. A fully
+successful run marks the release `sent`; a mixed result marks it
+`partially_failed` and leaves accepted targets immutable for the next admin
+retry.
 
 ### Queued Notification Email Delivery
 
 This repo includes a Supabase Edge Function at
 `supabase/functions/process-notification-email` for generic notification emails.
-The Next.js app inserts jobs into `public.notification_email_jobs` and invokes
-the worker with the queued `jobId`.
+The Next.js app calls `enqueue_notification_email_job` so the logical
+`notification_events` row and durable `notification_email_jobs` row are created
+or reused atomically. Direct function invocation after enqueue is only a
+low-latency wake-up; the durable job row is the source of truth.
 
 To enable queued notification email sends in a Supabase project:
 
@@ -214,7 +226,112 @@ To enable queued notification email sends in a Supabase project:
    `RESEND_API_KEY`, and `NOTIFICATION_FROM_EMAIL`.
 2. Deploy the function: `supabase functions deploy process-notification-email --project-ref <your-project-ref>`
 3. Make sure the latest notification email migrations have been pushed so
-   `public.notification_email_jobs` exists.
+   `public.notification_email_jobs`, `enqueue_notification_email_job`,
+   `claim_notification_email_jobs`, and `retry_notification_email_job` exist.
+
+The worker claims eligible jobs through the service-role-only
+`claim_notification_email_jobs` database function. A claim sets `processing`,
+increments `attempt_count`, and writes a five-minute lease. Queued,
+retry-scheduled, and expired-lease jobs are all claimable, which lets the
+worker recover after crashes. Do not grant this claim function to `anon` or
+`authenticated`; it leases jobs and is intended only for trusted background
+workers.
+
+Provider retry policy:
+
+- retryable: network errors, HTTP 408, 429, most 5xx responses, and Resend
+  `409 concurrent_idempotent_requests`
+- permanent: malformed requests, invalid sender/recipient, unauthorized keys,
+  and Resend `409 invalid_idempotent_request`
+- schedule: roughly 1 minute, 5 minutes, 30 minutes, 2 hours, and 12 hours,
+  with deterministic jitter
+
+Every Resend Email API request includes a stable `Idempotency-Key` derived from
+the notification event and job IDs. The job payload is not rewritten between
+retries, so the same key is reused with the same body.
+
+For scheduled recovery, invoke `process-notification-email` every minute without
+a `jobId`; the worker will claim a bounded batch of eligible jobs. Supabase
+supports this with `pg_cron` plus `pg_net`, and recommends storing the project
+URL and auth token in Supabase Vault. Use a service-role bearer token for this
+worker because it calls the service-role-only claim RPC.
+
+Manual recovery is available from the admin notification card for failed and
+dead-letter jobs. Admins must enter a reason; the
+`retry_notification_email_job` function writes
+`notification_email_job_audit_events`, resets the job to `queued`, and blocks
+retry for actively suppressed recipients unless the event payload is classified
+as required transactional mail.
+
+The same migration creates three RLS-protected audit tables:
+
+- `audience_consent_events` for append-only topic consent evidence
+- `audience_suppressions` for restrictions that override marketing preferences
+- `provider_webhook_events` for idempotent provider webhook intake
+
+Only admins receive read policies. Writes are reserved for trusted service-role
+workflows so browser clients cannot manufacture consent, suppression, or
+provider-delivery evidence.
+
+The audience-preference management migration adds the service-role-only
+`apply_audience_preferences`, `confirm_audience_opt_in_request`, and
+`apply_audience_preference_request` functions. It also adds
+`audience_preference_requests` for hashed, 30-minute, single-use links. Keep all
+three functions unavailable to `anon` and `authenticated`; the Next.js server
+actions enforce explicit POSTs and IP plus email-hash rate limits before issuing
+preference links.
+
+The localized privacy policy now documents the implemented contact and mailing
+data flow, processors, consent handling, delivery events, and proposed retention
+periods. The site owner or qualified legal reviewer should approve that wording
+and the retention periods before the related application release reaches
+production.
+
+### Resend Webhook Capture
+
+The Next.js route `POST /api/resend/webhook` receives Resend provider events.
+Configure the webhook in Resend with these event types:
+
+- `contact.updated`
+- `email.sent`
+- `email.delivered`
+- `email.delivery_delayed`
+- `email.failed`
+- `email.bounced`
+- `email.complained`
+- `email.suppressed`
+
+Set `RESEND_WEBHOOK_SECRET` to the Svix signing secret Resend gives you. The
+route reads the raw body and verifies the `svix-id`, `svix-timestamp`, and
+`svix-signature` headers before storing the event in
+`provider_webhook_events`.
+
+Roll out processing in two steps:
+
+1. Leave `RESEND_WEBHOOK_PROCESSING_ENABLED=false` to capture verified events
+   without side effects.
+2. After captured payloads match expectations, set
+   `RESEND_WEBHOOK_PROCESSING_ENABLED=true`.
+
+When processing is enabled, provider events may only make local state more
+restrictive: global unsubscribes clear all marketing topics and create an active
+suppression, Topic opt-outs clear only the matching local topic, and bounces,
+complaints, or suppressed events create active suppressions. Provider webhooks
+never opt a local topic in.
+
+Signed email lifecycle events also update stored delivery state. Events with an
+`email_id` are matched to transactional notification deliveries, while events
+with a Resend `broadcast_id` are matched to `content_release_targets`. Broadcast
+feedback stores provider acceptance, delay, delivery, bounce, complaint, and
+suppression separately, keeps only sanitized diagnostic codes, and applies
+status precedence so a late delayed webhook cannot downgrade a delivered or
+terminal target.
+
+The admin system workspace surfaces operational alerts from bounded database
+metrics for stale email jobs, expired leases, dead-letter jobs, failed webhooks,
+complaints, stale content releases, audience sync drift, and elevated recent
+bounces. Treat those dashboard alerts as the first fallback when email delivery
+itself is degraded.
 
 ### Migration Rollout
 
@@ -239,24 +356,33 @@ before important production rollouts when practical.
 
 ### Resend Audience Sync
 
-Audience opt-ins can be mirrored into Resend Contacts and Segments so provider-native broadcasts are possible.
+Audience opt-ins can be mirrored into Resend Contacts, Segments, and Topics so provider-native broadcasts are possible.
 Set these app environment variables where your Next.js server runs:
 
 - `RESEND_API_KEY_FULL_ACCESS`
 - `RESEND_LESSONS_SEGMENT_ID`
 - `RESEND_BOOKS_SEGMENT_ID`
 - `RESEND_GENERAL_SEGMENT_ID`
+- `RESEND_LESSONS_TOPIC_ID`
+- `RESEND_BOOKS_TOPIC_ID`
+- `RESEND_GENERAL_TOPIC_ID`
 - Optional localized segment ids:
   `RESEND_LESSONS_EN_SEGMENT_ID`, `RESEND_LESSONS_NL_SEGMENT_ID`,
   `RESEND_BOOKS_EN_SEGMENT_ID`, `RESEND_BOOKS_NL_SEGMENT_ID`,
   `RESEND_GENERAL_EN_SEGMENT_ID`, and `RESEND_GENERAL_NL_SEGMENT_ID`
 
+Segments are targeting groups only. Do not treat Segment membership as consent
+evidence. Topic subscriptions are synchronized explicitly from Supabase topic
+booleans, and Broadcast sends require the matching Topic ID.
+
 ### Communication Branding
 
 Email and release copy should identify the product as `Coptic Compass` with the
 descriptor `Digital Coptology Platform`. The shared runtime constants live in
-`src/lib/communications/mailBrand.ts`; update that file first when the public
-communication identity changes.
+`supabase/functions/_shared/mailRendering.ts`, with
+`src/lib/communications/mailBrand.ts` kept as the Next.js compatibility
+re-export; update the shared module first when the public communication
+identity changes.
 
 The branded email surfaces currently include:
 
@@ -269,6 +395,96 @@ The branded email surfaces currently include:
 Keep `NOTIFICATION_FROM_EMAIL` configured with a verified sender identity in
 Resend. If the sender display name is managed in Resend rather than the env var,
 it should still read as Coptic Compass in delivered mail clients.
+
+Supabase Edge Functions that call the direct Resend Email API should use
+`supabase/functions/_shared/resendEmail.ts` for payload construction,
+idempotency headers, reply-to handling, tags, and non-throwing error results.
+Resend Broadcasts remain separate because release sends create, persist, and
+send provider Broadcast drafts.
+
+### Email Tracking Policy
+
+The application does not intentionally enable email open or click tracking in
+code. Prefer provider acceptance, delivery, delay, bounce, complaint,
+unsubscribe, and suppression events for operational observability. Do not use
+engagement data to silently expand consent, add Topics, or widen audience
+membership. If tracking is enabled in a provider dashboard later, update the
+privacy policy and this guide before rollout.
+
+### Mailing Retention
+
+The database function `run_mailing_retention` reports or applies cleanup for
+short-lived mailing tokens and detailed delivery payloads. It defaults to
+dry-run mode and is executable only by trusted service-role/database-owner
+contexts.
+
+Preview the current impact before enabling cleanup:
+
+```sql
+select *
+from public.run_mailing_retention(true);
+```
+
+Apply the cleanup only after the preview matches expectations:
+
+```sql
+select *
+from public.run_mailing_retention(false);
+```
+
+Current retention windows:
+
+- expired, unconfirmed double opt-in requests: delete after 30 days
+- expired preference-management links: delete after 30 days
+- raw provider webhook payloads: redact after 90 days
+- terminal notification-event payloads: redact after 90 days
+- successful queued email HTML/text bodies: redact after 90 days
+
+The function preserves append-only consent evidence, active preferences,
+suppression records, failed/dead-letter job bodies, sanitized delivery states,
+and aggregate counts. Keep failed or dead-letter records intact until an admin
+has completed recovery or intentionally abandoned the job.
+
+For scheduled execution, create the job only after at least one successful
+manual dry run. Supabase projects can use `pg_cron`; keep the job body limited
+to the same database function so manual and scheduled cleanup cannot drift:
+
+```sql
+select cron.schedule(
+  'mailing-retention-daily',
+  '17 2 * * *',
+  $$select public.run_mailing_retention(false);$$
+);
+```
+
+### DMARC Rollout
+
+As of 2026-07-14, the public root-domain DMARC record resolves as:
+
+```txt
+v=DMARC1; p=none; rua=mailto:dmarc@kyrilloswannes.com
+```
+
+Treat that value as the immediate rollback record before each enforcement step.
+Before changing DNS, confirm every legitimate mail source aligns SPF or DKIM
+with the visible From domain. At minimum, verify Resend still marks
+`updates.copticcompass.com` as verified, the DKIM selector
+`resend._domainkey.updates.copticcompass.com` resolves, and no other service is
+sending as `@copticcompass.com` without alignment.
+
+Recommended staged rollout:
+
+1. Keep `p=none` while collecting at least two normal sending cycles of DMARC
+   aggregate reports.
+2. Move to `p=quarantine; pct=25` after aligned traffic is confirmed.
+3. Increase to full `p=quarantine` for at least two normal sending cycles.
+4. Move to `p=reject` only after aggregate reports show no legitimate
+   misaligned senders.
+
+Do not combine a DMARC enforcement change with a sender-domain, From-address,
+or Resend-domain reconfiguration. If legitimate traffic starts failing, restore
+the rollback record above, wait for DNS propagation, and re-check provider
+alignment before retrying enforcement.
 
 ## CI/CD (GitHub Actions + Vercel)
 

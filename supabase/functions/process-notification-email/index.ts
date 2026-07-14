@@ -1,4 +1,11 @@
+import {
+  buildNotificationEmailIdempotencyKey,
+  classifyNotificationProviderFailure,
+  getNotificationRetryDelaySeconds,
+  type NotificationProviderFailure,
+} from "../_shared/notificationEmailPolicy.ts";
 import { hasExpectedBearerToken } from "../_shared/requestAuth.ts";
+import { sendResendEmail } from "../_shared/resendEmail.ts";
 
 declare const Deno: {
   env: {
@@ -14,15 +21,33 @@ declare const EdgeRuntime:
   | undefined;
 
 const NOTIFICATION_JOB_BATCH_SIZE = 5;
+const NOTIFICATION_JOB_LEASE_SECONDS = 300;
+
+type NotificationEmailJobStatus =
+  | "accepted"
+  | "dead_letter"
+  | "failed"
+  | "processing"
+  | "queued"
+  | "retry_scheduled"
+  | "sent";
 
 type NotificationEmailJobRecord = {
+  attempt_count: number;
   bcc_recipients: string[];
   cc_recipients: string[];
   from_email: string | null;
   html_body: string | null;
   id: string;
+  last_error: string | null;
+  lock_expires_at: string | null;
+  locked_at: string | null;
+  max_attempts: number;
+  next_attempt_at: string;
   notification_event_id: string;
+  provider_message_id: string | null;
   reply_to_recipients: string[];
+  status: NotificationEmailJobStatus;
   subject: string;
   text_body: string;
   to_recipients: string[];
@@ -34,6 +59,15 @@ type ProcessNotificationEmailEnv = {
   serviceRoleKey: string;
   supabaseUrl: string;
 };
+
+type SendNotificationEmailResult =
+  | {
+      id: string | null;
+      success: true;
+    }
+  | (NotificationProviderFailure & {
+      success: false;
+    });
 
 function jsonResponse(status: number, body: Record<string, unknown>) {
   return new Response(JSON.stringify(body), {
@@ -75,33 +109,10 @@ function buildSupabaseRestHeaders(serviceRoleKey: string) {
   };
 }
 
-function buildResendEmailBody(options: {
+async function sendNotificationEmailThroughResend(options: {
   from: string;
   html?: string | null;
-  subject: string;
-  text: string;
-  to: string[];
-  bcc?: string[];
-  cc?: string[];
-  replyTo?: string[];
-}) {
-  return {
-    ...(options.bcc && options.bcc.length > 0 ? { bcc: options.bcc } : {}),
-    ...(options.cc && options.cc.length > 0 ? { cc: options.cc } : {}),
-    ...(options.html ? { html: options.html } : {}),
-    ...(options.replyTo && options.replyTo.length > 0
-      ? { reply_to: options.replyTo }
-      : {}),
-    from: options.from,
-    subject: options.subject,
-    text: options.text,
-    to: options.to,
-  };
-}
-
-async function sendResendEmail(options: {
-  from: string;
-  html?: string | null;
+  idempotencyKey: string;
   resendApiKey: string;
   subject: string;
   text: string;
@@ -109,86 +120,62 @@ async function sendResendEmail(options: {
   bcc?: string[];
   cc?: string[];
   replyTo?: string[];
-}) {
-  const response = await fetch("https://api.resend.com/emails", {
-    body: JSON.stringify(buildResendEmailBody(options)),
-    headers: {
-      Authorization: `Bearer ${options.resendApiKey}`,
-      "Content-Type": "application/json",
-    },
-    method: "POST",
+}): Promise<SendNotificationEmailResult> {
+  const result = await sendResendEmail({
+    apiKey: options.resendApiKey,
+    bcc: options.bcc,
+    cc: options.cc,
+    from: options.from,
+    html: options.html,
+    idempotencyKey: options.idempotencyKey,
+    replyTo: options.replyTo,
+    subject: options.subject,
+    text: options.text,
+    to: options.to,
   });
 
-  if (response.ok) {
-    const data = (await response.json()) as { id?: string };
-    return { success: true as const, id: data.id ?? null };
+  if (result.success) {
+    return result;
   }
 
-  const errorText = await response.text();
   return {
+    ...classifyNotificationProviderFailure({
+      errorText: result.error,
+      status: result.status,
+    }),
     success: false as const,
-    error: errorText || "Failed to send email via Resend.",
   };
 }
 
-async function claimNotificationEmailJob(options: {
-  jobId: string;
-  serviceRoleKey: string;
-  supabaseUrl: string;
-}) {
-  const response = await fetch(
-    `${options.supabaseUrl}/rest/v1/notification_email_jobs?id=eq.${encodeURIComponent(options.jobId)}&status=eq.queued&select=*`,
-    {
-      body: JSON.stringify({
-        last_error: null,
-        status: "processing",
-      }),
-      headers: {
-        ...buildSupabaseRestHeaders(options.serviceRoleKey),
-        Prefer: "return=representation",
-      },
-      method: "PATCH",
-    },
-  );
-
-  if (!response.ok) {
-    console.error("Failed to claim notification email job.", {
-      error: await response.text(),
-      jobId: options.jobId,
-      status: response.status,
-    });
-    return null;
-  }
-
-  const data = (await response.json()) as NotificationEmailJobRecord[];
-  return data[0] ?? null;
-}
-
-async function listQueuedNotificationEmailJobIds(options: {
+async function claimNotificationEmailJobs(options: {
   limit: number;
   serviceRoleKey: string;
   supabaseUrl: string;
+  jobId?: string;
 }) {
   const response = await fetch(
-    `${options.supabaseUrl}/rest/v1/notification_email_jobs?status=eq.queued&select=id&order=created_at.asc&limit=${options.limit}`,
+    `${options.supabaseUrl}/rest/v1/rpc/claim_notification_email_jobs`,
     {
+      body: JSON.stringify({
+        ...(options.jobId ? { p_job_id: options.jobId } : {}),
+        p_lease_seconds: NOTIFICATION_JOB_LEASE_SECONDS,
+        p_limit: options.jobId ? 1 : options.limit,
+      }),
       headers: buildSupabaseRestHeaders(options.serviceRoleKey),
-      method: "GET",
+      method: "POST",
     },
   );
 
   if (!response.ok) {
-    console.error("Failed to list queued notification email jobs.", {
+    console.error("Failed to claim notification email jobs.", {
       error: await response.text(),
+      jobId: options.jobId,
       status: response.status,
     });
     return [];
   }
 
-  const data = (await response.json()) as Array<{ id?: string }>;
-  return data
-    .map((row) => row.id)
-    .filter((jobId): jobId is string => typeof jobId === "string");
+  return (await response.json()) as NotificationEmailJobRecord[];
 }
 
 async function insertNotificationDelivery(options: {
@@ -197,7 +184,7 @@ async function insertNotificationDelivery(options: {
   providerMessageId: string | null;
   recipient: string;
   serviceRoleKey: string;
-  status: "failed" | "sent";
+  status: "accepted" | "delayed" | "failed";
   supabaseUrl: string;
 }) {
   const response = await fetch(
@@ -229,15 +216,19 @@ async function updateNotificationEventStatus(options: {
   eventId: string;
   lastError: string | null;
   serviceRoleKey: string;
-  status: "failed" | "sent";
+  status: "accepted" | "dead_letter" | "delayed" | "failed";
   supabaseUrl: string;
 }) {
+  const isTerminal =
+    options.status === "accepted" ||
+    options.status === "dead_letter" ||
+    options.status === "failed";
   const response = await fetch(
     `${options.supabaseUrl}/rest/v1/notification_events?id=eq.${encodeURIComponent(options.eventId)}`,
     {
       body: JSON.stringify({
         last_error: options.lastError,
-        processed_at: new Date().toISOString(),
+        processed_at: isTerminal ? new Date().toISOString() : null,
         status: options.status,
       }),
       headers: buildSupabaseRestHeaders(options.serviceRoleKey),
@@ -254,28 +245,23 @@ async function updateNotificationEventStatus(options: {
   }
 }
 
-async function updateNotificationEmailJobStatus(options: {
+async function updateNotificationEmailJob(options: {
   jobId: string;
-  lastError: string | null;
+  payload: Record<string, unknown>;
   serviceRoleKey: string;
-  status: "failed" | "sent";
   supabaseUrl: string;
 }) {
   const response = await fetch(
     `${options.supabaseUrl}/rest/v1/notification_email_jobs?id=eq.${encodeURIComponent(options.jobId)}`,
     {
-      body: JSON.stringify({
-        last_error: options.lastError,
-        processed_at: new Date().toISOString(),
-        status: options.status,
-      }),
+      body: JSON.stringify(options.payload),
       headers: buildSupabaseRestHeaders(options.serviceRoleKey),
       method: "PATCH",
     },
   );
 
   if (!response.ok) {
-    console.error("Failed to update notification email job status.", {
+    console.error("Failed to update notification email job.", {
       error: await response.text(),
       jobId: options.jobId,
       status: response.status,
@@ -283,11 +269,135 @@ async function updateNotificationEmailJobStatus(options: {
   }
 }
 
+async function recordAcceptedNotificationEmailJob(options: {
+  env: ProcessNotificationEmailEnv;
+  job: NotificationEmailJobRecord;
+  providerMessageId: string | null;
+}) {
+  const recipientSummary = options.job.to_recipients.join(", ");
+
+  await insertNotificationDelivery({
+    error: null,
+    eventId: options.job.notification_event_id,
+    providerMessageId: options.providerMessageId,
+    recipient: recipientSummary,
+    serviceRoleKey: options.env.serviceRoleKey,
+    status: "accepted",
+    supabaseUrl: options.env.supabaseUrl,
+  });
+  await updateNotificationEventStatus({
+    eventId: options.job.notification_event_id,
+    lastError: null,
+    serviceRoleKey: options.env.serviceRoleKey,
+    status: "accepted",
+    supabaseUrl: options.env.supabaseUrl,
+  });
+  await updateNotificationEmailJob({
+    jobId: options.job.id,
+    payload: {
+      last_error: null,
+      lock_expires_at: null,
+      locked_at: null,
+      processed_at: new Date().toISOString(),
+      provider_message_id: options.providerMessageId,
+      status: "accepted",
+    },
+    serviceRoleKey: options.env.serviceRoleKey,
+    supabaseUrl: options.env.supabaseUrl,
+  });
+}
+
+async function recordFailedNotificationEmailJob(options: {
+  env: ProcessNotificationEmailEnv;
+  failure: NotificationProviderFailure;
+  job: NotificationEmailJobRecord;
+}) {
+  const exhausted = options.job.attempt_count >= options.job.max_attempts;
+  const eventStatus = exhausted ? "dead_letter" : "delayed";
+  const jobStatus = exhausted ? "dead_letter" : "retry_scheduled";
+  const deliveryStatus = exhausted ? "failed" : "delayed";
+  const nextAttemptDelaySeconds = getNotificationRetryDelaySeconds({
+    attemptCount: options.job.attempt_count,
+    jobId: options.job.id,
+  });
+  const nextAttemptAt = new Date(
+    Date.now() + nextAttemptDelaySeconds * 1000,
+  ).toISOString();
+  const recipientSummary = options.job.to_recipients.join(", ");
+
+  await insertNotificationDelivery({
+    error: options.failure.error,
+    eventId: options.job.notification_event_id,
+    providerMessageId: null,
+    recipient: recipientSummary,
+    serviceRoleKey: options.env.serviceRoleKey,
+    status: deliveryStatus,
+    supabaseUrl: options.env.supabaseUrl,
+  });
+  await updateNotificationEventStatus({
+    eventId: options.job.notification_event_id,
+    lastError: options.failure.error,
+    serviceRoleKey: options.env.serviceRoleKey,
+    status: eventStatus,
+    supabaseUrl: options.env.supabaseUrl,
+  });
+  await updateNotificationEmailJob({
+    jobId: options.job.id,
+    payload: {
+      last_error: options.failure.error,
+      lock_expires_at: null,
+      locked_at: null,
+      next_attempt_at: exhausted ? options.job.next_attempt_at : nextAttemptAt,
+      processed_at: exhausted ? new Date().toISOString() : null,
+      status: jobStatus,
+    },
+    serviceRoleKey: options.env.serviceRoleKey,
+    supabaseUrl: options.env.supabaseUrl,
+  });
+}
+
+async function recordPermanentNotificationEmailJobFailure(options: {
+  env: ProcessNotificationEmailEnv;
+  failure: NotificationProviderFailure;
+  job: NotificationEmailJobRecord;
+}) {
+  const recipientSummary = options.job.to_recipients.join(", ");
+
+  await insertNotificationDelivery({
+    error: options.failure.error,
+    eventId: options.job.notification_event_id,
+    providerMessageId: null,
+    recipient: recipientSummary,
+    serviceRoleKey: options.env.serviceRoleKey,
+    status: "failed",
+    supabaseUrl: options.env.supabaseUrl,
+  });
+  await updateNotificationEventStatus({
+    eventId: options.job.notification_event_id,
+    lastError: options.failure.error,
+    serviceRoleKey: options.env.serviceRoleKey,
+    status: "failed",
+    supabaseUrl: options.env.supabaseUrl,
+  });
+  await updateNotificationEmailJob({
+    jobId: options.job.id,
+    payload: {
+      last_error: options.failure.error,
+      lock_expires_at: null,
+      locked_at: null,
+      processed_at: new Date().toISOString(),
+      status: "failed",
+    },
+    serviceRoleKey: options.env.serviceRoleKey,
+    supabaseUrl: options.env.supabaseUrl,
+  });
+}
+
 async function processClaimedNotificationEmailJob(options: {
   env: ProcessNotificationEmailEnv;
   job: NotificationEmailJobRecord;
 }) {
-  const emailResult = await sendResendEmail({
+  const emailResult = await sendNotificationEmailThroughResend({
     ...(options.job.bcc_recipients.length > 0
       ? { bcc: options.job.bcc_recipients }
       : {}),
@@ -299,112 +409,112 @@ async function processClaimedNotificationEmailJob(options: {
       : {}),
     from: options.job.from_email ?? options.env.notificationFromEmail,
     html: options.job.html_body,
+    idempotencyKey: buildNotificationEmailIdempotencyKey({
+      jobId: options.job.id,
+      notificationEventId: options.job.notification_event_id,
+    }),
     resendApiKey: options.env.resendApiKey,
     subject: options.job.subject,
     text: options.job.text_body,
     to: options.job.to_recipients,
   });
-  const deliveryStatus: "failed" | "sent" = emailResult.success
-    ? "sent"
-    : "failed";
-  const recipientSummary = options.job.to_recipients.join(", ");
 
-  await insertNotificationDelivery({
-    error: emailResult.success ? null : emailResult.error,
-    eventId: options.job.notification_event_id,
-    providerMessageId: emailResult.success ? emailResult.id : null,
-    recipient: recipientSummary,
-    serviceRoleKey: options.env.serviceRoleKey,
-    status: deliveryStatus,
-    supabaseUrl: options.env.supabaseUrl,
+  if (emailResult.success) {
+    await recordAcceptedNotificationEmailJob({
+      env: options.env,
+      job: options.job,
+      providerMessageId: emailResult.id,
+    });
+    return;
+  }
+
+  if (emailResult.kind === "retryable") {
+    await recordFailedNotificationEmailJob({
+      env: options.env,
+      failure: emailResult,
+      job: options.job,
+    });
+    return;
+  }
+
+  await recordPermanentNotificationEmailJobFailure({
+    env: options.env,
+    failure: emailResult,
+    job: options.job,
   });
-  await updateNotificationEventStatus({
-    eventId: options.job.notification_event_id,
-    lastError: emailResult.success ? null : emailResult.error,
-    serviceRoleKey: options.env.serviceRoleKey,
-    status: deliveryStatus,
-    supabaseUrl: options.env.supabaseUrl,
-  });
-  await updateNotificationEmailJobStatus({
-    jobId: options.job.id,
-    lastError: emailResult.success ? null : emailResult.error,
-    serviceRoleKey: options.env.serviceRoleKey,
-    status: deliveryStatus,
-    supabaseUrl: options.env.supabaseUrl,
-  });
+}
+
+async function processClaimedJobWithRecovery(options: {
+  env: ProcessNotificationEmailEnv;
+  job: NotificationEmailJobRecord;
+}) {
+  try {
+    await processClaimedNotificationEmailJob(options);
+  } catch (error) {
+    const failure = classifyNotificationProviderFailure({
+      errorText:
+        error instanceof Error
+          ? error.message
+          : "The notification email job failed unexpectedly.",
+      status: null,
+    });
+    console.error("Notification email job failed unexpectedly.", {
+      error: failure.error,
+      jobId: options.job.id,
+    });
+    await recordFailedNotificationEmailJob({
+      env: options.env,
+      failure,
+      job: options.job,
+    });
+  }
 }
 
 async function processQueuedNotificationEmailJobs(options: {
   env: ProcessNotificationEmailEnv;
+  limit: number;
   jobId?: string;
 }) {
-  const jobIds = options.jobId
-    ? [options.jobId]
-    : await listQueuedNotificationEmailJobIds({
-        limit: NOTIFICATION_JOB_BATCH_SIZE,
-        serviceRoleKey: options.env.serviceRoleKey,
-        supabaseUrl: options.env.supabaseUrl,
-      });
+  const claimedJobs = await claimNotificationEmailJobs({
+    jobId: options.jobId,
+    limit: options.limit,
+    serviceRoleKey: options.env.serviceRoleKey,
+    supabaseUrl: options.env.supabaseUrl,
+  });
 
-  for (const jobId of jobIds) {
-    const claimedJob = await claimNotificationEmailJob({
-      jobId,
-      serviceRoleKey: options.env.serviceRoleKey,
-      supabaseUrl: options.env.supabaseUrl,
+  for (const job of claimedJobs) {
+    await processClaimedJobWithRecovery({
+      env: options.env,
+      job,
     });
-
-    if (!claimedJob) {
-      continue;
-    }
-
-    try {
-      await processClaimedNotificationEmailJob({
-        env: options.env,
-        job: claimedJob,
-      });
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "The notification email job failed unexpectedly.";
-      console.error("Notification email job failed unexpectedly.", {
-        error: errorMessage,
-        jobId: claimedJob.id,
-      });
-      await updateNotificationEventStatus({
-        eventId: claimedJob.notification_event_id,
-        lastError: errorMessage,
-        serviceRoleKey: options.env.serviceRoleKey,
-        status: "failed",
-        supabaseUrl: options.env.supabaseUrl,
-      });
-      await updateNotificationEmailJobStatus({
-        jobId: claimedJob.id,
-        lastError: errorMessage,
-        serviceRoleKey: options.env.serviceRoleKey,
-        status: "failed",
-        supabaseUrl: options.env.supabaseUrl,
-      });
-    }
   }
 }
 
 async function parseWorkerInvocationRequest(request: Request) {
   try {
-    const body = (await request.json()) as { jobId?: unknown } | null;
+    const body = (await request.json()) as {
+      jobId?: unknown;
+      limit?: unknown;
+    } | null;
     const jobId =
       body && typeof body.jobId === "string" && body.jobId.trim().length > 0
         ? body.jobId.trim()
         : undefined;
+    const requestedLimit =
+      body && typeof body.limit === "number" && Number.isFinite(body.limit)
+        ? Math.trunc(body.limit)
+        : NOTIFICATION_JOB_BATCH_SIZE;
+    const limit = Math.min(Math.max(requestedLimit, 1), 25);
 
-    return { jobId };
+    return { jobId, limit };
   } catch {
-    return { jobId: undefined };
+    return { jobId: undefined, limit: NOTIFICATION_JOB_BATCH_SIZE };
   }
 }
 
 async function scheduleNotificationJobProcessing(options: {
   env: ProcessNotificationEmailEnv;
+  limit: number;
   jobId?: string;
 }) {
   const backgroundTask = processQueuedNotificationEmailJobs(options);
@@ -440,11 +550,13 @@ async function handleProcessNotificationEmailRequest(request: Request) {
   const invocation = await parseWorkerInvocationRequest(request);
   await scheduleNotificationJobProcessing({
     env,
+    limit: invocation.limit,
     ...(invocation.jobId ? { jobId: invocation.jobId } : {}),
   });
 
   return jsonResponse(202, {
     ...(invocation.jobId ? { jobId: invocation.jobId } : {}),
+    limit: invocation.limit,
     queued: true,
     success: true,
   });

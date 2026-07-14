@@ -84,6 +84,14 @@ export function getContactPath(locale?: Language) {
   return locale ? getLocalizedPath(locale, "/contact") : "/contact";
 }
 
+export function getCommunicationConfirmPath(locale: Language) {
+  return getLocalizedPath(locale, "/communications/confirm");
+}
+
+export function getCommunicationPreferencesPath(locale: Language) {
+  return getLocalizedPath(locale, "/communications/preferences");
+}
+
 export function getFaqPath(locale?: Language) {
   return locale ? getLocalizedPath(locale, "/faq") : "/faq";
 }

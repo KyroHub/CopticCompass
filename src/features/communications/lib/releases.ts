@@ -1,4 +1,5 @@
 import {
+  escapeMailHtml,
   getMailFooterLines,
   mailBrand,
   mailBrandColors,
@@ -8,6 +9,7 @@ import type { Json, Tables } from "@/types/supabase";
 
 export type ContentReleaseRow = Tables<"content_releases">;
 export type ContentReleaseItemRow = Tables<"content_release_items">;
+export type ContentReleaseTargetRow = Tables<"content_release_targets">;
 
 export type ContentReleaseCandidate = {
   id: string;
@@ -21,6 +23,7 @@ export type ContentReleaseCandidate = {
 
 export type AdminContentRelease = ContentReleaseRow & {
   items: ContentReleaseItemRow[];
+  targets: ContentReleaseTargetRow[];
 };
 
 type ContentReleaseDeliverySummary = {
@@ -30,6 +33,7 @@ type ContentReleaseDeliverySummary = {
     recipientCount: number;
     segmentId: string;
     subject: string;
+    topicId: string;
   }>;
   eligibleRecipientCount?: number;
   failedCount?: number;
@@ -177,6 +181,8 @@ export function formatContentReleaseStatus(
         return "Wordt verzonden";
       case "sent":
         return "Verzonden";
+      case "partially_failed":
+        return "Gedeeltelijk mislukt";
       case "cancelled":
         return "Geannuleerd";
       default:
@@ -195,10 +201,82 @@ export function formatContentReleaseStatus(
       return "Sending";
     case "sent":
       return "Sent";
+    case "partially_failed":
+      return "Partially failed";
     case "cancelled":
       return "Cancelled";
     default:
       return status;
+  }
+}
+
+/**
+ * Formats the persisted release target lifecycle for admin operations panels.
+ */
+export function formatContentReleaseTargetStatus(
+  status:
+    | ContentReleaseTargetRow["last_provider_status"]
+    | ContentReleaseTargetRow["status"],
+  language: Language = "en",
+) {
+  if (language === "nl") {
+    switch (status) {
+      case "accepted":
+        return "Geaccepteerd";
+      case "bounced":
+        return "Bounce";
+      case "cancelled":
+        return "Geannuleerd";
+      case "complained":
+        return "Klacht";
+      case "created":
+        return "Aangemaakt";
+      case "creating":
+        return "Wordt aangemaakt";
+      case "delayed":
+        return "Vertraagd";
+      case "delivered":
+        return "Bezorgd";
+      case "failed":
+        return "Mislukt";
+      case "pending":
+        return "Wachtend";
+      case "sending":
+        return "Wordt verzonden";
+      case "suppressed":
+        return "Onderdrukt";
+      default:
+        return status ?? "Onbekend";
+    }
+  }
+
+  switch (status) {
+    case "accepted":
+      return "Accepted";
+    case "bounced":
+      return "Bounced";
+    case "cancelled":
+      return "Cancelled";
+    case "complained":
+      return "Complaint";
+    case "created":
+      return "Created";
+    case "creating":
+      return "Creating";
+    case "delayed":
+      return "Delayed";
+    case "delivered":
+      return "Delivered";
+    case "failed":
+      return "Failed";
+    case "pending":
+      return "Pending";
+    case "sending":
+      return "Sending";
+    case "suppressed":
+      return "Suppressed";
+    default:
+      return status ?? "Unknown";
   }
 }
 
@@ -277,10 +355,11 @@ export function compareContentReleasePriority(
   const statusPriority = {
     queued: 0,
     sending: 1,
-    approved: 2,
-    draft: 3,
-    sent: 4,
-    cancelled: 5,
+    partially_failed: 2,
+    approved: 3,
+    draft: 4,
+    sent: 5,
+    cancelled: 6,
   } as const;
 
   const byStatus = statusPriority[left.status] - statusPriority[right.status];
@@ -399,10 +478,10 @@ export function buildContentReleaseEmailHtml(options: {
   language: Language;
   subject: string;
 }) {
-  const intro = escapeHtml(options.body.trim()).replace(/\n/g, "<br />");
+  const intro = escapeMailHtml(options.body.trim()).replace(/\n/g, "<br />");
   const itemsHeading =
     options.language === "nl" ? "In deze release" : "In this release";
-  const footer = getMailFooterLines(options.language).map(escapeHtml);
+  const footer = getMailFooterLines(options.language).map(escapeMailHtml);
   const introLabel =
     options.language === "nl"
       ? "Nieuwe updates van Coptic Compass"
@@ -413,10 +492,10 @@ export function buildContentReleaseEmailHtml(options: {
     .map(
       (item) => `
         <li style="margin:0 0 14px;">
-          <a href="${escapeHtml(item.url_snapshot)}" style="color:${colors.coptic};text-decoration:none;font-weight:700;">
-            ${escapeHtml(item.title_snapshot)}
+          <a href="${escapeMailHtml(item.url_snapshot)}" style="color:${colors.coptic};text-decoration:none;font-weight:700;">
+            ${escapeMailHtml(item.title_snapshot)}
           </a>
-          <div style="margin-top:4px;font-size:13px;color:${colors.muted};">${escapeHtml(item.url_snapshot)}</div>
+          <div style="margin-top:4px;font-size:13px;color:${colors.muted};">${escapeMailHtml(item.url_snapshot)}</div>
         </li>`,
     )
     .join("");
@@ -427,19 +506,19 @@ export function buildContentReleaseEmailHtml(options: {
     <div style="max-width:640px;margin:0 auto;background:${colors.surface};border:1px solid ${colors.line};border-radius:10px;overflow:hidden;">
       <div style="height:6px;background:${colors.gold};"></div>
       <div style="padding:28px 32px;background:${colors.surface};border-bottom:1px solid ${colors.line};">
-        <div style="margin-bottom:14px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:${colors.goldStrong};font-weight:700;">${escapeHtml(
+        <div style="margin-bottom:14px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:${colors.goldStrong};font-weight:700;">${escapeMailHtml(
           mailBrand.brandName,
-        )} • ${escapeHtml(mailBrand.descriptor)}</div>
-        <div style="font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:${colors.coptic};font-weight:700;">${escapeHtml(
+        )} • ${escapeMailHtml(mailBrand.descriptor)}</div>
+        <div style="font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:${colors.coptic};font-weight:700;">${escapeMailHtml(
           introLabel,
         )}</div>
-        <h1 style="margin:10px 0 0;font-size:28px;line-height:1.2;color:${colors.ink};">${escapeHtml(
+        <h1 style="margin:10px 0 0;font-size:28px;line-height:1.2;color:${colors.ink};">${escapeMailHtml(
           options.subject,
         )}</h1>
       </div>
       <div style="padding:32px;">
         <p style="margin:0 0 20px;font-size:16px;line-height:1.7;color:${colors.ink};">${intro}</p>
-        <h2 style="margin:0 0 14px;font-size:18px;line-height:1.4;color:${colors.ink};">${escapeHtml(
+        <h2 style="margin:0 0 14px;font-size:18px;line-height:1.4;color:${colors.ink};">${escapeMailHtml(
           itemsHeading,
         )}</h2>
         <ul style="margin:0;padding-left:20px;">${itemsHtml}</ul>
@@ -493,9 +572,16 @@ function getBroadcastSummaryEntries(summary: Record<string, Json | undefined>) {
       const id = asOptionalString(entry.id);
       const segmentId = asOptionalString(entry.segment_id);
       const subject = asOptionalString(entry.subject);
+      const topicId = asOptionalString(entry.topic_id);
       const recipientCount = asOptionalNumber(entry.recipient_count);
 
-      if (!id || !segmentId || !subject || recipientCount === undefined) {
+      if (
+        !id ||
+        !segmentId ||
+        !subject ||
+        !topicId ||
+        recipientCount === undefined
+      ) {
         return null;
       }
 
@@ -505,18 +591,10 @@ function getBroadcastSummaryEntries(summary: Record<string, Json | undefined>) {
         recipientCount,
         segmentId,
         subject,
+        topicId,
       };
     })
     .filter((entry) => entry !== null);
 
   return entries.length > 0 ? entries : undefined;
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
 }

@@ -1,5 +1,5 @@
 import "server-only";
-import { mailBrand, mailBrandColors } from "@/lib/communications/mailBrand";
+import { buildBrandedTransactionalEmailHtml } from "@/lib/communications/mailBrand";
 import { getNotificationEmailEnv } from "@/lib/notifications/config";
 import {
   sendNotificationEmail,
@@ -27,6 +27,7 @@ type LoggedNotificationEmailOptions = {
   payload?: Json;
   react?: ReactElement;
   replyTo?: EmailRecipients;
+  requiredTransactional?: boolean;
   subject: string;
   text: string;
   to: EmailRecipients;
@@ -44,8 +45,44 @@ type NotificationQueueResult =
       success: false;
     };
 
+type EnqueuedNotificationEmailJob = {
+  eventId: string;
+  jobId: string;
+};
+
+type EnqueueNotificationEmailJobRpcRow = {
+  event_id: string;
+  event_status: TablesInsert<"notification_events">["status"];
+  job_already_existed: boolean;
+  job_id: string;
+  job_status: TablesInsert<"notification_email_jobs">["status"];
+};
+
+function getEnqueuedNotificationEmailJob(
+  data: EnqueueNotificationEmailJobRpcRow[] | null,
+): EnqueuedNotificationEmailJob | null {
+  const queuedJob = data?.[0] ?? null;
+
+  if (!queuedJob?.event_id || !queuedJob.job_id) {
+    return null;
+  }
+
+  return {
+    eventId: queuedJob.event_id,
+    jobId: queuedJob.job_id,
+  };
+}
+
 function normalizeRecipients(value: EmailRecipients) {
   return Array.isArray(value) ? [...value] : [value];
+}
+
+function normalizeOptionalRecipients(value: EmailRecipients | undefined) {
+  return value ? normalizeRecipients(value) : [];
+}
+
+function nullIfMissing<T>(value: T | null | undefined) {
+  return value ?? null;
 }
 
 function redactRecipients(value: EmailRecipients) {
@@ -54,46 +91,26 @@ function redactRecipients(value: EmailRecipients) {
     .join(", ");
 }
 
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+function isJsonRecord(value: Json | undefined): value is Record<string, Json> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
 }
 
-function buildBrandedNotificationEmailHtml(options: {
-  subject: string;
-  text: string;
+function buildQueuedNotificationPayload(options: {
+  payload?: Json;
+  requiredTransactional: boolean;
 }) {
-  const colors = mailBrandColors;
-  const body = escapeHtml(options.text.trim()).replace(/\n/g, "<br />");
+  const payloadRecord = isJsonRecord(options.payload) ? options.payload : {};
+  const classification = isJsonRecord(payloadRecord.notification_classification)
+    ? payloadRecord.notification_classification
+    : {};
 
-  return `<!doctype html>
-<html>
-  <body style="margin:0;background:${colors.paper};padding:24px 12px;font-family:Aptos,Segoe UI,Helvetica Neue,Arial,sans-serif;color:${colors.ink};">
-    <div style="max-width:640px;margin:0 auto;background:${colors.surface};border:1px solid ${colors.line};border-radius:10px;overflow:hidden;">
-      <div style="height:6px;background:${colors.gold};"></div>
-      <div style="padding:28px 32px;border-bottom:1px solid ${colors.line};">
-        <div style="margin-bottom:14px;font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:${colors.goldStrong};font-weight:700;">${escapeHtml(
-          mailBrand.brandName,
-        )} • ${escapeHtml(mailBrand.descriptor)}</div>
-        <h1 style="margin:0;font-size:24px;line-height:1.3;color:${colors.ink};">${escapeHtml(
-          options.subject,
-        )}</h1>
-      </div>
-      <div style="padding:32px;">
-        <p style="margin:0;font-size:15px;line-height:1.7;color:${colors.ink};">${body}</p>
-      </div>
-      <div style="padding:24px 32px;border-top:1px solid ${colors.line};background:${colors.elevated};font-size:13px;line-height:1.7;color:${colors.muted};">
-        <div>${escapeHtml(mailBrand.brandName)}</div>
-        <div>${escapeHtml(mailBrand.descriptor)}</div>
-        <div style="margin-top:8px;"><a href="${mailBrand.liveUrl}" style="color:${colors.coptic};text-decoration:none;">${mailBrand.liveUrl}</a></div>
-      </div>
-    </div>
-  </body>
-</html>`;
+  return {
+    ...payloadRecord,
+    notification_classification: {
+      ...classification,
+      required_transactional: options.requiredTransactional,
+    },
+  } satisfies Json;
 }
 
 async function insertNotificationEvent(options: {
@@ -154,59 +171,67 @@ async function insertNotificationEvent(options: {
   };
 }
 
-async function insertNotificationEmailJob(options: {
+async function enqueueNotificationEmailJob(options: {
+  aggregateId: string;
+  aggregateType: string;
   bcc?: EmailRecipients;
   cc?: EmailRecipients;
+  dedupeKey?: string | null;
+  eventType: string;
   fromEmail?: string;
   html?: string;
-  notificationEventId: string;
+  payload?: Json;
   replyTo?: EmailRecipients;
+  requiredTransactional: boolean;
   subject: string;
-  supabase: ReturnType<typeof createServiceRoleClient>;
   text: string;
   to: EmailRecipients;
-}): Promise<{ id: string } | null> {
-  const jobInsert = {
-    ...(options.fromEmail ? { from_email: options.fromEmail } : {}),
-    ...(options.html ? { html_body: options.html } : {}),
-    ...(options.bcc
-      ? { bcc_recipients: normalizeRecipients(options.bcc) }
-      : {}),
-    ...(options.cc ? { cc_recipients: normalizeRecipients(options.cc) } : {}),
-    ...(options.replyTo
-      ? { reply_to_recipients: normalizeRecipients(options.replyTo) }
-      : {}),
-    notification_event_id: options.notificationEventId,
-    subject: options.subject,
-    text_body: options.text,
-    to_recipients: normalizeRecipients(options.to),
-  } satisfies TablesInsert<"notification_email_jobs">;
+}): Promise<EnqueuedNotificationEmailJob | null> {
+  if (!hasSupabaseServiceRoleEnv()) {
+    return null;
+  }
 
-  const { data, error } = await options.supabase
-    .from("notification_email_jobs")
-    .insert(jobInsert)
-    .select("id")
-    .single();
+  const supabase = createServiceRoleClient();
+  const { data, error } = await supabase.rpc("enqueue_notification_email_job", {
+    p_aggregate_id: options.aggregateId,
+    p_aggregate_type: options.aggregateType,
+    p_bcc_recipients: normalizeOptionalRecipients(options.bcc),
+    p_cc_recipients: normalizeOptionalRecipients(options.cc),
+    p_dedupe_key: nullIfMissing(options.dedupeKey),
+    p_event_type: options.eventType,
+    p_from_email: nullIfMissing(options.fromEmail),
+    p_html_body: nullIfMissing(options.html),
+    p_payload: buildQueuedNotificationPayload({
+      payload: options.payload,
+      requiredTransactional: options.requiredTransactional,
+    }),
+    p_recipient: redactRecipients(options.to),
+    p_reply_to_recipients: normalizeOptionalRecipients(options.replyTo),
+    p_subject: options.subject,
+    p_text_body: options.text,
+    p_to_recipients: normalizeRecipients(options.to),
+  });
 
   if (error) {
     console.error("Failed to queue notification email job", {
       code: error.code,
-      eventId: options.notificationEventId,
+      dedupeKey: options.dedupeKey,
+      eventType: options.eventType,
       message: error.message,
     });
     return null;
   }
 
-  if (!data?.id) {
-    console.error("Notification email job insert did not return an id", {
-      eventId: options.notificationEventId,
+  const queuedJob = getEnqueuedNotificationEmailJob(data);
+  if (!queuedJob) {
+    console.error("Notification email enqueue RPC did not return ids", {
+      aggregateId: options.aggregateId,
+      eventType: options.eventType,
     });
     return null;
   }
 
-  return {
-    id: data.id,
-  };
+  return queuedJob;
 }
 
 async function updateNotificationEventStatus(options: {
@@ -249,7 +274,7 @@ async function renderNotificationEmailHtml(options: {
     return renderToStaticMarkup(options.react);
   }
 
-  return buildBrandedNotificationEmailHtml({
+  return buildBrandedTransactionalEmailHtml({
     subject: options.subject,
     text: options.text,
   });
@@ -362,28 +387,13 @@ export async function queueLoggedNotificationEmail(
 ): Promise<NotificationQueueResult> {
   assertServerOnly("queueLoggedNotificationEmail");
 
-  const recipient = redactRecipients(options.to);
-  const storedEvent = await insertNotificationEvent({
+  const queuedJob = await enqueueNotificationEmailJob({
     aggregateId: options.aggregateId,
     aggregateType: options.aggregateType,
-    channel: "email",
-    dedupeKey: options.dedupeKey,
-    eventType: options.eventType,
-    payload: options.payload,
-    recipient,
-    subject: options.subject,
-  });
-
-  if (!storedEvent) {
-    return {
-      error: "Could not queue the notification event.",
-      success: false,
-    };
-  }
-
-  const queuedJob = await insertNotificationEmailJob({
     bcc: options.bcc,
     cc: options.cc,
+    dedupeKey: options.dedupeKey,
+    eventType: options.eventType,
     fromEmail: undefined,
     html: await renderNotificationEmailHtml({
       html: options.html,
@@ -391,22 +401,15 @@ export async function queueLoggedNotificationEmail(
       subject: options.subject,
       text: options.text,
     }),
-    notificationEventId: storedEvent.id,
+    payload: options.payload,
     replyTo: options.replyTo,
+    requiredTransactional: options.requiredTransactional ?? true,
     subject: options.subject,
-    supabase: storedEvent.supabase,
     text: options.text,
     to: options.to,
   });
 
   if (!queuedJob) {
-    await updateNotificationEventStatus({
-      eventId: storedEvent.id,
-      lastError: "Could not queue the notification email job.",
-      status: "failed",
-      supabase: storedEvent.supabase,
-    });
-
     return {
       error: "Could not queue the notification email job.",
       success: false,
@@ -416,22 +419,22 @@ export async function queueLoggedNotificationEmail(
   const invocation = await invokeSupabaseEdgeFunction(
     "process-notification-email",
     {
-      jobId: queuedJob.id,
+      jobId: queuedJob.jobId,
     },
   );
 
   if (!invocation.success) {
     console.error("Failed to start queued notification email worker", {
       error: invocation.error,
-      eventId: storedEvent.id,
-      jobId: queuedJob.id,
+      eventId: queuedJob.eventId,
+      jobId: queuedJob.jobId,
       status: invocation.status,
     });
   }
 
   return {
-    eventId: storedEvent.id,
-    jobId: queuedJob.id,
+    eventId: queuedJob.eventId,
+    jobId: queuedJob.jobId,
     success: true,
   };
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowRight, Mail, MessageSquare, User } from "lucide-react";
+import Link from "next/link";
 import { useActionState } from "react";
 
 import { sendContactEmail, type ContactFormState } from "@/actions/contact";
@@ -14,7 +15,7 @@ import { PageShell, pageShellAccents } from "@/components/PageShell";
 import { StatusNotice } from "@/components/StatusNotice";
 import { SurfacePanel } from "@/components/SurfacePanel";
 import { contactInquiryOptions } from "@/features/contact/lib/contact";
-import { getLocalizedHomePath } from "@/lib/locale";
+import { getLocalizedHomePath, getPrivacyPath } from "@/lib/locale";
 
 export default function ContactPageClient() {
   const { language, t } = useLanguage();
@@ -133,17 +134,46 @@ export default function ContactPageClient() {
             </FormField>
 
             <FormField
-              htmlFor="wants_updates"
+              htmlFor="updates_lessons"
               label={t("contact.updatesLabel")}
               className={elevatedPanelClassName({ className: "p-4" })}
             >
-              <CheckboxField
-                id="wants_updates"
-                name="wants_updates"
-                value="true"
-                label={t("contact.updatesHint")}
-                wrapperClassName="-m-2"
-              />
+              <div className="space-y-3">
+                <p className="text-sm leading-6 text-muted">
+                  {t("contact.updatesHint")}
+                </p>
+                <CheckboxField
+                  id="updates_lessons"
+                  name="updates_lessons"
+                  value="true"
+                  label={t("contact.topic.lessons")}
+                  wrapperClassName="-m-2"
+                />
+                <CheckboxField
+                  id="updates_books"
+                  name="updates_books"
+                  value="true"
+                  label={t("contact.topic.books")}
+                  wrapperClassName="-m-2"
+                />
+                <CheckboxField
+                  id="updates_general"
+                  name="updates_general"
+                  value="true"
+                  label={t("contact.topic.general")}
+                  wrapperClassName="-m-2"
+                />
+                <p className="text-sm leading-6 text-muted">
+                  {t("contact.updatesPrivacyPrefix")}{" "}
+                  <Link
+                    href={getPrivacyPath(language)}
+                    className="font-medium text-accent-strong hover:underline"
+                  >
+                    {t("contact.updatesPrivacyLink")}
+                  </Link>
+                  .
+                </p>
+              </div>
             </FormField>
 
             <Button type="submit" disabled={isPending} fullWidth>

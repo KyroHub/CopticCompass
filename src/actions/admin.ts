@@ -5,6 +5,7 @@ import {
   updateContactMessageStatus as updateContactMessageStatusAction,
   updateEntryReportStatus as updateEntryReportStatusAction,
 } from "./admin/moderation";
+import { retryNotificationEmailJob as retryNotificationEmailJobAction } from "./admin/notifications";
 import {
   createContentReleaseDraft as createContentReleaseDraftAction,
   deleteContentReleaseDraft as deleteContentReleaseDraftAction,
@@ -20,6 +21,7 @@ import {
 import type {
   ContentReleaseDraftState,
   DeleteContentReleaseState,
+  RetryNotificationEmailJobState,
   SendContentReleaseState,
   SyncAudienceContactsState,
 } from "./admin/states";
@@ -85,6 +87,13 @@ export async function syncAudienceContactsWithResend(
   formData: FormData,
 ): Promise<SyncAudienceContactsState> {
   return syncAudienceContactsWithResendAction(prevState, formData);
+}
+
+export async function retryNotificationEmailJob(
+  prevState: RetryNotificationEmailJobState | null,
+  formData: FormData,
+): Promise<RetryNotificationEmailJobState> {
+  return retryNotificationEmailJobAction(prevState, formData);
 }
 
 export async function updateContactMessageStatus(

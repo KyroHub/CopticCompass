@@ -5,18 +5,22 @@ type OptInModuleContext = {
   confirmAudienceOptInRequest: typeof import("./optInRequests").confirmAudienceOptInRequest;
   createAudienceOptInRequest: typeof import("./optInRequests").createAudienceOptInRequest;
   createServiceRoleClientMock: ReturnType<typeof vi.fn>;
-  syncAudienceContactMock: ReturnType<typeof vi.fn>;
+  getAudienceOptInRequestPreview: typeof import("./optInRequests").getAudienceOptInRequestPreview;
+  rpcMock: ReturnType<typeof vi.fn>;
+  syncAudienceContactByIdToProviderMock: ReturnType<typeof vi.fn>;
 };
 
 async function loadOptInModule(options?: {
+  confirmedRequest?: Record<string, unknown> | null;
   existingRequestByEmail?: Record<string, unknown> | null;
-  tokenLookupRequest?: Record<string, unknown> | null;
   insertData?: Record<string, unknown>;
+  rpcResult?: Record<string, unknown>;
+  tokenLookupRequest?: Record<string, unknown> | null;
   updateResponses?: Array<Record<string, unknown>>;
 }) {
   vi.resetModules();
 
-  const syncAudienceContactMock = vi.fn().mockResolvedValue({
+  const syncAudienceContactByIdToProviderMock = vi.fn().mockResolvedValue({
     id: "audience_123",
   });
 
@@ -31,43 +35,46 @@ async function loadOptInModule(options?: {
           return options?.tokenLookupRequest ?? null;
         }
 
+        if (column === "id") {
+          return options?.confirmedRequest ?? null;
+        }
+
         return null;
       })(),
       error: null,
     }),
   }));
 
-  const selectMock = vi.fn(() => ({
-    eq: selectEqMock,
-  }));
-
+  const selectMock = vi.fn(() => ({ eq: selectEqMock }));
   const updateSingleMock = vi.fn().mockImplementation(() =>
     Promise.resolve({
       data: options?.updateResponses?.shift() ?? null,
       error: null,
     }),
   );
-
-  const updateEqMock = vi.fn(() => ({
-    select: vi.fn(() => ({
-      single: updateSingleMock,
+  const updateMock = vi.fn(() => ({
+    eq: vi.fn(() => ({
+      select: vi.fn(() => ({ single: updateSingleMock })),
     })),
   }));
-
-  const updateMock = vi.fn(() => ({
-    eq: updateEqMock,
-  }));
-
-  const insertSingleMock = vi.fn().mockResolvedValue({
-    data: options?.insertData ?? null,
-    error: null,
-  });
-
   const insertMock = vi.fn(() => ({
     select: vi.fn(() => ({
-      single: insertSingleMock,
+      single: vi.fn().mockResolvedValue({
+        data: options?.insertData ?? null,
+        error: null,
+      }),
     })),
   }));
+  const rpcMock = vi.fn().mockResolvedValue({
+    data: [
+      options?.rpcResult ?? {
+        audience_contact_id: null,
+        request_id: null,
+        status: "invalid",
+      },
+    ],
+    error: null,
+  });
 
   const createServiceRoleClientMock = vi.fn().mockReturnValue({
     from: vi.fn(() => ({
@@ -75,104 +82,76 @@ async function loadOptInModule(options?: {
       select: selectMock,
       update: updateMock,
     })),
+    rpc: rpcMock,
   });
 
   vi.doMock("@/features/communications/lib/server/audience", () => ({
-    syncAudienceContact: syncAudienceContactMock,
+    COMMUNICATIONS_POLICY_VERSION: "privacy-2026-06-22",
+    syncAudienceContactByIdToProvider: syncAudienceContactByIdToProviderMock,
   }));
   vi.doMock("@/lib/supabase/serviceRole", () => ({
     createServiceRoleClient: createServiceRoleClientMock,
   }));
 
   const mod = await import("./optInRequests");
-
   return {
     ...mod,
     createServiceRoleClientMock,
-    syncAudienceContactMock,
+    rpcMock,
+    syncAudienceContactByIdToProviderMock,
   } satisfies OptInModuleContext;
 }
 
+const pendingRequest = {
+  books_requested: true,
+  confirmed_at: null,
+  created_at: "2026-03-29T00:00:00.000Z",
+  email: "reader@example.com",
+  expires_at: "2099-04-05T00:00:00.000Z",
+  full_name: "Reader Name",
+  general_updates_requested: false,
+  id: "request_2",
+  lessons_requested: true,
+  locale: "nl",
+  source: "contact_form",
+  token_hash: "hashed",
+  updated_at: "2026-03-29T00:00:00.000Z",
+};
+
 describe("opt-in request helpers", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
+  beforeEach(() => vi.clearAllMocks());
 
   it("builds a localized confirmation URL", async () => {
     const { buildAudienceOptInConfirmationUrl } = await loadOptInModule();
-
     expect(buildAudienceOptInConfirmationUrl("nl", "abc123")).toBe(
       "https://www.copticcompass.com/nl/communications/confirm?token=abc123",
     );
   });
 
-  it("creates a pending opt-in request for a new email", async () => {
-    const insertedRequest = {
-      id: "request_1",
-      email: "reader@example.com",
-      full_name: "Reader Name",
-      locale: "nl",
-      source: "contact_form",
-      lessons_requested: true,
-      books_requested: true,
-      general_updates_requested: true,
-      token_hash: "hashed",
-      expires_at: "2026-04-05T00:00:00.000Z",
-      confirmed_at: null,
-      created_at: "2026-03-29T00:00:00.000Z",
-      updated_at: "2026-03-29T00:00:00.000Z",
-    };
+  it("creates a pending request with exactly the selected topics", async () => {
     const { createAudienceOptInRequest, createServiceRoleClientMock } =
-      await loadOptInModule({
-        insertData: insertedRequest,
-      });
+      await loadOptInModule({ insertData: pendingRequest });
 
     const result = await createAudienceOptInRequest({
       booksRequested: true,
       email: " READER@Example.com ",
       fullName: "  Reader Name ",
-      generalUpdatesRequested: true,
+      generalUpdatesRequested: false,
       lessonsRequested: true,
       locale: "nl",
       source: "contact_form",
     });
 
-    expect(result.request).toEqual(insertedRequest);
-    expect(result.token).toEqual(expect.any(String));
+    expect(result.request).toEqual(pendingRequest);
     expect(result.token.length).toBeGreaterThan(10);
-
     const supabase = createServiceRoleClientMock.mock.results[0]?.value;
-    const fromMock = supabase.from as ReturnType<typeof vi.fn>;
-    expect(fromMock).toHaveBeenCalledWith("audience_opt_in_requests");
+    expect(supabase.from).toHaveBeenCalledWith("audience_opt_in_requests");
   });
 
-  it("updates an existing pending request for the same email", async () => {
-    const existingRequest = {
-      id: 3020505508,
-      email: "reader@example.com",
-      full_name: "Reader Name",
-      locale: "en",
-      source: "contact_form",
-      lessons_requested: false,
-      books_requested: false,
-      general_updates_requested: false,
-      token_hash: "old_hash",
-      expires_at: "2026-03-30T00:00:00.000Z",
-      confirmed_at: null,
-      created_at: "2026-03-28T00:00:00.000Z",
-      updated_at: "2026-03-28T00:00:00.000Z",
-    };
-    const updatedRequest = {
-      ...existingRequest,
-      books_requested: true,
-      general_updates_requested: true,
-      lessons_requested: true,
-      locale: "nl",
-      token_hash: "new_hash",
-      updated_at: "2026-03-29T00:00:00.000Z",
-    };
+  it("refreshes an existing pending request for the same email", async () => {
+    const updatedRequest = { ...pendingRequest, token_hash: "new_hash" };
     const { createAudienceOptInRequest } = await loadOptInModule({
-      existingRequestByEmail: existingRequest,
+      existingRequestByEmail: pendingRequest,
       updateResponses: [updatedRequest],
     });
 
@@ -180,71 +159,71 @@ describe("opt-in request helpers", () => {
       booksRequested: true,
       email: "reader@example.com",
       fullName: "Reader Name",
-      generalUpdatesRequested: true,
+      generalUpdatesRequested: false,
       lessonsRequested: true,
       locale: "nl",
       source: "contact_form",
     });
 
     expect(result.request).toEqual(updatedRequest);
-    expect(result.token).toEqual(expect.any(String));
   });
 
-  it("rejects invalid confirmation tokens", async () => {
-    const { confirmAudienceOptInRequest, syncAudienceContactMock } =
-      await loadOptInModule();
+  it("previews a valid token without calling a mutation RPC", async () => {
+    const { getAudienceOptInRequestPreview, rpcMock } = await loadOptInModule({
+      tokenLookupRequest: pendingRequest,
+    });
 
-    await expect(confirmAudienceOptInRequest("bad-token")).resolves.toEqual({
+    await expect(
+      getAudienceOptInRequestPreview("scanner-prefetched-token"),
+    ).resolves.toEqual({
+      request: pendingRequest,
+      status: "pending",
+      success: true,
+    });
+    expect(rpcMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects malformed confirmation POSTs before database access", async () => {
+    const { confirmAudienceOptInRequest, rpcMock } = await loadOptInModule();
+    await expect(confirmAudienceOptInRequest("  ")).resolves.toEqual({
       request: null,
       status: "invalid",
       success: false,
     });
-
-    expect(syncAudienceContactMock).not.toHaveBeenCalled();
+    expect(rpcMock).not.toHaveBeenCalled();
   });
 
-  it("confirms a valid token and only then syncs audience preferences", async () => {
-    const tokenLookupRequest = {
-      id: "request_2",
-      email: "reader@example.com",
-      full_name: "Reader Name",
-      locale: "nl",
-      source: "contact_form",
-      lessons_requested: true,
-      books_requested: true,
-      general_updates_requested: true,
-      token_hash: "hashed",
-      expires_at: "2099-04-05T00:00:00.000Z",
-      confirmed_at: null,
-      created_at: "2026-03-29T00:00:00.000Z",
-      updated_at: "2026-03-29T00:00:00.000Z",
-    };
+  it("confirms through the atomic RPC and then syncs the committed contact", async () => {
     const confirmedRequest = {
-      ...tokenLookupRequest,
+      ...pendingRequest,
       confirmed_at: "2026-03-29T12:00:00.000Z",
-      updated_at: "2026-03-29T12:00:00.000Z",
     };
-    const { confirmAudienceOptInRequest, syncAudienceContactMock } =
-      await loadOptInModule({
-        tokenLookupRequest,
-        updateResponses: [confirmedRequest],
-      });
+    const {
+      confirmAudienceOptInRequest,
+      rpcMock,
+      syncAudienceContactByIdToProviderMock,
+    } = await loadOptInModule({
+      confirmedRequest,
+      rpcResult: {
+        audience_contact_id: "audience_123",
+        request_id: "request_2",
+        status: "confirmed",
+      },
+    });
 
-    const result = await confirmAudienceOptInRequest("valid-token");
-
-    expect(result).toEqual({
+    await expect(confirmAudienceOptInRequest("valid-token")).resolves.toEqual({
       request: confirmedRequest,
       status: "confirmed",
       success: true,
     });
-    expect(syncAudienceContactMock).toHaveBeenCalledWith({
-      booksOptIn: true,
-      email: "reader@example.com",
-      fullName: "Reader Name",
-      generalUpdatesOptIn: true,
-      lessonsOptIn: true,
-      locale: "nl",
-      source: "contact_form",
-    });
+    expect(rpcMock).toHaveBeenCalledWith(
+      "confirm_audience_opt_in_request",
+      expect.objectContaining({
+        p_policy_version: "privacy-2026-06-22",
+      }),
+    );
+    expect(syncAudienceContactByIdToProviderMock).toHaveBeenCalledWith(
+      "audience_123",
+    );
   });
 });

@@ -67,7 +67,19 @@ create table if not exists public.notification_events (
   payload jsonb not null default '{}'::jsonb,
   dedupe_key text unique,
   status text not null default 'queued' check (
-    status in ('queued', 'sent', 'failed')
+    status in (
+      'queued',
+      'processing',
+      'accepted',
+      'delivered',
+      'delayed',
+      'failed',
+      'bounced',
+      'complained',
+      'suppressed',
+      'dead_letter',
+      'sent'
+    )
   ),
   last_error text,
   processed_at timestamptz,
@@ -80,7 +92,18 @@ create table if not exists public.notification_deliveries (
   channel text not null check (channel in ('email')),
   recipient text not null,
   provider_message_id text,
-  status text not null check (status in ('sent', 'failed')),
+  status text not null check (
+    status in (
+      'accepted',
+      'delivered',
+      'delayed',
+      'failed',
+      'bounced',
+      'complained',
+      'suppressed',
+      'sent'
+    )
+  ),
   error text,
   created_at timestamptz not null default timezone('utc', now())
 );
@@ -97,11 +120,45 @@ create table if not exists public.notification_email_jobs (
   html_body text,
   text_body text not null,
   status text not null default 'queued' check (
-    status in ('queued', 'processing', 'sent', 'failed')
+    status in (
+      'queued',
+      'processing',
+      'retry_scheduled',
+      'accepted',
+      'failed',
+      'dead_letter',
+      'sent'
+    )
   ),
+  attempt_count integer not null default 0,
+  max_attempts integer not null default 5,
+  next_attempt_at timestamptz not null default now(),
+  last_attempt_at timestamptz,
+  locked_at timestamptz,
+  lock_expires_at timestamptz,
+  provider_message_id text,
   last_error text,
   processed_at timestamptz,
-  created_at timestamptz not null default timezone('utc', now())
+  created_at timestamptz not null default timezone('utc', now()),
+  check (attempt_count >= 0 and attempt_count <= max_attempts),
+  check (max_attempts between 1 and 25),
+  check (
+    lock_expires_at is null
+    or (locked_at is not null and lock_expires_at > locked_at)
+  )
+);
+
+create table if not exists public.notification_email_job_audit_events (
+  id uuid primary key default gen_random_uuid(),
+  notification_email_job_id uuid not null references public.notification_email_jobs (id) on delete cascade,
+  actor_id uuid references public.profiles (id) on delete set null,
+  action text not null check (action in ('manual_retry')),
+  reason text not null check (
+    char_length(btrim(reason)) between 8 and 1000
+  ),
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  check (pg_column_size(metadata) <= 65536)
 );
 
 create table if not exists public.audience_contacts (
@@ -150,6 +207,117 @@ create table if not exists public.audience_opt_in_requests (
   updated_at timestamptz not null default timezone('utc', now())
 );
 
+create table if not exists public.audience_consent_events (
+  id uuid primary key default gen_random_uuid(),
+  audience_contact_id uuid not null references public.audience_contacts (id) on delete cascade,
+  topic text not null check (
+    topic in ('lessons', 'books', 'general_updates', 'all')
+  ),
+  action text not null check (
+    action in ('opted_in', 'opted_out', 'suppressed', 'suppression_lifted')
+  ),
+  source text not null check (
+    source in (
+      'contact_form',
+      'dashboard',
+      'public_preferences',
+      'resend_webhook',
+      'admin_migration',
+      'system'
+    )
+  ),
+  policy_version text not null check (char_length(policy_version) between 1 and 100),
+  opt_in_request_id uuid references public.audience_opt_in_requests (id) on delete set null,
+  provider_event_id text check (
+    provider_event_id is null or char_length(provider_event_id) between 1 and 255
+  ),
+  dedupe_key text unique check (
+    dedupe_key is null or char_length(dedupe_key) between 1 and 255
+  ),
+  occurred_at timestamptz not null default now(),
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  check (pg_column_size(metadata) <= 65536)
+);
+
+create table if not exists public.audience_suppressions (
+  id uuid primary key default gen_random_uuid(),
+  audience_contact_id uuid not null references public.audience_contacts (id) on delete cascade,
+  reason text not null check (
+    reason in (
+      'provider_unsubscribe',
+      'hard_bounce',
+      'spam_complaint',
+      'manual',
+      'invalid_address'
+    )
+  ),
+  provider text check (provider in ('resend', 'manual', 'system')),
+  provider_event_id text check (
+    provider_event_id is null or char_length(provider_event_id) between 1 and 255
+  ),
+  suppressed_at timestamptz not null default now(),
+  lifted_at timestamptz,
+  metadata jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  check (lifted_at is null or lifted_at >= suppressed_at),
+  check (pg_column_size(metadata) <= 65536)
+);
+
+create table if not exists public.provider_webhook_events (
+  id uuid primary key default gen_random_uuid(),
+  provider text not null check (provider = 'resend'),
+  provider_event_id text not null check (
+    char_length(provider_event_id) between 1 and 255
+  ),
+  event_type text not null check (char_length(event_type) between 1 and 120),
+  provider_created_at timestamptz,
+  received_at timestamptz not null default now(),
+  processed_at timestamptz,
+  status text not null default 'received' check (
+    status in ('received', 'processed', 'ignored', 'failed')
+  ),
+  attempt_count integer not null default 0 check (attempt_count >= 0),
+  last_error text,
+  payload jsonb not null default '{}'::jsonb check (
+    pg_column_size(payload) <= 1048576
+  ),
+  unique (provider, provider_event_id)
+);
+
+insert into public.audience_consent_events (
+  audience_contact_id,
+  topic,
+  action,
+  source,
+  policy_version,
+  dedupe_key,
+  occurred_at,
+  metadata
+)
+select
+  contact.id,
+  subscription.topic,
+  'opted_in',
+  'admin_migration',
+  'legacy-2026-06-22',
+  'legacy-audience-consent:' || contact.id::text || ':' || subscription.topic,
+  coalesce(contact.consented_at, contact.updated_at, contact.created_at),
+  jsonb_build_object(
+    'migrated', true,
+    'original_source', contact.source
+  )
+from public.audience_contacts as contact
+cross join lateral (
+  values
+    ('lessons', contact.lessons_opt_in),
+    ('books', contact.books_opt_in),
+    ('general_updates', contact.general_updates_opt_in)
+) as subscription(topic, is_opted_in)
+where subscription.is_opted_in
+on conflict (dedupe_key) do nothing;
+
 create table if not exists public.content_releases (
   id uuid primary key default gen_random_uuid(),
   release_type text not null check (
@@ -166,7 +334,15 @@ create table if not exists public.content_releases (
   body_en text,
   body_nl text,
   status text not null default 'draft' check (
-    status in ('draft', 'approved', 'queued', 'sending', 'sent', 'cancelled')
+    status in (
+      'draft',
+      'approved',
+      'queued',
+      'sending',
+      'sent',
+      'partially_failed',
+      'cancelled'
+    )
   ),
   delivery_requested_at timestamptz,
   delivery_requested_by uuid references public.profiles (id),
@@ -188,6 +364,71 @@ create table if not exists public.content_release_items (
   title_snapshot text not null,
   url_snapshot text not null,
   created_at timestamptz not null default timezone('utc', now())
+);
+
+create table if not exists public.content_release_targets (
+  id uuid primary key default gen_random_uuid(),
+  release_id uuid not null references public.content_releases (id) on delete cascade,
+  language text not null check (language in ('en', 'nl')),
+  segment_id text not null check (char_length(btrim(segment_id)) between 1 and 255),
+  topic_id text not null check (char_length(btrim(topic_id)) between 1 and 255),
+  subject_snapshot text not null check (char_length(btrim(subject_snapshot)) between 1 and 160),
+  recipient_count_snapshot integer not null check (recipient_count_snapshot >= 0),
+  status text not null default 'pending' check (
+    status in (
+      'pending',
+      'creating',
+      'created',
+      'sending',
+      'accepted',
+      'failed',
+      'cancelled'
+    )
+  ),
+  provider_broadcast_id text,
+  attempt_count integer not null default 0 check (attempt_count >= 0),
+  next_attempt_at timestamptz not null default now(),
+  last_error text,
+  created_at timestamptz not null default timezone('utc', now()),
+  updated_at timestamptz not null default timezone('utc', now()),
+  creating_started_at timestamptz,
+  created_provider_at timestamptz,
+  sending_started_at timestamptz,
+  accepted_at timestamptz,
+  failed_at timestamptz,
+  cancelled_at timestamptz,
+  last_provider_status text check (
+    last_provider_status is null
+    or last_provider_status in (
+      'accepted',
+      'delayed',
+      'delivered',
+      'failed',
+      'bounced',
+      'complained',
+      'suppressed'
+    )
+  ),
+  provider_status_updated_at timestamptz,
+  last_provider_event_id text check (
+    last_provider_event_id is null
+    or char_length(btrim(last_provider_event_id)) between 1 and 255
+  ),
+  last_provider_error text check (
+    last_provider_error is null
+    or char_length(btrim(last_provider_error)) between 1 and 255
+  ),
+  delivered_at timestamptz,
+  delayed_at timestamptz,
+  bounced_at timestamptz,
+  complained_at timestamptz,
+  suppressed_at timestamptz,
+  unique (release_id, language, segment_id, topic_id),
+  unique (provider_broadcast_id),
+  check (
+    provider_broadcast_id is null
+    or char_length(btrim(provider_broadcast_id)) between 1 and 255
+  )
 );
 
 create table if not exists public.lesson_progress (
@@ -340,6 +581,10 @@ create index if not exists notification_events_aggregate_created_at_idx
 create index if not exists notification_events_event_type_created_at_idx
   on public.notification_events (event_type, created_at desc);
 
+create index if not exists notification_events_retention_processed_idx
+  on public.notification_events (processed_at)
+  where status in ('accepted', 'delivered', 'sent') and processed_at is not null;
+
 create index if not exists notification_deliveries_event_id_idx
   on public.notification_deliveries (event_id);
 
@@ -348,6 +593,28 @@ create index if not exists notification_deliveries_status_created_at_idx
 
 create index if not exists notification_email_jobs_status_created_at_idx
   on public.notification_email_jobs (status, created_at asc);
+
+create index if not exists notification_email_jobs_eligible_idx
+  on public.notification_email_jobs (next_attempt_at, created_at)
+  where status in ('queued', 'retry_scheduled');
+
+create index if not exists notification_email_jobs_expired_lease_idx
+  on public.notification_email_jobs (lock_expires_at)
+  where status = 'processing';
+
+create index if not exists notification_email_jobs_retention_processed_idx
+  on public.notification_email_jobs (processed_at)
+  where status in ('accepted', 'sent') and processed_at is not null;
+
+create index if not exists notification_email_job_audit_events_job_created_idx
+  on public.notification_email_job_audit_events (
+    notification_email_job_id,
+    created_at desc
+  );
+
+create index if not exists notification_email_job_audit_events_actor_created_idx
+  on public.notification_email_job_audit_events (actor_id, created_at desc)
+  where actor_id is not null;
 
 create index if not exists audience_contacts_profile_id_idx
   on public.audience_contacts (profile_id);
@@ -388,6 +655,31 @@ create index if not exists audience_opt_in_requests_confirmed_at_idx
 create index if not exists audience_opt_in_requests_updated_at_idx
   on public.audience_opt_in_requests (updated_at desc);
 
+create index if not exists audience_consent_events_contact_occurred_at_idx
+  on public.audience_consent_events (audience_contact_id, occurred_at desc);
+
+create index if not exists audience_consent_events_topic_occurred_at_idx
+  on public.audience_consent_events (topic, occurred_at desc);
+
+create index if not exists audience_consent_events_provider_event_id_idx
+  on public.audience_consent_events (provider_event_id)
+  where provider_event_id is not null;
+
+create unique index if not exists audience_suppressions_active_reason_idx
+  on public.audience_suppressions (audience_contact_id, reason)
+  where lifted_at is null;
+
+create index if not exists audience_suppressions_active_suppressed_at_idx
+  on public.audience_suppressions (suppressed_at desc)
+  where lifted_at is null;
+
+create index if not exists provider_webhook_events_status_received_at_idx
+  on public.provider_webhook_events (status, received_at asc);
+
+create index if not exists provider_webhook_events_provider_created_at_idx
+  on public.provider_webhook_events (provider, provider_created_at desc)
+  where provider_created_at is not null;
+
 create index if not exists content_releases_status_created_at_idx
   on public.content_releases (status, created_at desc);
 
@@ -423,6 +715,17 @@ create index if not exists content_release_items_release_id_idx
 
 create index if not exists content_release_items_item_type_item_id_idx
   on public.content_release_items (item_type, item_id);
+
+create index if not exists content_release_targets_release_status_idx
+  on public.content_release_targets (release_id, status, next_attempt_at);
+
+create index if not exists content_release_targets_provider_broadcast_idx
+  on public.content_release_targets (provider_broadcast_id)
+  where provider_broadcast_id is not null;
+
+create index if not exists content_release_targets_provider_status_idx
+  on public.content_release_targets (last_provider_status, provider_status_updated_at desc)
+  where last_provider_status is not null;
 
 create index if not exists lesson_progress_user_id_idx
   on public.lesson_progress (user_id);
@@ -536,7 +839,831 @@ begin
 end;
 $$;
 
+create or replace function public.enqueue_notification_email_job(
+  p_event_type text,
+  p_aggregate_type text,
+  p_aggregate_id text,
+  p_recipient text,
+  p_subject text,
+  p_text_body text,
+  p_to_recipients text[],
+  p_payload jsonb default '{}'::jsonb,
+  p_dedupe_key text default null,
+  p_from_email text default null,
+  p_html_body text default null,
+  p_cc_recipients text[] default '{}'::text[],
+  p_bcc_recipients text[] default '{}'::text[],
+  p_reply_to_recipients text[] default '{}'::text[],
+  p_max_attempts integer default 5
+)
+returns table (
+  event_id uuid,
+  event_status text,
+  job_already_existed boolean,
+  job_id uuid,
+  job_status text
+)
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  v_event_id uuid;
+  v_event_status text;
+  v_job_id uuid;
+  v_job_status text;
+  v_job_already_existed boolean := false;
+begin
+  if p_event_type is null or btrim(p_event_type) = '' then
+    raise exception 'p_event_type is required';
+  end if;
+
+  if p_aggregate_type is null or btrim(p_aggregate_type) = '' then
+    raise exception 'p_aggregate_type is required';
+  end if;
+
+  if p_aggregate_id is null or btrim(p_aggregate_id) = '' then
+    raise exception 'p_aggregate_id is required';
+  end if;
+
+  if p_recipient is null or btrim(p_recipient) = '' then
+    raise exception 'p_recipient is required';
+  end if;
+
+  if p_subject is null or btrim(p_subject) = '' then
+    raise exception 'p_subject is required';
+  end if;
+
+  if p_text_body is null or btrim(p_text_body) = '' then
+    raise exception 'p_text_body is required';
+  end if;
+
+  if p_to_recipients is null or cardinality(p_to_recipients) = 0 then
+    raise exception 'p_to_recipients must contain at least one recipient';
+  end if;
+
+  if p_max_attempts is null or p_max_attempts < 1 or p_max_attempts > 25 then
+    raise exception 'p_max_attempts must be between 1 and 25';
+  end if;
+
+  insert into public.notification_events (
+    aggregate_id,
+    aggregate_type,
+    channel,
+    dedupe_key,
+    event_type,
+    payload,
+    recipient,
+    subject
+  )
+  values (
+    p_aggregate_id,
+    p_aggregate_type,
+    'email',
+    p_dedupe_key,
+    p_event_type,
+    coalesce(p_payload, '{}'::jsonb),
+    p_recipient,
+    p_subject
+  )
+  on conflict (dedupe_key) do update
+  set dedupe_key = excluded.dedupe_key
+  returning id, status into v_event_id, v_event_status;
+
+  insert into public.notification_email_jobs (
+    bcc_recipients,
+    cc_recipients,
+    from_email,
+    html_body,
+    max_attempts,
+    notification_event_id,
+    reply_to_recipients,
+    subject,
+    text_body,
+    to_recipients
+  )
+  values (
+    coalesce(p_bcc_recipients, '{}'::text[]),
+    coalesce(p_cc_recipients, '{}'::text[]),
+    p_from_email,
+    p_html_body,
+    p_max_attempts,
+    v_event_id,
+    coalesce(p_reply_to_recipients, '{}'::text[]),
+    p_subject,
+    p_text_body,
+    p_to_recipients
+  )
+  on conflict (notification_event_id) do nothing
+  returning id, status into v_job_id, v_job_status;
+
+  if v_job_id is null then
+    select job.id, job.status
+    into v_job_id, v_job_status
+    from public.notification_email_jobs as job
+    where job.notification_event_id = v_event_id;
+
+    v_job_already_existed := true;
+  end if;
+
+  if v_job_id is null then
+    raise exception 'Could not create or load notification email job';
+  end if;
+
+  return query
+  select
+    v_event_id,
+    v_event_status,
+    v_job_already_existed,
+    v_job_id,
+    v_job_status;
+end;
+$$;
+
+revoke all on function public.enqueue_notification_email_job(
+  text,
+  text,
+  text,
+  text,
+  text,
+  text,
+  text[],
+  jsonb,
+  text,
+  text,
+  text,
+  text[],
+  text[],
+  text[],
+  integer
+) from public, anon, authenticated;
+
+grant execute on function public.enqueue_notification_email_job(
+  text,
+  text,
+  text,
+  text,
+  text,
+  text,
+  text[],
+  jsonb,
+  text,
+  text,
+  text,
+  text[],
+  text[],
+  text[],
+  integer
+) to service_role;
+
+create or replace function public.queue_content_release_delivery_with_targets(
+  p_release_id uuid,
+  p_item_count integer,
+  p_targets jsonb
+)
+returns table (
+  release_id uuid,
+  release_status text,
+  target_count integer,
+  total_recipient_count integer
+)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_actor_id uuid := auth.uid();
+  v_now timestamptz := now();
+  v_release public.content_releases%rowtype;
+  v_target record;
+  v_target_count integer := 0;
+  v_total_recipient_count integer := 0;
+begin
+  if not public.is_admin() then
+    raise exception 'Only admins can queue content release delivery';
+  end if;
+
+  if p_release_id is null then
+    raise exception 'p_release_id is required';
+  end if;
+
+  if p_item_count is null or p_item_count < 1 then
+    raise exception 'p_item_count must be greater than zero';
+  end if;
+
+  if p_targets is null or jsonb_typeof(p_targets) <> 'array' then
+    raise exception 'p_targets must be a JSON array';
+  end if;
+
+  select *
+  into v_release
+  from public.content_releases
+  where id = p_release_id
+  for update;
+
+  if not found then
+    raise exception 'Content release not found';
+  end if;
+
+  if v_release.status not in ('approved', 'partially_failed') then
+    raise exception 'Only approved or partially failed releases can be queued';
+  end if;
+
+  for v_target in
+    select *
+    from jsonb_to_recordset(p_targets) as target(
+      language text,
+      segment_id text,
+      topic_id text,
+      subject_snapshot text,
+      recipient_count_snapshot integer
+    )
+  loop
+    if v_target.language not in ('en', 'nl') then
+      raise exception 'Target language must be en or nl';
+    end if;
+
+    if v_target.segment_id is null or btrim(v_target.segment_id) = '' then
+      raise exception 'Target segment_id is required';
+    end if;
+
+    if v_target.topic_id is null or btrim(v_target.topic_id) = '' then
+      raise exception 'Target topic_id is required';
+    end if;
+
+    if v_target.subject_snapshot is null or btrim(v_target.subject_snapshot) = '' then
+      raise exception 'Target subject_snapshot is required';
+    end if;
+
+    if v_target.recipient_count_snapshot is null or v_target.recipient_count_snapshot < 1 then
+      raise exception 'Target recipient_count_snapshot must be greater than zero';
+    end if;
+
+    insert into public.content_release_targets (
+      language,
+      next_attempt_at,
+      recipient_count_snapshot,
+      release_id,
+      segment_id,
+      status,
+      subject_snapshot,
+      topic_id,
+      updated_at
+    )
+    values (
+      v_target.language,
+      v_now,
+      v_target.recipient_count_snapshot,
+      p_release_id,
+      btrim(v_target.segment_id),
+      'pending',
+      btrim(v_target.subject_snapshot),
+      btrim(v_target.topic_id),
+      v_now
+    )
+    on conflict (release_id, language, segment_id, topic_id) do update
+    set
+      accepted_at = case
+        when public.content_release_targets.status = 'accepted'
+          then public.content_release_targets.accepted_at
+        else null
+      end,
+      cancelled_at = case
+        when public.content_release_targets.status = 'accepted'
+          then public.content_release_targets.cancelled_at
+        else null
+      end,
+      failed_at = case
+        when public.content_release_targets.status = 'accepted'
+          then public.content_release_targets.failed_at
+        else null
+      end,
+      last_error = case
+        when public.content_release_targets.status = 'accepted'
+          then public.content_release_targets.last_error
+        else null
+      end,
+      sending_started_at = case
+        when public.content_release_targets.status = 'accepted'
+          then public.content_release_targets.sending_started_at
+        else null
+      end,
+      next_attempt_at = case
+        when public.content_release_targets.status = 'accepted'
+          then public.content_release_targets.next_attempt_at
+        else excluded.next_attempt_at
+      end,
+      recipient_count_snapshot = case
+        when public.content_release_targets.status = 'accepted'
+          then public.content_release_targets.recipient_count_snapshot
+        else excluded.recipient_count_snapshot
+      end,
+      status = case
+        when public.content_release_targets.status = 'accepted'
+          then public.content_release_targets.status
+        else 'pending'
+      end,
+      subject_snapshot = case
+        when public.content_release_targets.status = 'accepted'
+          then public.content_release_targets.subject_snapshot
+        else excluded.subject_snapshot
+      end,
+      updated_at = v_now;
+
+    v_target_count := v_target_count + 1;
+    v_total_recipient_count :=
+      v_total_recipient_count + v_target.recipient_count_snapshot;
+  end loop;
+
+  if v_target_count = 0 then
+    raise exception 'At least one release target is required';
+  end if;
+
+  update public.content_release_targets as target
+  set
+    cancelled_at = v_now,
+    last_error = 'Target no longer matches the current release plan.',
+    status = 'cancelled',
+    updated_at = v_now
+  where target.release_id = p_release_id
+    and target.status <> 'accepted'
+    and not exists (
+      select 1
+      from jsonb_to_recordset(p_targets) as planned(
+        language text,
+        segment_id text,
+        topic_id text,
+        subject_snapshot text,
+        recipient_count_snapshot integer
+      )
+      where planned.language = target.language
+        and btrim(planned.segment_id) = target.segment_id
+        and btrim(planned.topic_id) = target.topic_id
+    );
+
+  update public.content_releases
+  set
+    delivery_cursor = null,
+    delivery_finished_at = null,
+    delivery_requested_at = v_now,
+    delivery_requested_by = v_actor_id,
+    delivery_started_at = null,
+    delivery_summary = jsonb_build_object(
+      'eligible_recipient_count', v_total_recipient_count,
+      'failed_count', 0,
+      'item_count', p_item_count,
+      'processed_recipient_count', 0,
+      'remaining_recipient_count', v_total_recipient_count,
+      'sent_count', 0,
+      'skipped_count', 0
+    ),
+    last_delivery_error = null,
+    sent_at = null,
+    status = 'queued',
+    updated_at = v_now
+  where id = p_release_id
+  returning * into v_release;
+
+  return query
+  select
+    v_release.id,
+    v_release.status,
+    v_target_count,
+    v_total_recipient_count;
+end;
+$$;
+
+revoke all on function public.queue_content_release_delivery_with_targets(
+  uuid,
+  integer,
+  jsonb
+) from public, anon, authenticated;
+
+grant execute on function public.queue_content_release_delivery_with_targets(
+  uuid,
+  integer,
+  jsonb
+) to authenticated;
+
+create or replace function public.claim_notification_email_jobs(
+  p_limit integer default 5,
+  p_job_id uuid default null,
+  p_lease_seconds integer default 300
+)
+returns setof public.notification_email_jobs
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+begin
+  if p_limit is null or p_limit < 1 or p_limit > 100 then
+    raise exception 'p_limit must be between 1 and 100';
+  end if;
+
+  if p_lease_seconds is null or p_lease_seconds < 30 or p_lease_seconds > 3600 then
+    raise exception 'p_lease_seconds must be between 30 and 3600';
+  end if;
+
+  return query
+  with claimable_jobs as (
+    select job.id
+    from public.notification_email_jobs as job
+    where
+      (p_job_id is null or job.id = p_job_id)
+      and job.attempt_count < job.max_attempts
+      and (
+        (
+          job.status in ('queued', 'retry_scheduled')
+          and job.next_attempt_at <= pg_catalog.now()
+        )
+        or (
+          job.status = 'processing'
+          and coalesce(
+            job.lock_expires_at,
+            job.last_attempt_at
+              + pg_catalog.make_interval(secs => p_lease_seconds),
+            job.created_at
+              + pg_catalog.make_interval(secs => p_lease_seconds)
+          ) <= pg_catalog.now()
+        )
+      )
+    order by job.next_attempt_at asc, job.created_at asc
+    for update of job skip locked
+    limit p_limit
+  )
+  update public.notification_email_jobs as job
+  set
+    status = 'processing',
+    attempt_count = job.attempt_count + 1,
+    last_attempt_at = pg_catalog.now(),
+    locked_at = pg_catalog.now(),
+    lock_expires_at = pg_catalog.now()
+      + pg_catalog.make_interval(secs => p_lease_seconds),
+    last_error = null
+  from claimable_jobs
+  where job.id = claimable_jobs.id
+  returning job.*;
+end;
+$$;
+
 grant execute on function public.is_admin() to anon, authenticated;
+revoke all on function public.claim_notification_email_jobs(integer, uuid, integer)
+  from public, anon, authenticated;
+grant execute on function public.claim_notification_email_jobs(integer, uuid, integer)
+  to service_role;
+
+create or replace function public.retry_notification_email_job(
+  p_job_id uuid,
+  p_reason text
+)
+returns table (
+  event_id uuid,
+  job_id uuid,
+  job_status text
+)
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  v_actor_id uuid := auth.uid();
+  v_event public.notification_events%rowtype;
+  v_job public.notification_email_jobs%rowtype;
+  v_previous_job_status text;
+  v_reason text := btrim(coalesce(p_reason, ''));
+  v_required_transactional boolean := false;
+  v_suppressed_recipient text;
+begin
+  if not public.is_admin() then
+    raise exception 'Only admins can retry notification email jobs';
+  end if;
+
+  if p_job_id is null then
+    raise exception 'p_job_id is required';
+  end if;
+
+  if char_length(v_reason) < 8 or char_length(v_reason) > 1000 then
+    raise exception 'A retry reason between 8 and 1000 characters is required';
+  end if;
+
+  select *
+  into v_job
+  from public.notification_email_jobs
+  where id = p_job_id
+  for update;
+
+  if not found then
+    raise exception 'Notification email job not found';
+  end if;
+
+  if v_job.status not in ('failed', 'dead_letter') then
+    raise exception 'Only failed or dead-letter notification email jobs can be retried manually';
+  end if;
+  v_previous_job_status := v_job.status;
+
+  select *
+  into v_event
+  from public.notification_events
+  where id = v_job.notification_event_id
+  for update;
+
+  if not found then
+    raise exception 'Notification event not found';
+  end if;
+
+  v_required_transactional :=
+    v_event.payload @> '{"notification_classification":{"required_transactional":true}}'::jsonb;
+
+  if not v_required_transactional then
+    select contact.email
+    into v_suppressed_recipient
+    from public.audience_contacts as contact
+    inner join public.audience_suppressions as suppression
+      on suppression.audience_contact_id = contact.id
+      and suppression.lifted_at is null
+    where lower(contact.email) = any (
+      select lower(recipient.email)
+      from unnest(v_job.to_recipients) as recipient(email)
+    )
+    limit 1;
+
+    if v_suppressed_recipient is not null then
+      raise exception 'Recipient is actively suppressed and this notification is not classified as required transactional mail';
+    end if;
+  end if;
+
+  update public.notification_email_jobs
+  set
+    last_error = null,
+    lock_expires_at = null,
+    locked_at = null,
+    max_attempts = greatest(max_attempts, attempt_count + 1),
+    next_attempt_at = now(),
+    processed_at = null,
+    status = 'queued'
+  where id = v_job.id
+  returning * into v_job;
+
+  update public.notification_events
+  set
+    last_error = null,
+    processed_at = null,
+    status = 'queued'
+  where id = v_event.id
+  returning * into v_event;
+
+  insert into public.notification_email_job_audit_events (
+    action,
+    actor_id,
+    metadata,
+    notification_email_job_id,
+    reason
+  )
+  values (
+    'manual_retry',
+    v_actor_id,
+    jsonb_build_object(
+      'previous_job_status',
+      v_previous_job_status,
+      'required_transactional',
+      v_required_transactional
+    ),
+    v_job.id,
+    v_reason
+  );
+
+  return query
+  select v_event.id, v_job.id, v_job.status;
+end;
+$$;
+
+revoke all on function public.retry_notification_email_job(uuid, text)
+  from public, anon, authenticated;
+grant execute on function public.retry_notification_email_job(uuid, text)
+  to authenticated;
+
+create or replace function public.run_mailing_retention(
+  p_dry_run boolean default true,
+  p_now timestamptz default now()
+)
+returns table (
+  retention_target text,
+  retention_action text,
+  retention_cutoff timestamptz,
+  affected_count bigint
+)
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  v_count bigint;
+  v_thirty_day_cutoff timestamptz;
+  v_ninety_day_cutoff timestamptz;
+begin
+  if p_now is null then
+    raise exception 'p_now is required';
+  end if;
+
+  v_thirty_day_cutoff := p_now - interval '30 days';
+  v_ninety_day_cutoff := p_now - interval '90 days';
+
+  if coalesce(p_dry_run, true) then
+    select count(*)
+    into v_count
+    from public.audience_opt_in_requests
+    where confirmed_at is null
+      and expires_at < v_thirty_day_cutoff;
+  else
+    with deleted as (
+      delete from public.audience_opt_in_requests
+      where confirmed_at is null
+        and expires_at < v_thirty_day_cutoff
+      returning 1
+    )
+    select count(*) into v_count from deleted;
+  end if;
+
+  retention_target := 'audience_opt_in_requests';
+  retention_action := 'delete_expired_unconfirmed';
+  retention_cutoff := v_thirty_day_cutoff;
+  affected_count := v_count;
+  return next;
+
+  if coalesce(p_dry_run, true) then
+    select count(*)
+    into v_count
+    from public.audience_preference_requests
+    where expires_at < v_thirty_day_cutoff;
+  else
+    with deleted as (
+      delete from public.audience_preference_requests
+      where expires_at < v_thirty_day_cutoff
+      returning 1
+    )
+    select count(*) into v_count from deleted;
+  end if;
+
+  retention_target := 'audience_preference_requests';
+  retention_action := 'delete_expired_links';
+  retention_cutoff := v_thirty_day_cutoff;
+  affected_count := v_count;
+  return next;
+
+  if coalesce(p_dry_run, true) then
+    select count(*)
+    into v_count
+    from public.provider_webhook_events
+    where received_at < v_ninety_day_cutoff
+      and not (
+        payload ? 'redacted'
+        and payload ->> 'retention_policy' = 'mailing-90-day-detailed-payload'
+      );
+  else
+    with updated as (
+      update public.provider_webhook_events
+      set payload = jsonb_build_object(
+        'redacted',
+        true,
+        'redacted_at',
+        p_now,
+        'retention_policy',
+        'mailing-90-day-detailed-payload'
+      )
+      where received_at < v_ninety_day_cutoff
+        and not (
+          payload ? 'redacted'
+          and payload ->> 'retention_policy' = 'mailing-90-day-detailed-payload'
+        )
+      returning 1
+    )
+    select count(*) into v_count from updated;
+  end if;
+
+  retention_target := 'provider_webhook_events';
+  retention_action := 'redact_raw_payload';
+  retention_cutoff := v_ninety_day_cutoff;
+  affected_count := v_count;
+  return next;
+
+  if coalesce(p_dry_run, true) then
+    select count(*)
+    into v_count
+    from public.notification_events
+    where status in ('accepted', 'delivered', 'sent')
+      and processed_at < v_ninety_day_cutoff
+      and not (
+        payload ? 'redacted'
+        and payload ->> 'retention_policy' = 'mailing-90-day-detailed-payload'
+      );
+  else
+    with updated as (
+      update public.notification_events
+      set payload = jsonb_build_object(
+        'redacted',
+        true,
+        'redacted_at',
+        p_now,
+        'retention_policy',
+        'mailing-90-day-detailed-payload'
+      )
+      where status in ('accepted', 'delivered', 'sent')
+        and processed_at < v_ninety_day_cutoff
+        and not (
+          payload ? 'redacted'
+          and payload ->> 'retention_policy' = 'mailing-90-day-detailed-payload'
+        )
+      returning 1
+    )
+    select count(*) into v_count from updated;
+  end if;
+
+  retention_target := 'notification_events';
+  retention_action := 'redact_terminal_payload';
+  retention_cutoff := v_ninety_day_cutoff;
+  affected_count := v_count;
+  return next;
+
+  if coalesce(p_dry_run, true) then
+    select count(*)
+    into v_count
+    from public.notification_email_jobs
+    where status in ('accepted', 'sent')
+      and processed_at < v_ninety_day_cutoff
+      and (
+        html_body is not null
+        or text_body <> '[redacted by mailing retention policy]'
+      );
+  else
+    with updated as (
+      update public.notification_email_jobs
+      set
+        html_body = null,
+        text_body = '[redacted by mailing retention policy]'
+      where status in ('accepted', 'sent')
+        and processed_at < v_ninety_day_cutoff
+        and (
+          html_body is not null
+          or text_body <> '[redacted by mailing retention policy]'
+        )
+      returning 1
+    )
+    select count(*) into v_count from updated;
+  end if;
+
+  retention_target := 'notification_email_jobs';
+  retention_action := 'redact_successful_bodies';
+  retention_cutoff := v_ninety_day_cutoff;
+  affected_count := v_count;
+  return next;
+end;
+$$;
+
+revoke all on function public.run_mailing_retention(boolean, timestamptz)
+  from public, anon, authenticated;
+grant execute on function public.run_mailing_retention(boolean, timestamptz)
+  to service_role;
+
+comment on table public.audience_consent_events is
+  'Append-only evidence for audience topic consent and suppression changes.';
+comment on table public.audience_suppressions is
+  'Active and historical restrictions that override ordinary marketing preferences.';
+comment on table public.provider_webhook_events is
+  'Idempotent inbox for signed provider webhook processing and replay diagnostics.';
+comment on table public.notification_email_job_audit_events is
+  'Admin recovery actions for durable notification email jobs.';
+comment on table public.content_release_targets is
+  'Durable per-locale/per-segment Broadcast targets for resumable content release delivery.';
+comment on column public.content_release_targets.last_provider_status is
+  'Most recent normalized provider lifecycle state observed from signed webhooks.';
+comment on column public.content_release_targets.last_provider_error is
+  'Sanitized provider diagnostic code for the latest actionable delivery feedback.';
+comment on function public.enqueue_notification_email_job(
+  text,
+  text,
+  text,
+  text,
+  text,
+  text,
+  text[],
+  jsonb,
+  text,
+  text,
+  text,
+  text[],
+  text[],
+  text[],
+  integer
+) is
+  'Atomically creates or reuses a logical notification event and its durable email job.';
+comment on function public.claim_notification_email_jobs(integer, uuid, integer) is
+  'Atomically leases eligible notification email jobs for trusted background workers.';
+comment on function public.retry_notification_email_job(uuid, text) is
+  'Queues a failed or dead-letter notification email job for one audited manual retry.';
+comment on function public.queue_content_release_delivery_with_targets(uuid, integer, jsonb) is
+  'Atomically persists a content release target plan and queues the release for Broadcast delivery.';
+comment on function public.run_mailing_retention(boolean, timestamptz) is
+  'Reports or applies retention cleanup for short-lived mailing tokens and detailed delivery payloads. Defaults to dry-run mode.';
 
 drop trigger if exists on_auth_user_created on auth.users;
 
@@ -588,11 +1715,16 @@ alter table public.contact_messages enable row level security;
 alter table public.notification_events enable row level security;
 alter table public.notification_deliveries enable row level security;
 alter table public.notification_email_jobs enable row level security;
+alter table public.notification_email_job_audit_events enable row level security;
 alter table public.audience_contacts enable row level security;
 alter table public.audience_contact_sync_state enable row level security;
 alter table public.audience_opt_in_requests enable row level security;
+alter table public.audience_consent_events enable row level security;
+alter table public.audience_suppressions enable row level security;
+alter table public.provider_webhook_events enable row level security;
 alter table public.content_releases enable row level security;
 alter table public.content_release_items enable row level security;
+alter table public.content_release_targets enable row level security;
 alter table public.lesson_progress enable row level security;
 alter table public.section_progress enable row level security;
 alter table public.lesson_bookmarks enable row level security;
@@ -613,6 +1745,8 @@ drop policy if exists "Admins can read all contact messages" on public.contact_m
 drop policy if exists "Admins can update contact messages" on public.contact_messages;
 drop policy if exists "Admins can read all notification events" on public.notification_events;
 drop policy if exists "Admins can read all notification deliveries" on public.notification_deliveries;
+drop policy if exists "Admins can read all notification email jobs" on public.notification_email_jobs;
+drop policy if exists "Admins can read all notification email job audit events" on public.notification_email_job_audit_events;
 drop policy if exists "Users can read their own audience contact" on public.audience_contacts;
 drop policy if exists "Admins can read all audience contacts" on public.audience_contacts;
 drop policy if exists "Admins can read all audience contact sync states" on public.audience_contact_sync_state;
@@ -620,12 +1754,16 @@ drop policy if exists "Admins can insert audience contact sync states" on public
 drop policy if exists "Admins can update audience contact sync states" on public.audience_contact_sync_state;
 drop policy if exists "Admins can read all audience opt-in requests" on public.audience_opt_in_requests;
 drop policy if exists "Admins can update audience opt-in requests" on public.audience_opt_in_requests;
+drop policy if exists "Admins can read all audience consent events" on public.audience_consent_events;
+drop policy if exists "Admins can read all audience suppressions" on public.audience_suppressions;
+drop policy if exists "Admins can read all provider webhook events" on public.provider_webhook_events;
 drop policy if exists "Admins can read all content releases" on public.content_releases;
 drop policy if exists "Admins can insert content releases" on public.content_releases;
 drop policy if exists "Admins can update content releases" on public.content_releases;
 drop policy if exists "Admins can delete content releases" on public.content_releases;
 drop policy if exists "Admins can read all content release items" on public.content_release_items;
 drop policy if exists "Admins can insert content release items" on public.content_release_items;
+drop policy if exists "Admins can read all content release targets" on public.content_release_targets;
 drop policy if exists "Users can read their own lesson progress" on public.lesson_progress;
 drop policy if exists "Users can insert their own lesson progress" on public.lesson_progress;
 drop policy if exists "Users can update their own lesson progress" on public.lesson_progress;
@@ -733,6 +1871,18 @@ for select
 to authenticated
 using (public.is_admin());
 
+create policy "Admins can read all notification email jobs"
+on public.notification_email_jobs
+for select
+to authenticated
+using (public.is_admin());
+
+create policy "Admins can read all notification email job audit events"
+on public.notification_email_job_audit_events
+for select
+to authenticated
+using (public.is_admin());
+
 create policy "Users can read their own audience contact"
 on public.audience_contacts
 for select
@@ -780,6 +1930,24 @@ to authenticated
 using (public.is_admin())
 with check (public.is_admin());
 
+create policy "Admins can read all audience consent events"
+on public.audience_consent_events
+for select
+to authenticated
+using (public.is_admin());
+
+create policy "Admins can read all audience suppressions"
+on public.audience_suppressions
+for select
+to authenticated
+using (public.is_admin());
+
+create policy "Admins can read all provider webhook events"
+on public.provider_webhook_events
+for select
+to authenticated
+using (public.is_admin());
+
 create policy "Admins can read all content releases"
 on public.content_releases
 for select
@@ -816,6 +1984,12 @@ on public.content_release_items
 for insert
 to authenticated
 with check (public.is_admin());
+
+create policy "Admins can read all content release targets"
+on public.content_release_targets
+for select
+to authenticated
+using (public.is_admin());
 
 create policy "Users can read their own lesson progress"
 on public.lesson_progress
@@ -1034,3 +2208,505 @@ using (
   bucket_id = 'avatars'
   and (storage.foldername(name))[1] = auth.uid()::text
 );
+alter table public.audience_contacts
+drop constraint if exists audience_contacts_source_check;
+
+alter table public.audience_contacts
+add constraint audience_contacts_source_check check (
+  source in (
+    'contact_form',
+    'dashboard',
+    'signup',
+    'public_preferences',
+    'resend_webhook',
+    'system'
+  )
+);
+
+alter table public.audience_consent_events
+drop constraint if exists audience_consent_events_source_check;
+
+alter table public.audience_consent_events
+add constraint audience_consent_events_source_check check (
+  source in (
+    'contact_form',
+    'dashboard',
+    'public_preferences',
+    'resend_webhook',
+    'admin_migration',
+    'signup',
+    'system'
+  )
+);
+
+create table if not exists public.audience_preference_requests (
+  id uuid primary key default gen_random_uuid(),
+  audience_contact_id uuid not null references public.audience_contacts (id) on delete cascade,
+  token_hash text not null unique check (char_length(token_hash) between 32 and 128),
+  locale text not null default 'en' check (locale in ('en', 'nl')),
+  expires_at timestamptz not null,
+  used_at timestamptz,
+  created_at timestamptz not null default now(),
+  check (expires_at > created_at),
+  check (used_at is null or used_at >= created_at)
+);
+
+create index if not exists audience_preference_requests_contact_created_at_idx
+  on public.audience_preference_requests (audience_contact_id, created_at desc);
+
+create index if not exists audience_preference_requests_expires_at_idx
+  on public.audience_preference_requests (expires_at)
+  where used_at is null;
+
+alter table public.audience_preference_requests enable row level security;
+
+drop policy if exists "Admins can read all audience preference requests"
+  on public.audience_preference_requests;
+
+create policy "Admins can read all audience preference requests"
+on public.audience_preference_requests
+for select
+to authenticated
+using (public.is_admin());
+
+create or replace function public.apply_audience_preferences(
+  p_email text,
+  p_full_name text,
+  p_locale text,
+  p_profile_id uuid,
+  p_source text,
+  p_lessons_opt_in boolean,
+  p_books_opt_in boolean,
+  p_general_updates_opt_in boolean,
+  p_actor text,
+  p_policy_version text,
+  p_occurred_at timestamptz,
+  p_opt_in_request_id uuid,
+  p_dedupe_prefix text
+)
+returns public.audience_contacts
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  v_contact public.audience_contacts%rowtype;
+  v_existing public.audience_contacts%rowtype;
+  v_email text := pg_catalog.lower(pg_catalog.btrim(p_email));
+  v_full_name text := nullif(pg_catalog.btrim(p_full_name), '');
+  v_is_subscribed boolean;
+  v_now timestamptz := coalesce(p_occurred_at, pg_catalog.now());
+begin
+  if pg_catalog.char_length(v_email) not between 3 and 254 then
+    raise exception 'A valid audience email is required.';
+  end if;
+
+  if p_locale not in ('en', 'nl') then
+    raise exception 'Unsupported audience locale.';
+  end if;
+
+  if p_source not in (
+    'contact_form',
+    'dashboard',
+    'signup',
+    'public_preferences',
+    'resend_webhook',
+    'system'
+  ) then
+    raise exception 'Unsupported audience preference source.';
+  end if;
+
+  if p_actor not in ('visitor', 'authenticated_user', 'provider', 'system') then
+    raise exception 'Unsupported audience preference actor.';
+  end if;
+
+  if p_lessons_opt_in is null
+    or p_books_opt_in is null
+    or p_general_updates_opt_in is null then
+    raise exception 'Audience topic preferences cannot be null.';
+  end if;
+
+  if v_full_name is not null and pg_catalog.char_length(v_full_name) > 200 then
+    raise exception 'Audience full name is too long.';
+  end if;
+
+  if pg_catalog.char_length(pg_catalog.btrim(p_policy_version)) not between 1 and 100 then
+    raise exception 'A valid policy version is required.';
+  end if;
+
+  if p_dedupe_prefix is not null
+    and pg_catalog.char_length(p_dedupe_prefix) not between 1 and 200 then
+    raise exception 'Invalid audience preference dedupe prefix.';
+  end if;
+
+  perform pg_catalog.pg_advisory_xact_lock(
+    pg_catalog.hashtextextended(v_email, 0)
+  );
+
+  select contact.*
+  into v_existing
+  from public.audience_contacts as contact
+  where contact.email = v_email
+  for update;
+
+  if p_actor in ('provider', 'system') and (
+    (p_lessons_opt_in and not coalesce(v_existing.lessons_opt_in, false))
+    or (p_books_opt_in and not coalesce(v_existing.books_opt_in, false))
+    or (
+      p_general_updates_opt_in
+      and not coalesce(v_existing.general_updates_opt_in, false)
+    )
+  ) then
+    raise exception 'Only an explicit user command may opt into audience topics.';
+  end if;
+
+  v_is_subscribed := p_lessons_opt_in
+    or p_books_opt_in
+    or p_general_updates_opt_in;
+
+  insert into public.audience_contacts (
+    email,
+    full_name,
+    locale,
+    profile_id,
+    source,
+    lessons_opt_in,
+    books_opt_in,
+    general_updates_opt_in,
+    consented_at,
+    unsubscribed_at,
+    created_at,
+    updated_at
+  )
+  values (
+    v_email,
+    v_full_name,
+    p_locale,
+    p_profile_id,
+    p_source,
+    p_lessons_opt_in,
+    p_books_opt_in,
+    p_general_updates_opt_in,
+    case when v_is_subscribed then v_now else null end,
+    case when v_is_subscribed then null else v_now end,
+    v_now,
+    v_now
+  )
+  on conflict (email) do update
+  set
+    full_name = coalesce(excluded.full_name, audience_contacts.full_name),
+    locale = excluded.locale,
+    profile_id = coalesce(excluded.profile_id, audience_contacts.profile_id),
+    source = excluded.source,
+    lessons_opt_in = excluded.lessons_opt_in,
+    books_opt_in = excluded.books_opt_in,
+    general_updates_opt_in = excluded.general_updates_opt_in,
+    consented_at = case
+      when v_is_subscribed
+        then coalesce(audience_contacts.consented_at, v_now)
+      else audience_contacts.consented_at
+    end,
+    unsubscribed_at = case when v_is_subscribed then null else v_now end,
+    updated_at = v_now
+  returning * into v_contact;
+
+  insert into public.audience_consent_events (
+    audience_contact_id,
+    topic,
+    action,
+    source,
+    policy_version,
+    opt_in_request_id,
+    dedupe_key,
+    occurred_at,
+    metadata
+  )
+  select
+    v_contact.id,
+    change.topic,
+    case when change.next_value then 'opted_in' else 'opted_out' end,
+    p_source,
+    pg_catalog.btrim(p_policy_version),
+    p_opt_in_request_id,
+    case
+      when p_dedupe_prefix is null then null
+      else p_dedupe_prefix || ':' || change.topic || ':'
+        || case when change.next_value then 'opted_in' else 'opted_out' end
+    end,
+    v_now,
+    pg_catalog.jsonb_build_object('actor', p_actor)
+  from (
+    values
+      (
+        'lessons',
+        coalesce(v_existing.lessons_opt_in, false),
+        p_lessons_opt_in
+      ),
+      (
+        'books',
+        coalesce(v_existing.books_opt_in, false),
+        p_books_opt_in
+      ),
+      (
+        'general_updates',
+        coalesce(v_existing.general_updates_opt_in, false),
+        p_general_updates_opt_in
+      )
+  ) as change(topic, previous_value, next_value)
+  where change.previous_value is distinct from change.next_value
+  on conflict (dedupe_key) do nothing;
+
+  return v_contact;
+end;
+$$;
+
+create or replace function public.confirm_audience_opt_in_request(
+  p_token_hash text,
+  p_policy_version text,
+  p_occurred_at timestamptz
+)
+returns table (
+  status text,
+  request_id uuid,
+  audience_contact_id uuid,
+  email text,
+  full_name text,
+  locale text,
+  lessons_opt_in boolean,
+  books_opt_in boolean,
+  general_updates_opt_in boolean
+)
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  v_request public.audience_opt_in_requests%rowtype;
+  v_contact public.audience_contacts%rowtype;
+  v_now timestamptz := coalesce(p_occurred_at, pg_catalog.now());
+begin
+  select opt_in_request.*
+  into v_request
+  from public.audience_opt_in_requests as opt_in_request
+  where opt_in_request.token_hash = p_token_hash
+  for update;
+
+  if not found then
+    return query select
+      'invalid'::text, null::uuid, null::uuid, null::text, null::text,
+      null::text, null::boolean, null::boolean, null::boolean;
+    return;
+  end if;
+
+  if v_request.confirmed_at is not null then
+    select contact.*
+    into v_contact
+    from public.audience_contacts as contact
+    where contact.email = pg_catalog.lower(pg_catalog.btrim(v_request.email));
+
+    return query select
+      'already_confirmed'::text,
+      v_request.id,
+      v_contact.id,
+      v_request.email,
+      v_request.full_name,
+      v_request.locale,
+      v_request.lessons_requested,
+      v_request.books_requested,
+      v_request.general_updates_requested;
+    return;
+  end if;
+
+  if v_request.expires_at <= v_now then
+    return query select
+      'expired'::text,
+      v_request.id,
+      null::uuid,
+      v_request.email,
+      v_request.full_name,
+      v_request.locale,
+      v_request.lessons_requested,
+      v_request.books_requested,
+      v_request.general_updates_requested;
+    return;
+  end if;
+
+  select *
+  into v_contact
+  from public.apply_audience_preferences(
+    v_request.email,
+    v_request.full_name,
+    v_request.locale,
+    null,
+    'contact_form',
+    v_request.lessons_requested,
+    v_request.books_requested,
+    v_request.general_updates_requested,
+    'visitor',
+    p_policy_version,
+    v_now,
+    v_request.id,
+    'opt-in-request:' || v_request.id::text
+  );
+
+  update public.audience_opt_in_requests as opt_in_request
+  set confirmed_at = v_now, updated_at = v_now
+  where opt_in_request.id = v_request.id;
+
+  return query select
+    'confirmed'::text,
+    v_request.id,
+    v_contact.id,
+    v_contact.email,
+    v_contact.full_name,
+    v_contact.locale,
+    v_contact.lessons_opt_in,
+    v_contact.books_opt_in,
+    v_contact.general_updates_opt_in;
+end;
+$$;
+
+create or replace function public.apply_audience_preference_request(
+  p_token_hash text,
+  p_lessons_opt_in boolean,
+  p_books_opt_in boolean,
+  p_general_updates_opt_in boolean,
+  p_policy_version text,
+  p_occurred_at timestamptz
+)
+returns table (
+  status text,
+  request_id uuid,
+  audience_contact_id uuid,
+  email text,
+  full_name text,
+  locale text,
+  lessons_opt_in boolean,
+  books_opt_in boolean,
+  general_updates_opt_in boolean
+)
+language plpgsql
+security invoker
+set search_path = ''
+as $$
+declare
+  v_request public.audience_preference_requests%rowtype;
+  v_contact public.audience_contacts%rowtype;
+  v_now timestamptz := coalesce(p_occurred_at, pg_catalog.now());
+begin
+  select preference_request.*
+  into v_request
+  from public.audience_preference_requests as preference_request
+  where preference_request.token_hash = p_token_hash
+  for update;
+
+  if not found then
+    return query select
+      'invalid'::text, null::uuid, null::uuid, null::text, null::text,
+      null::text, null::boolean, null::boolean, null::boolean;
+    return;
+  end if;
+
+  select contact.*
+  into v_contact
+  from public.audience_contacts as contact
+  where contact.id = v_request.audience_contact_id
+  for update;
+
+  if v_request.used_at is not null then
+    return query select
+      'already_used'::text,
+      v_request.id,
+      v_contact.id,
+      v_contact.email,
+      v_contact.full_name,
+      v_contact.locale,
+      v_contact.lessons_opt_in,
+      v_contact.books_opt_in,
+      v_contact.general_updates_opt_in;
+    return;
+  end if;
+
+  if v_request.expires_at <= v_now then
+    return query select
+      'expired'::text,
+      v_request.id,
+      v_contact.id,
+      v_contact.email,
+      v_contact.full_name,
+      v_contact.locale,
+      v_contact.lessons_opt_in,
+      v_contact.books_opt_in,
+      v_contact.general_updates_opt_in;
+    return;
+  end if;
+
+  select *
+  into v_contact
+  from public.apply_audience_preferences(
+    v_contact.email,
+    v_contact.full_name,
+    v_request.locale,
+    v_contact.profile_id,
+    'public_preferences',
+    p_lessons_opt_in,
+    p_books_opt_in,
+    p_general_updates_opt_in,
+    'visitor',
+    p_policy_version,
+    v_now,
+    null,
+    'preference-request:' || v_request.id::text
+  );
+
+  update public.audience_preference_requests as preference_request
+  set used_at = v_now
+  where preference_request.id = v_request.id;
+
+  return query select
+    'updated'::text,
+    v_request.id,
+    v_contact.id,
+    v_contact.email,
+    v_contact.full_name,
+    v_contact.locale,
+    v_contact.lessons_opt_in,
+    v_contact.books_opt_in,
+    v_contact.general_updates_opt_in;
+end;
+$$;
+
+revoke all on function public.apply_audience_preferences(
+  text, text, text, uuid, text, boolean, boolean, boolean,
+  text, text, timestamptz, uuid, text
+) from public, anon, authenticated;
+grant execute on function public.apply_audience_preferences(
+  text, text, text, uuid, text, boolean, boolean, boolean,
+  text, text, timestamptz, uuid, text
+) to service_role;
+
+revoke all on function public.confirm_audience_opt_in_request(
+  text, text, timestamptz
+) from public, anon, authenticated;
+grant execute on function public.confirm_audience_opt_in_request(
+  text, text, timestamptz
+) to service_role;
+
+revoke all on function public.apply_audience_preference_request(
+  text, boolean, boolean, boolean, text, timestamptz
+) from public, anon, authenticated;
+grant execute on function public.apply_audience_preference_request(
+  text, boolean, boolean, boolean, text, timestamptz
+) to service_role;
+
+comment on table public.audience_preference_requests is
+  'Short-lived, single-use hashed links for no-account audience preference management.';
+comment on function public.apply_audience_preferences(
+  text, text, text, uuid, text, boolean, boolean, boolean,
+  text, text, timestamptz, uuid, text
+) is 'Atomically updates audience topics and appends consent evidence for changed preferences.';
+comment on function public.confirm_audience_opt_in_request(text, text, timestamptz) is
+  'Atomically consumes a double opt-in request and records its topic consent.';
+comment on function public.apply_audience_preference_request(
+  text, boolean, boolean, boolean, text, timestamptz
+) is 'Atomically consumes a public preference link and records topic changes.';

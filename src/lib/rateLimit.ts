@@ -217,5 +217,10 @@ export async function getClientRateLimitIdentifier() {
  * logs do not need to retain the raw identifier.
  */
 export function getUserRateLimitIdentifier(userId: string) {
-  return hashValue(userId);
+  return getSensitiveRateLimitIdentifier(userId);
+}
+
+/** Hashes any stable sensitive value before it is used as a rate-limit key. */
+export function getSensitiveRateLimitIdentifier(value: string) {
+  return hashValue(value);
 }

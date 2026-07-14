@@ -1,5 +1,31 @@
 import { buildSupabaseRestHeaders } from "./supabaseRest.ts";
 
+async function loadExistingNotificationEventId(options: {
+  dedupeKey: string;
+  serviceRoleKey: string;
+  supabaseUrl: string;
+}) {
+  const response = await fetch(
+    `${options.supabaseUrl}/rest/v1/notification_events?dedupe_key=eq.${encodeURIComponent(options.dedupeKey)}&select=id&limit=1`,
+    {
+      headers: buildSupabaseRestHeaders(options.serviceRoleKey),
+      method: "GET",
+    },
+  );
+
+  if (!response.ok) {
+    console.error("Failed to load duplicate notification event id.", {
+      dedupeKey: options.dedupeKey,
+      error: await response.text(),
+      status: response.status,
+    });
+    return null;
+  }
+
+  const data = (await response.json()) as Array<{ id?: string }>;
+  return data[0]?.id ?? null;
+}
+
 /**
  * Inserts the notification event row used to audit one content-release email.
  * Duplicate dedupe keys are treated as a handled no-op so the worker can resume
@@ -61,8 +87,18 @@ export async function insertNotificationEvent(options: {
       errorBody.includes("23505") ||
       errorBody.includes("dedupe_key"))
   ) {
+    const eventId = await loadExistingNotificationEventId({
+      dedupeKey: options.dedupeKey,
+      serviceRoleKey: options.serviceRoleKey,
+      supabaseUrl: options.supabaseUrl,
+    });
+
+    if (!eventId) {
+      return null;
+    }
+
     return {
-      eventId: null,
+      eventId,
       inserted: false as const,
       duplicate: true as const,
     };

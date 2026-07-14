@@ -15,61 +15,87 @@ export interface LegalDocument {
 const PRIVACY_DOCUMENTS = {
   en: {
     title: "Privacy Policy",
-    description: "How we handle and protect your data.",
+    description:
+      "How Coptic Compass collects, uses, protects, and retains personal data.",
     sections: [
       {
         title: "1. Information We Collect",
-        body: "When you sign in using Google Authentication, we collect only your basic profile information (such as your name, profile picture, and email address) explicitly granted by Google. This information is used strictly to create and manage your personal session on Coptic Compass.",
+        body: "We collect the information needed to provide the feature you use. This may include your account name, email address, profile picture, learning data, contact-form name, inquiry and message, chosen mailing topics and locale, consent and withdrawal history, and technical email-delivery events such as acceptance, delay, bounce, unsubscribe, or complaint status.",
       },
       {
-        title: "2. How We Use Your Information",
-        body: "Your email address is used to uniquely identify your account, secure your profile, and save your progress across our digital tools (such as dictionary settings or learning progress). We do not ever sell, rent, or share your personal information with third parties or external advertisers.",
+        title: "2. Purposes and Legal Bases",
+        body: "We process account and learning data to provide and secure the service; contact messages to answer your request; and essential transactional email to complete actions you request. Where applicable, these activities rely on performing a contract or requested pre-contractual steps, our legitimate interests in operating and protecting the service, or legal obligations. We send optional lesson, publication, and project marketing updates only after your explicit consent.",
       },
       {
-        title: "3. Data Security",
-        body: "Your account data is managed and secured using Supabase, which implements industry-standard encryption, rate-limiting, and security protocols to protect your information and password hashes.",
+        title: "3. Mailing Consent and Preferences",
+        body: "Contact-form mailing choices are optional, separate from sending a message, and unchecked by default. We use double opt-in: opening the emailed link only displays the requested topics, while pressing the confirmation button records consent. You can change or stop topics without an account by requesting a short-lived private link from the email-preferences page. Authenticated users can also use dashboard settings.",
       },
       {
-        title: "4. Account Deletion",
-        body: "You may request to have your account and all associated data permanently deleted from our servers at any time by contacting us.",
+        title: "4. Service Providers and International Processing",
+        body: "Supabase provides database and authentication infrastructure, Resend provides email delivery and audience tooling, and Vercel hosts the application and may provide disclosed performance analytics. They process data for Coptic Compass under their service terms and safeguards. Data may be processed outside your country where these providers operate, subject to applicable transfer protections.",
       },
       {
-        title: "5. Contact Us",
-        body: "If you have any questions or concerns about this Privacy Policy, please contact Coptic Compass through the contact page.",
+        title: "5. Delivery Events and Suppression",
+        body: "We process provider delivery events to diagnose failures, prevent repeated sends to invalid addresses, honor unsubscribes, and suppress marketing after hard bounces or spam complaints. We prefer delivery, bounce, complaint, and unsubscribe observability over open-rate optimization, and we do not use email open or click engagement data to silently expand consent or audience membership. Suppression records override ordinary topic settings and are kept as needed to respect the request and protect sending integrity.",
       },
       {
-        title: "6. Cookies and Local Storage",
-        body: "Cookies and local storage are described in our Cookie Policy.",
+        title: "6. Retention",
+        body: "Contact messages are normally retained for up to 24 months after the last relevant interaction unless a longer period is needed for an ongoing matter or legal obligation. Active mailing preferences are retained while used; consent and withdrawal evidence may be retained for up to five years after the last change to demonstrate compliance. Detailed delivery-event payloads are normally retained for up to 90 days, while minimal suppression records may be retained longer so we do not resume unwanted mail. Account data is retained until deletion, subject to required legal or security records.",
+      },
+      {
+        title: "7. Security and Data Sharing",
+        body: "We apply access controls, row-level database policies, hashed action tokens, rate limits, and encrypted transport. No system is completely risk-free. We do not sell or rent personal data and do not share it with external advertisers.",
+      },
+      {
+        title: "8. Your Choices and Rights",
+        body: "Depending on applicable law, you may request access, correction, deletion, restriction, portability, or object to processing, and you may complain to your data-protection authority. You may withdraw mailing consent at any time through the no-account email-preferences flow or by contacting Coptic Compass; withdrawal does not affect earlier lawful processing. You may also request account deletion through the contact page.",
+      },
+      {
+        title: "9. Cookies and Contact",
+        body: "Cookies and local browser storage are described in our Cookie Policy. For privacy questions or requests, contact Coptic Compass through the contact page.",
       },
     ],
   },
   nl: {
     title: "Privacybeleid",
-    description: "Hoe we uw gegevens behandelen en beschermen.",
+    description:
+      "Hoe Coptic Compass persoonsgegevens verzamelt, gebruikt, beschermt en bewaart.",
     sections: [
       {
         title: "1. Welke gegevens we verzamelen",
-        body: "Wanneer u inlogt via Google-authenticatie, verzamelen we uitsluitend de basisprofielgegevens die u uitdrukkelijk via Google hebt gedeeld, zoals uw naam, profielfoto en e-mailadres. Deze informatie wordt alleen gebruikt om uw persoonlijke sessie op Coptic Compass aan te maken en te beheren.",
+        body: "We verzamelen de gegevens die nodig zijn voor de functie die u gebruikt. Dit kan uw accountnaam, e-mailadres, profielfoto, leergegevens, naam en bericht uit het contactformulier, gekozen mailingonderwerpen en taal, bewijs van toestemming en intrekking, en technische e-mailgebeurtenissen zoals acceptatie, vertraging, bounce, uitschrijving of klacht omvatten.",
       },
       {
-        title: "2. Hoe we uw gegevens gebruiken",
-        body: "Uw e-mailadres wordt gebruikt om uw account uniek te identificeren, uw profiel te beveiligen en uw voortgang in onze digitale tools op te slaan, zoals woordenboekinstellingen of leerprogressie. Wij verkopen, verhuren of delen uw persoonsgegevens nooit met derden of externe adverteerders.",
+        title: "2. Doeleinden en rechtsgronden",
+        body: "We verwerken account- en leergegevens om de dienst te leveren en beveiligen, contactberichten om uw vraag te beantwoorden en noodzakelijke transactionele e-mail om gevraagde acties uit te voeren. Waar van toepassing steunt dit op uitvoering van een overeenkomst of gevraagde precontractuele stappen, ons gerechtvaardigd belang om de dienst te beheren en beschermen, of een wettelijke verplichting. Optionele marketingupdates over lessen, publicaties en het project sturen we alleen na uw uitdrukkelijke toestemming.",
       },
       {
-        title: "3. Gegevensbeveiliging",
-        body: "Uw accountgegevens worden beheerd en beveiligd via Supabase, dat gebruikmaakt van industriestandaard versleuteling, rate limiting en beveiligingsprotocollen om uw gegevens en wachtwoordhashes te beschermen.",
+        title: "3. Mailingtoestemming en voorkeuren",
+        body: "Mailingkeuzes in het contactformulier zijn optioneel, staan los van het versturen van uw bericht en zijn standaard uitgeschakeld. We gebruiken dubbele opt-in: de e-maillink openen toont alleen de aangevraagde onderwerpen; pas de bevestigingsknop registreert toestemming. Zonder account kunt u onderwerpen wijzigen of stopzetten via een kort geldige persoonlijke link op de pagina met e-mailvoorkeuren. Ingelogde gebruikers kunnen ook de dashboardinstellingen gebruiken.",
       },
       {
-        title: "4. Verwijdering van uw account",
-        body: "U kunt op elk moment verzoeken om uw account en alle bijbehorende gegevens permanent van onze servers te laten verwijderen door contact met ons op te nemen.",
+        title: "4. Dienstverleners en internationale verwerking",
+        body: "Supabase levert database- en authenticatie-infrastructuur, Resend verzorgt e-mailbezorging en mailingbeheer en Vercel host de applicatie en kan de beschreven prestatieanalyse leveren. Zij verwerken gegevens voor Coptic Compass onder hun dienstenvoorwaarden en beveiligingsmaatregelen. Gegevens kunnen buiten uw land worden verwerkt waar deze dienstverleners actief zijn, met de toepasselijke doorgiftewaarborgen.",
       },
       {
-        title: "5. Contact",
-        body: "Als u vragen of zorgen heeft over dit privacybeleid, neem dan contact op met Coptic Compass via de contactpagina.",
+        title: "5. Bezorggebeurtenissen en onderdrukking",
+        body: "We verwerken bezorggebeurtenissen van de provider om fouten te onderzoeken, herhaalde verzending naar ongeldige adressen te voorkomen, uitschrijvingen te respecteren en marketing te blokkeren na harde bounces of spamklachten. We geven de voorkeur aan observatie van bezorging, bounces, klachten en uitschrijvingen boven optimalisatie van openpercentages, en gebruiken open- of klikbetrokkenheid uit e-mail niet om toestemming of publiekslidmaatschap stilzwijgend uit te breiden. Onderdrukkingsrecords hebben voorrang op gewone onderwerpkeuzes en worden bewaard zolang dat nodig is om het verzoek te respecteren en betrouwbare verzending te beschermen.",
       },
       {
-        title: "6. Cookies en lokale opslag",
-        body: "Cookies en lokale opslag worden beschreven in ons cookiebeleid.",
+        title: "6. Bewaartermijnen",
+        body: "Contactberichten worden normaal tot 24 maanden na de laatste relevante interactie bewaard, tenzij een lopende zaak of wettelijke verplichting een langere periode vereist. Actieve mailingvoorkeuren blijven bewaard zolang ze worden gebruikt; bewijs van toestemming en intrekking kan tot vijf jaar na de laatste wijziging worden bewaard om naleving aan te tonen. Gedetailleerde bezorggegevens worden normaal maximaal 90 dagen bewaard, terwijl minimale onderdrukkingsrecords langer kunnen blijven zodat ongewenste mail niet hervat. Accountgegevens blijven tot verwijdering bewaard, behoudens vereiste juridische of beveiligingsgegevens.",
+      },
+      {
+        title: "7. Beveiliging en gegevensdeling",
+        body: "We gebruiken toegangscontrole, databasebeleid op rijniveau, gehashte actietokens, rate limiting en versleuteld transport. Geen enkel systeem is volledig zonder risico. We verkopen of verhuren geen persoonsgegevens en delen ze niet met externe adverteerders.",
+      },
+      {
+        title: "8. Uw keuzes en rechten",
+        body: "Afhankelijk van het toepasselijke recht kunt u inzage, correctie, verwijdering, beperking of overdraagbaarheid vragen, bezwaar maken en een klacht indienen bij uw gegevensbeschermingsautoriteit. U kunt mailingtoestemming altijd intrekken via de e-mailvoorkeuren zonder account of door contact op te nemen; dit verandert niets aan eerdere rechtmatige verwerking. U kunt via de contactpagina ook verwijdering van uw account vragen.",
+      },
+      {
+        title: "9. Cookies en contact",
+        body: "Cookies en lokale browseropslag staan beschreven in ons cookiebeleid. Neem voor privacyvragen of verzoeken contact op met Coptic Compass via de contactpagina.",
       },
     ],
   },

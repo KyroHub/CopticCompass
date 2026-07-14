@@ -4,11 +4,68 @@ import type { Json, Tables } from "@/types/supabase";
 
 export type NotificationEventRow = Tables<"notification_events">;
 export type NotificationDeliveryRow = Tables<"notification_deliveries">;
+export type NotificationEmailJobRow = Tables<"notification_email_jobs">;
+export type NotificationEmailJobAuditEventRow =
+  Tables<"notification_email_job_audit_events">;
 
 export type AdminNotificationEvent = NotificationEventRow & {
   deliveries: NotificationDeliveryRow[];
+  emailJob: NotificationEmailJobRow | null;
   latestDelivery: NotificationDeliveryRow | null;
+  retryAuditEvents: NotificationEmailJobAuditEventRow[];
 };
+
+const NOTIFICATION_STATUS_PRIORITY = {
+  bounced: 0,
+  complained: 0,
+  dead_letter: 0,
+  failed: 0,
+  suppressed: 0,
+  delayed: 1,
+  processing: 2,
+  queued: 2,
+  accepted: 3,
+  sent: 3,
+  delivered: 4,
+} as const satisfies Record<NotificationEventRow["status"], number>;
+
+export const notificationFailureStatuses = [
+  "bounced",
+  "complained",
+  "dead_letter",
+  "failed",
+  "suppressed",
+] as const satisfies readonly NotificationEventRow["status"][];
+
+export const notificationHistoryStatuses = [
+  "accepted",
+  "delivered",
+  "sent",
+] as const satisfies readonly NotificationEventRow["status"][];
+
+export const notificationInFlightStatuses = [
+  "delayed",
+  "processing",
+  "queued",
+] as const satisfies readonly NotificationEventRow["status"][];
+
+const notificationRetryableJobStatuses = [
+  "dead_letter",
+  "failed",
+] as const satisfies readonly NotificationEmailJobRow["status"][];
+
+const NOTIFICATION_FAILURE_STATUS_SET = new Set<NotificationEventRow["status"]>(
+  notificationFailureStatuses,
+);
+const NOTIFICATION_HISTORY_STATUS_SET = new Set<NotificationEventRow["status"]>(
+  notificationHistoryStatuses,
+);
+const NOTIFICATION_IN_FLIGHT_STATUS_SET = new Set<
+  NotificationEventRow["status"]
+>(notificationInFlightStatuses);
+const NOTIFICATION_RETRYABLE_JOB_STATUS_SET = new Set<
+  NotificationEmailJobRow["status"]
+>(notificationRetryableJobStatuses);
 
 /**
  * Narrows JSON payload fragments to plain objects before field extraction.
@@ -49,13 +106,9 @@ export function compareAdminNotificationPriority(
   left: AdminNotificationEvent,
   right: AdminNotificationEvent,
 ) {
-  const statusPriority = {
-    failed: 0,
-    queued: 1,
-    sent: 2,
-  } as const;
-
-  const byStatus = statusPriority[left.status] - statusPriority[right.status];
+  const byStatus =
+    NOTIFICATION_STATUS_PRIORITY[left.status] -
+    NOTIFICATION_STATUS_PRIORITY[right.status];
   if (byStatus !== 0) {
     return byStatus;
   }
@@ -63,6 +116,43 @@ export function compareAdminNotificationPriority(
   return (
     new Date(right.created_at).getTime() - new Date(left.created_at).getTime()
   );
+}
+
+/**
+ * Identifies terminal notification states that require operator attention.
+ */
+export function isNotificationFailureStatus(
+  status: NotificationEventRow["status"],
+) {
+  return NOTIFICATION_FAILURE_STATUS_SET.has(status);
+}
+
+/**
+ * Identifies accepted or completed states shown in notification history.
+ */
+export function isNotificationHistoryStatus(
+  status: NotificationEventRow["status"],
+) {
+  return NOTIFICATION_HISTORY_STATUS_SET.has(status);
+}
+
+/**
+ * Identifies queued, processing, or delayed notification states.
+ */
+export function isNotificationInFlightStatus(
+  status: NotificationEventRow["status"],
+) {
+  return NOTIFICATION_IN_FLIGHT_STATUS_SET.has(status);
+}
+
+/**
+ * Identifies durable email jobs that an admin can safely send back to queued
+ * through the audited manual retry action.
+ */
+export function isNotificationRetryableJobStatus(
+  status: NotificationEmailJobRow["status"],
+) {
+  return NOTIFICATION_RETRYABLE_JOB_STATUS_SET.has(status);
 }
 
 /**

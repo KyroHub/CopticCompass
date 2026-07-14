@@ -22,7 +22,11 @@ function createContactFormData(
     Record<
       "email" | "inquiryType" | "locale" | "message" | "name" | "website",
       string
-    > & { wantsUpdates: boolean }
+    > & {
+      booksUpdates: boolean;
+      generalUpdates: boolean;
+      lessonsUpdates: boolean;
+    }
   >,
 ) {
   const formData = new FormData();
@@ -36,8 +40,16 @@ function createContactFormData(
     formData.set("website", overrides.website);
   }
 
-  if (overrides?.wantsUpdates) {
-    formData.set("wants_updates", "true");
+  if (overrides?.booksUpdates) {
+    formData.set("updates_books", "true");
+  }
+
+  if (overrides?.generalUpdates) {
+    formData.set("updates_general", "true");
+  }
+
+  if (overrides?.lessonsUpdates) {
+    formData.set("updates_lessons", "true");
   }
 
   return formData;
@@ -288,7 +300,8 @@ describe("contact action", () => {
           locale: "nl",
           message: "Hello\n\n  Kyrillos  ",
           name: "  Test User  ",
-          wantsUpdates: true,
+          booksUpdates: true,
+          lessonsUpdates: true,
         }),
       ),
     ).resolves.toEqual({
@@ -324,7 +337,7 @@ describe("contact action", () => {
       booksRequested: true,
       email: "sender@example.com",
       fullName: "Test User",
-      generalUpdatesRequested: true,
+      generalUpdatesRequested: false,
       lessonsRequested: true,
       locale: "nl",
       source: "contact_form",
@@ -386,7 +399,7 @@ describe("contact action", () => {
       });
 
     await expect(
-      sendContactEmail(null, createContactFormData({ wantsUpdates: true })),
+      sendContactEmail(null, createContactFormData({ generalUpdates: true })),
     ).resolves.toEqual({
       success: true,
       message:

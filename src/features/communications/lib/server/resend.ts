@@ -7,6 +7,7 @@ import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 import type { Tables, TablesInsert, TablesUpdate } from "@/types/supabase";
 
 type AudienceContactRow = Tables<"audience_contacts">;
+type ContentReleaseRow = Tables<"content_releases">;
 type AudienceContactSyncStateRow = Tables<"audience_contact_sync_state">;
 type ServiceRoleClient = ReturnType<typeof createServiceRoleClient>;
 type ResendContactLookup = Awaited<ReturnType<Resend["contacts"]["get"]>>;
@@ -16,6 +17,12 @@ type ResendContactUpsert = {
 };
 
 type ResendAudienceSegments = {
+  books: string;
+  general: string;
+  lessons: string;
+};
+
+type ResendAudienceTopics = {
   books: string;
   general: string;
   lessons: string;
@@ -40,6 +47,7 @@ type ResendAudienceEnv = {
   resendApiKey: string;
   localizedSegments: ResendLocalizedAudienceSegments;
   segments: ResendAudienceSegments;
+  topics: ResendAudienceTopics;
 };
 
 type ResendAudienceSyncResult =
@@ -63,9 +71,9 @@ type ResendAudienceSyncResult =
 
 /**
  * Loads the Resend audience sync configuration from environment variables.
- * Returns null when the required global segment ids are missing so callers can
- * skip syncing instead of partially managing contacts against an incomplete
- * segment map.
+ * Returns null when the required global segment or topic ids are missing so
+ * callers can skip syncing instead of partially managing contacts against an
+ * incomplete provider map.
  */
 function getResendAudienceEnv(): ResendAudienceEnv | null {
   assertServerOnly("getResendAudienceEnv");
@@ -74,6 +82,9 @@ function getResendAudienceEnv(): ResendAudienceEnv | null {
   const lessons = process.env.RESEND_LESSONS_SEGMENT_ID;
   const books = process.env.RESEND_BOOKS_SEGMENT_ID;
   const general = process.env.RESEND_GENERAL_SEGMENT_ID;
+  const lessonsTopic = process.env.RESEND_LESSONS_TOPIC_ID;
+  const booksTopic = process.env.RESEND_BOOKS_TOPIC_ID;
+  const generalTopic = process.env.RESEND_GENERAL_TOPIC_ID;
   const lessonsEn = normalizeOptionalSegmentId(
     process.env.RESEND_LESSONS_EN_SEGMENT_ID,
   );
@@ -93,7 +104,15 @@ function getResendAudienceEnv(): ResendAudienceEnv | null {
     process.env.RESEND_GENERAL_NL_SEGMENT_ID,
   );
 
-  if (!resendApiKey || !lessons || !books || !general) {
+  if (
+    !resendApiKey ||
+    !lessons ||
+    !books ||
+    !general ||
+    !lessonsTopic ||
+    !booksTopic ||
+    !generalTopic
+  ) {
     return null;
   }
 
@@ -118,15 +137,176 @@ function getResendAudienceEnv(): ResendAudienceEnv | null {
       general,
       lessons,
     },
+    topics: {
+      books: booksTopic,
+      general: generalTopic,
+      lessons: lessonsTopic,
+    },
   };
 }
 
 /**
  * Indicates whether the app has enough Resend configuration to manage audience
- * contacts and their segment assignments.
+ * contacts, segment assignments, and Topic subscriptions.
  */
 export function hasResendAudienceEnv() {
   return getResendAudienceEnv() !== null;
+}
+
+function normalizeOptionalEnvValue(value: string | undefined) {
+  if (!value) {
+    return null;
+  }
+
+  const normalized = value.trim();
+  return normalized.length > 0 ? normalized : null;
+}
+
+function getMissingEnvKeys(keys: string[]) {
+  return keys.filter((key) => !normalizeOptionalEnvValue(process.env[key]));
+}
+
+function getAudienceSegmentEnvKey(
+  audienceSegment: ContentReleaseRow["audience_segment"],
+  suffix: "SEGMENT_ID" | "TOPIC_ID",
+) {
+  switch (audienceSegment) {
+    case "lessons":
+      return `RESEND_LESSONS_${suffix}`;
+    case "books":
+      return `RESEND_BOOKS_${suffix}`;
+    case "general":
+      return `RESEND_GENERAL_${suffix}`;
+    default:
+      return `RESEND_GENERAL_${suffix}`;
+  }
+}
+
+function getLocalizedSegmentEnvKeys(
+  audienceSegment: ContentReleaseRow["audience_segment"],
+) {
+  switch (audienceSegment) {
+    case "lessons":
+      return ["RESEND_LESSONS_EN_SEGMENT_ID", "RESEND_LESSONS_NL_SEGMENT_ID"];
+    case "books":
+      return ["RESEND_BOOKS_EN_SEGMENT_ID", "RESEND_BOOKS_NL_SEGMENT_ID"];
+    case "general":
+      return ["RESEND_GENERAL_EN_SEGMENT_ID", "RESEND_GENERAL_NL_SEGMENT_ID"];
+    default:
+      return ["RESEND_GENERAL_EN_SEGMENT_ID", "RESEND_GENERAL_NL_SEGMENT_ID"];
+  }
+}
+
+/**
+ * Returns an admin-facing blocker when a marketing release cannot be sent
+ * through provider-native Broadcasts with the required Segment and Topic.
+ */
+export function getContentReleaseBroadcastConfigurationError(
+  release: Pick<ContentReleaseRow, "audience_segment" | "locale_mode">,
+) {
+  assertServerOnly("getContentReleaseBroadcastConfigurationError");
+
+  const requiredKeys = [
+    "NOTIFICATION_FROM_EMAIL",
+    "RESEND_API_KEY_FULL_ACCESS",
+    getAudienceSegmentEnvKey(release.audience_segment, "SEGMENT_ID"),
+    getAudienceSegmentEnvKey(release.audience_segment, "TOPIC_ID"),
+  ];
+
+  if (release.locale_mode === "localized") {
+    requiredKeys.push(...getLocalizedSegmentEnvKeys(release.audience_segment));
+  }
+
+  const missingKeys = getMissingEnvKeys(requiredKeys);
+  if (missingKeys.length === 0) {
+    return null;
+  }
+
+  return `Resend Broadcast delivery is missing required configuration: ${missingKeys.join(", ")}.`;
+}
+
+function getResendBroadcastTopicId(
+  audienceSegment: ContentReleaseRow["audience_segment"],
+  env: ResendAudienceEnv,
+) {
+  switch (audienceSegment) {
+    case "lessons":
+      return env.topics.lessons;
+    case "books":
+      return env.topics.books;
+    case "general":
+      return env.topics.general;
+    default:
+      return env.topics.general;
+  }
+}
+
+function getResendBroadcastBaseSegmentId(
+  audienceSegment: ContentReleaseRow["audience_segment"],
+  env: ResendAudienceEnv,
+) {
+  switch (audienceSegment) {
+    case "lessons":
+      return env.segments.lessons;
+    case "books":
+      return env.segments.books;
+    case "general":
+      return env.segments.general;
+    default:
+      return env.segments.general;
+  }
+}
+
+function getResendBroadcastLocalizedSegments(
+  audienceSegment: ContentReleaseRow["audience_segment"],
+  env: ResendAudienceEnv,
+) {
+  switch (audienceSegment) {
+    case "lessons":
+      return env.localizedSegments.lessons;
+    case "books":
+      return env.localizedSegments.books;
+    case "general":
+      return env.localizedSegments.general;
+    default:
+      return env.localizedSegments.general;
+  }
+}
+
+/**
+ * Returns the provider Topic and Segment IDs needed to persist a durable
+ * content-release target plan before the release worker starts.
+ */
+export function getContentReleaseBroadcastTargetConfig(
+  release: Pick<ContentReleaseRow, "audience_segment" | "locale_mode">,
+) {
+  assertServerOnly("getContentReleaseBroadcastTargetConfig");
+
+  const env = getResendAudienceEnv();
+  if (!env) {
+    return null;
+  }
+
+  const topicId = getResendBroadcastTopicId(release.audience_segment, env);
+  const baseSegmentId = getResendBroadcastBaseSegmentId(
+    release.audience_segment,
+    env,
+  );
+  const localizedSegments = getResendBroadcastLocalizedSegments(
+    release.audience_segment,
+    env,
+  );
+
+  return {
+    topicId,
+    segments:
+      release.locale_mode === "localized"
+        ? localizedSegments
+        : {
+            en: baseSegmentId,
+            nl: baseSegmentId,
+          },
+  };
 }
 
 async function persistSuccessfulResendSyncState(options: {
@@ -209,6 +389,40 @@ async function syncManagedResendSegments(options: {
   }
 }
 
+async function syncManagedResendTopics(options: {
+  contact: Pick<
+    AudienceContactRow,
+    "books_opt_in" | "general_updates_opt_in" | "lessons_opt_in"
+  >;
+  contactId: string;
+  resend: Resend;
+  topics: ResendAudienceTopics;
+}) {
+  const { error } = await options.resend.contacts.topics.update({
+    id: options.contactId,
+    topics: [
+      {
+        id: options.topics.lessons,
+        subscription: options.contact.lessons_opt_in ? "opt_in" : "opt_out",
+      },
+      {
+        id: options.topics.books,
+        subscription: options.contact.books_opt_in ? "opt_in" : "opt_out",
+      },
+      {
+        id: options.topics.general,
+        subscription: options.contact.general_updates_opt_in
+          ? "opt_in"
+          : "opt_out",
+      },
+    ],
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
 /**
  * Synchronizes one stored audience contact to Resend and records the resulting
  * sync state in Supabase. Missing configuration is treated as a skipped success
@@ -251,26 +465,22 @@ export async function syncStoredAudienceContactToResend(
     });
     const contactId = upsertedContact.contactId;
 
-    if (upsertedContact.segmentsAppliedOnCreate) {
-      const syncState = await persistSuccessfulResendSyncState({
-        audienceContactId: contact.id,
+    if (!upsertedContact.segmentsAppliedOnCreate) {
+      await syncManagedResendSegments({
         contactId,
-        supabase: serviceRoleClient,
+        desiredSegmentIds,
+        managedSegmentIds,
+        resend,
       });
-
-      return {
-        contact,
-        syncState,
-        success: true,
-      };
     }
 
-    await syncManagedResendSegments({
+    await syncManagedResendTopics({
+      contact,
       contactId,
-      desiredSegmentIds,
-      managedSegmentIds,
       resend,
+      topics: env.topics,
     });
+
     const syncState = await persistSuccessfulResendSyncState({
       audienceContactId: contact.id,
       contactId,

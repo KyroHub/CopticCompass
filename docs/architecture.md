@@ -264,13 +264,115 @@ infrastructure:
 
 - audience preferences, content releases, and release email builders live under
   `src/features/communications`
-- server-side audience sync, double opt-in requests, and Resend contact sync
+- server-side audience commands, double opt-in and private preference requests,
+  and Resend contact sync
   live under `src/features/communications/lib/server`
 - contact-message email templates live under `src/features/contact`
 - shared notification dispatch, queueing, and generic branded fallback HTML live
   under `src/lib/notifications`
 - product communication constants and email color tokens live in
-  `src/lib/communications/mailBrand.ts`
+  `supabase/functions/_shared/mailRendering.ts`;
+  `src/lib/communications/mailBrand.ts` re-exports that runtime-neutral module
+  for Next.js callers
+- direct Resend Email API calls from Supabase Edge Functions go through
+  `supabase/functions/_shared/resendEmail.ts`; Broadcast delivery keeps its
+  separate adapter because it uses a draft-and-send lifecycle
+
+The database keeps mailing state separated by responsibility:
+
+- `audience_contacts` stores the current topic preference snapshot
+- `audience_consent_events` stores append-only topic consent evidence
+- `audience_opt_in_requests` stores hashed double opt-in tokens and exact
+  requested topics
+- `audience_preference_requests` stores short-lived, single-use hashed tokens
+  for no-account preference management
+- `audience_suppressions` stores active and historical delivery restrictions
+- `provider_webhook_events` is the idempotent inbox for provider callbacks
+- `notification_events` stores logical notification intent
+- `notification_deliveries` stores provider delivery attempts and outcomes
+- `notification_email_jobs` stores durable worker state, retry timing, and leases
+- `notification_email_job_audit_events` stores audited manual recovery actions
+- `content_release_targets` stores one durable Resend Broadcast target per
+  release locale, Segment, and Topic
+
+Only trusted service-role workflows write consent evidence, suppressions,
+provider events, and queued email jobs. The
+`enqueue_notification_email_job` function creates or reuses the logical event
+and durable job in one transaction, so app code does not report queue success
+unless the job row exists. The `claim_notification_email_jobs` database
+function is deliberately unavailable to browser roles and uses bounded leases
+plus row locking so concurrent workers cannot double-claim a job. Direct Edge
+Function invocation after enqueue is a wake-up optimization; scheduled
+invocations with no `jobId` can drain queued, retry-scheduled, and
+expired-lease jobs.
+
+All user-driven topic changes pass through `apply_audience_preferences`. The
+service-role-only function serializes updates per normalized email, updates the
+current snapshot, and appends evidence only for topics that actually changed.
+The contact confirmation and public preference functions lock and consume their
+token rows inside the same transaction. Token GET pages are request-bound,
+`noindex`, and read-only; only explicit POST actions mutate preferences.
+
+Resend integration keeps consent and targeting separate. Segments identify the
+audience slice for Broadcast delivery, while Topics represent the provider-side
+preference state. Audience sync explicitly writes every managed Topic as
+`opt_in` or `opt_out`; it does not infer consent from Segment membership.
+Content release sends require a full-access Resend key, the relevant Segment
+ID, the matching Topic ID, and a visible provider unsubscribe footer. Missing
+configuration blocks queueing or finalizes the release back to `approved` with
+an admin-facing error instead of falling back to direct Email API sends.
+Release queueing persists the exact Broadcast target plan before waking the
+worker. The worker creates each Broadcast as a draft, stores the provider
+Broadcast ID, and then sends that existing Broadcast in a separate step.
+Accepted targets are skipped on retry, failed targets can resume from a saved
+provider ID, and mixed outcomes leave the release as `partially_failed` for
+explicit admin retry.
+
+The Resend webhook route verifies Svix signatures before parsing JSON, inserts
+the provider event into `provider_webhook_events` before side effects, and
+returns idempotent success for duplicate `svix-id` deliveries. Webhook side
+effects are disabled unless `RESEND_WEBHOOK_PROCESSING_ENABLED=true`. When
+enabled, provider email events update matching notification deliveries by
+`email_id` and matching content release targets by Broadcast ID. Release target
+feedback keeps provider acceptance, delay, delivery, bounce, complaint, and
+suppression states distinct, stores only sanitized diagnostic codes, and uses
+status precedence so late webhook deliveries cannot downgrade terminal state.
+Provider events may only make local marketing state more restrictive: global
+unsubscribes clear all local topics and create a suppression, Topic opt-outs
+clear only that topic, and bounces, complaints, or suppressed events create
+active suppressions. Provider webhooks must never opt a topic in.
+
+Transactional notification sends use Resend Email API idempotency keys derived
+from notification event and job IDs. Retryable provider/network failures are
+scheduled with deterministic jitter and eventually move to `dead_letter` after
+the configured attempt budget. Permanent provider failures move to `failed`.
+Admins can manually retry failed or dead-letter jobs only with an explicit audit
+reason; suppressed recipients remain blocked unless the event is classified as
+required transactional mail.
+
+The admin system workspace uses bounded operational queries for queue depth,
+expired leases, retry timing, failed webhooks, active suppressions, stale
+releases, and delivery feedback counts. It derives visible operational alerts
+from those metrics instead of depending on the same email queue when the queue
+itself may be unhealthy.
+
+Mail templates should use the shared rendering module for brand constants,
+footer lines, unsubscribe copy, and HTML escaping. Transactional templates must
+not inherit marketing unsubscribe language unless their classification requires
+it. The current tracking posture favors delivery, bounce, complaint,
+unsubscribe, and suppression events over open/click engagement tracking.
+
+Mailing retention is centralized in the service-role-only
+`run_mailing_retention` database function. It defaults to dry-run mode, deletes
+only short-lived expired token rows, and redacts detailed provider/job payloads
+after the documented retention window. Consent evidence, active preference
+state, suppression records, aggregate delivery state, and unresolved recovery
+records remain intact.
+
+DMARC enforcement is an operational rollout, not an application toggle. Keep
+the verified sender domain, Resend DKIM alignment, and aggregate reports
+healthy before moving beyond monitoring-only policy. Do not pair DMARC
+enforcement with sender-domain or From-address changes in the same release.
 
 Public-facing documentation is part of the product surface. Keep `README.md`,
 the docs in `docs/`, and README screenshots in `public/readme` aligned with the

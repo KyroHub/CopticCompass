@@ -4,6 +4,7 @@ import { listContentReleaseCandidates } from "./releaseCandidates";
 import {
   compareContentReleasePriority,
   deriveContentReleaseType,
+  formatContentReleaseStatus,
   getContentReleaseDeliverySummary,
 } from "./releases";
 
@@ -48,6 +49,30 @@ describe("content release helpers", () => {
     expect(compareContentReleasePriority(left, right)).toBeLessThan(0);
   });
 
+  it("formats partially failed releases for both admin languages", () => {
+    expect(formatContentReleaseStatus("partially_failed", "en")).toBe(
+      "Partially failed",
+    );
+    expect(formatContentReleaseStatus("partially_failed", "nl")).toBe(
+      "Gedeeltelijk mislukt",
+    );
+  });
+
+  it("surfaces partially failed releases ahead of unsent approved releases", () => {
+    const left = {
+      items: [],
+      status: "partially_failed",
+      updated_at: "2026-03-28T10:00:00.000Z",
+    } as unknown as Parameters<typeof compareContentReleasePriority>[0];
+    const right = {
+      items: [],
+      status: "approved",
+      updated_at: "2026-03-28T12:00:00.000Z",
+    } as unknown as Parameters<typeof compareContentReleasePriority>[1];
+
+    expect(compareContentReleasePriority(left, right)).toBeLessThan(0);
+  });
+
   it("reads delivery counts from saved release summary json", () => {
     expect(
       getContentReleaseDeliverySummary({
@@ -68,5 +93,40 @@ describe("content release helpers", () => {
       sentCount: 10,
       skippedCount: 1,
     });
+  });
+
+  it("requires Topic IDs in saved broadcast summaries", () => {
+    expect(
+      getContentReleaseDeliverySummary({
+        delivery_summary: {
+          broadcasts: {
+            en: {
+              id: "broadcast_en",
+              recipient_count: 12,
+              segment_id: "segment_lessons_en",
+              status: "sent",
+              subject: "New lesson",
+              topic_id: "topic_lessons",
+            },
+            nl: {
+              id: "broadcast_nl",
+              recipient_count: 9,
+              segment_id: "segment_lessons_nl",
+              status: "sent",
+              subject: "Nieuwe les",
+            },
+          },
+        },
+      }).broadcasts,
+    ).toEqual([
+      {
+        id: "broadcast_en",
+        language: "en",
+        recipientCount: 12,
+        segmentId: "segment_lessons_en",
+        subject: "New lesson",
+        topicId: "topic_lessons",
+      },
+    ]);
   });
 });

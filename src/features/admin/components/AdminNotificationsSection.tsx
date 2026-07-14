@@ -9,6 +9,7 @@ import { AdminPersistentSection } from "@/features/admin/components/AdminPersist
 import type { AdminDashboardData } from "@/features/admin/lib/dashboardData";
 import { splitAdminVisibleItems } from "@/features/admin/lib/listPrimitives";
 import { AdminNotificationEventCard } from "@/features/notifications/components/AdminNotificationEventCard";
+import { isNotificationHistoryStatus } from "@/features/notifications/lib/notifications";
 import { cx } from "@/lib/classes";
 import type { Language } from "@/types/i18n";
 
@@ -24,10 +25,10 @@ export function AdminNotificationsSection({
   const copy = adminDashboardSectionsCopy[language].notifications;
   const { metrics } = notifications;
   const attentionNotifications = notifications.items.filter(
-    (event) => event.status === "failed" || event.status === "queued",
+    (event) => !isNotificationHistoryStatus(event.status),
   );
-  const historyNotifications = notifications.items.filter(
-    (event) => event.status === "sent",
+  const historyNotifications = notifications.items.filter((event) =>
+    isNotificationHistoryStatus(event.status),
   );
   const defaultOpen =
     Boolean(notifications.error) || metrics.failedNotificationCount > 0;
@@ -39,6 +40,36 @@ export function AdminNotificationsSection({
     overflow: overflowHistoryNotifications,
     visible: visibleHistoryNotifications,
   } = splitAdminVisibleItems(historyNotifications);
+  const operationalMetrics = [
+    {
+      label: copy.metrics.accepted,
+      value: metrics.acceptedNotificationCount,
+    },
+    {
+      label: copy.metrics.delivered,
+      value: metrics.deliveredNotificationCount,
+    },
+    {
+      label: copy.metrics.delayed,
+      value: metrics.delayedNotificationCount,
+    },
+    {
+      label: copy.metrics.queued,
+      value: metrics.queuedNotificationCount,
+    },
+    {
+      label: copy.metrics.bounced,
+      value: metrics.bouncedNotificationCount,
+    },
+    {
+      label: copy.metrics.complained,
+      value: metrics.complainedNotificationCount,
+    },
+    {
+      label: copy.metrics.suppressed,
+      value: metrics.suppressedNotificationCount,
+    },
+  ];
   const notificationsContent = (() => {
     if (notifications.error) {
       return (
@@ -61,6 +92,31 @@ export function AdminNotificationsSection({
 
     return (
       <div className="space-y-6">
+        <div className="space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-muted">
+            {copy.metrics.title}
+          </p>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {operationalMetrics.map((metric) => (
+              <div
+                key={metric.label}
+                className={surfacePanelClassName({
+                  rounded: "lg",
+                  variant: "subtle",
+                  className: "px-4 py-3",
+                })}
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                  {metric.label}
+                </p>
+                <p className="mt-2 text-xl font-semibold text-ink">
+                  {formatAdminNumber(metric.value, language)}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <span

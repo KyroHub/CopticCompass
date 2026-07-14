@@ -1,3 +1,12 @@
+import {
+  escapeMailHtml,
+  getMailFooterLines,
+  getMarketingUnsubscribeLines,
+  mailBrand,
+  mailBrandColors,
+  resendUnsubscribeUrlPlaceholder,
+} from "./mailRendering.ts";
+
 export type Language = "en" | "nl";
 
 export type ContentReleaseRecord = {
@@ -10,9 +19,46 @@ export type ContentReleaseRecord = {
   last_delivery_error: string | null;
   locale_mode: "en_only" | "localized" | "nl_only";
   release_type: "lesson" | "mixed" | "publication";
-  status: "approved" | "cancelled" | "draft" | "queued" | "sending" | "sent";
+  status:
+    | "approved"
+    | "cancelled"
+    | "draft"
+    | "partially_failed"
+    | "queued"
+    | "sending"
+    | "sent";
   subject_en: string | null;
   subject_nl: string | null;
+};
+
+export type ContentReleaseTargetRecord = {
+  accepted_at: string | null;
+  attempt_count: number;
+  cancelled_at: string | null;
+  created_at: string;
+  created_provider_at: string | null;
+  creating_started_at: string | null;
+  failed_at: string | null;
+  id: string;
+  language: Language;
+  last_error: string | null;
+  next_attempt_at: string;
+  provider_broadcast_id: string | null;
+  recipient_count_snapshot: number;
+  release_id: string;
+  segment_id: string;
+  sending_started_at: string | null;
+  status:
+    | "accepted"
+    | "cancelled"
+    | "created"
+    | "creating"
+    | "failed"
+    | "pending"
+    | "sending";
+  subject_snapshot: string;
+  topic_id: string;
+  updated_at: string;
 };
 
 export type ContentReleaseItemRecord = {
@@ -20,12 +66,6 @@ export type ContentReleaseItemRecord = {
   item_type: "lesson" | "publication";
   title_snapshot: string;
   url_snapshot: string;
-};
-
-export type AudienceContactRecord = {
-  email: string;
-  full_name: string | null;
-  locale: Language | null;
 };
 
 export type ContentReleaseDeliverySummary = {
@@ -45,14 +85,8 @@ export type ContentReleaseBroadcastDelivery = {
   segment_id: string;
   status: "sent";
   subject: string;
+  topic_id: string;
 };
-
-const MAIL_BRAND = {
-  brandName: "Coptic Compass",
-  descriptorEn: "Coptic dictionary, grammar, and publications.",
-  descriptorNl: "Koptisch woordenboek, grammatica en publicaties.",
-  liveUrl: "https://www.copticcompass.com",
-} as const;
 
 function asObject(value: unknown): Record<string, unknown> | null {
   if (!value || typeof value !== "object" || Array.isArray(value)) {
@@ -93,23 +127,8 @@ export function parseContentReleaseInvocationPayload(payload: unknown) {
   return { releaseId };
 }
 
-export function normalizeEmail(email: string) {
+function normalizeEmail(email: string) {
   return email.trim().toLowerCase();
-}
-
-export function getAudienceSegmentOptInColumn(
-  audienceSegment: ContentReleaseRecord["audience_segment"],
-) {
-  switch (audienceSegment) {
-    case "lessons":
-      return "lessons_opt_in";
-    case "books":
-      return "books_opt_in";
-    case "general":
-      return "general_updates_opt_in";
-    default:
-      return "general_updates_opt_in";
-  }
 }
 
 function getContentReleaseDeliveryLanguage(
@@ -157,6 +176,7 @@ export function getContentReleaseCopyForLocale(
  */
 export function buildContentReleaseEmailText(options: {
   body: string;
+  includeMarketingFooter?: boolean;
   items: Pick<ContentReleaseItemRecord, "title_snapshot" | "url_snapshot">[];
   language: Language;
 }) {
@@ -166,22 +186,20 @@ export function buildContentReleaseEmailText(options: {
   const itemsList = options.items
     .map((item) => `- ${item.title_snapshot}: ${item.url_snapshot}`)
     .join("\n");
-  const footerLines =
-    options.language === "nl"
-      ? [
-          "Met vriendelijke groet,",
-          MAIL_BRAND.brandName,
-          MAIL_BRAND.descriptorNl,
-          `Verder lezen op Coptic Compass: ${MAIL_BRAND.liveUrl}`,
-        ]
-      : [
-          "Kind regards,",
-          MAIL_BRAND.brandName,
-          MAIL_BRAND.descriptorEn,
-          `Continue reading on Coptic Compass: ${MAIL_BRAND.liveUrl}`,
-        ];
+  const footerLines = getMailFooterLines(options.language);
+  const unsubscribeLines = options.includeMarketingFooter
+    ? ["", ...getMarketingUnsubscribeLines(options.language)]
+    : [];
 
-  return [intro, "", itemsHeading, itemsList, "", ...footerLines].join("\n");
+  return [
+    intro,
+    "",
+    itemsHeading,
+    itemsList,
+    "",
+    ...footerLines,
+    ...unsubscribeLines,
+  ].join("\n");
 }
 
 /**
@@ -191,81 +209,61 @@ export function buildContentReleaseEmailText(options: {
  */
 export function buildContentReleaseEmailHtml(options: {
   body: string;
+  includeMarketingFooter?: boolean;
   items: Pick<ContentReleaseItemRecord, "title_snapshot" | "url_snapshot">[];
   language: Language;
   subject: string;
 }) {
-  const intro = escapeHtml(options.body.trim()).replace(/\n/g, "<br />");
+  const colors = mailBrandColors;
+  const intro = escapeMailHtml(options.body.trim()).replace(/\n/g, "<br />");
   const itemsHeading =
     options.language === "nl" ? "In deze release" : "In this release";
-  const footerLines =
-    options.language === "nl"
-      ? [
-          "Met vriendelijke groet,",
-          MAIL_BRAND.brandName,
-          MAIL_BRAND.descriptorNl,
-          `Verder lezen op Coptic Compass: ${MAIL_BRAND.liveUrl}`,
-        ]
-      : [
-          "Kind regards,",
-          MAIL_BRAND.brandName,
-          MAIL_BRAND.descriptorEn,
-          `Continue reading on Coptic Compass: ${MAIL_BRAND.liveUrl}`,
-        ];
+  const footerLines = getMailFooterLines(options.language);
+  const unsubscribeLines = getMarketingUnsubscribeLines(options.language);
+  const unsubscribeHtml = options.includeMarketingFooter
+    ? `
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid ${colors.line};color:${colors.muted};">
+          <div>${escapeMailHtml(unsubscribeLines[0])}</div>
+          <div>${escapeMailHtml(unsubscribeLines[1])}</div>
+          <div style="margin-top:6px;"><a href="${resendUnsubscribeUrlPlaceholder}" style="color:${colors.coptic};text-decoration:none;">${resendUnsubscribeUrlPlaceholder}</a></div>
+        </div>`
+    : "";
 
   const itemsHtml = options.items
     .map(
       (item) => `
         <li style="margin:0 0 14px;">
-          <a href="${escapeHtml(item.url_snapshot)}" style="color:#0284c7;text-decoration:none;font-weight:600;">
-            ${escapeHtml(item.title_snapshot)}
+          <a href="${escapeMailHtml(item.url_snapshot)}" style="color:#0284c7;text-decoration:none;font-weight:600;">
+            ${escapeMailHtml(item.title_snapshot)}
           </a>
-          <div style="margin-top:4px;font-size:13px;color:#57534e;">${escapeHtml(item.url_snapshot)}</div>
+          <div style="margin-top:4px;font-size:13px;color:${colors.muted};">${escapeMailHtml(item.url_snapshot)}</div>
         </li>`,
     )
     .join("");
 
   return `<!doctype html>
 <html>
-  <body style="margin:0;background:#f5f5f4;padding:24px 12px;font-family:Aptos,Segoe UI,Helvetica Neue,Arial,sans-serif;color:#1c1917;">
-    <div style="max-width:640px;margin:0 auto;background:#ffffff;border:1px solid #e7e5e4;border-radius:24px;overflow:hidden;box-shadow:0 8px 32px rgba(24,30,27,0.08);">
-      <div style="padding:28px 32px;background:linear-gradient(135deg,#ecfdf5 0%,#f0f9ff 100%);border-bottom:1px solid #e7e5e4;">
-        <div style="font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:#059669;font-weight:700;">${options.language === "nl" ? "Nieuwe updates van Coptic Compass" : "New updates from Coptic Compass"}</div>
-        <h1 style="margin:10px 0 0;font-size:28px;line-height:1.2;color:#1c1917;">${escapeHtml(options.subject)}</h1>
+  <body style="margin:0;background:${colors.elevated};padding:24px 12px;font-family:Aptos,Segoe UI,Helvetica Neue,Arial,sans-serif;color:${colors.ink};">
+    <div style="max-width:640px;margin:0 auto;background:${colors.surface};border:1px solid ${colors.line};border-radius:24px;overflow:hidden;box-shadow:0 8px 32px rgba(24,30,27,0.08);">
+      <div style="padding:28px 32px;background:linear-gradient(135deg,${colors.copticSoft} 0%,#f0f9ff 100%);border-bottom:1px solid ${colors.line};">
+        <div style="font-size:13px;letter-spacing:0.08em;text-transform:uppercase;color:${colors.coptic};font-weight:700;">${options.language === "nl" ? "Nieuwe updates van Coptic Compass" : "New updates from Coptic Compass"}</div>
+        <h1 style="margin:10px 0 0;font-size:28px;line-height:1.2;color:${colors.ink};">${escapeMailHtml(options.subject)}</h1>
       </div>
       <div style="padding:32px;">
-        <p style="margin:0 0 20px;font-size:16px;line-height:1.7;color:#292524;">${intro}</p>
-        <h2 style="margin:0 0 14px;font-size:18px;line-height:1.4;color:#1c1917;">${escapeHtml(itemsHeading)}</h2>
+        <p style="margin:0 0 20px;font-size:16px;line-height:1.7;color:${colors.ink};">${intro}</p>
+        <h2 style="margin:0 0 14px;font-size:18px;line-height:1.4;color:${colors.ink};">${escapeMailHtml(itemsHeading)}</h2>
         <ul style="margin:0;padding-left:20px;">${itemsHtml}</ul>
       </div>
-      <div style="padding:24px 32px;border-top:1px solid #e7e5e4;background:#fafaf9;font-size:13px;line-height:1.7;color:#57534e;">
-        <div>${escapeHtml(footerLines[0])}</div>
-        <div style="font-weight:700;color:#1c1917;">${escapeHtml(footerLines[1])}</div>
-        <div>${escapeHtml(footerLines[2])}</div>
-        <div style="margin-top:8px;"><a href="${MAIL_BRAND.liveUrl}" style="color:#059669;text-decoration:none;">${escapeHtml(footerLines[3])}</a></div>
+      <div style="padding:24px 32px;border-top:1px solid ${colors.line};background:#fafaf9;font-size:13px;line-height:1.7;color:${colors.muted};">
+        <div>${escapeMailHtml(footerLines[0])}</div>
+        <div style="font-weight:700;color:${colors.ink};">${escapeMailHtml(footerLines[1])}</div>
+        <div>${escapeMailHtml(footerLines[2])}</div>
+        <div style="margin-top:8px;"><a href="${mailBrand.liveUrl}" style="color:${colors.coptic};text-decoration:none;">${escapeMailHtml(footerLines[3])}</a></div>
+        ${unsubscribeHtml}
       </div>
     </div>
   </body>
 </html>`;
-}
-
-export function buildContentReleaseNotificationPayload(options: {
-  contact: AudienceContactRecord;
-  itemCount: number;
-  language: Language;
-  release: Pick<
-    ContentReleaseRecord,
-    "audience_segment" | "locale_mode" | "release_type"
-  >;
-}) {
-  return {
-    audience_segment: options.release.audience_segment,
-    item_count: options.itemCount,
-    locale: options.language,
-    locale_mode: options.release.locale_mode,
-    recipient_name: options.contact.full_name,
-    release_type: options.release.release_type,
-  };
 }
 
 export function buildContentReleaseNotificationDedupeKey(options: {
@@ -312,7 +310,7 @@ export function getContentReleaseDeliverySummary(
  * Invalid or partial entries are ignored so downstream reporting can rely on a
  * consistent "sent broadcast" shape.
  */
-export function getContentReleaseBroadcastDeliveries(
+function getContentReleaseBroadcastDeliveries(
   release: Pick<ContentReleaseRecord, "delivery_summary">,
 ) {
   const summary = asObject(release.delivery_summary);
@@ -350,6 +348,7 @@ function getBroadcastDeliveryEntry(
   const id = asOptionalString(entry?.id);
   const segmentId = asOptionalString(entry?.segment_id);
   const subject = asOptionalString(entry?.subject);
+  const topicId = asOptionalString(entry?.topic_id);
   const recipientCount = asOptionalNumber(entry?.recipient_count);
   const status = asOptionalString(entry?.status);
   const parsedEntry = {
@@ -358,6 +357,7 @@ function getBroadcastDeliveryEntry(
     segmentId,
     status,
     subject,
+    topicId,
   };
 
   if (!hasCompleteSentBroadcastDelivery(parsedEntry)) {
@@ -372,6 +372,7 @@ function getBroadcastDeliveryEntry(
       segment_id: parsedEntry.segmentId,
       status: parsedEntry.status,
       subject: parsedEntry.subject,
+      topic_id: parsedEntry.topicId,
     } satisfies ContentReleaseBroadcastDelivery,
   ] as const;
 }
@@ -382,59 +383,25 @@ function hasCompleteSentBroadcastDelivery(options: {
   segmentId: string | null;
   status: string | null;
   subject: string | null;
+  topicId: string | null;
 }): options is {
   id: string;
   recipientCount: number;
   segmentId: string;
   status: "sent";
   subject: string;
+  topicId: string;
 } {
   return (
     options.id !== null &&
     options.segmentId !== null &&
     options.subject !== null &&
+    options.topicId !== null &&
     options.recipientCount !== null &&
     options.status === "sent"
   );
 }
 
-/**
- * Merges one delivery batch into the running summary while preserving the total
- * eligible recipient and item counts for the overall release.
- */
-export function mergeContentReleaseDeliverySummary(options: {
-  batch: {
-    failedCount: number;
-    processedCount: number;
-    remainingCount: number;
-    sentCount: number;
-    skippedCount: number;
-  };
-  previous: ContentReleaseDeliverySummary;
-  totalEligibleRecipients: number;
-  totalItemCount: number;
-}) {
-  return {
-    eligible_recipient_count: options.totalEligibleRecipients,
-    failed_count: options.previous.failed_count + options.batch.failedCount,
-    item_count: options.totalItemCount,
-    processed_recipient_count:
-      options.previous.processed_recipient_count + options.batch.processedCount,
-    remaining_recipient_count: options.batch.remainingCount,
-    sent_count: options.previous.sent_count + options.batch.sentCount,
-    skipped_count: options.previous.skipped_count + options.batch.skippedCount,
-  } satisfies ContentReleaseDeliverySummary;
-}
-
 function asOptionalNumber(value: unknown) {
   return typeof value === "number" && Number.isFinite(value) ? value : null;
-}
-
-function escapeHtml(value: string) {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
 }

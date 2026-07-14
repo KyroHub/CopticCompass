@@ -3,10 +3,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 type NotificationsEventsModuleContext = {
   createServiceRoleClientMock: ReturnType<typeof vi.fn>;
   dispatchLoggedNotificationEmail: typeof import("./events").dispatchLoggedNotificationEmail;
+  enqueueNotificationEmailJobRpcMock: ReturnType<typeof vi.fn>;
   getNotificationEmailEnvMock: ReturnType<typeof vi.fn>;
   hasSupabaseServiceRoleEnvMock: ReturnType<typeof vi.fn>;
   notificationDeliveriesInsertMock: ReturnType<typeof vi.fn>;
-  notificationEmailJobsInsertMock: ReturnType<typeof vi.fn>;
   notificationEventsInsertMock: ReturnType<typeof vi.fn>;
   notificationEventsUpdateEqMock: ReturnType<typeof vi.fn>;
   invokeSupabaseEdgeFunctionMock: ReturnType<typeof vi.fn>;
@@ -38,8 +38,16 @@ async function loadNotificationsEventsModule(options?: {
   const notificationDeliveriesInsertMock = vi.fn().mockResolvedValue({
     error: null,
   });
-  const notificationEmailJobsInsertMock = vi.fn().mockResolvedValue({
-    data: { id: "job_123" },
+  const enqueueNotificationEmailJobRpcMock = vi.fn().mockResolvedValue({
+    data: [
+      {
+        event_id: "event_123",
+        event_status: "queued",
+        job_already_existed: false,
+        job_id: "job_123",
+        job_status: "queued",
+      },
+    ],
     error: null,
   });
   const notificationEventsUpdateEqMock = vi.fn().mockResolvedValue({
@@ -66,17 +74,14 @@ async function loadNotificationsEventsModule(options?: {
         };
       }
 
-      if (table === "notification_email_jobs") {
-        return {
-          insert: vi.fn(() => ({
-            select: vi.fn(() => ({
-              single: notificationEmailJobsInsertMock,
-            })),
-          })),
-        };
+      throw new Error(`Unexpected notification table: ${table}`);
+    }),
+    rpc: vi.fn((functionName: string, args: Record<string, unknown>) => {
+      if (functionName === "enqueue_notification_email_job") {
+        return enqueueNotificationEmailJobRpcMock(args);
       }
 
-      throw new Error(`Unexpected notification table: ${table}`);
+      throw new Error(`Unexpected notification RPC: ${functionName}`);
     }),
   });
   const hasSupabaseServiceRoleEnvMock = vi
@@ -123,10 +128,10 @@ async function loadNotificationsEventsModule(options?: {
   return {
     ...mod,
     createServiceRoleClientMock,
+    enqueueNotificationEmailJobRpcMock,
     getNotificationEmailEnvMock,
     hasSupabaseServiceRoleEnvMock,
     notificationDeliveriesInsertMock,
-    notificationEmailJobsInsertMock,
     notificationEventsInsertMock,
     notificationEventsUpdateEqMock,
     invokeSupabaseEdgeFunctionMock,
@@ -259,10 +264,10 @@ describe("logged notification events", () => {
     );
   });
 
-  it("stores a queued event, persists an email job, and starts the worker", async () => {
+  it("atomically enqueues the notification job and starts the worker", async () => {
     const {
+      enqueueNotificationEmailJobRpcMock,
       invokeSupabaseEdgeFunctionMock,
-      notificationEmailJobsInsertMock,
       notificationEventsInsertMock,
       queueLoggedNotificationEmail,
     } = await loadNotificationsEventsModule();
@@ -282,8 +287,19 @@ describe("logged notification events", () => {
       success: true,
     });
 
-    expect(notificationEventsInsertMock).toHaveBeenCalledOnce();
-    expect(notificationEmailJobsInsertMock).toHaveBeenCalledOnce();
+    expect(notificationEventsInsertMock).not.toHaveBeenCalled();
+    expect(enqueueNotificationEmailJobRpcMock).toHaveBeenCalledOnce();
+    expect(enqueueNotificationEmailJobRpcMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        p_event_type: "contact_message_received",
+        p_payload: expect.objectContaining({
+          notification_classification: {
+            required_transactional: true,
+          },
+        }),
+        p_to_recipients: ["owner@example.com"],
+      }),
+    );
     expect(invokeSupabaseEdgeFunctionMock).toHaveBeenCalledWith(
       "process-notification-email",
       {
@@ -294,8 +310,8 @@ describe("logged notification events", () => {
 
   it("queues owner alerts with the configured owner recipient", async () => {
     const {
+      enqueueNotificationEmailJobRpcMock,
       getNotificationEmailEnvMock,
-      notificationEmailJobsInsertMock,
       queueLoggedOwnerAlertEmail,
     } = await loadNotificationsEventsModule();
 
@@ -314,6 +330,6 @@ describe("logged notification events", () => {
     });
 
     expect(getNotificationEmailEnvMock).toHaveBeenCalledOnce();
-    expect(notificationEmailJobsInsertMock).toHaveBeenCalledOnce();
+    expect(enqueueNotificationEmailJobRpcMock).toHaveBeenCalledOnce();
   });
 });

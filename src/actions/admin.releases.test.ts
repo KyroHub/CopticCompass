@@ -157,7 +157,7 @@ describe("admin content release actions", () => {
 
   it("queues approved content releases and starts the background worker", async () => {
     const {
-      contentReleaseUpdateEqMock,
+      contentReleaseQueueRpcMock,
       invokeSupabaseEdgeFunctionMock,
       revalidatePathMock,
       sendContentRelease,
@@ -170,11 +170,19 @@ describe("admin content release actions", () => {
       success: true,
     });
 
-    expect(contentReleaseUpdateEqMock).toHaveBeenNthCalledWith(
-      1,
-      "id",
-      "44444444-4444-4444-8444-444444444444",
-    );
+    expect(contentReleaseQueueRpcMock).toHaveBeenCalledWith({
+      p_item_count: 1,
+      p_release_id: "44444444-4444-4444-8444-444444444444",
+      p_targets: [
+        {
+          language: "en",
+          recipient_count_snapshot: 1,
+          segment_id: "segment_lessons_en",
+          subject_snapshot: "New lesson available",
+          topic_id: "topic_lessons",
+        },
+      ],
+    });
     expect(invokeSupabaseEdgeFunctionMock).toHaveBeenCalledWith(
       "process-content-release",
       {
@@ -182,6 +190,67 @@ describe("admin content release actions", () => {
       },
     );
     expect(revalidatePathMock).toHaveBeenCalledWith("/admin");
+  });
+
+  it("returns a non-error outcome when no release recipients match", async () => {
+    const {
+      contentReleaseQueueRpcMock,
+      invokeSupabaseEdgeFunctionMock,
+      sendContentRelease,
+    } = await loadAdminModule({
+      audienceContacts: [],
+    });
+
+    await expect(
+      sendContentRelease(null, createContentReleaseStatusFormData()),
+    ).resolves.toEqual({
+      message: "No subscribed recipients match this release segment yet.",
+      success: true,
+    });
+
+    expect(contentReleaseQueueRpcMock).not.toHaveBeenCalled();
+    expect(invokeSupabaseEdgeFunctionMock).not.toHaveBeenCalled();
+  });
+
+  it("queues partially failed content releases for target retry", async () => {
+    const { contentReleaseQueueRpcMock, sendContentRelease } =
+      await loadAdminModule({
+        release: createDefaultRelease({
+          last_delivery_error: "Dutch broadcast failed.",
+          status: "partially_failed",
+        }),
+      });
+
+    await expect(
+      sendContentRelease(null, createContentReleaseStatusFormData()),
+    ).resolves.toEqual({
+      message:
+        "Release retry queued. Delivery will continue in the background.",
+      success: true,
+    });
+
+    expect(contentReleaseQueueRpcMock).toHaveBeenCalledOnce();
+  });
+
+  it("blocks release queueing when Broadcast Topic configuration is incomplete", async () => {
+    const {
+      contentReleaseUpdateEqMock,
+      invokeSupabaseEdgeFunctionMock,
+      sendContentRelease,
+    } = await loadAdminModule({
+      hasResendBroadcastEnv: false,
+    });
+
+    await expect(
+      sendContentRelease(null, createContentReleaseStatusFormData()),
+    ).resolves.toEqual({
+      message:
+        "Resend Broadcast delivery is missing required configuration: RESEND_LESSONS_TOPIC_ID.",
+      success: false,
+    });
+
+    expect(contentReleaseUpdateEqMock).not.toHaveBeenCalled();
+    expect(invokeSupabaseEdgeFunctionMock).not.toHaveBeenCalled();
   });
 
   it("sends a localized preview email to the admin inbox without marking the release sent", async () => {
@@ -292,11 +361,6 @@ describe("admin content release actions", () => {
 
     expect(contentReleaseUpdateEqMock).toHaveBeenNthCalledWith(
       1,
-      "id",
-      "44444444-4444-4444-8444-444444444444",
-    );
-    expect(contentReleaseUpdateEqMock).toHaveBeenNthCalledWith(
-      2,
       "id",
       "44444444-4444-4444-8444-444444444444",
     );

@@ -9,9 +9,11 @@ import { AdminErrorDisclosure } from "@/features/admin/components/AdminErrorDisc
 import {
   formatContentReleaseAudienceSegment,
   formatContentReleaseLocaleMode,
+  formatContentReleaseTargetStatus,
   formatContentReleaseType,
   getContentReleaseDeliverySummary,
   type AdminContentRelease,
+  type ContentReleaseTargetRow,
 } from "@/features/communications/lib/releases";
 import type { Language } from "@/types/i18n";
 
@@ -45,6 +47,7 @@ const adminContentReleaseCardCopy = {
     processedRecipients: "Processed recipients",
     publication: "Publication",
     recipients: "recipients",
+    releaseTargets: "Release targets",
     remaining: "remaining",
     sent: "Sent",
     sentOn: "Sent on",
@@ -53,6 +56,11 @@ const adminContentReleaseCardCopy = {
     snapshotItems: "Snapshot items",
     snapshottedItems: "Snapshotted items",
     started: "Started",
+    targetDiagnostic: "Diagnostic",
+    targetProviderId: "Provider ID",
+    targetSegment: "Segment",
+    targetTopic: "Topic",
+    targetUpdated: "Provider updated",
     untitled: "Untitled release draft",
     updated: "Updated",
     updatedOn: "Updated on",
@@ -80,6 +88,7 @@ const adminContentReleaseCardCopy = {
     processedRecipients: "Verwerkte ontvangers",
     publication: "Publicatie",
     recipients: "ontvangers",
+    releaseTargets: "Releasedoelen",
     remaining: "resterend",
     sent: "Verzonden",
     sentOn: "Verzonden op",
@@ -88,6 +97,11 @@ const adminContentReleaseCardCopy = {
     snapshotItems: "Snapshotitems",
     snapshottedItems: "Items in snapshot",
     started: "Gestart",
+    targetDiagnostic: "Diagnose",
+    targetProviderId: "Provider-ID",
+    targetSegment: "Segment",
+    targetTopic: "Topic",
+    targetUpdated: "Provider bijgewerkt",
     untitled: "Releaseconcept zonder titel",
     updated: "Bijgewerkt",
     updatedOn: "Bijgewerkt op",
@@ -110,6 +124,34 @@ function formatContentReleaseTimestamp(
       timeStyle: "short",
     },
   );
+}
+
+function getReleaseTargetStatus(target: ContentReleaseTargetRow) {
+  return target.last_provider_status ?? target.status;
+}
+
+function getReleaseTargetStatusTone(
+  target: ContentReleaseTargetRow,
+): "danger" | "neutral" | "success" | "surface" | "warning" {
+  switch (getReleaseTargetStatus(target)) {
+    case "accepted":
+    case "delivered":
+      return "success";
+    case "bounced":
+    case "complained":
+    case "failed":
+    case "suppressed":
+      return "danger";
+    case "delayed":
+    case "creating":
+    case "pending":
+    case "sending":
+      return "warning";
+    case "cancelled":
+      return "neutral";
+    default:
+      return "surface";
+  }
 }
 
 export function AdminContentReleaseCard({
@@ -326,6 +368,84 @@ export function AdminContentReleaseCard({
           </div>
         </div>
       </div>
+
+      {release.targets.length > 0 ? (
+        <div className="mb-6 space-y-3">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-muted">
+            {copy.releaseTargets}
+          </p>
+          <div className="grid gap-3 lg:grid-cols-2">
+            {release.targets.map((target) => (
+              <div
+                key={target.id}
+                className={surfacePanelClassName({
+                  rounded: "lg",
+                  variant: "elevated",
+                  className: "px-5 py-4",
+                })}
+              >
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge tone="language" size="xs">
+                    {target.language.toUpperCase()}
+                  </Badge>
+                  <Badge tone={getReleaseTargetStatusTone(target)} size="xs">
+                    {formatContentReleaseTargetStatus(
+                      getReleaseTargetStatus(target),
+                      language,
+                    )}
+                  </Badge>
+                  <Badge tone="surface" size="xs">
+                    {target.recipient_count_snapshot.toLocaleString(
+                      language === "nl" ? "nl-BE" : "en-US",
+                    )}{" "}
+                    {copy.recipients}
+                  </Badge>
+                </div>
+
+                <div className="mt-3 space-y-1.5 text-sm leading-6 text-muted">
+                  <p>
+                    {copy.targetSegment}:{" "}
+                    <span className="font-semibold text-ink">
+                      {target.segment_id}
+                    </span>
+                  </p>
+                  <p>
+                    {copy.targetTopic}:{" "}
+                    <span className="font-semibold text-ink">
+                      {target.topic_id}
+                    </span>
+                  </p>
+                  {target.provider_broadcast_id ? (
+                    <p>
+                      {copy.targetProviderId}:{" "}
+                      <span className="font-semibold text-ink">
+                        {target.provider_broadcast_id}
+                      </span>
+                    </p>
+                  ) : null}
+                  {target.provider_status_updated_at ? (
+                    <p>
+                      {copy.targetUpdated}:{" "}
+                      {formatContentReleaseTimestamp(
+                        target.provider_status_updated_at,
+                        language,
+                      )}
+                    </p>
+                  ) : null}
+                  {target.last_provider_error ? (
+                    <p>
+                      {copy.targetDiagnostic}:{" "}
+                      <span className="font-semibold text-ink">
+                        {target.last_provider_error}
+                      </span>
+                    </p>
+                  ) : null}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       {release.last_delivery_error ? (
         <AdminErrorDisclosure

@@ -17,12 +17,18 @@ import { getAdminContactMessages } from "@/features/contact/lib/server/queries";
 import { getDictionaryEntryById } from "@/features/dictionary/lib/dictionary";
 import type { EntryReportWithEntry } from "@/features/dictionary/lib/entryActions";
 import { getAdminEntryReports } from "@/features/dictionary/lib/server/queries";
-import type { AdminNotificationEvent } from "@/features/notifications/lib/notifications";
+import {
+  isNotificationFailureStatus,
+  isNotificationHistoryStatus,
+  notificationFailureStatuses,
+  type AdminNotificationEvent,
+} from "@/features/notifications/lib/notifications";
 import { getAdminNotificationEvents } from "@/features/notifications/lib/server/queries";
 import { getAdminSubmissions } from "@/features/submissions/lib/server/queries";
 import type { AdminSubmission } from "@/features/submissions/types";
 import { withScalabilityTimer } from "@/lib/server/observability";
 import type { QueryResult, AppSupabaseClient } from "@/lib/supabase/queryTypes";
+import type { Tables } from "@/types/supabase";
 
 export interface AdminAudienceMetrics {
   bookAudienceCount: number;
@@ -35,9 +41,52 @@ export interface AdminAudienceMetrics {
 }
 
 export interface AdminNotificationMetrics {
+  acceptedNotificationCount: number;
+  bouncedNotificationCount: number;
+  complainedNotificationCount: number;
+  delayedNotificationCount: number;
+  deliveredNotificationCount: number;
   failedNotificationCount: number;
+  queuedNotificationCount: number;
   recentNotificationCount: number;
   sentNotificationCount: number;
+  suppressedNotificationCount: number;
+}
+
+type AdminOperationalAlertId =
+  | "audience-sync-error-rate"
+  | "complaint-events"
+  | "dead-letter-email-jobs"
+  | "expired-processing-email-jobs"
+  | "failed-provider-webhooks"
+  | "recent-bounce-rate"
+  | "stale-content-releases"
+  | "stale-email-queue";
+
+export type AdminOperationalAlert = {
+  id: AdminOperationalAlertId;
+  tone: "danger" | "warning";
+};
+
+export interface AdminNotificationOperations {
+  activeSuppressionCount: number;
+  audienceSyncErrorCount: number;
+  bouncedNotificationCount: number;
+  complainedNotificationCount: number;
+  deadLetterEmailJobCount: number;
+  expiredProcessingEmailJobCount: number;
+  failedEmailJobCount: number;
+  failedWebhookEventCount: number;
+  nextRetryEmailJobAt: string | null;
+  oldestEligibleEmailJobAt: string | null;
+  oldestReceivedWebhookAt: string | null;
+  operationalAlerts: AdminOperationalAlert[];
+  processingEmailJobCount: number;
+  queuedEmailJobCount: number;
+  receivedWebhookEventCount: number;
+  retryScheduledEmailJobCount: number;
+  staleContentReleaseCount: number;
+  totalAudienceContactCount: number;
 }
 
 export interface AdminWorkspaceOverview {
@@ -54,6 +103,11 @@ type LoadedDashboardSection<T> = {
   items: T;
 };
 
+type OperationalTimestampRow = {
+  next_attempt_at?: string | null;
+  received_at?: string | null;
+};
+
 export type AdminDashboardData = {
   audience: LoadedDashboardSection<AdminAudienceContactRow[]> & {
     metrics: AdminAudienceMetrics;
@@ -66,6 +120,7 @@ export type AdminDashboardData = {
   entryReports: LoadedDashboardSection<EntryReportWithEntry[]>;
   notifications: LoadedDashboardSection<AdminNotificationEvent[]> & {
     metrics: AdminNotificationMetrics;
+    operations: AdminNotificationOperations;
   };
   submissions: LoadedDashboardSection<AdminSubmission[]>;
 };
@@ -128,6 +183,37 @@ async function getExactCount(
   return result.count ?? 0;
 }
 
+async function getFirstOperationalRow<T extends OperationalTimestampRow>(
+  label: string,
+  query: PromiseLike<{
+    data: T[] | null;
+    error: {
+      code?: string;
+      details?: string | null;
+      hint?: string | null;
+      message?: string;
+    } | null;
+  }>,
+) {
+  const result = await query;
+
+  if (result.error) {
+    const errorDetails = {
+      code: result.error.code,
+      details: result.error.details,
+      hint: result.error.hint,
+      message: result.error.message ?? "Unknown query error",
+    };
+
+    console.warn(`Unable to load admin ${label}; falling back to empty.`, {
+      error: errorDetails,
+    });
+    return null;
+  }
+
+  return result.data?.[0] ?? null;
+}
+
 function hasCountErrorMessage(error: {
   code?: string;
   details?: string | null;
@@ -149,6 +235,98 @@ function shouldRetryPendingCountWithoutDeletedAt(error: {
 
   const normalizedMessage = error.message!.toLowerCase();
   return error.code === "42703" || normalizedMessage.includes("deleted_at");
+}
+
+const OPERATIONAL_QUEUE_STALE_MS = 5 * 60 * 1000;
+const OPERATIONAL_AUDIENCE_SYNC_ERROR_RATE_THRESHOLD = 0.1;
+
+export function buildAdminOperationalAlerts(options: {
+  metrics: Pick<
+    AdminNotificationMetrics,
+    "bouncedNotificationCount" | "recentNotificationCount"
+  >;
+  now: Date;
+  operations: Omit<AdminNotificationOperations, "operationalAlerts">;
+}): AdminOperationalAlert[] {
+  const alerts: AdminOperationalAlert[] = [];
+  const oldestEligibleTime = options.operations.oldestEligibleEmailJobAt
+    ? new Date(options.operations.oldestEligibleEmailJobAt).getTime()
+    : null;
+
+  if (
+    oldestEligibleTime !== null &&
+    Number.isFinite(oldestEligibleTime) &&
+    options.now.getTime() - oldestEligibleTime >= OPERATIONAL_QUEUE_STALE_MS
+  ) {
+    alerts.push({
+      id: "stale-email-queue",
+      tone: "warning",
+    });
+  }
+
+  if (options.operations.expiredProcessingEmailJobCount > 0) {
+    alerts.push({
+      id: "expired-processing-email-jobs",
+      tone: "danger",
+    });
+  }
+
+  if (options.operations.deadLetterEmailJobCount > 0) {
+    alerts.push({
+      id: "dead-letter-email-jobs",
+      tone: "danger",
+    });
+  }
+
+  if (options.operations.failedWebhookEventCount > 0) {
+    alerts.push({
+      id: "failed-provider-webhooks",
+      tone: "danger",
+    });
+  }
+
+  if (options.operations.complainedNotificationCount > 0) {
+    alerts.push({
+      id: "complaint-events",
+      tone: "danger",
+    });
+  }
+
+  if (options.operations.staleContentReleaseCount > 0) {
+    alerts.push({
+      id: "stale-content-releases",
+      tone: "warning",
+    });
+  }
+
+  if (options.operations.totalAudienceContactCount > 0) {
+    const audienceSyncErrorRate =
+      options.operations.audienceSyncErrorCount /
+      options.operations.totalAudienceContactCount;
+
+    if (
+      audienceSyncErrorRate >= OPERATIONAL_AUDIENCE_SYNC_ERROR_RATE_THRESHOLD
+    ) {
+      alerts.push({
+        id: "audience-sync-error-rate",
+        tone: "warning",
+      });
+    }
+  }
+
+  if (
+    options.metrics.recentNotificationCount >= 20 &&
+    options.metrics.bouncedNotificationCount /
+      options.metrics.recentNotificationCount >=
+      0.05
+  ) {
+    alerts.push({
+      id: "recent-bounce-rate",
+      tone: "warning",
+    });
+  }
+
+  return alerts;
 }
 
 async function getPendingSubmissionCount(supabase: AppSupabaseClient) {
@@ -241,11 +419,34 @@ export function buildAdminNotificationMetrics(
   events: readonly Pick<AdminNotificationEvent, "status">[],
 ): AdminNotificationMetrics {
   return {
-    failedNotificationCount: events.filter((event) => event.status === "failed")
-      .length,
+    acceptedNotificationCount: events.filter(
+      (event) => event.status === "accepted" || event.status === "sent",
+    ).length,
+    bouncedNotificationCount: events.filter(
+      (event) => event.status === "bounced",
+    ).length,
+    complainedNotificationCount: events.filter(
+      (event) => event.status === "complained",
+    ).length,
+    delayedNotificationCount: events.filter(
+      (event) => event.status === "delayed",
+    ).length,
+    deliveredNotificationCount: events.filter(
+      (event) => event.status === "delivered",
+    ).length,
+    failedNotificationCount: events.filter((event) =>
+      isNotificationFailureStatus(event.status),
+    ).length,
+    queuedNotificationCount: events.filter(
+      (event) => event.status === "queued" || event.status === "processing",
+    ).length,
     recentNotificationCount: events.length,
-    sentNotificationCount: events.filter((event) => event.status === "sent")
-      .length,
+    sentNotificationCount: events.filter((event) =>
+      isNotificationHistoryStatus(event.status),
+    ).length,
+    suppressedNotificationCount: events.filter(
+      (event) => event.status === "suppressed",
+    ).length,
   };
 }
 
@@ -376,7 +577,7 @@ export async function loadAdminWorkspaceOverview(
           supabase
             .from("notification_events")
             .select("id", { count: "exact", head: true })
-            .eq("status", "failed"),
+            .in("status", [...notificationFailureStatuses]),
         ),
       ]);
 
@@ -565,6 +766,201 @@ async function loadAdminAudienceMetrics(
   };
 }
 
+async function loadAdminNotificationOperations(
+  supabase: AppSupabaseClient,
+  metrics: AdminNotificationMetrics,
+  now = new Date(),
+): Promise<AdminNotificationOperations> {
+  const nowIso = now.toISOString();
+  const staleContentReleaseIso = new Date(
+    now.getTime() - 2 * 60 * 60 * 1000,
+  ).toISOString();
+
+  const [
+    queuedEmailJobCount,
+    processingEmailJobCount,
+    retryScheduledEmailJobCount,
+    failedEmailJobCount,
+    deadLetterEmailJobCount,
+    expiredProcessingEmailJobCount,
+    failedWebhookEventCount,
+    receivedWebhookEventCount,
+    activeSuppressionCount,
+    bouncedNotificationCount,
+    complainedNotificationCount,
+    staleContentReleaseCount,
+    audienceSyncErrorCount,
+    totalAudienceContactCount,
+    oldestEligibleEmailJob,
+    nextRetryEmailJob,
+    oldestReceivedWebhook,
+  ] = await Promise.all([
+    getExactCount(
+      "queued notification email jobs",
+      supabase
+        .from("notification_email_jobs")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "queued"),
+    ),
+    getExactCount(
+      "processing notification email jobs",
+      supabase
+        .from("notification_email_jobs")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "processing"),
+    ),
+    getExactCount(
+      "retry scheduled notification email jobs",
+      supabase
+        .from("notification_email_jobs")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "retry_scheduled"),
+    ),
+    getExactCount(
+      "failed notification email jobs",
+      supabase
+        .from("notification_email_jobs")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "failed"),
+    ),
+    getExactCount(
+      "dead letter notification email jobs",
+      supabase
+        .from("notification_email_jobs")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "dead_letter"),
+    ),
+    getExactCount(
+      "expired processing notification email jobs",
+      supabase
+        .from("notification_email_jobs")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "processing")
+        .lt("lock_expires_at", nowIso),
+    ),
+    getExactCount(
+      "failed provider webhook events",
+      supabase
+        .from("provider_webhook_events")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "failed"),
+    ),
+    getExactCount(
+      "received provider webhook events",
+      supabase
+        .from("provider_webhook_events")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "received"),
+    ),
+    getExactCount(
+      "active audience suppressions",
+      supabase
+        .from("audience_suppressions")
+        .select("id", { count: "exact", head: true })
+        .is("lifted_at", null),
+    ),
+    getExactCount(
+      "bounced notification events",
+      supabase
+        .from("notification_events")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "bounced"),
+    ),
+    getExactCount(
+      "complained notification events",
+      supabase
+        .from("notification_events")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "complained"),
+    ),
+    getExactCount(
+      "stale content releases",
+      supabase
+        .from("content_releases")
+        .select("id", { count: "exact", head: true })
+        .in("status", ["queued", "sending"])
+        .lt("updated_at", staleContentReleaseIso),
+    ),
+    getExactCount(
+      "audience sync errors",
+      supabase
+        .from("audience_contact_sync_state")
+        .select("audience_contact_id", { count: "exact", head: true })
+        .not("last_error", "is", null),
+    ),
+    getExactCount(
+      "total audience contacts",
+      supabase
+        .from("audience_contacts")
+        .select("id", { count: "exact", head: true }),
+    ),
+    getFirstOperationalRow<
+      Pick<Tables<"notification_email_jobs">, "next_attempt_at">
+    >(
+      "oldest eligible notification email job",
+      supabase
+        .from("notification_email_jobs")
+        .select("next_attempt_at")
+        .in("status", ["queued", "retry_scheduled"])
+        .lte("next_attempt_at", nowIso)
+        .order("next_attempt_at", { ascending: true })
+        .limit(1),
+    ),
+    getFirstOperationalRow<
+      Pick<Tables<"notification_email_jobs">, "next_attempt_at">
+    >(
+      "next retry notification email job",
+      supabase
+        .from("notification_email_jobs")
+        .select("next_attempt_at")
+        .eq("status", "retry_scheduled")
+        .gte("next_attempt_at", nowIso)
+        .order("next_attempt_at", { ascending: true })
+        .limit(1),
+    ),
+    getFirstOperationalRow<
+      Pick<Tables<"provider_webhook_events">, "received_at">
+    >(
+      "oldest received provider webhook event",
+      supabase
+        .from("provider_webhook_events")
+        .select("received_at")
+        .eq("status", "received")
+        .order("received_at", { ascending: true })
+        .limit(1),
+    ),
+  ]);
+
+  const operations = {
+    activeSuppressionCount,
+    audienceSyncErrorCount,
+    bouncedNotificationCount,
+    complainedNotificationCount,
+    deadLetterEmailJobCount,
+    expiredProcessingEmailJobCount,
+    failedEmailJobCount,
+    failedWebhookEventCount,
+    nextRetryEmailJobAt: nextRetryEmailJob?.next_attempt_at ?? null,
+    oldestEligibleEmailJobAt: oldestEligibleEmailJob?.next_attempt_at ?? null,
+    oldestReceivedWebhookAt: oldestReceivedWebhook?.received_at ?? null,
+    processingEmailJobCount,
+    queuedEmailJobCount,
+    receivedWebhookEventCount,
+    retryScheduledEmailJobCount,
+    staleContentReleaseCount,
+    totalAudienceContactCount,
+  } satisfies Omit<AdminNotificationOperations, "operationalAlerts">;
+
+  return {
+    ...operations,
+    operationalAlerts: buildAdminOperationalAlerts({
+      metrics,
+      now,
+      operations,
+    }),
+  };
+}
+
 /**
  * Loads the full admin dashboard read model, enriching and grouping each
  * section so the workspace UI can render from one coherent payload.
@@ -598,6 +994,13 @@ async function _loadAdminDashboardData(
       const audience = withItems(audienceContactsResult);
       const contentReleases = withItems(contentReleasesResult);
       const notifications = withItems(notificationEventsResult);
+      const notificationMetrics = buildAdminNotificationMetrics(
+        notifications.items,
+      );
+      const notificationOperations = await loadAdminNotificationOperations(
+        supabase,
+        notificationMetrics,
+      );
       const entryReports = {
         error: entryReportsResult.error,
         items: buildEntryReportItems(
@@ -621,7 +1024,8 @@ async function _loadAdminDashboardData(
         entryReports,
         notifications: {
           ...notifications,
-          metrics: buildAdminNotificationMetrics(notifications.items),
+          metrics: notificationMetrics,
+          operations: notificationOperations,
         },
         submissions,
       };
@@ -718,11 +1122,19 @@ export async function loadAdminSystemDashboardData(
       const notificationEventsResult =
         await getAdminNotificationEvents(supabase);
       const notifications = withItems(notificationEventsResult);
+      const notificationMetrics = buildAdminNotificationMetrics(
+        notifications.items,
+      );
+      const notificationOperations = await loadAdminNotificationOperations(
+        supabase,
+        notificationMetrics,
+      );
 
       return {
         notifications: {
           ...notifications,
-          metrics: buildAdminNotificationMetrics(notifications.items),
+          metrics: notificationMetrics,
+          operations: notificationOperations,
         },
       };
     },

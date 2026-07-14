@@ -1,15 +1,19 @@
 import {
   compareAdminNotificationPriority,
+  notificationFailureStatuses,
+  notificationHistoryStatuses,
+  notificationInFlightStatuses,
   type AdminNotificationEvent,
   type NotificationDeliveryRow,
+  type NotificationEmailJobAuditEventRow,
+  type NotificationEmailJobRow,
 } from "@/features/notifications/lib/notifications";
 import type { AppSupabaseClient, QueryResult } from "@/lib/supabase/queryTypes";
 
 const ADMIN_NOTIFICATION_SENT_HISTORY_LIMIT = 18;
-
 /**
- * Loads all failed/queued notifications plus a capped recent sent history
- * window, then attaches delivery attempts for the admin log UI.
+ * Loads all attention-worthy notifications plus a capped accepted/delivered
+ * history window, then attaches delivery attempts for the admin log UI.
  */
 export async function getAdminNotificationEvents(
   supabase: AppSupabaseClient,
@@ -19,12 +23,15 @@ export async function getAdminNotificationEvents(
     supabase
       .from("notification_events")
       .select("*")
-      .in("status", ["failed", "queued"])
+      .in("status", [
+        ...notificationFailureStatuses,
+        ...notificationInFlightStatuses,
+      ])
       .order("created_at", { ascending: false }),
     supabase
       .from("notification_events")
       .select("*")
-      .eq("status", "sent")
+      .in("status", [...notificationHistoryStatuses])
       .order("created_at", { ascending: false })
       .limit(limit),
   ]);
@@ -74,7 +81,20 @@ export async function getAdminNotificationEvents(
     };
   }
 
+  const jobsResult = await supabase
+    .from("notification_email_jobs")
+    .select("*")
+    .in("notification_event_id", eventIds);
+
+  if (jobsResult.error) {
+    return {
+      data: null,
+      error: { message: jobsResult.error.message },
+    };
+  }
+
   const deliveriesByEventId = new Map<string, NotificationDeliveryRow[]>();
+  const jobsByEventId = new Map<string, NotificationEmailJobRow>();
 
   for (const delivery of deliveriesResult.data ?? []) {
     const deliveries = deliveriesByEventId.get(delivery.event_id) ?? [];
@@ -82,14 +102,51 @@ export async function getAdminNotificationEvents(
     deliveriesByEventId.set(delivery.event_id, deliveries);
   }
 
+  for (const job of jobsResult.data ?? []) {
+    jobsByEventId.set(job.notification_event_id, job);
+  }
+
+  const jobIds = (jobsResult.data ?? []).map((job) => job.id);
+  const auditEventsByJobId = new Map<
+    string,
+    NotificationEmailJobAuditEventRow[]
+  >();
+
+  if (jobIds.length > 0) {
+    const auditEventsResult = await supabase
+      .from("notification_email_job_audit_events")
+      .select("*")
+      .in("notification_email_job_id", jobIds)
+      .order("created_at", { ascending: false });
+
+    if (auditEventsResult.error) {
+      return {
+        data: null,
+        error: { message: auditEventsResult.error.message },
+      };
+    }
+
+    for (const auditEvent of auditEventsResult.data ?? []) {
+      const auditEvents =
+        auditEventsByJobId.get(auditEvent.notification_email_job_id) ?? [];
+      auditEvents.push(auditEvent);
+      auditEventsByJobId.set(auditEvent.notification_email_job_id, auditEvents);
+    }
+  }
+
   return {
     data: notificationEvents
       .map((event) => {
         const deliveries = deliveriesByEventId.get(event.id) ?? [];
+        const emailJob = jobsByEventId.get(event.id) ?? null;
         return {
           ...event,
           deliveries,
+          emailJob,
           latestDelivery: deliveries[0] ?? null,
+          retryAuditEvents: emailJob
+            ? (auditEventsByJobId.get(emailJob.id) ?? [])
+            : [],
         };
       })
       .sort(compareAdminNotificationPriority),

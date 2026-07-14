@@ -22,6 +22,22 @@ describe("legal documents", () => {
     }
   });
 
+  it("documents the email tracking posture in the privacy policy", () => {
+    const englishPrivacy = getPrivacyDocument("en");
+    const dutchPrivacy = getPrivacyDocument("nl");
+
+    expect(
+      englishPrivacy.sections.some((section) =>
+        section.body.includes("we do not use email open or click engagement"),
+      ),
+    ).toBe(true);
+    expect(
+      dutchPrivacy.sections.some((section) =>
+        section.body.includes("open- of klikbetrokkenheid"),
+      ),
+    ).toBe(true);
+  });
+
   it("provides localized cookie documents with compact storage categories", () => {
     for (const locale of LOCALES) {
       const document = getCookiesDocument(locale);

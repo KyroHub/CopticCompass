@@ -58,24 +58,20 @@ packages or jump across unrelated major versions.
 
 ### Current Audit Snapshot
 
-As of June 13, 2026, `npm audit` reports five moderate and two high findings for
-the checked-in lockfile:
+As of June 27, 2026, `npm audit` reports zero vulnerabilities for the
+checked-in lockfile after a clean `npm ci`.
 
-- the two high findings are the Vite development-tooling chain through
-  `esbuild`; npm currently proposes a Vite 8 major update as the available fix
-- Next.js still carries the nested PostCSS moderate advisory
-- `brace-expansion` remains in the development dependency tree
-- the Vercel Analytics and Speed Insights packages inherit the Next.js moderate
-  finding
+The Next.js/PostCSS advisory is handled with a scoped npm override that forces
+Next's PostCSS dependency to resolve to the patched root `postcss@8.5.15`.
+Keep `postcss` as a production dependency while this override is present; moving
+it back to `devDependencies` can reintroduce a nested vulnerable PostCSS copy.
 
-Because CI runs `npm audit --audit-level=high`, the Vite/esbuild finding is a
-current CI blocker and should be handled on a dedicated dependency-maintenance
-branch with release-note review and the full validation suite. Re-run
-`npm audit` whenever the lockfile changes rather than treating this dated
+The deprecated `@react-email/components` package was removed from the app email
+templates. The templates now render plain JSX through `react-dom/server`, so
+`npm ci` should not emit React Email package deprecation warnings.
+
+Re-run `npm audit` whenever the lockfile changes rather than treating this dated
 snapshot as permanent.
-
-`@react-email/components` also pulls deprecated subpackages during `npm ci`;
-that warning is separate from the audit findings above.
 
 The Supabase CLI is intentionally not kept as an npm `devDependency`.
 Migration scripts still call `supabase`, so contributors should install the

@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  compareAdminNotificationPriority,
   formatNotificationAggregateType,
   formatNotificationEventType,
   getNotificationContextBadges,
+  isNotificationFailureStatus,
+  isNotificationHistoryStatus,
+  isNotificationInFlightStatus,
   type AdminNotificationEvent,
 } from "./notifications";
 
@@ -17,6 +21,7 @@ function createNotificationEvent(
     created_at: "2026-03-28T10:00:00.000Z",
     dedupe_key: null,
     deliveries: [],
+    emailJob: null,
     event_type: "exercise_submission_received",
     id: "event_123",
     last_error: null,
@@ -28,6 +33,7 @@ function createNotificationEvent(
     },
     processed_at: "2026-03-28T10:00:01.000Z",
     recipient: "owner@example.com",
+    retryAuditEvents: [],
     status: "sent",
     subject: "Coptic Compass exercise submission: lesson 1",
     ...overrides,
@@ -35,6 +41,29 @@ function createNotificationEvent(
 }
 
 describe("notification formatting helpers", () => {
+  it("prioritizes failure and in-flight states ahead of delivery history", () => {
+    const failed = createNotificationEvent({ status: "dead_letter" });
+    const queued = createNotificationEvent({ status: "queued" });
+    const delivered = createNotificationEvent({ status: "delivered" });
+
+    expect(compareAdminNotificationPriority(failed, queued)).toBeLessThan(0);
+    expect(compareAdminNotificationPriority(queued, delivered)).toBeLessThan(0);
+  });
+
+  it("classifies terminal delivery problems for admin attention", () => {
+    expect(isNotificationFailureStatus("bounced")).toBe(true);
+    expect(isNotificationFailureStatus("complained")).toBe(true);
+    expect(isNotificationFailureStatus("dead_letter")).toBe(true);
+    expect(isNotificationFailureStatus("delivered")).toBe(false);
+    expect(isNotificationFailureStatus("delayed")).toBe(false);
+    expect(isNotificationHistoryStatus("accepted")).toBe(true);
+    expect(isNotificationHistoryStatus("delivered")).toBe(true);
+    expect(isNotificationHistoryStatus("processing")).toBe(false);
+    expect(isNotificationInFlightStatus("delayed")).toBe(true);
+    expect(isNotificationInFlightStatus("processing")).toBe(true);
+    expect(isNotificationInFlightStatus("failed")).toBe(false);
+  });
+
   it("formats known event and aggregate labels", () => {
     expect(formatNotificationEventType("submission_reviewed")).toBe(
       "Feedback ready",

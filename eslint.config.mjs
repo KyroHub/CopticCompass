@@ -52,7 +52,7 @@ const eslintConfig = defineConfig([
         "error",
         {
           caseSensitive: true,
-          ignore: ["^@/"],
+          ignore: ["^@/", "^@supabase-shared/"],
         },
       ],
       "no-console": ["error", { allow: ["warn", "error"] }],
@@ -101,6 +101,11 @@ const eslintConfig = defineConfig([
           pathGroups: [
             {
               pattern: "@/**",
+              group: "internal",
+              position: "before",
+            },
+            {
+              pattern: "@supabase-shared/**",
               group: "internal",
               position: "before",
             },

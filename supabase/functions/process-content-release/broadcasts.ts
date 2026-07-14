@@ -4,34 +4,24 @@ import {
   updateNotificationEventStatus,
 } from "./notifications.ts";
 import {
-  countAudienceContacts,
   finalizeRelease,
   loadReleaseItems,
+  loadReleaseTargets,
+  updateContentReleaseTarget,
 } from "./supabaseRest.ts";
 import {
   buildContentReleaseEmailHtml,
   buildContentReleaseEmailText,
   buildContentReleaseNotificationDedupeKey,
-  getContentReleaseBroadcastDeliveries,
   getContentReleaseCopyForLocale,
-  getContentReleaseDeliverySummary,
   type ContentReleaseBroadcastDelivery,
   type ContentReleaseDeliverySummary,
   type ContentReleaseItemRecord,
   type ContentReleaseRecord,
-  type Language,
+  type ContentReleaseTargetRecord,
 } from "../_shared/contentReleaseDelivery.ts";
 
 import type { ResendBroadcastEnv } from "./config.ts";
-
-type ReleaseBroadcastTarget = {
-  html: string;
-  language: Language;
-  recipientCount: number;
-  segmentId: string;
-  subject: string;
-  text: string;
-};
 
 type BroadcastDeliveryOptions = {
   broadcastEnv: ResendBroadcastEnv;
@@ -41,443 +31,238 @@ type BroadcastDeliveryOptions = {
   supabaseUrl: string;
 };
 
+type ReleaseBroadcastPayload = {
+  html: string;
+  name: string;
+  recipient: string;
+  subject: string;
+  text: string;
+};
+
 type BroadcastTargetResult =
-  | { status: "failed"; error: string }
-  | { status: "sent"; broadcast: ContentReleaseBroadcastDelivery }
-  | { status: "skipped" };
+  | {
+      error: string;
+      status: "failed";
+      target: ContentReleaseTargetRecord;
+    }
+  | {
+      broadcast: ContentReleaseBroadcastDelivery;
+      status: "sent";
+      target: ContentReleaseTargetRecord;
+    };
+
+type DeliverBroadcastTargetOptions = {
+  notificationFromEmail: string;
+  release: ContentReleaseRecord;
+  releaseItems: ContentReleaseItemRecord[];
+  resendApiKey: string;
+  serviceRoleKey: string;
+  supabaseUrl: string;
+  target: ContentReleaseTargetRecord;
+};
+
+type EnsureBroadcastCreatedResult =
+  | {
+      broadcastId: string;
+      isExisting: boolean;
+      target: ContentReleaseTargetRecord;
+    }
+  | {
+      error: string;
+      target: ContentReleaseTargetRecord;
+    };
+
+type EnsureBroadcastCreatedSuccess = Extract<
+  EnsureBroadcastCreatedResult,
+  { broadcastId: string }
+>;
+type EnsureBroadcastCreatedFailure = Extract<
+  EnsureBroadcastCreatedResult,
+  { error: string }
+>;
+
+function getProviderErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
+function buildBroadcastRecipientLabel(target: ContentReleaseTargetRecord) {
+  return `${target.language.toUpperCase()} segment ${target.segment_id}`;
+}
+
+function buildReleaseBroadcastPayload(options: {
+  release: ContentReleaseRecord;
+  releaseItems: ContentReleaseItemRecord[];
+  target: ContentReleaseTargetRecord;
+}): ReleaseBroadcastPayload | null {
+  const copy = getContentReleaseCopyForLocale(
+    options.release,
+    options.target.language,
+  );
+  if (!copy.body) {
+    return null;
+  }
+
+  return {
+    html: buildContentReleaseEmailHtml({
+      body: copy.body,
+      includeMarketingFooter: true,
+      items: options.releaseItems,
+      language: options.target.language,
+      subject: options.target.subject_snapshot,
+    }),
+    name: `content-release-${options.release.id}-${options.target.language}`,
+    recipient: buildBroadcastRecipientLabel(options.target),
+    subject: options.target.subject_snapshot,
+    text: buildContentReleaseEmailText({
+      body: copy.body,
+      includeMarketingFooter: true,
+      items: options.releaseItems,
+      language: options.target.language,
+    }),
+  };
+}
 
 /**
- * Creates and immediately sends a Resend broadcast for one managed segment.
- * The returned broadcast id is recorded as the provider delivery identifier.
+ * Creates a Resend Broadcast draft. Sending happens in a separate API call
+ * after the provider id has been persisted on the release target.
  */
 async function createResendBroadcast(options: {
   from: string;
-  html?: string;
+  html: string;
   name: string;
   resendApiKey: string;
   segmentId: string;
   subject: string;
   text: string;
+  topicId: string;
 }) {
-  const response = await fetch("https://api.resend.com/broadcasts", {
-    body: JSON.stringify({
-      from: options.from,
-      ...(options.html ? { html: options.html } : {}),
-      name: options.name,
-      segment_id: options.segmentId,
-      send: true,
-      subject: options.subject,
-      text: options.text,
-    }),
-    headers: {
-      Authorization: `Bearer ${options.resendApiKey}`,
-      "Content-Type": "application/json",
-    },
-    method: "POST",
-  });
+  try {
+    const response = await fetch("https://api.resend.com/broadcasts", {
+      body: JSON.stringify({
+        from: options.from,
+        html: options.html,
+        name: options.name,
+        segment_id: options.segmentId,
+        send: false,
+        subject: options.subject,
+        text: options.text,
+        topic_id: options.topicId,
+      }),
+      headers: {
+        Authorization: `Bearer ${options.resendApiKey}`,
+        "Content-Type": "application/json",
+      },
+      method: "POST",
+    });
 
-  if (response.ok) {
-    const data = (await response.json()) as { id?: string };
+    if (response.ok) {
+      const data = (await response.json()) as { id?: string };
+      return {
+        id: data.id ?? null,
+        success: true as const,
+      };
+    }
+
     return {
-      id: data.id ?? null,
-      success: true as const,
+      error: (await response.text()) || "Failed to create Resend broadcast.",
+      success: false as const,
+    };
+  } catch (error) {
+    return {
+      error: getProviderErrorMessage(
+        error,
+        "Network error while creating Resend broadcast.",
+      ),
+      success: false as const,
     };
   }
-
-  return {
-    error: (await response.text()) || "Failed to create Resend broadcast.",
-    success: false as const,
-  };
-}
-
-function getBroadcastBaseSegmentId(
-  audienceSegment: ContentReleaseRecord["audience_segment"],
-  env: ResendBroadcastEnv,
-) {
-  switch (audienceSegment) {
-    case "lessons":
-      return env.segments.lessons;
-    case "books":
-      return env.segments.books;
-    case "general":
-      return env.segments.general;
-    default:
-      return null;
-  }
-}
-
-function getLocalizedBroadcastSegmentId(
-  audienceSegment: ContentReleaseRecord["audience_segment"],
-  language: Language,
-  env: ResendBroadcastEnv,
-) {
-  switch (audienceSegment) {
-    case "lessons":
-      return env.localizedSegments.lessons[language];
-    case "books":
-      return env.localizedSegments.books[language];
-    case "general":
-      return env.localizedSegments.general[language];
-    default:
-      return null;
-  }
-}
-
-async function buildReleaseBroadcastTargets(options: {
-  broadcastEnv: ResendBroadcastEnv;
-  release: ContentReleaseRecord;
-  releaseItems: ContentReleaseItemRecord[];
-  serviceRoleKey: string;
-  supabaseUrl: string;
-}) {
-  if (options.release.locale_mode === "localized") {
-    return buildLocalizedReleaseBroadcastTargets(options);
-  }
-
-  return buildSingleLocaleReleaseBroadcastTargets(options);
-}
-
-async function countLocalizedContacts(options: {
-  audienceSegment: ContentReleaseRecord["audience_segment"];
-  serviceRoleKey: string;
-  supabaseUrl: string;
-}) {
-  const englishCount = await countAudienceContacts({
-    audienceSegment: options.audienceSegment,
-    locale: "en",
-    serviceRoleKey: options.serviceRoleKey,
-    supabaseUrl: options.supabaseUrl,
-  });
-  const dutchCount = await countAudienceContacts({
-    audienceSegment: options.audienceSegment,
-    locale: "nl",
-    serviceRoleKey: options.serviceRoleKey,
-    supabaseUrl: options.supabaseUrl,
-  });
-  return { englishCount, dutchCount };
 }
 
 /**
- * Builds the localized broadcast plan. If locale-specific segment ids are not
- * fully configured, this returns `usedBroadcasts: false` so the caller can fall
- * back to the standard per-recipient delivery path.
+ * Sends an existing Resend Broadcast by id. This keeps retries from creating a
+ * second provider Broadcast after the first create call succeeded.
  */
-async function buildLocalizedReleaseBroadcastTargets(options: {
-  broadcastEnv: ResendBroadcastEnv;
-  release: ContentReleaseRecord;
-  releaseItems: ContentReleaseItemRecord[];
-  serviceRoleKey: string;
-  supabaseUrl: string;
+async function sendResendBroadcast(options: {
+  broadcastId: string;
+  resendApiKey: string;
 }) {
-  const { englishCount, dutchCount } = await countLocalizedContacts({
-    audienceSegment: options.release.audience_segment,
-    serviceRoleKey: options.serviceRoleKey,
-    supabaseUrl: options.supabaseUrl,
-  });
-
-  if (englishCount === null || dutchCount === null) {
-    return {
-      error: "Could not count localized recipients for this release.",
-      targets: null,
-      totalEligibleRecipients: null,
-      usedBroadcasts: false as const,
-    };
-  }
-
-  const targets: ReleaseBroadcastTarget[] = [];
-  for (const language of ["en", "nl"] as const) {
-    const recipientCount = language === "en" ? englishCount : dutchCount;
-    if (recipientCount === 0) {
-      continue;
-    }
-
-    const segmentId = getLocalizedBroadcastSegmentId(
-      options.release.audience_segment,
-      language,
-      options.broadcastEnv,
+  try {
+    const response = await fetch(
+      `https://api.resend.com/broadcasts/${encodeURIComponent(options.broadcastId)}/send`,
+      {
+        headers: {
+          Authorization: `Bearer ${options.resendApiKey}`,
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+      },
     );
 
-    if (!segmentId) {
-      return {
-        error: null,
-        targets: null,
-        totalEligibleRecipients: null,
-        usedBroadcasts: false as const,
-      };
+    if (response.ok) {
+      return { success: true as const };
     }
 
-    const copy = getContentReleaseCopyForLocale(options.release, language);
-    if (!copy.subject || !copy.body) {
-      return {
-        error:
-          "This release is missing localized copy for one or more broadcast audiences.",
-        targets: [],
-        totalEligibleRecipients: englishCount + dutchCount,
-        usedBroadcasts: true as const,
-      };
-    }
-
-    targets.push({
-      html: buildContentReleaseEmailHtml({
-        body: copy.body,
-        items: options.releaseItems,
-        language,
-        subject: copy.subject,
-      }),
-      language,
-      recipientCount,
-      segmentId,
-      subject: copy.subject,
-      text: buildContentReleaseEmailText({
-        body: copy.body,
-        items: options.releaseItems,
-        language,
-      }),
-    });
+    return {
+      error: (await response.text()) || "Failed to send Resend broadcast.",
+      success: false as const,
+    };
+  } catch (error) {
+    return {
+      error: getProviderErrorMessage(
+        error,
+        "Network error while sending Resend broadcast.",
+      ),
+      success: false as const,
+    };
   }
-
-  return {
-    error: null,
-    targets,
-    totalEligibleRecipients: englishCount + dutchCount,
-    usedBroadcasts: true as const,
-  };
 }
 
-/**
- * Builds a single broadcast target for releases that resolve to one language
- * for the whole audience segment.
- */
-async function buildSingleLocaleReleaseBroadcastTargets(options: {
-  broadcastEnv: ResendBroadcastEnv;
-  release: ContentReleaseRecord;
-  releaseItems: ContentReleaseItemRecord[];
-  serviceRoleKey: string;
-  supabaseUrl: string;
+async function getResendBroadcastStatus(options: {
+  broadcastId: string;
+  resendApiKey: string;
 }) {
-  const totalEligibleRecipients = await countAudienceContacts({
-    audienceSegment: options.release.audience_segment,
-    serviceRoleKey: options.serviceRoleKey,
-    supabaseUrl: options.supabaseUrl,
-  });
-
-  if (totalEligibleRecipients === null) {
-    return {
-      error: "Could not count subscribed recipients for this release.",
-      targets: [],
-      totalEligibleRecipients: null,
-      usedBroadcasts: true as const,
-    };
-  }
-
-  const segmentId = getBroadcastBaseSegmentId(
-    options.release.audience_segment,
-    options.broadcastEnv,
-  );
-
-  if (!segmentId) {
-    return {
-      error: null,
-      targets: null,
-      totalEligibleRecipients: null,
-      usedBroadcasts: false as const,
-    };
-  }
-
-  const language: Language =
-    options.release.locale_mode === "nl_only" ? "nl" : "en";
-  const copy = getContentReleaseCopyForLocale(options.release, language);
-  if (!copy.subject || !copy.body) {
-    return {
-      error:
-        "This release is missing complete copy for the selected broadcast language.",
-      targets: [],
-      totalEligibleRecipients,
-      usedBroadcasts: true as const,
-    };
-  }
-
-  return {
-    error: null,
-    targets: [
+  try {
+    const response = await fetch(
+      `https://api.resend.com/broadcasts/${encodeURIComponent(options.broadcastId)}`,
       {
-        html: buildContentReleaseEmailHtml({
-          body: copy.body,
-          items: options.releaseItems,
-          language,
-          subject: copy.subject,
-        }),
-        language,
-        recipientCount: totalEligibleRecipients,
-        segmentId,
-        subject: copy.subject,
-        text: buildContentReleaseEmailText({
-          body: copy.body,
-          items: options.releaseItems,
-          language,
-        }),
+        headers: {
+          Authorization: `Bearer ${options.resendApiKey}`,
+          "Content-Type": "application/json",
+        },
+        method: "GET",
       },
-    ],
-    totalEligibleRecipients,
-    usedBroadcasts: true as const,
-  };
-}
+    );
 
-function buildBroadcastRecipientLabel(target: ReleaseBroadcastTarget) {
-  return `${target.language.toUpperCase()} segment ${target.segmentId}`;
-}
-
-function getPersistedBroadcastSummary(options: {
-  release: ContentReleaseRecord;
-  targets: ReleaseBroadcastTarget[];
-}) {
-  const previousBroadcasts =
-    getContentReleaseBroadcastDeliveries(options.release) ?? {};
-  const broadcasts: Partial<Record<Language, ContentReleaseBroadcastDelivery>> =
-    {
-      ...previousBroadcasts,
-    };
-
-  for (const target of options.targets) {
-    const existing = previousBroadcasts[target.language];
-    if (!existing) {
-      continue;
+    if (response.ok) {
+      const data = (await response.json()) as { status?: string };
+      return {
+        status: data.status ?? null,
+        success: true as const,
+      };
     }
 
-    broadcasts[target.language] = existing;
+    return {
+      error: (await response.text()) || "Failed to load Resend broadcast.",
+      success: false as const,
+    };
+  } catch (error) {
+    return {
+      error: getProviderErrorMessage(
+        error,
+        "Network error while loading Resend broadcast.",
+      ),
+      success: false as const,
+    };
   }
-
-  return broadcasts;
 }
 
-function summarizeBroadcastDelivery(options: {
-  broadcasts: Partial<Record<Language, ContentReleaseBroadcastDelivery>>;
-  failedRecipientCount: number;
-  itemCount: number;
-  targetedRecipientCount: number;
-}) {
-  const sentCount = Object.values(options.broadcasts).reduce(
-    (total, broadcast) => total + (broadcast?.recipient_count ?? 0),
-    0,
-  );
-
-  return {
-    broadcasts: options.broadcasts,
-    eligible_recipient_count: options.targetedRecipientCount,
-    failed_count: options.failedRecipientCount,
-    item_count: options.itemCount,
-    processed_recipient_count: sentCount,
-    remaining_recipient_count: Math.max(
-      options.targetedRecipientCount - sentCount,
-      0,
-    ),
-    sent_count: sentCount,
-    skipped_count: 0,
-  } satisfies ContentReleaseDeliverySummary;
-}
-
-function buildEmptySummary(
-  itemCount: number = 0,
-  eligibleRecipientCount: number = 0,
-): ContentReleaseDeliverySummary {
-  return {
-    eligible_recipient_count: eligibleRecipientCount,
-    failed_count: 0,
-    item_count: itemCount,
-    processed_recipient_count: 0,
-    remaining_recipient_count: 0,
-    sent_count: 0,
-    skipped_count: 0,
-  };
-}
-
-async function finalizeBroadcastRelease(options: {
-  error: string | null;
-  releaseId: string;
+async function updateTargetState(options: {
+  payload: Record<string, unknown>;
   serviceRoleKey: string;
-  summary: ContentReleaseDeliverySummary;
   supabaseUrl: string;
+  targetId: string;
 }) {
-  await finalizeRelease({
-    cursor: null,
-    lastDeliveryError: options.error,
-    releaseId: options.releaseId,
-    serviceRoleKey: options.serviceRoleKey,
-    status: "approved",
-    summary: options.summary,
-    supabaseUrl: options.supabaseUrl,
-  });
-}
-
-/**
- * Loads the release items and computes the broadcast plan. When the release
- * cannot continue, this helper finalizes it with the appropriate status and
- * returns a completed result instead of throwing.
- */
-async function prepareBroadcastDeliveryContext(
-  options: BroadcastDeliveryOptions,
-) {
-  const releaseItems = await loadReleaseItems({
-    releaseId: options.release.id,
-    serviceRoleKey: options.serviceRoleKey,
-    supabaseUrl: options.supabaseUrl,
-  });
-
-  if (!releaseItems || releaseItems.length === 0) {
-    await finalizeBroadcastRelease({
-      error: "This release has no snapshotted items to send yet.",
-      releaseId: options.release.id,
-      serviceRoleKey: options.serviceRoleKey,
-      summary: buildEmptySummary(),
-      supabaseUrl: options.supabaseUrl,
-    });
-    return { completed: true as const, usedBroadcasts: true as const };
-  }
-
-  const targetPlan = await buildReleaseBroadcastTargets({
-    broadcastEnv: options.broadcastEnv,
-    release: options.release,
-    releaseItems,
-    serviceRoleKey: options.serviceRoleKey,
-    supabaseUrl: options.supabaseUrl,
-  });
-
-  if (!targetPlan.usedBroadcasts) {
-    return { completed: true as const, usedBroadcasts: false as const };
-  }
-
-  if (targetPlan.error) {
-    await finalizeBroadcastRelease({
-      error: targetPlan.error,
-      releaseId: options.release.id,
-      serviceRoleKey: options.serviceRoleKey,
-      summary: getContentReleaseDeliverySummary(options.release),
-      supabaseUrl: options.supabaseUrl,
-    });
-    return { completed: true as const, usedBroadcasts: true as const };
-  }
-
-  const targets = targetPlan.targets ?? [];
-  const totalEligibleRecipients = targetPlan.totalEligibleRecipients ?? 0;
-
-  if (totalEligibleRecipients === 0 || targets.length === 0) {
-    await finalizeBroadcastRelease({
-      error: "No subscribed recipients match this release segment yet.",
-      releaseId: options.release.id,
-      serviceRoleKey: options.serviceRoleKey,
-      summary: buildEmptySummary(releaseItems.length, totalEligibleRecipients),
-      supabaseUrl: options.supabaseUrl,
-    });
-    return { completed: true as const, usedBroadcasts: true as const };
-  }
-
-  return {
-    completed: false as const,
-    releaseItems,
-    targets,
-    totalEligibleRecipients,
-    usedBroadcasts: true as const,
-  };
+  return updateContentReleaseTarget(options);
 }
 
 async function recordBroadcastDeliveryOutcome(options: {
@@ -508,19 +293,19 @@ async function recordBroadcastDeliveryOutcome(options: {
 }
 
 async function createBroadcastNotificationEvent(options: {
-  recipient: string;
+  payload: ReleaseBroadcastPayload;
   release: ContentReleaseRecord;
   releaseItems: ContentReleaseItemRecord[];
   serviceRoleKey: string;
   supabaseUrl: string;
-  target: ReleaseBroadcastTarget;
+  target: ContentReleaseTargetRecord;
 }) {
   return insertNotificationEvent({
     aggregateId: options.release.id,
     aggregateType: "content_release",
     dedupeKey: buildContentReleaseNotificationDedupeKey({
       eventType: "content_release_broadcast_sent",
-      recipient: options.recipient,
+      recipient: options.payload.recipient,
       releaseId: options.release.id,
     }),
     eventType: "content_release_broadcast_sent",
@@ -528,33 +313,167 @@ async function createBroadcastNotificationEvent(options: {
       audience_segment: options.release.audience_segment,
       item_count: options.releaseItems.length,
       locale: options.target.language,
-      recipient_count: options.target.recipientCount,
+      recipient_count: options.target.recipient_count_snapshot,
+      release_target_id: options.target.id,
       release_type: options.release.release_type,
-      segment_id: options.target.segmentId,
+      segment_id: options.target.segment_id,
+      topic_id: options.target.topic_id,
     },
-    recipient: options.recipient,
+    recipient: options.payload.recipient,
     serviceRoleKey: options.serviceRoleKey,
-    subject: options.target.subject,
+    subject: options.payload.subject,
     supabaseUrl: options.supabaseUrl,
   });
 }
 
-/**
- * Sends one broadcast target and records the provider outcome through the same
- * notification event/delivery tables used by per-recipient delivery.
- */
-async function deliverBroadcastTarget(options: {
+async function markTargetFailed(options: {
+  error: string;
+  serviceRoleKey: string;
+  supabaseUrl: string;
+  target: ContentReleaseTargetRecord;
+}) {
+  const now = new Date().toISOString();
+  await updateTargetState({
+    payload: {
+      failed_at: now,
+      last_error: options.error,
+      status: "failed",
+    },
+    serviceRoleKey: options.serviceRoleKey,
+    supabaseUrl: options.supabaseUrl,
+    targetId: options.target.id,
+  });
+
+  return {
+    ...options.target,
+    failed_at: now,
+    last_error: options.error,
+    status: "failed" as const,
+  };
+}
+
+async function ensureBroadcastCreated(options: {
   notificationFromEmail: string;
-  release: ContentReleaseRecord;
-  releaseItems: ContentReleaseItemRecord[];
+  payload: ReleaseBroadcastPayload;
   resendApiKey: string;
   serviceRoleKey: string;
   supabaseUrl: string;
-  target: ReleaseBroadcastTarget;
-}): Promise<BroadcastTargetResult> {
-  const recipient = buildBroadcastRecipientLabel(options.target);
+  target: ContentReleaseTargetRecord;
+}): Promise<EnsureBroadcastCreatedResult> {
+  if (options.target.provider_broadcast_id) {
+    return {
+      broadcastId: options.target.provider_broadcast_id,
+      isExisting: true,
+      target: options.target,
+    };
+  }
+
+  const creatingStartedAt = new Date().toISOString();
+  const markedCreating = await updateTargetState({
+    payload: {
+      creating_started_at: creatingStartedAt,
+      last_error: null,
+      status: "creating",
+    },
+    serviceRoleKey: options.serviceRoleKey,
+    supabaseUrl: options.supabaseUrl,
+    targetId: options.target.id,
+  });
+  if (!markedCreating) {
+    return {
+      error: "Could not mark the release target as creating.",
+      target: options.target,
+    };
+  }
+
+  const createResult = await createResendBroadcast({
+    from: options.notificationFromEmail,
+    html: options.payload.html,
+    name: options.payload.name,
+    resendApiKey: options.resendApiKey,
+    segmentId: options.target.segment_id,
+    subject: options.payload.subject,
+    text: options.payload.text,
+    topicId: options.target.topic_id,
+  });
+
+  if (!createResult.success || !createResult.id) {
+    return {
+      error: createResult.success
+        ? "Resend did not return a broadcast id."
+        : createResult.error,
+      target: options.target,
+    };
+  }
+
+  const createdProviderAt = new Date().toISOString();
+  const markedCreated = await updateTargetState({
+    payload: {
+      created_provider_at: createdProviderAt,
+      last_error: null,
+      provider_broadcast_id: createResult.id,
+      status: "created",
+    },
+    serviceRoleKey: options.serviceRoleKey,
+    supabaseUrl: options.supabaseUrl,
+    targetId: options.target.id,
+  });
+  if (!markedCreated) {
+    return {
+      error: "Could not persist the provider broadcast id before sending.",
+      target: options.target,
+    };
+  }
+
+  return {
+    broadcastId: createResult.id,
+    isExisting: false,
+    target: {
+      ...options.target,
+      created_provider_at: createdProviderAt,
+      provider_broadcast_id: createResult.id,
+      status: "created" as const,
+    },
+  };
+}
+
+async function prepareBroadcastTargetDelivery(
+  options: DeliverBroadcastTargetOptions,
+): Promise<
+  | {
+      eventId: string;
+      payload: ReleaseBroadcastPayload;
+      status: "ready";
+    }
+  | {
+      result: BroadcastTargetResult;
+      status: "failed";
+    }
+> {
+  const payload = buildReleaseBroadcastPayload({
+    release: options.release,
+    releaseItems: options.releaseItems,
+    target: options.target,
+  });
+  if (!payload) {
+    const failedTarget = await markTargetFailed({
+      error: "This release is missing complete copy for a broadcast target.",
+      serviceRoleKey: options.serviceRoleKey,
+      supabaseUrl: options.supabaseUrl,
+      target: options.target,
+    });
+    return {
+      result: {
+        error: failedTarget.last_error ?? "Missing release copy.",
+        status: "failed",
+        target: failedTarget,
+      },
+      status: "failed",
+    };
+  }
+
   const notificationEvent = await createBroadcastNotificationEvent({
-    recipient,
+    payload,
     release: options.release,
     releaseItems: options.releaseItems,
     serviceRoleKey: options.serviceRoleKey,
@@ -562,73 +481,479 @@ async function deliverBroadcastTarget(options: {
     target: options.target,
   });
 
-  if (!notificationEvent?.eventId) {
-    return {
-      status: "failed" as const,
+  const eventId = notificationEvent?.eventId;
+  if (!eventId) {
+    const failedTarget = await markTargetFailed({
       error:
         "A notification event could not be stored for one or more broadcasts.",
+      serviceRoleKey: options.serviceRoleKey,
+      supabaseUrl: options.supabaseUrl,
+      target: options.target,
+    });
+    return {
+      result: {
+        error: failedTarget.last_error ?? "Missing notification event.",
+        status: "failed",
+        target: failedTarget,
+      },
+      status: "failed",
     };
   }
 
-  const broadcastResult = await createResendBroadcast({
-    from: options.notificationFromEmail,
-    html: options.target.html,
-    name: `content-release-${options.release.id}-${options.target.language}`,
-    resendApiKey: options.resendApiKey,
-    segmentId: options.target.segmentId,
-    subject: options.target.subject,
-    text: options.target.text,
+  return {
+    eventId,
+    payload,
+    status: "ready",
+  };
+}
+
+async function recordBroadcastCreateFailure(options: {
+  created: EnsureBroadcastCreatedFailure;
+  eventId: string;
+  payload: ReleaseBroadcastPayload;
+  serviceRoleKey: string;
+  supabaseUrl: string;
+}): Promise<BroadcastTargetResult> {
+  await recordBroadcastDeliveryOutcome({
+    error: options.created.error,
+    eventId: options.eventId,
+    providerMessageId: options.created.target.provider_broadcast_id,
+    recipient: options.payload.recipient,
+    serviceRoleKey: options.serviceRoleKey,
+    status: "failed",
+    supabaseUrl: options.supabaseUrl,
   });
 
-  if (!broadcastResult.success || !broadcastResult.id) {
-    const errorMessage = broadcastResult.success
-      ? "Missing broadcast id."
-      : broadcastResult.error;
+  const failedTarget = await markTargetFailed({
+    error: options.created.error,
+    serviceRoleKey: options.serviceRoleKey,
+    supabaseUrl: options.supabaseUrl,
+    target: options.created.target,
+  });
 
-    await recordBroadcastDeliveryOutcome({
-      error: errorMessage,
-      eventId: notificationEvent.eventId,
-      providerMessageId: null,
-      recipient,
+  return {
+    error: options.created.error,
+    status: "failed",
+    target: failedTarget,
+  };
+}
+
+async function markBroadcastTargetSending(options: {
+  created: EnsureBroadcastCreatedSuccess;
+  serviceRoleKey: string;
+  supabaseUrl: string;
+}): Promise<
+  | {
+      result: BroadcastTargetResult;
+      status: "failed";
+    }
+  | {
+      sendingStartedAt: string;
+      status: "sending";
+    }
+> {
+  const sendingStartedAt = new Date().toISOString();
+  const markedSending = await updateTargetState({
+    payload: {
+      attempt_count: options.created.target.attempt_count + 1,
+      last_error: null,
+      sending_started_at: sendingStartedAt,
+      status: "sending",
+    },
+    serviceRoleKey: options.serviceRoleKey,
+    supabaseUrl: options.supabaseUrl,
+    targetId: options.created.target.id,
+  });
+  if (!markedSending) {
+    const error = "Could not mark the release target as sending.";
+    const failedTarget = await markTargetFailed({
+      error,
       serviceRoleKey: options.serviceRoleKey,
-      status: "failed",
       supabaseUrl: options.supabaseUrl,
+      target: options.created.target,
     });
-
     return {
-      status: "failed" as const,
-      error: broadcastResult.success
-        ? "Resend did not return a broadcast id."
-        : broadcastResult.error,
+      result: {
+        error,
+        status: "failed",
+        target: failedTarget,
+      },
+      status: "failed",
     };
   }
 
+  return {
+    sendingStartedAt,
+    status: "sending",
+  };
+}
+
+async function recordBroadcastSendFailure(options: {
+  created: EnsureBroadcastCreatedSuccess;
+  error: string;
+  eventId: string;
+  payload: ReleaseBroadcastPayload;
+  sendingStartedAt: string;
+  serviceRoleKey: string;
+  supabaseUrl: string;
+}): Promise<BroadcastTargetResult> {
+  await recordBroadcastDeliveryOutcome({
+    error: options.error,
+    eventId: options.eventId,
+    providerMessageId: options.created.broadcastId,
+    recipient: options.payload.recipient,
+    serviceRoleKey: options.serviceRoleKey,
+    status: "failed",
+    supabaseUrl: options.supabaseUrl,
+  });
+
+  const failedTarget = await markTargetFailed({
+    error: options.error,
+    serviceRoleKey: options.serviceRoleKey,
+    supabaseUrl: options.supabaseUrl,
+    target: {
+      ...options.created.target,
+      attempt_count: options.created.target.attempt_count + 1,
+      sending_started_at: options.sendingStartedAt,
+      status: "sending",
+    },
+  });
+
+  return {
+    error: options.error,
+    status: "failed",
+    target: failedTarget,
+  };
+}
+
+async function recordAcceptedBroadcastSend(options: {
+  created: EnsureBroadcastCreatedSuccess;
+  eventId: string;
+  payload: ReleaseBroadcastPayload;
+  sendingStartedAt: string;
+  serviceRoleKey: string;
+  supabaseUrl: string;
+}): Promise<BroadcastTargetResult> {
   await recordBroadcastDeliveryOutcome({
     error: null,
-    eventId: notificationEvent.eventId,
-    providerMessageId: broadcastResult.id,
-    recipient,
+    eventId: options.eventId,
+    providerMessageId: options.created.broadcastId,
+    recipient: options.payload.recipient,
     serviceRoleKey: options.serviceRoleKey,
     status: "sent",
     supabaseUrl: options.supabaseUrl,
   });
 
-  return {
-    status: "sent" as const,
-    broadcast: {
-      id: broadcastResult.id,
-      recipient_count: options.target.recipientCount,
-      segment_id: options.target.segmentId,
-      status: "sent",
-      subject: options.target.subject,
+  const acceptedAt = new Date().toISOString();
+  await updateTargetState({
+    payload: {
+      accepted_at: acceptedAt,
+      last_error: null,
+      status: "accepted",
     },
+    serviceRoleKey: options.serviceRoleKey,
+    supabaseUrl: options.supabaseUrl,
+    targetId: options.created.target.id,
+  });
+
+  const acceptedTarget = {
+    ...options.created.target,
+    accepted_at: acceptedAt,
+    attempt_count: options.created.target.attempt_count + 1,
+    last_error: null,
+    sending_started_at: options.sendingStartedAt,
+    status: "accepted" as const,
+  };
+
+  return {
+    broadcast: {
+      id: options.created.broadcastId,
+      recipient_count: acceptedTarget.recipient_count_snapshot,
+      segment_id: acceptedTarget.segment_id,
+      status: "sent",
+      subject: acceptedTarget.subject_snapshot,
+      topic_id: acceptedTarget.topic_id,
+    },
+    status: "sent",
+    target: acceptedTarget,
   };
 }
 
+async function recoverExistingBroadcastTarget(options: {
+  created: EnsureBroadcastCreatedSuccess;
+  eventId: string;
+  payload: ReleaseBroadcastPayload;
+  resendApiKey: string;
+  serviceRoleKey: string;
+  supabaseUrl: string;
+}): Promise<BroadcastTargetResult | null> {
+  if (!options.created.isExisting) {
+    return null;
+  }
+
+  const providerBroadcast = await getResendBroadcastStatus({
+    broadcastId: options.created.broadcastId,
+    resendApiKey: options.resendApiKey,
+  });
+
+  if (!providerBroadcast.success) {
+    return recordBroadcastSendFailure({
+      created: options.created,
+      error: providerBroadcast.error,
+      eventId: options.eventId,
+      payload: options.payload,
+      sendingStartedAt: new Date().toISOString(),
+      serviceRoleKey: options.serviceRoleKey,
+      supabaseUrl: options.supabaseUrl,
+    });
+  }
+
+  if (
+    providerBroadcast.status === "queued" ||
+    providerBroadcast.status === "sent"
+  ) {
+    return recordAcceptedBroadcastSend({
+      created: options.created,
+      eventId: options.eventId,
+      payload: options.payload,
+      sendingStartedAt: new Date().toISOString(),
+      serviceRoleKey: options.serviceRoleKey,
+      supabaseUrl: options.supabaseUrl,
+    });
+  }
+
+  if (providerBroadcast.status === "draft") {
+    return null;
+  }
+
+  return recordBroadcastSendFailure({
+    created: options.created,
+    error: `Existing Resend broadcast has unsupported status: ${providerBroadcast.status ?? "unknown"}.`,
+    eventId: options.eventId,
+    payload: options.payload,
+    sendingStartedAt: new Date().toISOString(),
+    serviceRoleKey: options.serviceRoleKey,
+    supabaseUrl: options.supabaseUrl,
+  });
+}
+
 /**
- * Attempts release delivery via Resend broadcasts. When broadcasts are not
- * fully available for the release shape, the caller can fall back to the
- * standard queued per-recipient delivery flow.
+ * Sends one persisted broadcast target. Provider creation and provider sending
+ * are split so retries can resume from a saved Broadcast id.
+ */
+async function deliverBroadcastTarget(
+  options: DeliverBroadcastTargetOptions,
+): Promise<BroadcastTargetResult> {
+  const prepared = await prepareBroadcastTargetDelivery(options);
+  if (prepared.status === "failed") {
+    return prepared.result;
+  }
+
+  const created = await ensureBroadcastCreated({
+    notificationFromEmail: options.notificationFromEmail,
+    payload: prepared.payload,
+    resendApiKey: options.resendApiKey,
+    serviceRoleKey: options.serviceRoleKey,
+    supabaseUrl: options.supabaseUrl,
+    target: options.target,
+  });
+  if ("error" in created) {
+    return recordBroadcastCreateFailure({
+      created,
+      eventId: prepared.eventId,
+      payload: prepared.payload,
+      serviceRoleKey: options.serviceRoleKey,
+      supabaseUrl: options.supabaseUrl,
+    });
+  }
+
+  const recovered = await recoverExistingBroadcastTarget({
+    created,
+    eventId: prepared.eventId,
+    payload: prepared.payload,
+    resendApiKey: options.resendApiKey,
+    serviceRoleKey: options.serviceRoleKey,
+    supabaseUrl: options.supabaseUrl,
+  });
+  if (recovered) {
+    return recovered;
+  }
+
+  const sending = await markBroadcastTargetSending({
+    created,
+    serviceRoleKey: options.serviceRoleKey,
+    supabaseUrl: options.supabaseUrl,
+  });
+  if (sending.status === "failed") {
+    return sending.result;
+  }
+
+  const sendResult = await sendResendBroadcast({
+    broadcastId: created.broadcastId,
+    resendApiKey: options.resendApiKey,
+  });
+  if (!sendResult.success) {
+    return recordBroadcastSendFailure({
+      created,
+      error: sendResult.error,
+      eventId: prepared.eventId,
+      payload: prepared.payload,
+      sendingStartedAt: sending.sendingStartedAt,
+      serviceRoleKey: options.serviceRoleKey,
+      supabaseUrl: options.supabaseUrl,
+    });
+  }
+
+  return recordAcceptedBroadcastSend({
+    created,
+    eventId: prepared.eventId,
+    payload: prepared.payload,
+    sendingStartedAt: sending.sendingStartedAt,
+    serviceRoleKey: options.serviceRoleKey,
+    supabaseUrl: options.supabaseUrl,
+  });
+}
+
+function summarizeBroadcastTargets(options: {
+  itemCount: number;
+  targets: ContentReleaseTargetRecord[];
+}) {
+  const broadcasts: Partial<
+    Record<"en" | "nl", ContentReleaseBroadcastDelivery>
+  > = {};
+  let failedCount = 0;
+  let sentCount = 0;
+  let totalCount = 0;
+
+  for (const target of options.targets) {
+    totalCount += target.recipient_count_snapshot;
+
+    if (target.status === "accepted" && target.provider_broadcast_id) {
+      sentCount += target.recipient_count_snapshot;
+      broadcasts[target.language] = {
+        id: target.provider_broadcast_id,
+        recipient_count: target.recipient_count_snapshot,
+        segment_id: target.segment_id,
+        status: "sent",
+        subject: target.subject_snapshot,
+        topic_id: target.topic_id,
+      };
+      continue;
+    }
+
+    if (target.status === "failed") {
+      failedCount += target.recipient_count_snapshot;
+    }
+  }
+
+  return {
+    broadcasts,
+    eligible_recipient_count: totalCount,
+    failed_count: failedCount,
+    item_count: options.itemCount,
+    processed_recipient_count: sentCount + failedCount,
+    remaining_recipient_count: Math.max(totalCount - sentCount, 0),
+    sent_count: sentCount,
+    skipped_count: 0,
+  } satisfies ContentReleaseDeliverySummary;
+}
+
+function buildEmptySummary(
+  itemCount: number = 0,
+  eligibleRecipientCount: number = 0,
+): ContentReleaseDeliverySummary {
+  return {
+    eligible_recipient_count: eligibleRecipientCount,
+    failed_count: 0,
+    item_count: itemCount,
+    processed_recipient_count: 0,
+    remaining_recipient_count: eligibleRecipientCount,
+    sent_count: 0,
+    skipped_count: 0,
+  };
+}
+
+async function finalizeBroadcastRelease(options: {
+  error: string | null;
+  releaseId: string;
+  serviceRoleKey: string;
+  status: ContentReleaseRecord["status"];
+  summary: ContentReleaseDeliverySummary;
+  supabaseUrl: string;
+}) {
+  await finalizeRelease({
+    cursor: null,
+    lastDeliveryError: options.error,
+    releaseId: options.releaseId,
+    serviceRoleKey: options.serviceRoleKey,
+    status: options.status,
+    summary: options.summary,
+    supabaseUrl: options.supabaseUrl,
+  });
+}
+
+/**
+ * Loads release items and durable targets. Missing targets indicate an older or
+ * malformed queue attempt, so the release is returned to approved for review.
+ */
+async function prepareBroadcastDeliveryContext(
+  options: BroadcastDeliveryOptions,
+) {
+  const releaseItems = await loadReleaseItems({
+    releaseId: options.release.id,
+    serviceRoleKey: options.serviceRoleKey,
+    supabaseUrl: options.supabaseUrl,
+  });
+
+  if (!releaseItems || releaseItems.length === 0) {
+    await finalizeBroadcastRelease({
+      error: "This release has no snapshotted items to send yet.",
+      releaseId: options.release.id,
+      serviceRoleKey: options.serviceRoleKey,
+      status: "approved",
+      summary: buildEmptySummary(),
+      supabaseUrl: options.supabaseUrl,
+    });
+    return { completed: true as const };
+  }
+
+  const targets = await loadReleaseTargets({
+    releaseId: options.release.id,
+    serviceRoleKey: options.serviceRoleKey,
+    supabaseUrl: options.supabaseUrl,
+  });
+
+  if (!targets || targets.length === 0) {
+    await finalizeBroadcastRelease({
+      error: "This release has no durable delivery targets to process.",
+      releaseId: options.release.id,
+      serviceRoleKey: options.serviceRoleKey,
+      status: "approved",
+      summary: buildEmptySummary(releaseItems.length),
+      supabaseUrl: options.supabaseUrl,
+    });
+    return { completed: true as const };
+  }
+
+  return {
+    completed: false as const,
+    releaseItems,
+    targets,
+  };
+}
+
+function replaceTarget(
+  targets: ContentReleaseTargetRecord[],
+  replacement: ContentReleaseTargetRecord,
+) {
+  return targets.map((target) =>
+    target.id === replacement.id ? replacement : target,
+  );
+}
+
+/**
+ * Attempts release delivery via persisted Resend Broadcast targets. Marketing
+ * sends never fall back to direct Email API sends.
  */
 export async function deliverReleaseByBroadcast(options: {
   broadcastEnv: ResendBroadcastEnv;
@@ -639,22 +964,18 @@ export async function deliverReleaseByBroadcast(options: {
 }) {
   const deliveryContext = await prepareBroadcastDeliveryContext(options);
   if (deliveryContext.completed) {
-    return { usedBroadcasts: deliveryContext.usedBroadcasts };
+    return { usedBroadcasts: true as const };
   }
 
-  const { releaseItems, targets, totalEligibleRecipients } = deliveryContext;
-
-  const broadcasts = getPersistedBroadcastSummary({
-    release: options.release,
-    targets,
-  });
-  let failedRecipientCount = 0;
+  const { releaseItems } = deliveryContext;
+  let targets = deliveryContext.targets;
   let firstFailure: string | null = null;
 
   for (const target of targets) {
-    if (broadcasts[target.language]) {
+    if (target.status === "accepted") {
       continue;
     }
+
     const targetResult = await deliverBroadcastTarget({
       notificationFromEmail: options.notificationFromEmail,
       release: options.release,
@@ -665,30 +986,25 @@ export async function deliverReleaseByBroadcast(options: {
       target,
     });
 
-    if (targetResult.status === "failed") {
-      failedRecipientCount += target.recipientCount;
-      firstFailure ??= targetResult.error;
-      continue;
-    }
+    targets = replaceTarget(targets, targetResult.target);
 
-    if (targetResult.status === "sent") {
-      broadcasts[target.language] = targetResult.broadcast;
+    if (targetResult.status === "failed") {
+      firstFailure ??= targetResult.error;
     }
   }
 
-  const summary = summarizeBroadcastDelivery({
-    broadcasts,
-    failedRecipientCount,
+  const summary = summarizeBroadcastTargets({
     itemCount: releaseItems.length,
-    targetedRecipientCount: totalEligibleRecipients,
+    targets,
   });
+  const failedRecipientCount = summary.failed_count;
 
   await finalizeRelease({
     cursor: null,
     lastDeliveryError: firstFailure,
     releaseId: options.release.id,
     serviceRoleKey: options.serviceRoleKey,
-    status: failedRecipientCount > 0 ? "approved" : "sent",
+    status: failedRecipientCount > 0 ? "partially_failed" : "sent",
     summary,
     supabaseUrl: options.supabaseUrl,
   });

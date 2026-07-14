@@ -15,9 +15,37 @@ const STATUS_CONFIG: Record<
     tone: "accent" | "coptic" | "neutral";
   }
 > = {
+  accepted: {
+    label: "Accepted",
+    tone: "coptic",
+  },
+  bounced: {
+    label: "Bounced",
+    tone: "accent",
+  },
+  complained: {
+    label: "Complaint",
+    tone: "accent",
+  },
+  dead_letter: {
+    label: "Dead letter",
+    tone: "accent",
+  },
+  delayed: {
+    label: "Delayed",
+    tone: "neutral",
+  },
+  delivered: {
+    label: "Delivered",
+    tone: "coptic",
+  },
   failed: {
     label: "Failed",
     tone: "accent",
+  },
+  processing: {
+    label: "Processing",
+    tone: "neutral",
   },
   queued: {
     label: "Queued",
@@ -26,6 +54,10 @@ const STATUS_CONFIG: Record<
   sent: {
     label: "Sent",
     tone: "coptic",
+  },
+  suppressed: {
+    label: "Suppressed",
+    tone: "accent",
   },
 };
 
@@ -38,9 +70,17 @@ export function NotificationEventStatusBadge({
     language === "nl"
       ? (
           {
+            accepted: "Geaccepteerd",
+            bounced: "Teruggestuurd",
+            complained: "Spamklacht",
+            dead_letter: "Definitief mislukt",
+            delayed: "Vertraagd",
+            delivered: "Afgeleverd",
             failed: "Mislukt",
+            processing: "Wordt verwerkt",
             queued: "In wachtrij",
             sent: "Verzonden",
+            suppressed: "Geblokkeerd",
           } satisfies Record<NotificationEventRow["status"], string>
         )[status]
       : config.label;

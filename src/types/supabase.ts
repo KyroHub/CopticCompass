@@ -522,7 +522,18 @@ export type Database = {
           payload: Json;
           processed_at: string | null;
           recipient: string;
-          status: "failed" | "queued" | "sent";
+          status:
+            | "accepted"
+            | "bounced"
+            | "complained"
+            | "dead_letter"
+            | "delayed"
+            | "delivered"
+            | "failed"
+            | "processing"
+            | "queued"
+            | "sent"
+            | "suppressed";
           subject: string;
         };
         Insert: {
@@ -537,7 +548,18 @@ export type Database = {
           payload?: Json;
           processed_at?: string | null;
           recipient: string;
-          status?: "failed" | "queued" | "sent";
+          status?:
+            | "accepted"
+            | "bounced"
+            | "complained"
+            | "dead_letter"
+            | "delayed"
+            | "delivered"
+            | "failed"
+            | "processing"
+            | "queued"
+            | "sent"
+            | "suppressed";
           subject: string;
         };
         Update: {
@@ -552,7 +574,18 @@ export type Database = {
           payload?: Json;
           processed_at?: string | null;
           recipient?: string;
-          status?: "failed" | "queued" | "sent";
+          status?:
+            | "accepted"
+            | "bounced"
+            | "complained"
+            | "dead_letter"
+            | "delayed"
+            | "delivered"
+            | "failed"
+            | "processing"
+            | "queued"
+            | "sent"
+            | "suppressed";
           subject?: string;
         };
         Relationships: [];
@@ -566,7 +599,15 @@ export type Database = {
           id: string;
           provider_message_id: string | null;
           recipient: string;
-          status: "failed" | "sent";
+          status:
+            | "accepted"
+            | "bounced"
+            | "complained"
+            | "delayed"
+            | "delivered"
+            | "failed"
+            | "sent"
+            | "suppressed";
         };
         Insert: {
           channel?: "email";
@@ -576,7 +617,15 @@ export type Database = {
           id?: string;
           provider_message_id?: string | null;
           recipient: string;
-          status: "failed" | "sent";
+          status:
+            | "accepted"
+            | "bounced"
+            | "complained"
+            | "delayed"
+            | "delivered"
+            | "failed"
+            | "sent"
+            | "suppressed";
         };
         Update: {
           channel?: "email";
@@ -586,7 +635,15 @@ export type Database = {
           id?: string;
           provider_message_id?: string | null;
           recipient?: string;
-          status?: "failed" | "sent";
+          status?:
+            | "accepted"
+            | "bounced"
+            | "complained"
+            | "delayed"
+            | "delivered"
+            | "failed"
+            | "sent"
+            | "suppressed";
         };
         Relationships: [
           {
@@ -600,49 +657,91 @@ export type Database = {
       };
       notification_email_jobs: {
         Row: {
+          attempt_count: number;
           bcc_recipients: string[];
           cc_recipients: string[];
           created_at: string;
           from_email: string | null;
           html_body: string | null;
           id: string;
+          last_attempt_at: string | null;
           last_error: string | null;
+          lock_expires_at: string | null;
+          locked_at: string | null;
+          max_attempts: number;
+          next_attempt_at: string;
           notification_event_id: string;
           processed_at: string | null;
+          provider_message_id: string | null;
           reply_to_recipients: string[];
-          status: "failed" | "processing" | "queued" | "sent";
+          status:
+            | "accepted"
+            | "dead_letter"
+            | "failed"
+            | "processing"
+            | "queued"
+            | "retry_scheduled"
+            | "sent";
           subject: string;
           text_body: string;
           to_recipients: string[];
         };
         Insert: {
+          attempt_count?: number;
           bcc_recipients?: string[];
           cc_recipients?: string[];
           created_at?: string;
           from_email?: string | null;
           html_body?: string | null;
           id?: string;
+          last_attempt_at?: string | null;
           last_error?: string | null;
+          lock_expires_at?: string | null;
+          locked_at?: string | null;
+          max_attempts?: number;
+          next_attempt_at?: string;
           notification_event_id: string;
           processed_at?: string | null;
+          provider_message_id?: string | null;
           reply_to_recipients?: string[];
-          status?: "failed" | "processing" | "queued" | "sent";
+          status?:
+            | "accepted"
+            | "dead_letter"
+            | "failed"
+            | "processing"
+            | "queued"
+            | "retry_scheduled"
+            | "sent";
           subject: string;
           text_body: string;
           to_recipients: string[];
         };
         Update: {
+          attempt_count?: number;
           bcc_recipients?: string[];
           cc_recipients?: string[];
           created_at?: string;
           from_email?: string | null;
           html_body?: string | null;
           id?: string;
+          last_attempt_at?: string | null;
           last_error?: string | null;
+          lock_expires_at?: string | null;
+          locked_at?: string | null;
+          max_attempts?: number;
+          next_attempt_at?: string;
           notification_event_id?: string;
           processed_at?: string | null;
+          provider_message_id?: string | null;
           reply_to_recipients?: string[];
-          status?: "failed" | "processing" | "queued" | "sent";
+          status?:
+            | "accepted"
+            | "dead_letter"
+            | "failed"
+            | "processing"
+            | "queued"
+            | "retry_scheduled"
+            | "sent";
           subject?: string;
           text_body?: string;
           to_recipients?: string[];
@@ -654,6 +753,51 @@ export type Database = {
             isOneToOne: true;
             referencedColumns: ["id"];
             referencedRelation: "notification_events";
+          },
+        ];
+      };
+      notification_email_job_audit_events: {
+        Row: {
+          action: "manual_retry";
+          actor_id: string | null;
+          created_at: string;
+          id: string;
+          metadata: Json;
+          notification_email_job_id: string;
+          reason: string;
+        };
+        Insert: {
+          action: "manual_retry";
+          actor_id?: string | null;
+          created_at?: string;
+          id?: string;
+          metadata?: Json;
+          notification_email_job_id: string;
+          reason: string;
+        };
+        Update: {
+          action?: "manual_retry";
+          actor_id?: string | null;
+          created_at?: string;
+          id?: string;
+          metadata?: Json;
+          notification_email_job_id?: string;
+          reason?: string;
+        };
+        Relationships: [
+          {
+            columns: ["actor_id"];
+            foreignKeyName: "notification_email_job_audit_events_actor_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "profiles";
+          },
+          {
+            columns: ["notification_email_job_id"];
+            foreignKeyName: "notification_email_job_audit_events_notification_email_job_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "notification_email_jobs";
           },
         ];
       };
@@ -669,7 +813,13 @@ export type Database = {
           lessons_opt_in: boolean;
           locale: "en" | "nl";
           profile_id: string | null;
-          source: "contact_form" | "dashboard" | "signup";
+          source:
+            | "contact_form"
+            | "dashboard"
+            | "public_preferences"
+            | "resend_webhook"
+            | "signup"
+            | "system";
           unsubscribed_at: string | null;
           updated_at: string;
         };
@@ -684,7 +834,13 @@ export type Database = {
           lessons_opt_in?: boolean;
           locale?: "en" | "nl";
           profile_id?: string | null;
-          source: "contact_form" | "dashboard" | "signup";
+          source:
+            | "contact_form"
+            | "dashboard"
+            | "public_preferences"
+            | "resend_webhook"
+            | "signup"
+            | "system";
           unsubscribed_at?: string | null;
           updated_at?: string;
         };
@@ -699,7 +855,13 @@ export type Database = {
           lessons_opt_in?: boolean;
           locale?: "en" | "nl";
           profile_id?: string | null;
-          source?: "contact_form" | "dashboard" | "signup";
+          source?:
+            | "contact_form"
+            | "dashboard"
+            | "public_preferences"
+            | "resend_webhook"
+            | "signup"
+            | "system";
           unsubscribed_at?: string | null;
           updated_at?: string;
         };
@@ -799,6 +961,241 @@ export type Database = {
         };
         Relationships: [];
       };
+      audience_preference_requests: {
+        Row: {
+          audience_contact_id: string;
+          created_at: string;
+          expires_at: string;
+          id: string;
+          locale: "en" | "nl";
+          token_hash: string;
+          used_at: string | null;
+        };
+        Insert: {
+          audience_contact_id: string;
+          created_at?: string;
+          expires_at: string;
+          id?: string;
+          locale?: "en" | "nl";
+          token_hash: string;
+          used_at?: string | null;
+        };
+        Update: {
+          audience_contact_id?: string;
+          created_at?: string;
+          expires_at?: string;
+          id?: string;
+          locale?: "en" | "nl";
+          token_hash?: string;
+          used_at?: string | null;
+        };
+        Relationships: [
+          {
+            columns: ["audience_contact_id"];
+            foreignKeyName: "audience_preference_requests_audience_contact_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "audience_contacts";
+          },
+        ];
+      };
+      audience_consent_events: {
+        Row: {
+          action:
+            | "opted_in"
+            | "opted_out"
+            | "suppressed"
+            | "suppression_lifted";
+          audience_contact_id: string;
+          created_at: string;
+          dedupe_key: string | null;
+          id: string;
+          metadata: Json;
+          occurred_at: string;
+          opt_in_request_id: string | null;
+          policy_version: string;
+          provider_event_id: string | null;
+          source:
+            | "admin_migration"
+            | "contact_form"
+            | "dashboard"
+            | "public_preferences"
+            | "resend_webhook"
+            | "signup"
+            | "system";
+          topic: "all" | "books" | "general_updates" | "lessons";
+        };
+        Insert: {
+          action:
+            | "opted_in"
+            | "opted_out"
+            | "suppressed"
+            | "suppression_lifted";
+          audience_contact_id: string;
+          created_at?: string;
+          dedupe_key?: string | null;
+          id?: string;
+          metadata?: Json;
+          occurred_at?: string;
+          opt_in_request_id?: string | null;
+          policy_version: string;
+          provider_event_id?: string | null;
+          source:
+            | "admin_migration"
+            | "contact_form"
+            | "dashboard"
+            | "public_preferences"
+            | "resend_webhook"
+            | "signup"
+            | "system";
+          topic: "all" | "books" | "general_updates" | "lessons";
+        };
+        Update: {
+          action?:
+            | "opted_in"
+            | "opted_out"
+            | "suppressed"
+            | "suppression_lifted";
+          audience_contact_id?: string;
+          created_at?: string;
+          dedupe_key?: string | null;
+          id?: string;
+          metadata?: Json;
+          occurred_at?: string;
+          opt_in_request_id?: string | null;
+          policy_version?: string;
+          provider_event_id?: string | null;
+          source?:
+            | "admin_migration"
+            | "contact_form"
+            | "dashboard"
+            | "public_preferences"
+            | "resend_webhook"
+            | "signup"
+            | "system";
+          topic?: "all" | "books" | "general_updates" | "lessons";
+        };
+        Relationships: [
+          {
+            columns: ["audience_contact_id"];
+            foreignKeyName: "audience_consent_events_audience_contact_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "audience_contacts";
+          },
+          {
+            columns: ["opt_in_request_id"];
+            foreignKeyName: "audience_consent_events_opt_in_request_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "audience_opt_in_requests";
+          },
+        ];
+      };
+      audience_suppressions: {
+        Row: {
+          audience_contact_id: string;
+          created_at: string;
+          id: string;
+          lifted_at: string | null;
+          metadata: Json;
+          provider: "manual" | "resend" | "system" | null;
+          provider_event_id: string | null;
+          reason:
+            | "hard_bounce"
+            | "invalid_address"
+            | "manual"
+            | "provider_unsubscribe"
+            | "spam_complaint";
+          suppressed_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          audience_contact_id: string;
+          created_at?: string;
+          id?: string;
+          lifted_at?: string | null;
+          metadata?: Json;
+          provider?: "manual" | "resend" | "system" | null;
+          provider_event_id?: string | null;
+          reason:
+            | "hard_bounce"
+            | "invalid_address"
+            | "manual"
+            | "provider_unsubscribe"
+            | "spam_complaint";
+          suppressed_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          audience_contact_id?: string;
+          created_at?: string;
+          id?: string;
+          lifted_at?: string | null;
+          metadata?: Json;
+          provider?: "manual" | "resend" | "system" | null;
+          provider_event_id?: string | null;
+          reason?:
+            | "hard_bounce"
+            | "invalid_address"
+            | "manual"
+            | "provider_unsubscribe"
+            | "spam_complaint";
+          suppressed_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            columns: ["audience_contact_id"];
+            foreignKeyName: "audience_suppressions_audience_contact_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "audience_contacts";
+          },
+        ];
+      };
+      provider_webhook_events: {
+        Row: {
+          attempt_count: number;
+          event_type: string;
+          id: string;
+          last_error: string | null;
+          payload: Json;
+          processed_at: string | null;
+          provider: "resend";
+          provider_created_at: string | null;
+          provider_event_id: string;
+          received_at: string;
+          status: "failed" | "ignored" | "processed" | "received";
+        };
+        Insert: {
+          attempt_count?: number;
+          event_type: string;
+          id?: string;
+          last_error?: string | null;
+          payload?: Json;
+          processed_at?: string | null;
+          provider: "resend";
+          provider_created_at?: string | null;
+          provider_event_id: string;
+          received_at?: string;
+          status?: "failed" | "ignored" | "processed" | "received";
+        };
+        Update: {
+          attempt_count?: number;
+          event_type?: string;
+          id?: string;
+          last_error?: string | null;
+          payload?: Json;
+          processed_at?: string | null;
+          provider?: "resend";
+          provider_created_at?: string | null;
+          provider_event_id?: string;
+          received_at?: string;
+          status?: "failed" | "ignored" | "processed" | "received";
+        };
+        Relationships: [];
+      };
       content_releases: {
         Row: {
           audience_segment: "books" | "general" | "lessons";
@@ -820,6 +1217,7 @@ export type Database = {
             | "approved"
             | "cancelled"
             | "draft"
+            | "partially_failed"
             | "queued"
             | "sending"
             | "sent";
@@ -847,6 +1245,7 @@ export type Database = {
             | "approved"
             | "cancelled"
             | "draft"
+            | "partially_failed"
             | "queued"
             | "sending"
             | "sent";
@@ -874,6 +1273,7 @@ export type Database = {
             | "approved"
             | "cancelled"
             | "draft"
+            | "partially_failed"
             | "queued"
             | "sending"
             | "sent";
@@ -923,6 +1323,152 @@ export type Database = {
           {
             columns: ["release_id"];
             foreignKeyName: "content_release_items_release_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "content_releases";
+          },
+        ];
+      };
+      content_release_targets: {
+        Row: {
+          accepted_at: string | null;
+          attempt_count: number;
+          cancelled_at: string | null;
+          created_at: string;
+          created_provider_at: string | null;
+          creating_started_at: string | null;
+          bounced_at: string | null;
+          complained_at: string | null;
+          delayed_at: string | null;
+          delivered_at: string | null;
+          failed_at: string | null;
+          id: string;
+          language: "en" | "nl";
+          last_error: string | null;
+          last_provider_error: string | null;
+          last_provider_event_id: string | null;
+          last_provider_status:
+            | "accepted"
+            | "bounced"
+            | "complained"
+            | "delayed"
+            | "delivered"
+            | "failed"
+            | "suppressed"
+            | null;
+          next_attempt_at: string;
+          provider_broadcast_id: string | null;
+          provider_status_updated_at: string | null;
+          recipient_count_snapshot: number;
+          release_id: string;
+          segment_id: string;
+          sending_started_at: string | null;
+          status:
+            | "accepted"
+            | "cancelled"
+            | "created"
+            | "creating"
+            | "failed"
+            | "pending"
+            | "sending";
+          subject_snapshot: string;
+          topic_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          accepted_at?: string | null;
+          attempt_count?: number;
+          cancelled_at?: string | null;
+          created_at?: string;
+          created_provider_at?: string | null;
+          creating_started_at?: string | null;
+          bounced_at?: string | null;
+          complained_at?: string | null;
+          delayed_at?: string | null;
+          delivered_at?: string | null;
+          failed_at?: string | null;
+          id?: string;
+          language: "en" | "nl";
+          last_error?: string | null;
+          last_provider_error?: string | null;
+          last_provider_event_id?: string | null;
+          last_provider_status?:
+            | "accepted"
+            | "bounced"
+            | "complained"
+            | "delayed"
+            | "delivered"
+            | "failed"
+            | "suppressed"
+            | null;
+          next_attempt_at?: string;
+          provider_broadcast_id?: string | null;
+          provider_status_updated_at?: string | null;
+          recipient_count_snapshot: number;
+          release_id: string;
+          segment_id: string;
+          sending_started_at?: string | null;
+          status?:
+            | "accepted"
+            | "cancelled"
+            | "created"
+            | "creating"
+            | "failed"
+            | "pending"
+            | "sending";
+          subject_snapshot: string;
+          topic_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          accepted_at?: string | null;
+          attempt_count?: number;
+          cancelled_at?: string | null;
+          created_at?: string;
+          created_provider_at?: string | null;
+          creating_started_at?: string | null;
+          bounced_at?: string | null;
+          complained_at?: string | null;
+          delayed_at?: string | null;
+          delivered_at?: string | null;
+          failed_at?: string | null;
+          id?: string;
+          language?: "en" | "nl";
+          last_error?: string | null;
+          last_provider_error?: string | null;
+          last_provider_event_id?: string | null;
+          last_provider_status?:
+            | "accepted"
+            | "bounced"
+            | "complained"
+            | "delayed"
+            | "delivered"
+            | "failed"
+            | "suppressed"
+            | null;
+          next_attempt_at?: string;
+          provider_broadcast_id?: string | null;
+          provider_status_updated_at?: string | null;
+          recipient_count_snapshot?: number;
+          release_id?: string;
+          segment_id?: string;
+          sending_started_at?: string | null;
+          status?:
+            | "accepted"
+            | "cancelled"
+            | "created"
+            | "creating"
+            | "failed"
+            | "pending"
+            | "sending";
+          subject_snapshot?: string;
+          topic_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            columns: ["release_id"];
+            foreignKeyName: "content_release_targets_release_id_fkey";
             isOneToOne: false;
             referencedColumns: ["id"];
             referencedRelation: "content_releases";
@@ -1192,6 +1738,182 @@ export type Database = {
     };
     Views: Record<string, never>;
     Functions: {
+      apply_audience_preference_request: {
+        Args: {
+          p_books_opt_in: boolean;
+          p_general_updates_opt_in: boolean;
+          p_lessons_opt_in: boolean;
+          p_occurred_at: string;
+          p_policy_version: string;
+          p_token_hash: string;
+        };
+        Returns: {
+          audience_contact_id: string | null;
+          books_opt_in: boolean | null;
+          email: string | null;
+          full_name: string | null;
+          general_updates_opt_in: boolean | null;
+          lessons_opt_in: boolean | null;
+          locale: string | null;
+          request_id: string | null;
+          status: string;
+        }[];
+      };
+      apply_audience_preferences: {
+        Args: {
+          p_actor: string;
+          p_books_opt_in: boolean;
+          p_dedupe_prefix: string | null;
+          p_email: string;
+          p_full_name: string | null;
+          p_general_updates_opt_in: boolean;
+          p_lessons_opt_in: boolean;
+          p_locale: string;
+          p_occurred_at: string;
+          p_opt_in_request_id: string | null;
+          p_policy_version: string;
+          p_profile_id: string | null;
+          p_source: string;
+        };
+        Returns: Database["public"]["Tables"]["audience_contacts"]["Row"];
+      };
+      enqueue_notification_email_job: {
+        Args: {
+          p_aggregate_id: string;
+          p_aggregate_type: string;
+          p_bcc_recipients?: string[];
+          p_cc_recipients?: string[];
+          p_dedupe_key?: string | null;
+          p_event_type: string;
+          p_from_email?: string | null;
+          p_html_body?: string | null;
+          p_max_attempts?: number;
+          p_payload?: Json;
+          p_recipient: string;
+          p_reply_to_recipients?: string[];
+          p_subject: string;
+          p_text_body: string;
+          p_to_recipients: string[];
+        };
+        Returns: {
+          event_id: string;
+          event_status:
+            | "accepted"
+            | "bounced"
+            | "complained"
+            | "dead_letter"
+            | "delayed"
+            | "delivered"
+            | "failed"
+            | "processing"
+            | "queued"
+            | "sent"
+            | "suppressed";
+          job_already_existed: boolean;
+          job_id: string;
+          job_status:
+            | "accepted"
+            | "dead_letter"
+            | "failed"
+            | "processing"
+            | "queued"
+            | "retry_scheduled"
+            | "sent";
+        }[];
+      };
+      queue_content_release_delivery_with_targets: {
+        Args: {
+          p_item_count: number;
+          p_release_id: string;
+          p_targets: Json;
+        };
+        Returns: {
+          release_id: string;
+          release_status:
+            | "approved"
+            | "cancelled"
+            | "draft"
+            | "partially_failed"
+            | "queued"
+            | "sending"
+            | "sent";
+          target_count: number;
+          total_recipient_count: number;
+        }[];
+      };
+      claim_notification_email_jobs: {
+        Args: {
+          p_job_id?: string;
+          p_lease_seconds?: number;
+          p_limit?: number;
+        };
+        Returns: {
+          attempt_count: number;
+          bcc_recipients: string[];
+          cc_recipients: string[];
+          created_at: string;
+          from_email: string | null;
+          html_body: string | null;
+          id: string;
+          last_attempt_at: string | null;
+          last_error: string | null;
+          lock_expires_at: string | null;
+          locked_at: string | null;
+          max_attempts: number;
+          next_attempt_at: string;
+          notification_event_id: string;
+          processed_at: string | null;
+          provider_message_id: string | null;
+          reply_to_recipients: string[];
+          status:
+            | "accepted"
+            | "dead_letter"
+            | "failed"
+            | "processing"
+            | "queued"
+            | "retry_scheduled"
+            | "sent";
+          subject: string;
+          text_body: string;
+          to_recipients: string[];
+        }[];
+      };
+      retry_notification_email_job: {
+        Args: {
+          p_job_id: string;
+          p_reason: string;
+        };
+        Returns: {
+          event_id: string;
+          job_id: string;
+          job_status:
+            | "accepted"
+            | "dead_letter"
+            | "failed"
+            | "processing"
+            | "queued"
+            | "retry_scheduled"
+            | "sent";
+        }[];
+      };
+      confirm_audience_opt_in_request: {
+        Args: {
+          p_occurred_at: string;
+          p_policy_version: string;
+          p_token_hash: string;
+        };
+        Returns: {
+          audience_contact_id: string | null;
+          books_opt_in: boolean | null;
+          email: string | null;
+          full_name: string | null;
+          general_updates_opt_in: boolean | null;
+          lessons_opt_in: boolean | null;
+          locale: string | null;
+          request_id: string | null;
+          status: string;
+        }[];
+      };
       is_admin: {
         Args: Record<PropertyKey, never>;
         Returns: boolean;

@@ -9,7 +9,10 @@ import { createServiceRoleClient } from "@/lib/supabase/serviceRole";
 import { normalizeWhitespace } from "@/lib/validation";
 import type { Tables, TablesInsert, TablesUpdate } from "@/types/supabase";
 
-import { syncAudienceContact } from "./audience";
+import {
+  COMMUNICATIONS_POLICY_VERSION,
+  syncAudienceContactByIdToProvider,
+} from "./audience";
 
 type AudienceOptInRequestRow = Tables<"audience_opt_in_requests">;
 type AudienceOptInRequestSource = AudienceOptInRequestRow["source"];
@@ -31,10 +34,17 @@ type CreateAudienceOptInRequestResult = {
   token: string;
 };
 
-type ConfirmAudienceOptInRequestResult =
+export type AudienceOptInRequestStatus =
+  | "already_confirmed"
+  | "confirmed"
+  | "expired"
+  | "invalid"
+  | "pending";
+
+type AudienceOptInRequestResult =
   | {
       request: AudienceOptInRequestRow | null;
-      status: "confirmed" | "already_confirmed";
+      status: "already_confirmed" | "confirmed" | "pending";
       success: true;
     }
   | {
@@ -194,10 +204,10 @@ export async function createAudienceOptInRequest({
  * audience list, and marks the request as confirmed when the token is valid
  * and unexpired.
  */
-export async function confirmAudienceOptInRequest(
+export async function getAudienceOptInRequestPreview(
   token: string,
-): Promise<ConfirmAudienceOptInRequestResult> {
-  assertServerOnly("confirmAudienceOptInRequest");
+): Promise<AudienceOptInRequestResult> {
+  assertServerOnly("getAudienceOptInRequestPreview");
 
   const normalizedToken = normalizeWhitespace(token);
   if (!normalizedToken) {
@@ -243,34 +253,74 @@ export async function confirmAudienceOptInRequest(
     };
   }
 
-  await syncAudienceContact({
-    booksOptIn: request.books_requested,
-    email: request.email,
-    fullName: request.full_name,
-    generalUpdatesOptIn: request.general_updates_requested,
-    lessonsOptIn: request.lessons_requested,
-    locale: request.locale,
-    source: request.source,
-  });
+  return {
+    request,
+    status: "pending",
+    success: true,
+  };
+}
 
-  const confirmedAt = new Date().toISOString();
-  const { data: confirmedRequest, error: confirmError } = await supabase
-    .from("audience_opt_in_requests")
-    .update({
-      confirmed_at: confirmedAt,
-      updated_at: confirmedAt,
-    } satisfies TablesUpdate<"audience_opt_in_requests">)
-    .eq("id", request.id)
-    .select("*")
-    .single();
+/**
+ * Atomically consumes a valid opt-in token and records consent for its exact
+ * requested topics. This function must only be called from an explicit POST.
+ */
+export async function confirmAudienceOptInRequest(
+  token: string,
+): Promise<AudienceOptInRequestResult> {
+  assertServerOnly("confirmAudienceOptInRequest");
 
-  if (confirmError) {
-    throw new Error(confirmError.message);
+  const normalizedToken = normalizeWhitespace(token);
+  if (!normalizedToken) {
+    return { request: null, status: "invalid", success: false };
+  }
+
+  const supabase = createServiceRoleClient();
+  const occurredAt = new Date().toISOString();
+  const { data, error } = await supabase.rpc(
+    "confirm_audience_opt_in_request",
+    {
+      p_occurred_at: occurredAt,
+      p_policy_version: COMMUNICATIONS_POLICY_VERSION,
+      p_token_hash: hashOptInToken(normalizedToken),
+    },
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const result = data?.[0];
+  if (!result) {
+    return { request: null, status: "invalid", success: false };
+  }
+
+  const { data: request, error: requestError } = result.request_id
+    ? await supabase
+        .from("audience_opt_in_requests")
+        .select("*")
+        .eq("id", result.request_id)
+        .maybeSingle()
+    : { data: null, error: null };
+
+  if (requestError) {
+    throw new Error(requestError.message);
+  }
+
+  if (result.status === "confirmed" && result.audience_contact_id) {
+    await syncAudienceContactByIdToProvider(result.audience_contact_id);
+  }
+
+  if (result.status === "confirmed" || result.status === "already_confirmed") {
+    return {
+      request,
+      status: result.status,
+      success: true,
+    };
   }
 
   return {
-    request: confirmedRequest,
-    status: "confirmed",
-    success: true,
+    request,
+    status: result.status === "expired" ? "expired" : "invalid",
+    success: false,
   };
 }

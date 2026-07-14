@@ -7,6 +7,7 @@ import {
   compareContentReleasePriority,
   type AdminContentRelease,
   type ContentReleaseItemRow,
+  type ContentReleaseTargetRow,
 } from "@/features/communications/lib/releases";
 import type { AppSupabaseClient, QueryResult } from "@/lib/supabase/queryTypes";
 
@@ -230,20 +231,33 @@ export async function getAdminContentReleases(
   }
 
   const releaseIds = contentReleases.map((release) => release.id);
-  const releaseItemsResult = await supabase
-    .from("content_release_items")
-    .select("*")
-    .in("release_id", releaseIds)
-    .order("created_at", { ascending: true });
+  const [releaseItemsResult, releaseTargetsResult] = await Promise.all([
+    supabase
+      .from("content_release_items")
+      .select("*")
+      .in("release_id", releaseIds)
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("content_release_targets")
+      .select("*")
+      .in("release_id", releaseIds)
+      .order("created_at", { ascending: true }),
+  ]);
 
-  if (releaseItemsResult.error) {
+  if (releaseItemsResult.error || releaseTargetsResult.error) {
     return {
       data: null,
-      error: { message: releaseItemsResult.error.message },
+      error: {
+        message:
+          releaseItemsResult.error?.message ??
+          releaseTargetsResult.error?.message ??
+          "Could not load content release details.",
+      },
     };
   }
 
   const itemsByReleaseId = new Map<string, ContentReleaseItemRow[]>();
+  const targetsByReleaseId = new Map<string, ContentReleaseTargetRow[]>();
 
   for (const item of releaseItemsResult.data ?? []) {
     const items = itemsByReleaseId.get(item.release_id) ?? [];
@@ -251,11 +265,18 @@ export async function getAdminContentReleases(
     itemsByReleaseId.set(item.release_id, items);
   }
 
+  for (const target of releaseTargetsResult.data ?? []) {
+    const targets = targetsByReleaseId.get(target.release_id) ?? [];
+    targets.push(target);
+    targetsByReleaseId.set(target.release_id, targets);
+  }
+
   return {
     data: contentReleases
       .map((release) => ({
         ...release,
         items: itemsByReleaseId.get(release.id) ?? [],
+        targets: targetsByReleaseId.get(release.id) ?? [],
       }))
       .sort(compareContentReleasePriority),
     error: null,
