@@ -29,7 +29,22 @@ describe("publication Open Graph helpers", () => {
     expect(preview.eyebrow).toBe("Publications");
     expect(preview.footerLabel).toBe("Coptic Compass • Publications");
     expect(preview.statusLabel).toBe("Available now");
-    expect(preview.languageLabel).toBe("COP");
+    expect(preview.languageLabel).toBe("COP · Book · 2023");
+    expect(preview.summary).toContain(
+      "Edited and compiled by Kyrillos Wannes.",
+    );
     expect(preview.title.length).toBeGreaterThan(0);
+  });
+
+  it("includes contributor, format, and year metadata for published books", () => {
+    const publication = getPublicationById("parallel-paradigms-coptic");
+
+    expect(publication).not.toBeNull();
+
+    const preview = buildPublicationOpenGraphPreview(publication!, "en");
+
+    expect(preview.statusLabel).toBe("Available now");
+    expect(preview.languageLabel).toBe("EN · Book · 2026");
+    expect(preview.summary).toContain("By Kyrillos Wannes.");
   });
 });

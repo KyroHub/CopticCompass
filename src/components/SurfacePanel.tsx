@@ -8,6 +8,7 @@ type SurfacePanelRounded = "lg";
 type SurfacePanelTag = "article" | "div" | "section" | "aside" | "details";
 
 type SurfacePanelClassNameOptions = {
+  backdropBlur?: boolean;
   className?: string;
   interactive?: boolean;
   rounded?: SurfacePanelRounded;
@@ -32,6 +33,7 @@ const ROUNDED_CLASSES: Record<SurfacePanelRounded, string> = {
 };
 
 export function surfacePanelClassName({
+  backdropBlur = true,
   className,
   interactive = false,
   rounded = "lg",
@@ -39,7 +41,8 @@ export function surfacePanelClassName({
   variant = "default",
 }: SurfacePanelClassNameOptions = {}) {
   return cx(
-    "border border-line backdrop-blur-sm",
+    "border border-line",
+    backdropBlur && "backdrop-blur-sm",
     VARIANT_CLASSES[variant],
     SHADOW_CLASSES[shadow],
     ROUNDED_CLASSES[rounded],
@@ -51,6 +54,7 @@ export function surfacePanelClassName({
 
 type SurfacePanelProps = HTMLAttributes<HTMLElement> & {
   as?: SurfacePanelTag;
+  backdropBlur?: boolean;
   interactive?: boolean;
   rounded?: SurfacePanelRounded;
   shadow?: SurfacePanelShadow;
@@ -59,6 +63,7 @@ type SurfacePanelProps = HTMLAttributes<HTMLElement> & {
 
 export function SurfacePanel({
   as = "div",
+  backdropBlur = true,
   className,
   interactive = false,
   rounded = "lg",
@@ -71,6 +76,7 @@ export function SurfacePanel({
   return (
     <Component
       className={surfacePanelClassName({
+        backdropBlur,
         className,
         interactive,
         rounded,

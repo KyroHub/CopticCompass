@@ -3,13 +3,9 @@
 import {
   ArrowRight,
   ArrowUpRight,
-  BookOpen,
-  FileClock,
-  FileText,
   Search,
   SlidersHorizontal,
   X,
-  type LucideIcon,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,11 +18,21 @@ import { EmptyState } from "@/components/EmptyState";
 import { useLanguage } from "@/components/LanguageProvider";
 import { PageShell, pageShellAccents } from "@/components/PageShell";
 import { SegmentedControl } from "@/components/SegmentedControl";
-import { surfacePanelClassName, SurfacePanel } from "@/components/SurfacePanel";
+import { surfacePanelClassName } from "@/components/SurfacePanel";
 import {
-  getPublicationFormatLabel,
+  buildPublicationSearchText,
+  getLocalizedPublicationText,
+  getPrimaryPublicationPurchaseLink,
+  getPublicationBindingLabel,
+  getPublicationBindings,
+  getPublicationContributorRoleLabel,
+  getPublicationImage,
   getPublicationPath,
+  getPublicationPrimaryContributor,
+  getPublicationVolumeLabel,
+  getPublicationYear,
   publications,
+  sortPublicationsForCatalog,
 } from "@/features/publications/lib/publications";
 import type {
   LanguageBadge,
@@ -34,6 +40,7 @@ import type {
   PublicationStatus,
 } from "@/features/publications/lib/publications";
 import { getLocalizedHomePath } from "@/lib/locale";
+import type { Language } from "@/types/i18n";
 
 type PublicationLanguageFilter = "ALL" | LanguageBadge;
 type PublicationStatusFilter = "ALL" | PublicationStatus;
@@ -49,41 +56,6 @@ const statusFilterOptions: PublicationStatusFilter[] = [
   "published",
   "forthcoming",
 ];
-
-function getCountLabel(count: number, itemLabel: string, itemsLabel: string) {
-  return `${count} ${count === 1 ? itemLabel : itemsLabel}`;
-}
-
-function CatalogStat({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: LucideIcon;
-  label: string;
-  value: string;
-}) {
-  return (
-    <SurfacePanel
-      rounded="lg"
-      shadow="soft"
-      variant="elevated"
-      className="flex items-center gap-4 p-5 text-left"
-    >
-      <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent-strong dark:text-accent">
-        <Icon className="h-5 w-5" aria-hidden="true" />
-      </span>
-      <span className="min-w-0">
-        <span className="block text-xs font-semibold uppercase tracking-widest text-muted">
-          {label}
-        </span>
-        <span className="mt-1 block text-lg font-semibold text-ink">
-          {value}
-        </span>
-      </span>
-    </SurfacePanel>
-  );
-}
 
 function PublicationsSearchBar({
   clearLabel,
@@ -143,27 +115,42 @@ function PublicationsSearchBar({
 function TileInner({
   pub,
   comingSoonLabel,
+  contributorLabel,
+  contributorName,
   externalAvailableLabel,
-  formatLabel,
+  hasPurchaseLink,
+  language,
+  metadataLine,
   priority = false,
   statusLabel,
   viewDetailsLabel,
 }: {
   pub: Publication;
   comingSoonLabel: string;
+  contributorLabel?: string;
+  contributorName?: string;
   externalAvailableLabel: string;
-  formatLabel: string;
+  hasPurchaseLink: boolean;
+  language: Language;
+  metadataLine?: string;
   priority?: boolean;
   statusLabel: string;
   viewDetailsLabel: string;
 }) {
+  const coverImage = getPublicationImage(pub, "front-cover");
+  const volumeBadge = getPublicationVolumeLabel(pub, language);
+
   return (
     <>
       <div className="relative mb-5 aspect-[3/4.2] w-full overflow-hidden rounded-lg border border-line/80 bg-paper shadow-sm">
-        {pub.image ? (
+        {coverImage ? (
           <Image
-            src={pub.image}
-            alt={pub.title}
+            src={coverImage.src}
+            alt={getLocalizedPublicationText(
+              coverImage.alt,
+              language,
+              pub.lang,
+            )}
             fill
             priority={priority}
             sizes="(min-width: 1024px) 268px, (min-width: 640px) calc((100vw - 6rem) / 2), calc(100vw - 3rem)"
@@ -183,7 +170,7 @@ function TileInner({
         )}
       </div>
 
-      <div className="mb-4 flex flex-wrap gap-2">
+      <div className="mb-4 flex min-h-6 content-start flex-wrap gap-2">
         <Badge
           tone={pub.status === "published" ? "accent" : "neutral"}
           size="xs"
@@ -193,27 +180,47 @@ function TileInner({
         <Badge tone={pub.lang === "COP" ? "coptic" : "surface"} size="xs">
           {pub.lang}
         </Badge>
-        <Badge tone="surface" size="xs">
-          {formatLabel}
-        </Badge>
+        {volumeBadge ? (
+          <Badge tone="surface" size="xs">
+            {volumeBadge}
+          </Badge>
+        ) : null}
       </div>
 
-      <div className="flex flex-1 flex-col justify-end">
-        <h2 className="z-10 mb-1 line-clamp-3 text-lg font-bold leading-snug text-ink">
-          {pub.title}
-        </h2>
-        {pub.subtitle && (
-          <p className="z-10 mb-2 text-xs leading-snug text-muted">
-            {pub.subtitle}
-          </p>
-        )}
-        {pub.link && pub.status === "published" ? (
-          <p className="z-10 mt-3 flex items-center text-sm font-medium text-muted">
+      <div className="flex flex-1 flex-col">
+        <div className="min-h-[4.75rem]">
+          <h2 className="z-10 line-clamp-3 text-lg font-bold leading-snug text-ink">
+            {pub.title}
+          </h2>
+        </div>
+
+        <div className="min-h-8">
+          {contributorName ? (
+            <p className="z-10 line-clamp-2 text-sm font-medium leading-4 text-ink">
+              {contributorLabel ? (
+                <span className="text-muted">{contributorLabel} · </span>
+              ) : null}
+              {contributorName}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="min-h-4">
+          {metadataLine ? (
+            <p className="z-10 text-xs font-medium uppercase leading-4 tracking-[0.08em] text-muted">
+              {metadataLine}
+            </p>
+          ) : null}
+        </div>
+
+        {hasPurchaseLink && pub.status === "published" ? (
+          <p className="z-10 mt-2 flex items-center text-sm font-medium leading-5 text-muted">
             {externalAvailableLabel}
             <ArrowUpRight className="ml-1 h-4 w-4 translate-x-[-10px] opacity-0 transition-all duration-300 group-hover:translate-x-0 group-hover:opacity-100" />
           </p>
         ) : null}
-        <p className="z-10 mt-5 flex items-center text-sm font-semibold text-accent-strong dark:text-accent">
+
+        <p className="z-10 mt-auto flex items-center pt-5 text-sm font-semibold text-accent-strong dark:text-accent">
           {viewDetailsLabel}
           <ArrowRight className="ml-1 h-4 w-4 transition-transform duration-300 group-hover:translate-x-0.5" />
         </p>
@@ -246,6 +253,14 @@ function PublicationTile({
     pub.status === "published"
       ? t("publications.status.published")
       : t("publications.status.forthcoming");
+  const primaryContributor = getPublicationPrimaryContributor(pub);
+  const publicationYear = getPublicationYear(pub);
+  const bindingLabels = getPublicationBindings(pub).map((binding) =>
+    getPublicationBindingLabel(binding, language),
+  );
+  const metadataLine = [publicationYear, ...bindingLabels]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <Link
@@ -257,8 +272,19 @@ function PublicationTile({
       <TileInner
         pub={pub}
         comingSoonLabel={comingSoonLabel}
+        contributorLabel={
+          primaryContributor
+            ? getPublicationContributorRoleLabel(
+                primaryContributor.role,
+                language,
+              )
+            : undefined
+        }
+        contributorName={primaryContributor?.name}
         externalAvailableLabel={externalAvailableLabel}
-        formatLabel={getPublicationFormatLabel(pub, language)}
+        hasPurchaseLink={Boolean(getPrimaryPublicationPurchaseLink(pub))}
+        language={language}
+        metadataLine={metadataLine || undefined}
         priority={priority}
         statusLabel={statusLabel}
         viewDetailsLabel={viewDetailsLabel}
@@ -296,43 +322,37 @@ export default function PublicationsPageClient() {
   }));
   const filteredPublications = useMemo(
     () =>
-      publications.filter((publication) => {
-        if (
-          selectedLanguage !== "ALL" &&
-          publication.lang !== selectedLanguage
-        ) {
-          return false;
-        }
+      sortPublicationsForCatalog(
+        publications.filter((publication) => {
+          if (
+            selectedLanguage !== "ALL" &&
+            publication.lang !== selectedLanguage
+          ) {
+            return false;
+          }
 
-        if (selectedStatus !== "ALL" && publication.status !== selectedStatus) {
-          return false;
-        }
+          if (
+            selectedStatus !== "ALL" &&
+            publication.status !== selectedStatus
+          ) {
+            return false;
+          }
 
-        if (normalizedQuery.length === 0) {
-          return true;
-        }
+          if (normalizedQuery.length === 0) {
+            return true;
+          }
 
-        const searchableText = [
-          publication.title,
-          publication.subtitle,
-          publication.lang,
-          publication.status,
-          publication.schemaType,
-          publication.summary[language],
-        ]
-          .filter(Boolean)
-          .join(" ")
-          .toLocaleLowerCase();
+          const searchableText = buildPublicationSearchText(
+            publication,
+            language,
+          );
 
-        return searchableText.includes(normalizedQuery);
-      }),
+          return searchableText.includes(normalizedQuery);
+        }),
+        language,
+      ),
     [language, normalizedQuery, selectedLanguage, selectedStatus],
   );
-  const publishedCount = publications.filter(
-    (publication) => publication.status === "published",
-  ).length;
-  const forthcomingCount = publications.length - publishedCount;
-
   return (
     <PageShell
       className="app-page-shell"
@@ -458,37 +478,7 @@ export default function PublicationsPageClient() {
           ) : null}
         </div>
 
-        <section className="hidden gap-3 md:grid md:grid-cols-3">
-          <CatalogStat
-            icon={BookOpen}
-            label={t("publications.catalogLabel")}
-            value={getCountLabel(
-              publications.length,
-              t("publications.item"),
-              t("publications.items"),
-            )}
-          />
-          <CatalogStat
-            icon={FileText}
-            label={t("publications.status.published")}
-            value={getCountLabel(
-              publishedCount,
-              t("publications.item"),
-              t("publications.items"),
-            )}
-          />
-          <CatalogStat
-            icon={FileClock}
-            label={t("publications.status.forthcoming")}
-            value={getCountLabel(
-              forthcomingCount,
-              t("publications.item"),
-              t("publications.items"),
-            )}
-          />
-        </section>
-
-        <div className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mx-auto grid w-full max-w-5xl grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
           {filteredPublications.map((pub, i) => (
             <PublicationTile
               key={pub.id}

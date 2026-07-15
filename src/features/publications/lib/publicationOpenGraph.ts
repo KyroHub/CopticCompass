@@ -1,5 +1,8 @@
 import {
   buildPublicationTitle,
+  getPublicationFormatLabel,
+  getPublicationPrimaryContributor,
+  getPublicationYear,
   type Publication,
 } from "@/features/publications/lib/publications";
 import {
@@ -53,13 +56,50 @@ export function buildPublicationOpenGraphPreview(
   publication: Publication,
   locale: Language,
 ): PublicationOpenGraphPreview {
+  const contributor = getPublicationPrimaryContributor(publication);
+  const year = getPublicationYear(publication);
+  const metadataLabel = [
+    publication.lang,
+    getPublicationFormatLabel(publication, locale),
+    year,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  let creatorPrefix = "";
+
+  if (contributor) {
+    if (contributor.role === "translator") {
+      creatorPrefix =
+        locale === "nl"
+          ? `Vertaald door ${contributor.name}.`
+          : `Translated by ${contributor.name}.`;
+    } else if (contributor.role === "compiler") {
+      creatorPrefix =
+        locale === "nl"
+          ? `Redactie en samenstelling door ${contributor.name}.`
+          : `Edited and compiled by ${contributor.name}.`;
+    } else if (contributor.role === "editor") {
+      creatorPrefix =
+        locale === "nl"
+          ? `Redactie door ${contributor.name}.`
+          : `Edited by ${contributor.name}.`;
+    } else {
+      creatorPrefix =
+        locale === "nl"
+          ? `Door ${contributor.name}.`
+          : `By ${contributor.name}.`;
+    }
+  }
+
   return {
     eyebrow: locale === "nl" ? "Publicaties" : "Publications",
     footerLabel: getOpenGraphSectionFooter("publications", locale),
-    languageLabel: publication.lang,
+    languageLabel: metadataLabel,
     statusLabel: getPublicationStatusLabel(publication, locale),
     subtitle: publication.subtitle,
-    summary: publication.summary[locale],
+    summary: [creatorPrefix, publication.summary[locale]]
+      .filter(Boolean)
+      .join(" "),
     title: buildPublicationTitle(publication),
   };
 }
