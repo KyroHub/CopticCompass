@@ -24,8 +24,17 @@ import {
 import { getGrammarLessonPath } from "@/features/grammar/lib/grammarPaths";
 import {
   buildPublicationDescription,
+  formatPublicationDimensions,
+  getLocalizedPublicationText,
+  getPublicationContributorsByRole,
+  getPublicationImages,
   getPublicationPath,
+  getPublicationPurchaseLinks,
+  getPublicationSchemaType,
   type Publication,
+  type PublicationBinding,
+  type PublicationContributor,
+  type PublicationLink,
 } from "@/features/publications/lib/publications";
 import { DEFAULT_LANGUAGE, getTranslation } from "@/lib/i18n";
 import {
@@ -167,6 +176,172 @@ function getPublicationAbsoluteUrl(publication: Publication, locale: Language) {
   return absoluteUrl(getPublicationPath(publication.id, locale));
 }
 
+function getContributorRoleName(
+  contributor: PublicationContributor,
+  locale: Language,
+) {
+  const names: Record<
+    PublicationContributor["role"],
+    Record<Language, string>
+  > = {
+    author: { en: "Author", nl: "Auteur" },
+    editor: { en: "Editor", nl: "Redacteur" },
+    compiler: {
+      en: "Editor / compiler",
+      nl: "Redacteur / samensteller",
+    },
+    illustrator: { en: "Illustrator", nl: "Illustrator" },
+    foreword: { en: "Foreword", nl: "Voorwoord" },
+    "cover-design": { en: "Cover design", nl: "Omslagontwerp" },
+    typesetting: { en: "Interior typesetting", nl: "Binnenwerk en zetwerk" },
+    translator: { en: "Translator", nl: "Vertaler" },
+  };
+  return names[contributor.role][locale];
+}
+
+function getContributorStructuredData(
+  contributor: PublicationContributor,
+  publication: Publication,
+  locale: Language,
+) {
+  const description = getLocalizedPublicationText(
+    contributor.description,
+    locale,
+    publication.lang,
+  );
+
+  return {
+    "@type": contributor.entityType ?? "Person",
+    name: contributor.name,
+    ...(description ? { description } : {}),
+  };
+}
+
+function getPublisherStructuredData(
+  publication: Publication,
+  locale: Language,
+) {
+  if (!publication.publisher) {
+    return undefined;
+  }
+
+  const location = publication.publisher.location;
+  return {
+    "@type": "Organization",
+    name: publication.publisher.name,
+    ...(publication.publisher.url ? { url: publication.publisher.url } : {}),
+    ...(location
+      ? {
+          address: {
+            "@type": "PostalAddress",
+            addressLocality: getLocalizedPublicationText(
+              location.city,
+              locale,
+              publication.lang,
+            ),
+            addressCountry: getLocalizedPublicationText(
+              location.country,
+              locale,
+              publication.lang,
+            ),
+          },
+        }
+      : {}),
+  };
+}
+
+function getSchemaBookFormat(binding: PublicationBinding) {
+  const formats: Record<PublicationBinding, string> = {
+    paperback: "https://schema.org/Paperback",
+    hardcover: "https://schema.org/Hardcover",
+    ebook: "https://schema.org/EBook",
+    digital: "https://schema.org/EBook",
+  };
+  return formats[binding];
+}
+
+function getOfferStructuredData(link: PublicationLink) {
+  return {
+    "@type": "Offer",
+    url: link.url,
+    availability: "https://schema.org/InStock",
+    ...(link.market ? { areaServed: link.market } : {}),
+    ...(link.retailer
+      ? {
+          seller: {
+            "@type": "Organization",
+            name: link.retailer,
+          },
+        }
+      : {}),
+  };
+}
+
+function getPublicationWorkExamples(
+  publication: Publication,
+  locale: Language,
+  publicationUrl: string,
+) {
+  if (publication.type !== "book") {
+    return [];
+  }
+
+  const publisher = getPublisherStructuredData(publication, locale);
+
+  return (publication.editions ?? []).flatMap((edition) =>
+    edition.formats.map((format) => {
+      const images = getPublicationImages(publication)
+        .filter(
+          (image) =>
+            (!image.editionId || image.editionId === edition.id) &&
+            (!image.formatId || image.formatId === format.id),
+        )
+        .map((image) => absoluteUrl(image.src));
+
+      return {
+        "@type": "Book",
+        "@id": `${publicationUrl}#${edition.id}-${format.id}`,
+        name: publication.title,
+        inLanguage: languageCode(publication.lang),
+        bookEdition: getLocalizedPublicationText(
+          edition.statement,
+          locale,
+          publication.lang,
+        ),
+        bookFormat: getSchemaBookFormat(format.binding),
+        ...(edition.publicationDate
+          ? { datePublished: edition.publicationDate }
+          : {}),
+        ...(format.isbn13 ? { isbn: format.isbn13 } : {}),
+        ...(publisher ? { publisher } : {}),
+        ...(images.length > 0 ? { image: images } : {}),
+        ...(format.dimensions
+          ? {
+              additionalProperty: [
+                {
+                  "@type": "PropertyValue",
+                  name:
+                    locale === "nl"
+                      ? "Afmetingen (breedte × dikte × hoogte)"
+                      : "Dimensions (width × thickness × height)",
+                  value: formatPublicationDimensions(format.dimensions, locale),
+                  unitCode: "MMT",
+                },
+              ],
+            }
+          : {}),
+        ...((format.links ?? []).some((link) => link.kind === "purchase")
+          ? {
+              offers: (format.links ?? [])
+                .filter((link) => link.kind === "purchase")
+                .map(getOfferStructuredData),
+            }
+          : {}),
+      };
+    }),
+  );
+}
+
 /**
  * Builds the structured-data record for one publication, including optional
  * cover art, external link, and forthcoming status metadata when present.
@@ -177,10 +352,48 @@ function getPublicationStructuredData(
 ): JsonLd {
   const publicationUrl = getPublicationAbsoluteUrl(publication, locale);
   const copy = getStructuredDataCopy(locale);
+  const isBook = publication.type === "book";
+  const authors = getPublicationContributorsByRole(publication, "author");
+  const editors = getPublicationContributorsByRole(publication, "editor");
+  const illustrators = getPublicationContributorsByRole(
+    publication,
+    "illustrator",
+  );
+  const otherContributors = (publication.contributors ?? []).filter(
+    (contributor) =>
+      !["author", "editor", "illustrator"].includes(contributor.role),
+  );
+  const publisher = getPublisherStructuredData(publication, locale);
+  const firstEdition = publication.editions?.[0];
+  const workExamples = getPublicationWorkExamples(
+    publication,
+    locale,
+    publicationUrl,
+  );
+  const purchaseLinks = getPublicationPurchaseLinks(publication);
+  const images = getPublicationImages(publication).map((image) =>
+    absoluteUrl(image.src),
+  );
+  const isbns = Array.from(
+    new Set(
+      (publication.editions ?? []).flatMap((edition) =>
+        edition.formats.flatMap((format) =>
+          format.isbn13 ? [format.isbn13] : [],
+        ),
+      ),
+    ),
+  );
+  let isbnStructuredData: JsonLd = {};
+
+  if (isBook && isbns.length === 1) {
+    isbnStructuredData = { isbn: isbns[0] };
+  } else if (isBook && isbns.length > 1) {
+    isbnStructuredData = { isbn: isbns };
+  }
 
   return {
     "@context": "https://schema.org",
-    "@type": publication.schemaType,
+    "@type": getPublicationSchemaType(publication),
     "@id": `${publicationUrl}#work`,
     url: publicationUrl,
     name: publication.title,
@@ -190,19 +403,83 @@ function getPublicationStructuredData(
         }
       : {}),
     description: buildPublicationDescription(publication, locale),
-    author: {
-      "@type": "Person",
-      name: siteConfig.author.name,
-    },
-    inLanguage: languageCode(publication.lang),
-    ...(publication.image
+    ...(authors.length > 0
       ? {
-          image: absoluteUrl(publication.image),
+          author: authors.map((author) =>
+            getContributorStructuredData(author, publication, locale),
+          ),
         }
       : {}),
-    ...(publication.link
+    ...(editors.length > 0
       ? {
-          sameAs: publication.link,
+          editor: editors.map((editor) =>
+            getContributorStructuredData(editor, publication, locale),
+          ),
+        }
+      : {}),
+    ...(illustrators.length > 0
+      ? {
+          illustrator: illustrators.map((illustrator) =>
+            getContributorStructuredData(illustrator, publication, locale),
+          ),
+        }
+      : {}),
+    ...(otherContributors.length > 0
+      ? {
+          contributor: otherContributors.map((contributor) => ({
+            "@type": "Role",
+            roleName: getContributorRoleName(contributor, locale),
+            contributor: getContributorStructuredData(
+              contributor,
+              publication,
+              locale,
+            ),
+          })),
+        }
+      : {}),
+    inLanguage: languageCode(publication.lang),
+    ...(publisher ? { publisher } : {}),
+    ...(firstEdition?.publicationDate
+      ? { datePublished: firstEdition.publicationDate }
+      : {}),
+    ...(isBook && firstEdition
+      ? {
+          bookEdition: getLocalizedPublicationText(
+            firstEdition.statement,
+            locale,
+            publication.lang,
+          ),
+        }
+      : {}),
+    ...isbnStructuredData,
+    ...(workExamples.length > 0 ? { workExample: workExamples } : {}),
+    ...(purchaseLinks.length > 0
+      ? {
+          offers: purchaseLinks.map(({ link }) => getOfferStructuredData(link)),
+        }
+      : {}),
+    ...(publication.rights
+      ? {
+          copyrightYear: publication.rights.copyrightYear,
+          copyrightHolder: {
+            "@type": "Person",
+            name: publication.rights.holder,
+          },
+          ...(publication.rights.notice
+            ? {
+                copyrightNotice: getLocalizedPublicationText(
+                  publication.rights.notice,
+                  locale,
+                  publication.lang,
+                ),
+              }
+            : {}),
+        }
+      : {}),
+    ...(images.length > 0 ? { image: images } : {}),
+    ...(publication.catalogRecords?.length
+      ? {
+          sameAs: publication.catalogRecords.map((record) => record.url),
         }
       : {}),
     ...(publication.status === "forthcoming"

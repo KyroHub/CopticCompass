@@ -2,11 +2,16 @@ import { describe, expect, it } from "vitest";
 
 import type { LexicalEntry } from "@/features/dictionary/types";
 import { getFaqAnswerPlainText, listFaqItems } from "@/features/faq/lib/faq";
+import {
+  getPublicationById,
+  type Publication,
+} from "@/features/publications/lib/publications";
 
 import {
   createDefinedTermStructuredData,
   createDictionaryPageStructuredData,
   createFaqPageStructuredData,
+  createPublicationStructuredData,
   createWebSiteStructuredData,
 } from "./structuredData";
 
@@ -108,5 +113,133 @@ describe("structured dictionary data", () => {
         }),
       ]),
     );
+  });
+});
+
+describe("structured publication data", () => {
+  it("describes the Coptic Bible as a 2023 e-book with its compiler", () => {
+    const publication = getPublicationById("holy-bible-coptic");
+
+    expect(publication).not.toBeNull();
+
+    const data = createPublicationStructuredData(publication!, "en");
+
+    expect(data).toMatchObject({
+      "@type": "Book",
+      datePublished: "2023",
+      contributor: [
+        {
+          "@type": "Role",
+          roleName: "Editor / compiler",
+          contributor: {
+            "@type": "Person",
+            name: "Kyrillos Wannes",
+          },
+        },
+      ],
+      workExample: [
+        expect.objectContaining({
+          bookFormat: "https://schema.org/EBook",
+          datePublished: "2023",
+        }),
+      ],
+    });
+  });
+
+  it("emits edition-aware book data for the grammar publication", () => {
+    const publication = getPublicationById(
+      "basisgrammatica-bohairisch-koptisch",
+    );
+
+    expect(publication).not.toBeNull();
+
+    const data = createPublicationStructuredData(publication!, "nl");
+
+    expect(data).toMatchObject({
+      "@type": "Book",
+      author: [{ "@type": "Person", name: "Kyrillos Wannes" }],
+      bookEdition: "Eerste editie",
+      datePublished: "2026-07",
+      isbn: ["9798397143721", "9798863142357"],
+      publisher: {
+        "@type": "Organization",
+        name: "Coptic Compass",
+      },
+      sameAs: ["https://opac.kbr.be/LIBRARY/doc/SYRACUSE/22087911"],
+      image: [
+        "https://www.copticcompass.com/publications/basisgrammatica-bohairisch-koptisch/front-cover.webp",
+        "https://www.copticcompass.com/publications/basisgrammatica-bohairisch-koptisch/back-cover.webp",
+        "https://www.copticcompass.com/publications/basisgrammatica-bohairisch-koptisch/mockup-paperback.webp",
+      ],
+    });
+    expect(data.workExample).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          "@type": "Book",
+          bookFormat: "https://schema.org/Paperback",
+          isbn: "9798397143721",
+          image: [
+            "https://www.copticcompass.com/publications/basisgrammatica-bohairisch-koptisch/front-cover.webp",
+            "https://www.copticcompass.com/publications/basisgrammatica-bohairisch-koptisch/back-cover.webp",
+            "https://www.copticcompass.com/publications/basisgrammatica-bohairisch-koptisch/mockup-paperback.webp",
+          ],
+          offers: [
+            expect.objectContaining({
+              "@type": "Offer",
+              url: "https://www.amazon.nl/dp/B0H8QVKK94",
+            }),
+          ],
+        }),
+        expect.objectContaining({
+          bookFormat: "https://schema.org/Hardcover",
+          isbn: "9798863142357",
+        }),
+      ]),
+    );
+  });
+
+  it("publishes Parallel Paradigms as a book rather than an article", () => {
+    const publication = getPublicationById("parallel-paradigms-coptic");
+
+    expect(publication).not.toBeNull();
+
+    const data = createPublicationStructuredData(publication!, "en");
+
+    expect(data).toMatchObject({
+      "@type": "Book",
+      datePublished: "2026-07",
+      isbn: "9798184913094",
+    });
+    expect(data).not.toHaveProperty("creativeWorkStatus");
+    expect(data).not.toHaveProperty(
+      "sameAs",
+      "https://www.amazon.com/dp/B0H882L1T2",
+    );
+  });
+
+  it("does not emit book-only edition fields for scholarly articles", () => {
+    const source = getPublicationById("complex-verb-constructions-coptic");
+    expect(source).not.toBeNull();
+
+    const article: Publication = {
+      ...source!,
+      editions: [
+        {
+          id: "digital-edition",
+          statement: { en: "Digital edition", nl: "Digitale editie" },
+          publicationDate: "2026-08",
+          formats: [{ id: "digital", binding: "digital" }],
+        },
+      ],
+    };
+    const data = createPublicationStructuredData(article, "en");
+
+    expect(data).toMatchObject({
+      "@type": "ScholarlyArticle",
+      datePublished: "2026-08",
+    });
+    expect(data).not.toHaveProperty("bookEdition");
+    expect(data).not.toHaveProperty("workExample");
+    expect(data).not.toHaveProperty("isbn");
   });
 });
